@@ -218,7 +218,7 @@ export default class SourceGenerator
         }
         else if (hasSimbling)
         {
-            return `${identation}void 0,`;
+            return `${identation}undefined,`;
         }
 
         return undefined;
@@ -372,7 +372,7 @@ export default class SourceGenerator
                         `${identation}(`,
                         `${identation2x}${this.stringifyExpression(descriptor.key)},`,
                         `${identation2x}${this.stringifyExpression(descriptor.value)},`,
-                        `${identation2x}${JSON.stringify(descriptor.observables)},`,
+                        `${identation2x}${JSON.stringify([descriptor.observables.key, descriptor.observables.value])},`,
                         `${fragment},`,
                         !this.production ? `${identation2x}${JSON.stringify(descriptor.source)},` : undefined,
                         !this.production ? `${identation2x}${JSON.stringify(descriptor.stackTrace)},` : undefined,
@@ -396,7 +396,7 @@ export default class SourceGenerator
                         `${identation}(`,
                         `${identation2x}${this.stringifyExpression(descriptor.key)},`,
                         `${identation2x}${this.stringifyPattern(descriptor.value)},`,
-                        `${identation2x}${JSON.stringify(descriptor.observables)},`,
+                        `${identation2x}${JSON.stringify([descriptor.observables.key, descriptor.observables.key])},`,
                         `${fragment},`,
                         !this.production ? `${identation2x}${JSON.stringify(descriptor.source)},` : undefined,
                         !this.production ? `${identation2x}${JSON.stringify(descriptor.stackTrace)},` : undefined,

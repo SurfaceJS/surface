@@ -1,4 +1,4 @@
-// import { writeFileSync }           from "fs";
+import { writeFileSync }           from "fs";
 import { shouldPass, suite, test } from "@surface/test-suite";
 import chai                        from "chai";
 import SourceGenerator             from "../internal/source-generator.js";
@@ -167,7 +167,7 @@ export default class SourceGeneratorSpec
             "\t\t\tcreateElementFactory",
             "\t\t\t(",
             "\t\t\t\t\"SPAN\",",
-            "\t\t\t\tvoid 0,",
+            "\t\t\t\tundefined,",
             "\t\t\t\t[",
             "\t\t\t\t\tcreateEventFactory",
             "\t\t\t\t\t(",
@@ -206,7 +206,7 @@ export default class SourceGeneratorSpec
             "\t\t\tcreateElementFactory",
             "\t\t\t(",
             "\t\t\t\t\"SPAN\",",
-            "\t\t\t\tvoid 0,",
+            "\t\t\t\tundefined,",
             "\t\t\t\t[",
             "\t\t\t\t\tcreateDirectiveFactory",
             "\t\t\t\t\t(",
@@ -245,7 +245,7 @@ export default class SourceGeneratorSpec
             "\t\t\tcreateElementFactory",
             "\t\t\t(",
             "\t\t\t\t\"SPAN\",",
-            "\t\t\t\tvoid 0,",
+            "\t\t\t\tundefined,",
             "\t\t\t\t[",
             "\t\t\t\t\tcreateOnewayFactory",
             "\t\t\t\t\t(",
@@ -284,7 +284,7 @@ export default class SourceGeneratorSpec
             "\t\t\tcreateElementFactory",
             "\t\t\t(",
             "\t\t\t\t\"SPAN\",",
-            "\t\t\t\tvoid 0,",
+            "\t\t\t\tundefined,",
             "\t\t\t\t[",
             "\t\t\t\t\tcreateTwowayFactory",
             "\t\t\t\t\t(",
@@ -332,8 +332,8 @@ export default class SourceGeneratorSpec
             "\t\t\t\t\t\t\t\t\tcreateElementFactory",
             "\t\t\t\t\t\t\t\t\t(",
             "\t\t\t\t\t\t\t\t\t\t\"SPAN\",",
-            "\t\t\t\t\t\t\t\t\t\tvoid 0,",
-            "\t\t\t\t\t\t\t\t\t\tvoid 0,",
+            "\t\t\t\t\t\t\t\t\t\tundefined,",
+            "\t\t\t\t\t\t\t\t\t\tundefined,",
             "\t\t\t\t\t\t\t\t\t\t[",
             "\t\t\t\t\t\t\t\t\t\t\tcreateTextNodeFactory(\"Show\")",
             "\t\t\t\t\t\t\t\t\t\t]",
@@ -353,8 +353,8 @@ export default class SourceGeneratorSpec
             "\t\t\t\t\t\t\t\t\tcreateElementFactory",
             "\t\t\t\t\t\t\t\t\t(",
             "\t\t\t\t\t\t\t\t\t\t\"SPAN\",",
-            "\t\t\t\t\t\t\t\t\t\tvoid 0,",
-            "\t\t\t\t\t\t\t\t\t\tvoid 0,",
+            "\t\t\t\t\t\t\t\t\t\tundefined,",
+            "\t\t\t\t\t\t\t\t\t\tundefined,",
             "\t\t\t\t\t\t\t\t\t\t[",
             "\t\t\t\t\t\t\t\t\t\t\tcreateTextNodeFactory(\"Hide\")",
             "\t\t\t\t\t\t\t\t\t\t]",
@@ -404,8 +404,8 @@ export default class SourceGeneratorSpec
             "\t\t\t\t\t\tcreateElementFactory",
             "\t\t\t\t\t\t(",
             "\t\t\t\t\t\t\t\"SPAN\",",
-            "\t\t\t\t\t\t\tvoid 0,",
-            "\t\t\t\t\t\t\tvoid 0,",
+            "\t\t\t\t\t\t\tundefined,",
+            "\t\t\t\t\t\t\tundefined,",
             "\t\t\t\t\t\t\t[",
             "\t\t\t\t\t\t\t\tcreateTextNodeInterpolationFactory",
             "\t\t\t\t\t\t\t\t(",
@@ -452,15 +452,15 @@ export default class SourceGeneratorSpec
             "\t\t\t(",
             "\t\t\t\tscope => \"default\",",
             "\t\t\t\tscope => { value: scope.host.value },",
-            "\t\t\t\t{\"key\":[],\"value\":[[\"host\",\"value\"]]},",
+            "\t\t\t\t[[],[[\"host\",\"value\"]]],",
             "\t\t\t\tcreateFragmentFactory",
             "\t\t\t\t(",
             "\t\t\t\t\t[",
             "\t\t\t\t\t\tcreateElementFactory",
             "\t\t\t\t\t\t(",
             "\t\t\t\t\t\t\t\"SPAN\",",
-            "\t\t\t\t\t\t\tvoid 0,",
-            "\t\t\t\t\t\t\tvoid 0,",
+            "\t\t\t\t\t\t\tundefined,",
+            "\t\t\t\t\t\t\tundefined,",
             "\t\t\t\t\t\t\t[",
             "\t\t\t\t\t\t\t\tcreateTextNodeInterpolationFactory",
             "\t\t\t\t\t\t\t\t(",
@@ -507,15 +507,15 @@ export default class SourceGeneratorSpec
             "\t\t\t(",
             "\t\t\t\tscope => \"default\",",
             "\t\t\t\tscope => { const { value } = scope; return { value }; },",
-            "\t\t\t\t{\"key\":[],\"value\":[]},",
+            "\t\t\t\t[[],[]],",
             "\t\t\t\tcreateFragmentFactory",
             "\t\t\t\t(",
             "\t\t\t\t\t[",
             "\t\t\t\t\t\tcreateElementFactory",
             "\t\t\t\t\t\t(",
             "\t\t\t\t\t\t\t\"SPAN\",",
-            "\t\t\t\t\t\t\tvoid 0,",
-            "\t\t\t\t\t\t\tvoid 0,",
+            "\t\t\t\t\t\t\tundefined,",
+            "\t\t\t\t\t\t\tundefined,",
             "\t\t\t\t\t\t\t[",
             "\t\t\t\t\t\t\t\tcreateTextNodeInterpolationFactory",
             "\t\t\t\t\t\t\t\t(",
@@ -538,7 +538,7 @@ export default class SourceGeneratorSpec
 
         const actual = SourceGenerator.generate("x-component", "<span #Inject=\"{ value }\">Value: {value}</span>", false);
 
-        // writeFileSync("test.js", actual);
+        writeFileSync("test.js", actual);
 
         chai.assert.equal(actual, expected);
     }
