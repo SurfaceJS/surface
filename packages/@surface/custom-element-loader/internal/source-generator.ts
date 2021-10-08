@@ -1,11 +1,11 @@
 /* eslint-disable max-lines-per-function */
-import TemplateParser                                    from "@surface/custom-element/internal/parsers/template-parser.js";
-import type Descriptor                                   from "@surface/custom-element/internal/types/descriptor";
-import type { AttributeBindDescritor, BranchDescriptor } from "@surface/custom-element/internal/types/descriptor";
-import type { IExpression, IPattern }                    from "@surface/expression";
-import { TypeGuard }                                     from "@surface/expression";
-import { JSDOM }                                         from "jsdom";
-import ScopeRewriterVisitor                              from "./scope-rewriter-visitor.js";
+import TemplateParser                                                           from "@surface/custom-element/internal/parsers/template-parser.js";
+import type Descriptor                                                          from "@surface/custom-element/internal/types/descriptor";
+import type { AttributeBindDescritor, BranchDescriptor, RawAttributeDescritor } from "@surface/custom-element/internal/types/descriptor";
+import type { IExpression, IPattern }                                           from "@surface/expression";
+import { TypeGuard }                                                            from "@surface/expression";
+import { JSDOM }                                                                from "jsdom";
+import ScopeRewriterVisitor                                                     from "./scope-rewriter-visitor.js";
 
 const factoryMap: Record<Descriptor["type"], string> =
 {
@@ -31,7 +31,8 @@ const attributeFactoryMap: Record<Exclude<AttributeBindDescritor["type"], "raw">
 
 export default class SourceGenerator
 {
-    private identationLevel: number = 0;
+    private readonly lines: string[] = [];
+    private indentationLevel: number = 0;
 
     private readonly factories: Set<string> = new Set();
 
@@ -42,143 +43,163 @@ export default class SourceGenerator
     {
         const descriptor = TemplateParser.parse(new JSDOM().window.document, name, template);
 
-        return new SourceGenerator(production).compile(descriptor);
+        return new SourceGenerator(production).generate(descriptor);
     }
 
-    private getIdentation(): string
+    private increaseIndent(): void
     {
-        return "\t".repeat(this.identationLevel);
+        this.indentationLevel++;
     }
 
-    private stringifyAttributeBinds(descriptors: Iterable<AttributeBindDescritor>): { attributes: string[], directives: string[] }
+    private decreaseIndent(): void
     {
-        const directives: string[] = [];
-        const attributes: string[] = [];
+        this.indentationLevel--;
+    }
+
+    private writeLine(value: string): void
+    {
+        this.lines.push("\t".repeat(this.indentationLevel) + value);
+    }
+
+    private write(value: string): void
+    {
+        this.lines[this.lines.length - 1] += value;
+    }
+
+    private eraseLine(): void
+    {
+        this.lines.pop();
+    }
+
+    private separateAttributes(descriptors: Iterable<AttributeBindDescritor>): { attributes: RawAttributeDescritor[], directives: Exclude<AttributeBindDescritor, RawAttributeDescritor>[] }
+    {
+        const attributes: RawAttributeDescritor[]                                  = [];
+        const directives: Exclude<AttributeBindDescritor, RawAttributeDescritor>[] = [];
 
         for (const descriptor of descriptors)
         {
             if (descriptor.type == "raw")
             {
-                this.identationLevel++;
-
-                attributes.push(`${this.getIdentation()}["${descriptor.key}", "${descriptor.value}"]`);
-
-                this.identationLevel--;
+                attributes.push(descriptor);
             }
             else
             {
-                this.identationLevel++;
-
-                const identation = this.getIdentation();
-
-                this.identationLevel++;
-
-                const identation2x = this.getIdentation();
-
-                const factory = attributeFactoryMap[descriptor.type];
-
-                switch (descriptor.type)
-                {
-                    case "oneway":
-                    case "interpolation":
-                    case "directive":
-                        {
-                            this.factories.add(factory);
-
-                            const source =
-                            [
-                                `${identation}${factory}`,
-                                `${identation}(`,
-                                `${identation2x}"${descriptor.key}",`,
-                                `${identation2x}${this.stringifyExpression(descriptor.value)},`,
-                                `${identation2x}${JSON.stringify(descriptor.observables)},`,
-                                !this.production ? `${identation2x}${JSON.stringify(descriptor.source)},` : undefined,
-                                !this.production ? `${identation2x}${JSON.stringify(descriptor.stackTrace)},` : undefined,
-                                `${identation})`,
-                            ].filter(x => !!x).join("\n");
-
-                            directives.push(source);
-                        }
-                        break;
-                    case "event":
-                        {
-                            this.factories.add(factory);
-
-                            const source =
-                            [
-                                `${identation}${factory}`,
-                                `${identation}(`,
-                                `${identation2x}"${descriptor.key}",`,
-                                `${identation2x}${this.stringifyExpression(descriptor.value)},`,
-                                `${identation2x}${this.stringifyExpression(descriptor.context)},`,
-                                !this.production ? `${identation2x}${JSON.stringify(descriptor.source)},` : undefined,
-                                !this.production ? `${identation2x}${JSON.stringify(descriptor.stackTrace)},` : undefined,
-                                `${identation})`,
-                            ].filter(x => !!x).join("\n");
-
-                            directives.push(source);
-                        }
-                        break;
-                    case "twoway":
-                        {
-                            this.factories.add(factory);
-
-                            const source =
-                            [
-                                `${identation}${factory}`,
-                                `${identation}(`,
-                                `${identation2x}"${descriptor.left}",`,
-                                `${identation2x}${JSON.stringify(descriptor.right)},`,
-                                !this.production ? `${identation2x}${JSON.stringify(descriptor.source)},` : undefined,
-                                !this.production ? `${identation2x}${JSON.stringify(descriptor.stackTrace)},` : undefined,
-                                `${identation})`,
-                            ].filter(x => !!x).join("\n");
-
-                            directives.push(source);
-                        }
-                        break;
-                    default:
-                        break;
-                }
-
-                this.identationLevel -= 2;
+                directives.push(descriptor);
             }
         }
 
         return { attributes, directives };
     }
 
-    private stringifyChilds(childs: Iterable<Descriptor>, optional: false): string;
-    private stringifyChilds(childs: Iterable<Descriptor>, optional: true): string | undefined;
-    private stringifyChilds(childs: Iterable<Descriptor>, optional: boolean): string | undefined
+    private writeAttributeBinds(descriptors: Iterable<AttributeBindDescritor>): void
     {
-        const factories: string[] = [];
+        const binds = this.separateAttributes(descriptors);
 
-        this.identationLevel++;
-
-        for (const child of childs)
+        if (binds.attributes.length > 0)
         {
-            factories.push(this.stringifyDescriptor(child));
+            this.writeLine("[");
+            this.increaseIndent();
+
+            for (const descriptor of binds.attributes)
+            {
+
+                this.writeLine(`["${descriptor.key}", "${descriptor.value}"],`);
+            }
+
+            this.decreaseIndent();
+            this.writeLine("],");
+        }
+        else
+        {
+            this.writeLine("undefined,");
         }
 
-        let result: string | undefined;
-
-        const indentation = this.getIdentation();
-
-        if (factories.length > 0)
+        if (binds.directives.length > 0)
         {
-            result = `${indentation}[\n`;
+            this.writeLine("[");
+            this.increaseIndent();
 
-            result += `${`${factories.join(",\n")}\n${indentation}`}]`;
+            for (const descriptor of binds.directives)
+            {
+                const factory = attributeFactoryMap[descriptor.type];
+
+                this.factories.add(factory);
+
+                this.writeLine(factory);
+                this.writeLine("(");
+                this.increaseIndent();
+
+                switch (descriptor.type)
+                {
+                    case "oneway":
+                    case "interpolation":
+                    case "directive":
+                        this.writeLine(`${JSON.stringify(descriptor.key)},`);
+                        this.writeLine(`${this.stringifyExpression(descriptor.value)},`);
+                        this.writeLine(`${JSON.stringify(descriptor.observables)},`);
+                        this.writeLine(!this.production ? `${JSON.stringify(descriptor.source)},` : "undefined,");
+                        this.writeLine(!this.production ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
+                        break;
+                    case "event":
+                        this.writeLine(`"${descriptor.key}",`);
+                        this.writeLine(`${this.stringifyExpression(descriptor.value)},`);
+                        this.writeLine(`${this.stringifyExpression(descriptor.context)},`);
+                        this.writeLine(!this.production ? `${JSON.stringify(descriptor.source)},` : "undefined,");
+                        this.writeLine(!this.production ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
+                        break;
+                    case "twoway":
+                        this.writeLine(`"${descriptor.left}",`);
+                        this.writeLine(`${JSON.stringify(descriptor.right)},`);
+                        this.writeLine(!this.production ? `${JSON.stringify(descriptor.source)},` : "undefined,");
+                        this.writeLine(!this.production ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
+                        break;
+                    default:
+                        break;
+                }
+
+                this.decreaseIndent();
+                this.writeLine("),");
+            }
+
+            this.decreaseIndent();
+            this.writeLine("],");
         }
-        else if (!optional)
+        else
         {
-            result = `${indentation}[]`;
+            this.writeLine("undefined,");
         }
+    }
 
-        this.identationLevel--;
+    private writeChilds(descriptors: Iterable<Descriptor>, optional: boolean): void
+    {
+        let empty = true;
 
-        return result;
+        this.writeLine("[");
+        this.increaseIndent();
+        for (const descriptor of descriptors)
+        {
+            empty = false;
+
+            this.writeDescriptor(descriptor);
+            this.write(",");
+        }
+        this.decreaseIndent();
+        this.writeLine("]");
+
+        if (empty)
+        {
+            this.eraseLine();
+            this.eraseLine();
+
+            if (optional)
+            {
+                this.writeLine("undefined");
+            }
+            else
+            {
+                this.writeLine("[]");
+            }
+        }
     }
 
     private stringifyExpression(expression: IExpression): string
@@ -196,232 +217,133 @@ export default class SourceGenerator
         return `scope => { const ${pattern} = scope; return ${ScopeRewriterVisitor.collectScope(pattern)}; }`;
     }
 
-    private compile(descriptor: Descriptor): string
+    private generate(descriptor: Descriptor): string
     {
-        const factory = this.stringifyDescriptor(descriptor);
+        this.writeLine("const factory =");
+        this.increaseIndent();
+        this.writeDescriptor(descriptor);
+        this.write(";");
+        this.decreaseIndent();
+        this.writeLine("");
+        this.writeLine("export default factory;");
 
-        return [
-            `import {\n${Array.from(this.factories).map(x => `\t${x}`).join(",\n")}\n} from "@surface/custom-element/factories";`,
-            "const factory =",
-            `${factory};`,
-            "export default factory;",
-        ].join("\n");
+        const statements = this.lines.join("\n");
+
+        this.clear();
+
+        this.writeLine("import");
+        this.writeLine("{");
+        this.increaseIndent();
+        Array.from(this.factories).forEach(x => this.writeLine(`${x},`));
+        this.decreaseIndent();
+        this.writeLine("} from \"@surface/custom-element\";");
+        this.writeLine("");
+
+        const imports = this.lines.join("\n");
+
+        this.clear();
+
+        return `${imports}\n${statements}`;
     }
 
-    private stringifyArray(source: string[], hasSimbling: boolean): string | undefined
+    private clear(): void
     {
-        const identation = this.getIdentation();
-
-        if (source.length > 0)
-        {
-            return `${identation}[\n${source.join(",\n")}\n${identation}],`;
-        }
-        else if (hasSimbling)
-        {
-            return `${identation}undefined,`;
-        }
-
-        return undefined;
+        this.indentationLevel = 0;
+        this.lines.length     = 0;
     }
 
-    private stringifyBranchs(branchs: BranchDescriptor[]): string
+    private writeBranchs(branchs: BranchDescriptor[]): void
     {
-        this.identationLevel++;
-
-        const identation = this.getIdentation();
-
-        this.identationLevel++;
-
-        const identation2x = this.getIdentation();
-
-        this.identationLevel++;
-
-        const identation3x = this.getIdentation();
-
-        const sourceBraches = [`${identation}[`];
+        this.writeLine("[");
+        this.increaseIndent();
 
         for (const branch of branchs)
         {
-            const source =
-            [
-                `${identation2x}{`,
-                `${identation3x}expression: ${this.stringifyExpression(branch.expression)},`,
-                `${identation3x}fragment:`,
-                `${this.stringifyDescriptor(branch.fragment)},`,
-                `${identation3x}observables: ${JSON.stringify(branch.observables)},`,
-                !this.production ? `${identation3x}source: ${JSON.stringify(branch.source)},` : undefined,
-                !this.production ? `${identation3x}stackTrace: ${JSON.stringify(branch.stackTrace)},` : undefined,
-                `${identation2x}},`,
-            ].filter(x => !!x).join("\n");
-
-            sourceBraches.push(source);
+            this.writeLine("{");
+            this.increaseIndent();
+            /**/this.writeLine(`expression: ${this.stringifyExpression(branch.expression)},`);
+            /**/this.writeLine("fragment:");
+            /*    */this.increaseIndent();
+            /*    */this.writeDescriptor(branch.fragment);
+            /*    */this.write(",");
+            /*    */this.decreaseIndent();
+            /**/this.writeLine(`observables: ${JSON.stringify(branch.observables)},`);
+            /**/this.writeLine(!this.production ? `source: ${JSON.stringify(branch.source)},` : "undefined");
+            /**/this.writeLine(!this.production ? `stackTrace: ${JSON.stringify(branch.stackTrace)},` : "undefined");
+            /**/this.decreaseIndent();
+            this.writeLine("},");
         }
 
-        sourceBraches.push(`${identation}]`);
-
-        this.identationLevel -= 3;
-
-        return sourceBraches.join("\n");
+        this.decreaseIndent();
+        this.writeLine("]");
     }
 
-    private stringifyDescriptor(descriptor: Descriptor): string
+    private writeDescriptor(descriptor: Descriptor): void
     {
-        let source: string;
-
-        this.identationLevel++;
-
-        const factory    = factoryMap[descriptor.type];
-        const identation = this.getIdentation();
+        const factory = factoryMap[descriptor.type];
 
         this.factories.add(factory);
 
+        this.writeLine(factory);
+        this.writeLine("(");
+        this.increaseIndent();
         switch (descriptor.type)
         {
             case "element":
-                {
-                    const childs = this.stringifyChilds(descriptor.childs, true);
-
-                    this.identationLevel++;
-
-                    const binds  = this.stringifyAttributeBinds(descriptor.attributes);
-
-                    const identation2x = this.getIdentation();
-
-                    source =
-                    [
-                        identation + factory,
-                        `${identation}(`,
-                        `${identation2x}${JSON.stringify(descriptor.tag)},`,
-                        this.stringifyArray(binds.attributes, binds.directives.length > 0 || !!childs),
-                        this.stringifyArray(binds.directives, !!childs),
-                        childs,
-                        `${identation})`,
-                    ].filter(x => !!x).join("\n");
-
-                    this.identationLevel--;
-                }
+                this.writeLine(`${JSON.stringify(descriptor.tag)},`);
+                this.writeAttributeBinds(descriptor.attributes);
+                this.writeChilds(descriptor.childs, true);
+                this.write(",");
                 break;
             case "text":
-                source = `${identation}${factory}("${descriptor.value}")`;
+                this.writeLine(JSON.stringify(descriptor.value));
                 break;
             case "text-interpolation":
-                {
-                    this.identationLevel++;
-
-                    const identation2x = this.getIdentation();
-
-                    source =
-                    [
-                        identation + factory,
-                        `${identation}(`,
-                        `${identation2x}${this.stringifyExpression(descriptor.value)},`,
-                        `${identation2x}${JSON.stringify(descriptor.observables)},`,
-                        !this.production ? `${identation2x}${JSON.stringify(descriptor.source)},` : undefined,
-                        !this.production ? `${identation2x}${JSON.stringify(descriptor.stackTrace)},` : undefined,
-                        `${identation})`,
-                    ].filter(x => !!x).join("\n");
-
-                    this.identationLevel--;
-                }
+                this.writeLine(`${this.stringifyExpression(descriptor.value)},`);
+                this.writeLine(`${JSON.stringify(descriptor.observables)},`);
+                this.writeLine(!this.production ? `${JSON.stringify(descriptor.source)},` : "undefined,");
+                this.writeLine(!this.production ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
                 break;
             case "choice-statement":
-                source =
-                [
-                    identation + factory,
-                    `${identation}(`,
-                    this.stringifyBranchs(descriptor.branches),
-                    `${identation})`,
-                ].filter(x => !!x).join("\n");
+                this.writeBranchs(descriptor.branches);
                 break;
             case "loop-statement":
-                {
-                    const fragment = this.stringifyDescriptor(descriptor.fragment);
-
-                    this.identationLevel++;
-
-                    const identation2x = this.getIdentation();
-
-                    source =
-                    [
-                        identation + factory,
-                        `${identation}(`,
-                        `${identation2x}${this.stringifyPattern(descriptor.left)},`,
-                        `${identation2x}${JSON.stringify(descriptor.operator)},`,
-                        `${identation2x}${this.stringifyExpression(descriptor.right)},`,
-                        `${identation2x}${JSON.stringify(descriptor.observables)},`,
-                        `${fragment},`,
-                        !this.production ? `${identation2x}${JSON.stringify(descriptor.source)},` : undefined,
-                        !this.production ? `${identation2x}${JSON.stringify(descriptor.stackTrace)},` : undefined,
-                        `${identation})`,
-                    ].filter(x => !!x).join("\n");
-
-                    this.identationLevel--;
-                }
+                this.writeLine(`${this.stringifyPattern(descriptor.left)},`);
+                this.writeLine(`${JSON.stringify(descriptor.operator)},`);
+                this.writeLine(`${this.stringifyExpression(descriptor.right)},`);
+                this.writeLine(`${JSON.stringify(descriptor.observables)},`);
+                this.writeDescriptor(descriptor.fragment),
+                this.write(","),
+                this.writeLine(!this.production ? `${JSON.stringify(descriptor.source)},` : "undefined,");
+                this.writeLine(!this.production ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
                 break;
             case "placeholder-statement":
-                {
-                    const fragment = this.stringifyDescriptor(descriptor.fragment);
-
-                    this.identationLevel++;
-
-                    const identation2x = this.getIdentation();
-
-                    source =
-                    [
-                        identation + factory,
-                        `${identation}(`,
-                        `${identation2x}${this.stringifyExpression(descriptor.key)},`,
-                        `${identation2x}${this.stringifyExpression(descriptor.value)},`,
-                        `${identation2x}${JSON.stringify([descriptor.observables.key, descriptor.observables.value])},`,
-                        `${fragment},`,
-                        !this.production ? `${identation2x}${JSON.stringify(descriptor.source)},` : undefined,
-                        !this.production ? `${identation2x}${JSON.stringify(descriptor.stackTrace)},` : undefined,
-                        `${identation})`,
-                    ].filter(x => !!x).join("\n");
-
-                    this.identationLevel--;
-                }
+                this.writeLine(`${this.stringifyExpression(descriptor.key)},`);
+                this.writeLine(`${this.stringifyExpression(descriptor.value)},`);
+                this.writeLine(`${JSON.stringify([descriptor.observables.key, descriptor.observables.value])},`);
+                this.writeDescriptor(descriptor.fragment);
+                this.write(","),
+                this.writeLine(!this.production ? `${JSON.stringify(descriptor.source)},` : "undefined,");
+                this.writeLine(!this.production ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
                 break;
             case "injection-statement":
-                {
-                    const fragment = this.stringifyDescriptor(descriptor.fragment);
-
-                    this.identationLevel++;
-
-                    const identation2x = this.getIdentation();
-
-                    source =
-                    [
-                        identation + factory,
-                        `${identation}(`,
-                        `${identation2x}${this.stringifyExpression(descriptor.key)},`,
-                        `${identation2x}${this.stringifyPattern(descriptor.value)},`,
-                        `${identation2x}${JSON.stringify([descriptor.observables.key, descriptor.observables.key])},`,
-                        `${fragment},`,
-                        !this.production ? `${identation2x}${JSON.stringify(descriptor.source)},` : undefined,
-                        !this.production ? `${identation2x}${JSON.stringify(descriptor.stackTrace)},` : undefined,
-                        `${identation})`,
-                    ].filter(x => !!x).join("\n");
-
-                    this.identationLevel--;
-                }
+                this.writeLine(`${this.stringifyExpression(descriptor.key)},`);
+                this.writeLine(`${this.stringifyPattern(descriptor.value)},`);
+                this.writeLine(`${JSON.stringify([descriptor.observables.key, descriptor.observables.key])},`);
+                this.writeDescriptor(descriptor.fragment);
+                this.write(","),
+                this.writeLine(!this.production ? `${JSON.stringify(descriptor.source)},` : "undefined,");
+                this.writeLine(!this.production ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
                 break;
             case "comment":
-                source = "";
+                // source = "";
                 break;
             case "fragment":
             default:
-                source =
-                [
-                    `${identation}${factory}`,
-                    `${identation}(`,
-                    this.stringifyChilds(descriptor.childs, false),
-                    `${identation})`,
-                ].filter(x => !!x.trim()).join("\n");
+                this.writeChilds(descriptor.childs, false);
         }
 
-        this.identationLevel--;
-
-        return source;
+        this.decreaseIndent();
+        this.writeLine(")");
     }
 }

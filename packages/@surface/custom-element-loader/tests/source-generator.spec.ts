@@ -1,4 +1,4 @@
-import { writeFileSync }           from "fs";
+// import { writeFileSync }           from "fs";
 import { shouldPass, suite, test } from "@surface/test-suite";
 import chai                        from "chai";
 import SourceGenerator             from "../internal/source-generator.js";
@@ -11,14 +11,17 @@ export default class SourceGeneratorSpec
     {
         const expected =
         [
-            "import {",
-            "\tcreateFragmentFactory",
-            "} from \"@surface/custom-element/factories\";",
+            "import",
+            "{",
+            "\tcreateFragmentFactory,",
+            "} from \"@surface/custom-element\";",
+            "",
             "const factory =",
             "\tcreateFragmentFactory",
             "\t(",
             "\t\t[]",
             "\t);",
+            "",
             "export default factory;",
         ].join("\n");
 
@@ -32,17 +35,23 @@ export default class SourceGeneratorSpec
     {
         const expected =
         [
-            "import {",
+            "import",
+            "{",
             "\tcreateFragmentFactory,",
-            "\tcreateTextNodeFactory",
-            "} from \"@surface/custom-element/factories\";",
+            "\tcreateTextNodeFactory,",
+            "} from \"@surface/custom-element\";",
+            "",
             "const factory =",
             "\tcreateFragmentFactory",
             "\t(",
             "\t\t[",
-            "\t\t\tcreateTextNodeFactory(\"Hello World!!!\")",
+            "\t\t\tcreateTextNodeFactory",
+            "\t\t\t(",
+            "\t\t\t\t\"Hello World!!!\"",
+            "\t\t\t),",
             "\t\t]",
             "\t);",
+            "",
             "export default factory;",
         ].join("\n");
 
@@ -56,10 +65,12 @@ export default class SourceGeneratorSpec
     {
         const expected =
         [
-            "import {",
+            "import",
+            "{",
             "\tcreateFragmentFactory,",
-            "\tcreateElementFactory",
-            "} from \"@surface/custom-element/factories\";",
+            "\tcreateElementFactory,",
+            "} from \"@surface/custom-element\";",
+            "",
             "const factory =",
             "\tcreateFragmentFactory",
             "\t(",
@@ -67,9 +78,13 @@ export default class SourceGeneratorSpec
             "\t\t\tcreateElementFactory",
             "\t\t\t(",
             "\t\t\t\t\"SPAN\",",
-            "\t\t\t)",
+            "\t\t\t\tundefined,",
+            "\t\t\t\tundefined,",
+            "\t\t\t\tundefined,",
+            "\t\t\t),",
             "\t\t]",
             "\t);",
+            "",
             "export default factory;",
         ].join("\n");
 
@@ -83,10 +98,12 @@ export default class SourceGeneratorSpec
     {
         const expected =
         [
-            "import {",
+            "import",
+            "{",
             "\tcreateFragmentFactory,",
-            "\tcreateElementFactory",
-            "} from \"@surface/custom-element/factories\";",
+            "\tcreateElementFactory,",
+            "} from \"@surface/custom-element\";",
+            "",
             "const factory =",
             "\tcreateFragmentFactory",
             "\t(",
@@ -96,11 +113,14 @@ export default class SourceGeneratorSpec
             "\t\t\t\t\"SPAN\",",
             "\t\t\t\t[",
             "\t\t\t\t\t[\"foo\", \"\"],",
-            "\t\t\t\t\t[\"bar\", \"baz\"]",
+            "\t\t\t\t\t[\"bar\", \"baz\"],",
             "\t\t\t\t],",
-            "\t\t\t)",
+            "\t\t\t\tundefined,",
+            "\t\t\t\tundefined,",
+            "\t\t\t),",
             "\t\t]",
             "\t);",
+            "",
             "export default factory;",
         ].join("\n");
 
@@ -114,11 +134,13 @@ export default class SourceGeneratorSpec
     {
         const expected =
         [
-            "import {",
+            "import",
+            "{",
             "\tcreateFragmentFactory,",
             "\tcreateElementFactory,",
-            "\tcreateInterpolationFactory",
-            "} from \"@surface/custom-element/factories\";",
+            "\tcreateInterpolationFactory,",
+            "} from \"@surface/custom-element\";",
+            "",
             "const factory =",
             "\tcreateFragmentFactory",
             "\t(",
@@ -127,7 +149,7 @@ export default class SourceGeneratorSpec
             "\t\t\t(",
             "\t\t\t\t\"SPAN\",",
             "\t\t\t\t[",
-            "\t\t\t\t\t[\"value\", \"\"]",
+            "\t\t\t\t\t[\"value\", \"\"],",
             "\t\t\t\t],",
             "\t\t\t\t[",
             "\t\t\t\t\tcreateInterpolationFactory",
@@ -137,11 +159,13 @@ export default class SourceGeneratorSpec
             "\t\t\t\t\t\t[[\"host\",\"value\"]],",
             "\t\t\t\t\t\t\"value=\\\"{host.value}\\\"\",",
             "\t\t\t\t\t\t[[\"<x-component>\"],[\"#shadow-root\"],[\"<span value=\\\"{host.value}\\\">\"]],",
-            "\t\t\t\t\t)",
+            "\t\t\t\t\t),",
             "\t\t\t\t],",
-            "\t\t\t)",
+            "\t\t\t\tundefined,",
+            "\t\t\t),",
             "\t\t]",
             "\t);",
+            "",
             "export default factory;",
         ].join("\n");
 
@@ -155,11 +179,13 @@ export default class SourceGeneratorSpec
     {
         const expected =
         [
-            "import {",
+            "import",
+            "{",
             "\tcreateFragmentFactory,",
             "\tcreateElementFactory,",
-            "\tcreateEventFactory",
-            "} from \"@surface/custom-element/factories\";",
+            "\tcreateEventFactory,",
+            "} from \"@surface/custom-element\";",
+            "",
             "const factory =",
             "\tcreateFragmentFactory",
             "\t(",
@@ -176,11 +202,13 @@ export default class SourceGeneratorSpec
             "\t\t\t\t\t\tscope => scope.host,",
             "\t\t\t\t\t\t\"@click=\\\"host.handler\\\"\",",
             "\t\t\t\t\t\t[[\"<x-component>\"],[\"#shadow-root\"],[\"<span @click=\\\"host.handler\\\">\"]],",
-            "\t\t\t\t\t)",
+            "\t\t\t\t\t),",
             "\t\t\t\t],",
-            "\t\t\t)",
+            "\t\t\t\tundefined,",
+            "\t\t\t),",
             "\t\t]",
             "\t);",
+            "",
             "export default factory;",
         ].join("\n");
 
@@ -194,11 +222,13 @@ export default class SourceGeneratorSpec
     {
         const expected =
         [
-            "import {",
+            "import",
+            "{",
             "\tcreateFragmentFactory,",
             "\tcreateElementFactory,",
-            "\tcreateDirectiveFactory",
-            "} from \"@surface/custom-element/factories\";",
+            "\tcreateDirectiveFactory,",
+            "} from \"@surface/custom-element\";",
+            "",
             "const factory =",
             "\tcreateFragmentFactory",
             "\t(",
@@ -215,11 +245,13 @@ export default class SourceGeneratorSpec
             "\t\t\t\t\t\t[[\"host\",\"show\"]],",
             "\t\t\t\t\t\t\"#show=\\\"host.show\\\"\",",
             "\t\t\t\t\t\t[[\"<x-component>\"],[\"#shadow-root\"],[\"<span #show=\\\"host.show\\\">\"]],",
-            "\t\t\t\t\t)",
+            "\t\t\t\t\t),",
             "\t\t\t\t],",
-            "\t\t\t)",
+            "\t\t\t\tundefined,",
+            "\t\t\t),",
             "\t\t]",
             "\t);",
+            "",
             "export default factory;",
         ].join("\n");
 
@@ -233,11 +265,13 @@ export default class SourceGeneratorSpec
     {
         const expected =
         [
-            "import {",
+            "import",
+            "{",
             "\tcreateFragmentFactory,",
             "\tcreateElementFactory,",
-            "\tcreateOnewayFactory",
-            "} from \"@surface/custom-element/factories\";",
+            "\tcreateOnewayFactory,",
+            "} from \"@surface/custom-element\";",
+            "",
             "const factory =",
             "\tcreateFragmentFactory",
             "\t(",
@@ -254,11 +288,13 @@ export default class SourceGeneratorSpec
             "\t\t\t\t\t\t[[\"host\",\"value\"]],",
             "\t\t\t\t\t\t\":value=\\\"host.value\\\"\",",
             "\t\t\t\t\t\t[[\"<x-component>\"],[\"#shadow-root\"],[\"<span :value=\\\"host.value\\\">\"]],",
-            "\t\t\t\t\t)",
+            "\t\t\t\t\t),",
             "\t\t\t\t],",
-            "\t\t\t)",
+            "\t\t\t\tundefined,",
+            "\t\t\t),",
             "\t\t]",
             "\t);",
+            "",
             "export default factory;",
         ].join("\n");
 
@@ -272,11 +308,13 @@ export default class SourceGeneratorSpec
     {
         const expected =
         [
-            "import {",
+            "import",
+            "{",
             "\tcreateFragmentFactory,",
             "\tcreateElementFactory,",
-            "\tcreateTwowayFactory",
-            "} from \"@surface/custom-element/factories\";",
+            "\tcreateTwowayFactory,",
+            "} from \"@surface/custom-element\";",
+            "",
             "const factory =",
             "\tcreateFragmentFactory",
             "\t(",
@@ -292,11 +330,13 @@ export default class SourceGeneratorSpec
             "\t\t\t\t\t\t[\"host\",\"value\"],",
             "\t\t\t\t\t\t\"::value=\\\"host.value\\\"\",",
             "\t\t\t\t\t\t[[\"<x-component>\"],[\"#shadow-root\"],[\"<span ::value=\\\"host.value\\\">\"]],",
-            "\t\t\t\t\t)",
+            "\t\t\t\t\t),",
             "\t\t\t\t],",
-            "\t\t\t)",
+            "\t\t\t\tundefined,",
+            "\t\t\t),",
             "\t\t]",
             "\t);",
+            "",
             "export default factory;",
         ].join("\n");
 
@@ -310,12 +350,14 @@ export default class SourceGeneratorSpec
     {
         const expected =
         [
-            "import {",
+            "import",
+            "{",
             "\tcreateFragmentFactory,",
             "\tcreateChoiceFactory,",
             "\tcreateElementFactory,",
-            "\tcreateTextNodeFactory",
-            "} from \"@surface/custom-element/factories\";",
+            "\tcreateTextNodeFactory,",
+            "} from \"@surface/custom-element\";",
+            "",
             "const factory =",
             "\tcreateFragmentFactory",
             "\t(",
@@ -335,9 +377,12 @@ export default class SourceGeneratorSpec
             "\t\t\t\t\t\t\t\t\t\tundefined,",
             "\t\t\t\t\t\t\t\t\t\tundefined,",
             "\t\t\t\t\t\t\t\t\t\t[",
-            "\t\t\t\t\t\t\t\t\t\t\tcreateTextNodeFactory(\"Show\")",
-            "\t\t\t\t\t\t\t\t\t\t]",
-            "\t\t\t\t\t\t\t\t\t)",
+            "\t\t\t\t\t\t\t\t\t\t\tcreateTextNodeFactory",
+            "\t\t\t\t\t\t\t\t\t\t\t(",
+            "\t\t\t\t\t\t\t\t\t\t\t\t\"Show\"",
+            "\t\t\t\t\t\t\t\t\t\t\t),",
+            "\t\t\t\t\t\t\t\t\t\t],",
+            "\t\t\t\t\t\t\t\t\t),",
             "\t\t\t\t\t\t\t\t]",
             "\t\t\t\t\t\t\t),",
             "\t\t\t\t\t\tobservables: [[\"host\",\"value\"]],",
@@ -356,9 +401,12 @@ export default class SourceGeneratorSpec
             "\t\t\t\t\t\t\t\t\t\tundefined,",
             "\t\t\t\t\t\t\t\t\t\tundefined,",
             "\t\t\t\t\t\t\t\t\t\t[",
-            "\t\t\t\t\t\t\t\t\t\t\tcreateTextNodeFactory(\"Hide\")",
-            "\t\t\t\t\t\t\t\t\t\t]",
-            "\t\t\t\t\t\t\t\t\t)",
+            "\t\t\t\t\t\t\t\t\t\t\tcreateTextNodeFactory",
+            "\t\t\t\t\t\t\t\t\t\t\t(",
+            "\t\t\t\t\t\t\t\t\t\t\t\t\"Hide\"",
+            "\t\t\t\t\t\t\t\t\t\t\t),",
+            "\t\t\t\t\t\t\t\t\t\t],",
+            "\t\t\t\t\t\t\t\t\t),",
             "\t\t\t\t\t\t\t\t]",
             "\t\t\t\t\t\t\t),",
             "\t\t\t\t\t\tobservables: [],",
@@ -366,9 +414,10 @@ export default class SourceGeneratorSpec
             "\t\t\t\t\t\tstackTrace: [[\"<x-component>\"],[\"#shadow-root\"],[\"...1 other(s) node(s)\",\"<span #else>\"]],",
             "\t\t\t\t\t},",
             "\t\t\t\t]",
-            "\t\t\t)",
+            "\t\t\t),",
             "\t\t]",
             "\t);",
+            "",
             "export default factory;",
         ].join("\n");
 
@@ -382,12 +431,14 @@ export default class SourceGeneratorSpec
     {
         const expected =
         [
-            "import {",
+            "import",
+            "{",
             "\tcreateFragmentFactory,",
             "\tcreateLoopFactory,",
             "\tcreateElementFactory,",
-            "\tcreateTextNodeInterpolationFactory",
-            "} from \"@surface/custom-element/factories\";",
+            "\tcreateTextNodeInterpolationFactory,",
+            "} from \"@surface/custom-element\";",
+            "",
             "const factory =",
             "\tcreateFragmentFactory",
             "\t(",
@@ -413,16 +464,17 @@ export default class SourceGeneratorSpec
             "\t\t\t\t\t\t\t\t\t[],",
             "\t\t\t\t\t\t\t\t\t\"Value: {value}\",",
             "\t\t\t\t\t\t\t\t\t[[\"<x-component>\"],[\"#shadow-root\"],[\"<span #for=\\\"value of host.values\\\">\"],[\"Value: {value}\"]],",
-            "\t\t\t\t\t\t\t\t)",
-            "\t\t\t\t\t\t\t]",
-            "\t\t\t\t\t\t)",
+            "\t\t\t\t\t\t\t\t),",
+            "\t\t\t\t\t\t\t],",
+            "\t\t\t\t\t\t),",
             "\t\t\t\t\t]",
             "\t\t\t\t),",
             "\t\t\t\t\"#for=\\\"value of host.values\\\"\",",
             "\t\t\t\t[[\"<x-component>\"],[\"#shadow-root\"],[\"<span #for=\\\"value of host.values\\\">\"]],",
-            "\t\t\t)",
+            "\t\t\t),",
             "\t\t]",
             "\t);",
+            "",
             "export default factory;",
         ].join("\n");
 
@@ -438,12 +490,14 @@ export default class SourceGeneratorSpec
     {
         const expected =
         [
-            "import {",
+            "import",
+            "{",
             "\tcreateFragmentFactory,",
             "\tcreatePlaceholderFactory,",
             "\tcreateElementFactory,",
-            "\tcreateTextNodeInterpolationFactory",
-            "} from \"@surface/custom-element/factories\";",
+            "\tcreateTextNodeInterpolationFactory,",
+            "} from \"@surface/custom-element\";",
+            "",
             "const factory =",
             "\tcreateFragmentFactory",
             "\t(",
@@ -468,16 +522,17 @@ export default class SourceGeneratorSpec
             "\t\t\t\t\t\t\t\t\t[[\"host\",\"value\"]],",
             "\t\t\t\t\t\t\t\t\t\"Value: {host.value}\",",
             "\t\t\t\t\t\t\t\t\t[[\"<x-component>\"],[\"#shadow-root\"],[\"<span #placeholder=\\\"{ value: host.value }\\\">\"],[\"Value: {host.value}\"]],",
-            "\t\t\t\t\t\t\t\t)",
-            "\t\t\t\t\t\t\t]",
-            "\t\t\t\t\t\t)",
+            "\t\t\t\t\t\t\t\t),",
+            "\t\t\t\t\t\t\t],",
+            "\t\t\t\t\t\t),",
             "\t\t\t\t\t]",
             "\t\t\t\t),",
             "\t\t\t\t{\"key\":\"\",\"value\":\"#placeholder=\\\"{ value: host.value }\\\"\"},",
             "\t\t\t\t[[\"<x-component>\"],[\"#shadow-root\"],[\"<span #placeholder=\\\"{ value: host.value }\\\">\"]],",
-            "\t\t\t)",
+            "\t\t\t),",
             "\t\t]",
             "\t);",
+            "",
             "export default factory;",
         ].join("\n");
 
@@ -489,16 +544,18 @@ export default class SourceGeneratorSpec
     }
 
     @test @shouldPass
-    public generateWithInjectinDirective(): void
+    public generateWithInjectionDirective(): void
     {
         const expected =
         [
-            "import {",
+            "import",
+            "{",
             "\tcreateFragmentFactory,",
             "\tcreateInjectionFactory,",
             "\tcreateElementFactory,",
-            "\tcreateTextNodeInterpolationFactory",
-            "} from \"@surface/custom-element/factories\";",
+            "\tcreateTextNodeInterpolationFactory,",
+            "} from \"@surface/custom-element\";",
+            "",
             "const factory =",
             "\tcreateFragmentFactory",
             "\t(",
@@ -523,22 +580,23 @@ export default class SourceGeneratorSpec
             "\t\t\t\t\t\t\t\t\t[],",
             "\t\t\t\t\t\t\t\t\t\"Value: {value}\",",
             "\t\t\t\t\t\t\t\t\t[[\"<x-component>\"],[\"#shadow-root\"],[\"<span #inject=\\\"{ value }\\\">\"],[\"Value: {value}\"]],",
-            "\t\t\t\t\t\t\t\t)",
-            "\t\t\t\t\t\t\t]",
-            "\t\t\t\t\t\t)",
+            "\t\t\t\t\t\t\t\t),",
+            "\t\t\t\t\t\t\t],",
+            "\t\t\t\t\t\t),",
             "\t\t\t\t\t]",
             "\t\t\t\t),",
             "\t\t\t\t{\"key\":\"\",\"value\":\"#inject=\\\"{ value }\\\"\"},",
             "\t\t\t\t[[\"<x-component>\"],[\"#shadow-root\"],[\"<span #inject=\\\"{ value }\\\">\"]],",
-            "\t\t\t)",
+            "\t\t\t),",
             "\t\t]",
             "\t);",
+            "",
             "export default factory;",
         ].join("\n");
 
         const actual = SourceGenerator.generate("x-component", "<span #Inject=\"{ value }\">Value: {value}</span>", false);
 
-        writeFileSync("test.js", actual);
+        // writeFileSync("test.js", actual);
 
         chai.assert.equal(actual, expected);
     }

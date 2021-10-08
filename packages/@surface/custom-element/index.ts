@@ -24,4 +24,6 @@ export { default as styles }    from "./internal/decorators/styles.js";
 export { default as Directive } from "./internal/directives/directive.js";
 export { scheduler, painting }  from "./internal/singletons.js";
 
+export * from "./internal/factories/index.js";
+
 export default CustomElement;
