@@ -1,15 +1,13 @@
 import type { Delegate, Subscription }                                         from "@surface/core";
 import { getPropertyDescriptor, getValue, isReadonly, resolveError, setValue } from "@surface/core";
+import type { ObservablePath, StackTrace }                                     from "@surface/custom-element-parser";
 import TemplateEvaluationError                                                 from "./errors/template-evaluation-error.js";
 import TemplateObservationError                                                from "./errors/template-observation-error.js";
-import TemplateParseError                                                      from "./errors/template-parse-error.js";
 import TemplateProcessError                                                    from "./errors/template-process-error.js";
 import AsyncObserver                                                           from "./reactivity/async-observer.js";
 import { scheduler }                                                           from "./singletons.js";
 import type DestructuredEvaluator                                              from "./types/destructured-evaluator.js";
 import type Evaluator                                                          from "./types/evaluator.js";
-import type ObservablePath                                                     from "./types/observable-path";
-import type StackTrace                                                         from "./types/stack-trace";
 
 export function bind(left: object, leftPath: ObservablePath, right: object, rightPath: ObservablePath): Subscription
 {
@@ -86,11 +84,6 @@ export function observe(target: object, observables: ObservablePath[], listener:
     return { unsubscribe: () => subscriptions.splice(0).forEach(x => x.unsubscribe()) };
 }
 
-export function scapeBrackets(value: string): string
-{
-    return value.replace(/(?<!\\)\\{/g, "{").replace(/\\\\{/g, "\\");
-}
-
 export function stringToCSSStyleSheet(source: string): CSSStyleSheet
 {
     const sheet = new CSSStyleSheet() as CSSStyleSheet & { replaceSync: (source: string) => void };
@@ -116,11 +109,6 @@ export function throwTemplateEvaluationError(message: string, stackTrace: StackT
 export function throwTemplateObservationError(message: string, stackTrace: StackTrace): never
 {
     throw new TemplateObservationError(message, buildStackTrace(stackTrace));
-}
-
-export function throwTemplateParseError(message: string, stackTrace: StackTrace): never
-{
-    throw new TemplateParseError(message, buildStackTrace(stackTrace));
 }
 
 export function tryBind(left: object, leftPath: ObservablePath, right: object, rightPath: ObservablePath, source: string = "", stackTrace: StackTrace = []): Subscription

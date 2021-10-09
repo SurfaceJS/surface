@@ -31,6 +31,36 @@ export default class SourceGeneratorSpec
     }
 
     @test @shouldPass
+    public generateComment(): void
+    {
+        const expected =
+        [
+            "import",
+            "{",
+            "\tcreateFragmentFactory,",
+            "\tcreateCommentFactory,",
+            "} from \"@surface/custom-element\";",
+            "",
+            "const factory =",
+            "\tcreateFragmentFactory",
+            "\t(",
+            "\t\t[",
+            "\t\t\tcreateCommentFactory",
+            "\t\t\t(",
+            "\t\t\t\t\" This is a Comment \"",
+            "\t\t\t),",
+            "\t\t]",
+            "\t);",
+            "",
+            "export default factory;",
+        ].join("\n");
+
+        const actual = SourceGenerator.generate("x-component", "<!-- This is a Comment -->", false);
+
+        chai.assert.equal(actual, expected);
+    }
+
+    @test @shouldPass
     public generateWithTextNode(): void
     {
         const expected =

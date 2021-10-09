@@ -5,6 +5,7 @@
     },
     "dependencies": {
         "@surface/core": "file:../core",
+        "@surface/custom-element-parser": "file:../custom-element-parser",
         "@surface/expression": "file:../expression",
         "@surface/observer": "file:../observer",
         "@surface/reflection": "file:../reflection",
@@ -18,11 +19,6 @@
         "@types/chai-as-promised": "^7.1.4",
         "chai": "^4.3.4",
         "chai-as-promised": "^7.1.1"
-    },
-    "exports": {
-        ".": "./index.js",
-        "./factories": "./internal/factories/index.js",
-        "./internal/parsers/template-parser.js": "./internal/parsers/template-parser.js"
     },
     "homepage": "https://github.com/SurfaceJS/surface#readme",
     "keywords": [

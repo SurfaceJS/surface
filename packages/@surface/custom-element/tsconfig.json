@@ -14,14 +14,13 @@
     [
         "./internal",
         "./tests"
-    ],
+, "../custom-element-loader/internal/template-compiler.ts", "../custom-element-parser/internal/observer-visitor.ts", "../custom-element-parser/tests/interpolated-expression.spec.ts", "../custom-element-parser/tests/template-parser.spec.d.ts"    ],
     "references":
     [
         { "path": "../core" },
+        { "path": "../custom-element-parser" },
         { "path": "../dom-shim" },
-        { "path": "../expression" },
         { "path": "../observer" },
-        { "path": "../reflection" },
         { "path": "../test-suite" },
     ]
 }

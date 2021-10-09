@@ -1,11 +1,10 @@
 /* eslint-disable max-lines-per-function */
-import TemplateParser                                                           from "@surface/custom-element/internal/parsers/template-parser.js";
-import type Descriptor                                                          from "@surface/custom-element/internal/types/descriptor";
-import type { AttributeBindDescritor, BranchDescriptor, RawAttributeDescritor } from "@surface/custom-element/internal/types/descriptor";
-import type { IExpression, IPattern }                                           from "@surface/expression";
-import { TypeGuard }                                                            from "@surface/expression";
-import { JSDOM }                                                                from "jsdom";
-import ScopeRewriterVisitor                                                     from "./scope-rewriter-visitor.js";
+import CustomElementParser                                                                  from "@surface/custom-element-parser";
+import type { AttributeBindDescritor, BranchDescriptor, Descriptor, RawAttributeDescritor } from "@surface/custom-element-parser";
+import type { IExpression, IPattern }                                                       from "@surface/expression";
+import { TypeGuard }                                                                        from "@surface/expression";
+import { JSDOM }                                                                            from "jsdom";
+import ScopeRewriterVisitor                                                                 from "./scope-rewriter-visitor.js";
 
 const factoryMap: Record<Descriptor["type"], string> =
 {
@@ -41,7 +40,7 @@ export default class SourceGenerator
 
     public static generate(name: string, template: string, production: boolean): string
     {
-        const descriptor = TemplateParser.parse(new JSDOM().window.document, name, template);
+        const descriptor = CustomElementParser.parse(new JSDOM().window.document, name, template);
 
         return new SourceGenerator(production).generate(descriptor);
     }
@@ -148,12 +147,11 @@ export default class SourceGenerator
                         this.writeLine(!this.production ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
                         break;
                     case "twoway":
+                    default:
                         this.writeLine(`"${descriptor.left}",`);
                         this.writeLine(`${JSON.stringify(descriptor.right)},`);
                         this.writeLine(!this.production ? `${JSON.stringify(descriptor.source)},` : "undefined,");
                         this.writeLine(!this.production ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
-                        break;
-                    default:
                         break;
                 }
 
@@ -295,6 +293,7 @@ export default class SourceGenerator
                 this.writeChilds(descriptor.childs, true);
                 this.write(",");
                 break;
+            case "comment":
             case "text":
                 this.writeLine(JSON.stringify(descriptor.value));
                 break;
@@ -334,9 +333,6 @@ export default class SourceGenerator
                 this.write(","),
                 this.writeLine(!this.production ? `${JSON.stringify(descriptor.source)},` : "undefined,");
                 this.writeLine(!this.production ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
-                break;
-            case "comment":
-                // source = "";
                 break;
             case "fragment":
             default:

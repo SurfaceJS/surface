@@ -1,14 +1,17 @@
-/* eslint-disable @typescript-eslint/prefer-for-of */
 /* eslint-disable max-lines-per-function */
 /* eslint-disable max-statements */
+/* eslint-disable @typescript-eslint/prefer-for-of */
 /* eslint-disable @typescript-eslint/indent */
-
-import type { Indexer }                                            from "@surface/core";
-import { assert, contains, dashedToCamel, typeGuard }              from "@surface/core";
-import type { IExpression, IIdentifier, IPattern }                 from "@surface/expression";
-import Expression, { SyntaxError, TypeGuard }                      from "@surface/expression";
-import { buildStackTrace, scapeBrackets, throwTemplateParseError } from "../common.js";
-import ObserverVisitor                                             from "../reactivity/observer-visitor.js";
+import type { Indexer }                                                                         from "@surface/core";
+import { assert, contains, dashedToCamel, typeGuard }                                           from "@surface/core";
+import type { IExpression, IIdentifier, IPattern }                                              from "@surface/expression";
+import Expression, { SyntaxError, TypeGuard }                                                   from "@surface/expression";
+import { buildStackTrace, scapeBrackets, throwTemplateParseError }                              from "./common.js";
+import { parseDestructuredPattern, parseExpression, parseForLoopStatement, parseInterpolation } from "./expression-parsers.js";
+import nativeEvents                                                                             from "./native-events.js";
+import ObserverVisitor                                                                          from "./observer-visitor.js";
+import { interpolation }                                                                        from "./patterns.js";
+import type Descriptor                                                                          from "./types/descriptor.js";
 import type
 {
     AttributeBindDescritor,
@@ -17,12 +20,8 @@ import type
     FragmentDescriptor,
     InjectionStatementDescriptor,
     PlaceholderStatementDescriptor,
-} from "../types/descriptor.js";
-import type Descriptor                                                                          from "../types/descriptor.js";
-import type StackTrace                                                                          from "../types/stack-trace";
-import { parseDestructuredPattern, parseExpression, parseForLoopStatement, parseInterpolation } from "./expression-parsers.js";
-import nativeEvents                                                                             from "./native-events.js";
-import { interpolation }                                                                        from "./patterns.js";
+} from "./types/descriptor.js";
+import type StackTrace from "./types/stack-trace";
 
 const DECOMPOSED = Symbol("custom-element:decomposed");
 
@@ -57,7 +56,7 @@ type Directive  =
     value:  string,
 };
 
-export default class TemplateParser
+export default class CustomElementParser
 {
     private readonly stackTrace: StackTrace;
 
@@ -75,7 +74,7 @@ export default class TemplateParser
         const templateElement = document.createElement("template");
         templateElement.innerHTML = template;
 
-        return new TemplateParser(document, name).parse(templateElement);
+        return new CustomElementParser(document, name).parse(templateElement);
     }
 
     private attributeToString(attribute: Attr): string
@@ -552,7 +551,7 @@ export default class TemplateParser
 
     private parseTemplate(template: HTMLTemplateElement): FragmentDescriptor
     {
-        return new TemplateParser(this.document, this.name, this.stackTrace).parse(template);
+        return new CustomElementParser(this.document, this.name, this.stackTrace).parse(template);
     }
 
     private parseTextNode(node: Text, stackTrace: StackTrace): Descriptor

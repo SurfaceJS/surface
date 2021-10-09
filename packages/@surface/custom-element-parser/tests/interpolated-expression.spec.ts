@@ -5,7 +5,7 @@ import { resolveError }                        from "@surface/core";
 import { SyntaxError }                         from "@surface/expression";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                    from "chai";
-import InterpolatedExpression                  from "../internal/parsers/interpolated-expression.js";
+import InterpolatedExpression                  from "../internal/interpolated-expression.js";
 
 type RawError = { message: string } | Pick<SyntaxError, "message" | "lineNumber" | "index" | "column">;
 

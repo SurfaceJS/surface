@@ -1,12 +1,11 @@
-import type { IDisposable }  from "@surface/core";
-import { typeGuard }         from "@surface/core";
-import { buildStackTrace }   from "../common.js";
-import TemplateProcessError  from "../errors/template-process-error.js";
-import type AttributeFactory from "../types/attribute-fatctory.js";
-import type DirectiveContext from "../types/directive-context";
-import type Evaluator        from "../types/evaluator.js";
-import type ObservablePath   from "../types/observable-path.js";
-import type StackTrace       from "../types/stack-trace";
+import type { IDisposable }                from "@surface/core";
+import { typeGuard }                       from "@surface/core";
+import type { ObservablePath, StackTrace } from "@surface/custom-element-parser";
+import { buildStackTrace }                 from "../common.js";
+import TemplateProcessError                from "../errors/template-process-error.js";
+import type AttributeFactory               from "../types/attribute-factory";
+import type DirectiveContext               from "../types/directive-context";
+import type Evaluator                      from "../types/evaluator";
 
 type DirectiveFactory = (context: DirectiveContext) => IDisposable;
 

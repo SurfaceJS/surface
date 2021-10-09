@@ -1,7 +1,7 @@
 import type { IDisposable }  from "@surface/core";
 import type Activator        from "../types/activator";
-import type AttributeFactory from "../types/attribute-fatctory.js";
-import type NodeFactory      from "../types/node-fatctory";
+import type AttributeFactory from "../types/attribute-factory.js";
+import type NodeFactory      from "../types/node-factory";
 
 type Attributes = [key: string, value: string];
 

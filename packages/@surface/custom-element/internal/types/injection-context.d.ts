@@ -1,6 +1,6 @@
 import type StackTrace            from "../../types/stack-trace";
 import type DestructuredEvaluator from "./destructured-evaluator.js";
-import type NodeFactory           from "./node-fatctory.js";
+import type NodeFactory           from "./node-factory.js";
 import type { DirectiveEntry }    from ".";
 
 type InjectionContext =

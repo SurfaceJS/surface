@@ -1,9 +1,8 @@
-import { tryEvaluate, tryObserve } from "../common.js";
-import type Activator              from "../types/activator";
-import type Evaluator              from "../types/evaluator";
-import type NodeFactory            from "../types/node-fatctory";
-import type ObservablePath         from "../types/observable-path";
-import type StackTrace             from "../types/stack-trace";
+import type { ObservablePath, StackTrace } from "@surface/custom-element-parser";
+import { tryEvaluate, tryObserve }         from "../common.js";
+import type Activator                      from "../types/activator";
+import type Evaluator                      from "../types/evaluator";
+import type NodeFactory                    from "../types/node-factory";
 
 export default function createTextNodeInterpolationFactory(evaluator: Evaluator, observables?: ObservablePath[], source?: string, stackTrace?: StackTrace): NodeFactory
 {

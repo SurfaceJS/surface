@@ -1,6 +1,6 @@
 import type { IDisposable } from "@surface/core";
 import type Activator       from "../types/activator";
-import type NodeFactory     from "../types/node-fatctory";
+import type NodeFactory     from "../types/node-factory";
 
 export default function createFragmentFactory(factories: NodeFactory[]): NodeFactory
 {

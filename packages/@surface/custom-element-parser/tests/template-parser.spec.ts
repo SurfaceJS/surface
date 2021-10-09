@@ -7,9 +7,9 @@ import type { Delegate, Indexer }                    from "@surface/core";
 import { isIterable, resolveError }                  from "@surface/core";
 import { shouldFail, shouldPass, suite, test }       from "@surface/test-suite";
 import chai                                          from "chai";
+import CustomElementParser                           from "../internal/custom-element-parser.js";
 import TemplateParseError                            from "../internal/errors/template-parse-error.js";
-import { parseDestructuredPattern, parseExpression } from "../internal/parsers/expression-parsers.js";
-import TemplateParser                                from "../internal/parsers/template-parser.js";
+import { parseDestructuredPattern, parseExpression } from "../internal/expression-parsers.js";
 import type Descriptor                               from "../internal/types/descriptor";
 
 type RawError = { message: string } | Pick<TemplateParseError, "message" | "stack">;
@@ -83,7 +83,7 @@ function toRaw(error: Error): RawError
 }
 
 @suite
-export default class TemplateParserSpec
+export default class CustomElementParserSpec
 {
     @shouldPass @test
     public parseElement(): void
@@ -205,7 +205,7 @@ export default class TemplateParserSpec
             type: "fragment",
         };
 
-        const actual = TemplateParser.parse(window.document, "x-component", template);
+        const actual = CustomElementParser.parse(window.document, "x-component", template);
 
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
@@ -363,7 +363,7 @@ export default class TemplateParserSpec
             type: "fragment",
         };
 
-        const actual = TemplateParser.parse(window.document, "x-component", template);
+        const actual = CustomElementParser.parse(window.document, "x-component", template);
 
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
@@ -487,7 +487,7 @@ export default class TemplateParserSpec
             type: "fragment",
         };
 
-        const actual = TemplateParser.parse(window.document, "x-component", template);
+        const actual = CustomElementParser.parse(window.document, "x-component", template);
 
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
@@ -627,7 +627,7 @@ export default class TemplateParserSpec
             type: "fragment",
         };
 
-        const actual = TemplateParser.parse(window.document, "x-component", template);
+        const actual = CustomElementParser.parse(window.document, "x-component", template);
 
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
@@ -825,7 +825,7 @@ export default class TemplateParserSpec
             type: "fragment",
         };
 
-        const actual = TemplateParser.parse(window.document, "x-component", template);
+        const actual = CustomElementParser.parse(window.document, "x-component", template);
 
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
@@ -886,7 +886,7 @@ export default class TemplateParserSpec
             type: "fragment",
         };
 
-        const actual = TemplateParser.parse(window.document, "x-component", template);
+        const actual = CustomElementParser.parse(window.document, "x-component", template);
 
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
@@ -973,7 +973,7 @@ export default class TemplateParserSpec
             type: "fragment",
         };
 
-        const actual = TemplateParser.parse(window.document, "x-component", template);
+        const actual = CustomElementParser.parse(window.document, "x-component", template);
 
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
@@ -1050,7 +1050,7 @@ export default class TemplateParserSpec
             type: "fragment",
         };
 
-        const actual = TemplateParser.parse(window.document, "x-component", template);
+        const actual = CustomElementParser.parse(window.document, "x-component", template);
 
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
@@ -1133,7 +1133,7 @@ export default class TemplateParserSpec
             type: "fragment",
         };
 
-        const actual = TemplateParser.parse(window.document, "x-component", template);
+        const actual = CustomElementParser.parse(window.document, "x-component", template);
 
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
@@ -1219,7 +1219,7 @@ export default class TemplateParserSpec
             type: "fragment",
         };
 
-        const actual = TemplateParser.parse(window.document, "x-component", template);
+        const actual = CustomElementParser.parse(window.document, "x-component", template);
 
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
@@ -1302,7 +1302,7 @@ export default class TemplateParserSpec
             type: "fragment",
         };
 
-        const actual = TemplateParser.parse(window.document, "x-component", template);
+        const actual = CustomElementParser.parse(window.document, "x-component", template);
 
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
@@ -1436,7 +1436,7 @@ export default class TemplateParserSpec
             type: "fragment",
         };
 
-        const actual = TemplateParser.parse(window.document, "x-component", template);
+        const actual = CustomElementParser.parse(window.document, "x-component", template);
 
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
@@ -1498,7 +1498,7 @@ export default class TemplateParserSpec
             type: "fragment",
         };
 
-        const actual = TemplateParser.parse(window.document, "x-component", template);
+        const actual = CustomElementParser.parse(window.document, "x-component", template);
 
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
@@ -1580,7 +1580,7 @@ export default class TemplateParserSpec
             type: "fragment",
         };
 
-        const actual = TemplateParser.parse(window.document, "x-component", template);
+        const actual = CustomElementParser.parse(window.document, "x-component", template);
 
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
@@ -1596,7 +1596,7 @@ export default class TemplateParserSpec
         const message = "Parsing error in 'This is a invalid expression: {++true}': Invalid left-hand side expression in prefix operation at position 33";
         const stack   = "<x-component>\n   #shadow-root\n      <div>\n         This is a invalid expression: {++true}";
 
-        const actual   = tryAction(() => stringifyExpressions(TemplateParser.parse(window.document, "x-component", template)));
+        const actual   = tryAction(() => stringifyExpressions(CustomElementParser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));
 
         chai.assert.deepEqual(actual, expected);
@@ -1610,7 +1610,7 @@ export default class TemplateParserSpec
         const message = "Two way data bind cannot be applied to dynamic properties: \"host.value1 || host.value2\"";
         const stack   = "<x-component>\n   #shadow-root\n      <x-foo ::value=\"host.value1 || host.value2\">";
 
-        const actual   = tryAction(() => stringifyExpressions(TemplateParser.parse(window.document, "x-component", template)));
+        const actual   = tryAction(() => stringifyExpressions(CustomElementParser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));
 
         chai.assert.deepEqual(actual, expected);
@@ -1624,7 +1624,7 @@ export default class TemplateParserSpec
         const message = "Two way data bind cannot be applied to dynamic properties: \"host[a + b]\"";
         const stack   = "<x-component>\n   #shadow-root\n      <x-foo ::value=\"host[a + b]\">";
 
-        const actual   = tryAction(() => stringifyExpressions(TemplateParser.parse(window.document, "x-component", template)));
+        const actual   = tryAction(() => stringifyExpressions(CustomElementParser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));
 
         chai.assert.deepEqual(actual, expected);
@@ -1638,7 +1638,7 @@ export default class TemplateParserSpec
         const message = "Two way data bind cannot be applied to dynamic properties: \"host?.value\"";
         const stack   = "<x-component>\n   #shadow-root\n      <x-foo ::value=\"host?.value\">";
 
-        const actual   = tryAction(() => stringifyExpressions(TemplateParser.parse(window.document, "x-component", template)));
+        const actual   = tryAction(() => stringifyExpressions(CustomElementParser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));
 
         chai.assert.deepEqual(actual, expected);
@@ -1652,7 +1652,7 @@ export default class TemplateParserSpec
         const message = "Parsing error in '#for=\"x item of items\"': Unexpected token item at position 2";
         const stack   = "<x-component>\n   #shadow-root\n      <div #inject:items=\"items\" #if=\"false\">\n         <span #placeholder:items=\"items\" #if=\"true\" #for=\"x item of items\">";
 
-        const actual   = tryAction(() => stringifyExpressions(TemplateParser.parse(window.document, "x-component", template)));
+        const actual   = tryAction(() => stringifyExpressions(CustomElementParser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));
 
         chai.assert.deepEqual(actual, expected);
@@ -1666,7 +1666,7 @@ export default class TemplateParserSpec
         const message = "Parsing error in '#if=\"class\"': Unexpected token class at position 0";
         const stack   = "<x-component>\n   #shadow-root\n      <span #if=\"class\">";
 
-        const actual   = tryAction(() => stringifyExpressions(TemplateParser.parse(window.document, "x-component", template)));
+        const actual   = tryAction(() => stringifyExpressions(CustomElementParser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));
 
         chai.assert.deepEqual(actual, expected);
@@ -1680,7 +1680,7 @@ export default class TemplateParserSpec
         const message = "Parsing error in '#else-if=\"class\"': Unexpected token class at position 0";
         const stack   = "<x-component>\n   #shadow-root\n      ...1 other(s) node(s)\n      <span #else-if=\"class\">";
 
-        const actual   = tryAction(() => stringifyExpressions(TemplateParser.parse(window.document, "x-component", template)));
+        const actual   = tryAction(() => stringifyExpressions(CustomElementParser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));
 
         chai.assert.deepEqual(actual, expected);
@@ -1694,7 +1694,7 @@ export default class TemplateParserSpec
         const message = "Unexpected #else-if directive. #else-if must be used in an element next to an element that uses the #else-if directive.";
         const stack   = "<x-component>\n   #shadow-root\n      ...2 other(s) node(s)\n      <span #else-if>";
 
-        const actual   = tryAction(() => stringifyExpressions(TemplateParser.parse(window.document, "x-component", template)));
+        const actual   = tryAction(() => stringifyExpressions(CustomElementParser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));
 
         chai.assert.deepEqual(actual, expected);
@@ -1708,7 +1708,7 @@ export default class TemplateParserSpec
         const message = "Unexpected #else directive. #else must be used in an element next to an element that uses the #if or #else-if directive.";
         const stack   = "<x-component>\n   #shadow-root\n      ...2 other(s) node(s)\n      <span #else>";
 
-        const actual   = tryAction(() => stringifyExpressions(TemplateParser.parse(window.document, "x-component", template)));
+        const actual   = tryAction(() => stringifyExpressions(CustomElementParser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));
 
         chai.assert.deepEqual(actual, expected);

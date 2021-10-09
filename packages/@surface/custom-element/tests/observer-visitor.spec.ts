@@ -4,7 +4,7 @@ import "@surface/dom-shim";
 import Expression                                         from "@surface/expression";
 import { batchTest, suite }                               from "@surface/test-suite";
 import chai                                               from "chai";
-import ObserverVisitor                                    from "../internal/reactivity/observer-visitor.js";
+import ObserverVisitor                                    from "../../custom-element-parser/internal/observer-visitor.js";
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import type { ObservableExpression }                      from "./observer-visitor-expected.js";
 import { observableExpressions, unobservableExpressions } from "./observer-visitor-expected.js";

@@ -1,8 +1,7 @@
-import { tryObserve }        from "../common.js";
-import type AttributeFactory from "../types/attribute-fatctory.js";
-import type Evaluator        from "../types/evaluator.js";
-import type ObservablePath   from "../types/observable-path.js";
-import type StackTrace       from "../types/stack-trace";
+import type { ObservablePath, StackTrace } from "@surface/custom-element-parser";
+import { tryObserve }                      from "../common.js";
+import type AttributeFactory               from "../types/attribute-factory.js";
+import type Evaluator                      from "../types/evaluator.js";
 
 export default function createInterpolationFactory(key: string, evaluator: Evaluator, observables: ObservablePath[], source?: string, stackTrace?: StackTrace): AttributeFactory
 {

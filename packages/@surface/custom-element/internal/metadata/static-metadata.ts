@@ -1,6 +1,6 @@
 import type { Indexer }    from "@surface/core";
 import type DirectiveEntry from "../types/directive-entry.js";
-import type NodeFactory    from "../types/node-fatctory.js";
+import type NodeFactory    from "../types/node-factory.js";
 
 export const STATIC_METADATA = Symbol("custom-element:static-metadata");
 

@@ -1,16 +1,15 @@
-import { CancellationTokenSource }        from "@surface/core";
-import type { IDisposable, Subscription } from "@surface/core";
-import { tryEvaluate, tryObserve }        from "../common.js";
-import TemplateMetadata                   from "../metadata/template-metadata.js";
-import { scheduler }                      from "../singletons.js";
-import type DestructuredEvaluator         from "../types/destructured-evaluator.js";
-import type DirectiveEntry                from "../types/directive-entry";
-import type Evaluator                     from "../types/evaluator.js";
-import type InjectionContext              from "../types/injection-context.js";
-import type NodeFactory                   from "../types/node-fatctory";
-import type ObservablePath                from "../types/observable-path.js";
-import type StackTrace                    from "../types/stack-trace";
-import type Block                         from "./block.js";
+import { CancellationTokenSource }         from "@surface/core";
+import type { IDisposable, Subscription }  from "@surface/core";
+import type { ObservablePath, StackTrace } from "@surface/custom-element-parser";
+import { tryEvaluate, tryObserve }         from "../common.js";
+import TemplateMetadata                    from "../metadata/template-metadata.js";
+import { scheduler }                       from "../singletons.js";
+import type DestructuredEvaluator          from "../types/destructured-evaluator.js";
+import type DirectiveEntry                 from "../types/directive-entry";
+import type Evaluator                      from "../types/evaluator.js";
+import type InjectionContext               from "../types/injection-context.js";
+import type NodeFactory                    from "../types/node-factory";
+import type Block                          from "./block.js";
 
 type Context =
 {

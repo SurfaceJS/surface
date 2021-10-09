@@ -1,10 +1,9 @@
-import Block               from "../directives/block.js";
-import PlaceholdeDirective from "../directives/placeholder-directive.js";
-import type Activator      from "../types/activator";
-import type Evaluator      from "../types/evaluator";
-import type NodeFactory    from "../types/node-fatctory";
-import type ObservablePath from "../types/observable-path";
-import type StackTrace     from "../types/stack-trace";
+import type { ObservablePath, StackTrace } from "@surface/custom-element-parser";
+import Block                               from "../directives/block.js";
+import PlaceholdeDirective                 from "../directives/placeholder-directive.js";
+import type Activator                      from "../types/activator";
+import type Evaluator                      from "../types/evaluator";
+import type NodeFactory                    from "../types/node-factory";
 
 // eslint-disable-next-line max-len
 export default function createPlaceholderFactory(keyEvaluator: Evaluator, valueEvaluator: Evaluator, observables: [key: ObservablePath[], value: ObservablePath[]], factory: NodeFactory, source?: { key: string, value: string }, stackTrace?: StackTrace): NodeFactory

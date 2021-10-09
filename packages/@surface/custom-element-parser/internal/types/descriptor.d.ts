@@ -146,7 +146,7 @@ export type TextInterpolationDescriptor =
     stackTrace?:  StackTrace,
 };
 
-type Descriptor =
+export type Descriptor =
     | ChoiceStatementDescriptor
     | CommentDescriptor
     | ElementDescriptor

@@ -1,6 +1,6 @@
 import type StackTrace     from "../../types/stack-trace";
 import type Evaluator      from "./evaluator";
-import type NodeFactory    from "./node-fatctory";
+import type NodeFactory    from "./node-factory";
 import type ObservablePath from "./observable-path";
 
 type ChoiceBranch =

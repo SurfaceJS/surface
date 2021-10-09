@@ -18,8 +18,8 @@
     "references":
     [
         { "path": "../core" },
-        { "path": "../custom-element-parser" },
         { "path": "../expression" },
+        { "path": "../observer" },
         { "path": "../test-suite" },
     ]
 }
