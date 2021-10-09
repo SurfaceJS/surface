@@ -1,7 +1,7 @@
 /* eslint-disable max-lines */
 /* eslint-disable max-lines-per-function */
 // eslint-disable-next-line import/no-unassigned-import
-import "./fixtures/dom.js";
+import "@surface/dom-shim";
 
 import type { Delegate, Indexer }                    from "@surface/core";
 import { isIterable, resolveError }                  from "@surface/core";

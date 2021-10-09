@@ -1,6 +1,6 @@
 
 // eslint-disable-next-line import/no-unassigned-import
-import "./fixtures/dom.js";
+import "@surface/dom-shim";
 
 import CustomElement, { define, element }      from "@surface/custom-element";
 import Container, { inject }                   from "@surface/dependency-injection";

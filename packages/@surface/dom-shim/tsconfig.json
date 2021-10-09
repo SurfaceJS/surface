@@ -1,0 +1,13 @@
+{
+    "extends": "../../../tsconfig.json",
+    "compilerOptions":
+    {
+        "lib": ["DOM"],
+        "outDir":  ".",
+        "rootDir": ".",
+    },
+    "files":
+    [
+        "index.ts"
+    ],
+}

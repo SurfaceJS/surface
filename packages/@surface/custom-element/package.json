@@ -12,13 +12,12 @@
     },
     "description": "Provides support of directives and data binding on custom elements.",
     "devDependencies": {
+        "@surface/dom-shim": "file:../dom-shim",
         "@surface/test-suite": "file:../test-suite",
         "@types/chai": "^4.2.21",
         "@types/chai-as-promised": "^7.1.4",
-        "@types/jsdom": "^16.2.13",
         "chai": "^4.3.4",
-        "chai-as-promised": "^7.1.1",
-        "jsdom": "^17.0.0"
+        "chai-as-promised": "^7.1.1"
     },
     "exports": {
         ".": "./index.js",

@@ -1,0 +1,29 @@
+{
+    "author": "HitalloExiled",
+    "bugs": {
+        "url": "https://github.com/SurfaceJS/surface/issues"
+    },
+    "dependencies": {
+        "jsdom": "^18.0.0"
+    },
+    "description": "Creates shim for browser tests running on node.",
+    "homepage": "https://github.com/SurfaceJS/surface#readme",
+    "keywords": [
+        "surface",
+        "dom",
+        "shim",
+        "typescript"
+    ],
+    "license": "MIT",
+    "main": "index.js",
+    "name": "@surface/dom-shim",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/SurfaceJS/surface.git"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "version": "0.1.0-alpha.1"
+}
+
+

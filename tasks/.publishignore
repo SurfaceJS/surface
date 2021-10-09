@@ -1,3 +1,4 @@
+@surface/dom-shim
 @surface/material-design
 @surface/test-suite
 @surface/web-host

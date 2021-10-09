@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-unassigned-import
-import "./fixtures/dom.js";
+import "@surface/dom-shim";
 
 import { resolveError }                        from "@surface/core";
 import { SyntaxError }                         from "@surface/expression";

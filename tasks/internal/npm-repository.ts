@@ -17,6 +17,8 @@ type Promisify<T extends (...args: any) => any> =
 
 export default class NpmRepository
 {
+
+    /** @deprecated Should be replaced by npm module. */
     private readonly client: RegClient;
     private readonly registry: string;
 

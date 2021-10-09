@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-unassigned-import
-import "./fixtures/dom.js";
+import "@surface/dom-shim";
 
 import { shouldPass, suite, test } from "@surface/test-suite";
 import chai                        from "chai";

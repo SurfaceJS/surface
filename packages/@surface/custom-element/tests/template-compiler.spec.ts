@@ -1,6 +1,6 @@
 /* eslint-disable max-lines */
 // eslint-disable-next-line import/no-unassigned-import
-import "./fixtures/dom.js";
+import "@surface/dom-shim";
 
 import type { Delegate }                        from "@surface/core";
 import { AggregateError, resolveError, uuidv4 } from "@surface/core";

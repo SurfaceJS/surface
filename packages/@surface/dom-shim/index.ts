@@ -46,3 +46,8 @@ Object.assign
         windows,
     },
 );
+
+declare global
+{
+    const windows: Window[];
+}

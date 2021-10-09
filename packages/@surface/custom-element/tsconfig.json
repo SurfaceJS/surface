@@ -18,6 +18,7 @@
     "references":
     [
         { "path": "../core" },
+        { "path": "../dom-shim" },
         { "path": "../expression" },
         { "path": "../observer" },
         { "path": "../reflection" },

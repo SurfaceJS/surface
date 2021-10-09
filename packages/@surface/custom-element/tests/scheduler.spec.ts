@@ -1,6 +1,6 @@
 /* eslint-disable max-statements-per-line */
 // eslint-disable-next-line import/no-unassigned-import
-import "./fixtures/dom.js";
+import "@surface/dom-shim";
 
 import { CancellationTokenSource }             from "@surface/core";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
