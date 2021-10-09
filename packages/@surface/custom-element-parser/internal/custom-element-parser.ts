@@ -7,6 +7,7 @@ import { assert, contains, dashedToCamel, typeGuard }                           
 import type { IExpression, IIdentifier, IPattern }                                              from "@surface/expression";
 import Expression, { SyntaxError, TypeGuard }                                                   from "@surface/expression";
 import { buildStackTrace, scapeBrackets, throwTemplateParseError }                              from "./common.js";
+import DescriptorType from "./descriptor-type.js";
 import { parseDestructuredPattern, parseExpression, parseForLoopStatement, parseInterpolation } from "./expression-parsers.js";
 import nativeEvents                                                                             from "./native-events.js";
 import ObserverVisitor                                                                          from "./observer-visitor.js";
@@ -262,7 +263,7 @@ export default class CustomElementParser
             {
                 if (childNode.nodeType == NodeType.Comment)
                 {
-                    yield { type: "comment", value: childNode.textContent ?? "" };
+                    yield { type: DescriptorType.Comment, value: childNode.textContent ?? "" };
                 }
 
                 nonElementsCount++;
@@ -304,7 +305,7 @@ export default class CustomElementParser
     {
         this.trimContent(template.content);
 
-        return { childs: this.enumerateParsedNodes(template.content), type: "fragment" };
+        return { childs: this.enumerateParsedNodes(template.content), type: DescriptorType.Fragment };
     }
 
     private *parseAttributes(element: Element, stackTrace: StackTrace): Iterable<AttributeBindDescritor>
@@ -326,7 +327,7 @@ export default class CustomElementParser
 
                 const context = TypeGuard.isMemberExpression(expression) ? expression.object : Expression.literal(null);
 
-                yield { context, key: name, source: raw, stackTrace, type: "event", value: expression };
+                yield { context, key: name, source: raw, stackTrace, type: DescriptorType.Event, value: expression };
             }
             else if (attribute.name.startsWith("#"))
             {
@@ -334,7 +335,7 @@ export default class CustomElementParser
                 const expression  = this.tryParseExpression(parseExpression, attribute.value || "undefined", raw);
                 const observables = ObserverVisitor.observe(expression);
 
-                yield { key: name, observables, source: raw, stackTrace, type: "directive", value: expression };
+                yield { key: name, observables, source: raw, stackTrace, type: DescriptorType.Directive, value: expression };
             }
             else if (attribute.name.startsWith(":") || interpolation.test(attribute.value) && !(/^on\w/.test(attribute.name) && nativeEvents.has(attribute.name)))
             {
@@ -345,10 +346,10 @@ export default class CustomElementParser
                 const isInterpolation = !isOneWay && !isTwoWay;
 
                 const type = isOneWay
-                    ? "oneway"
+                    ? DescriptorType.Oneway
                     : isTwoWay
-                        ? "twoway"
-                        : "interpolation";
+                        ? DescriptorType.Twoway
+                        : DescriptorType.Interpolation;
 
                 const expression = this.tryParseExpression(isInterpolation ? parseInterpolation : parseExpression, attribute.value, raw);
 
@@ -359,12 +360,12 @@ export default class CustomElementParser
 
                 const observables = ObserverVisitor.observe(expression);
 
-                if (type == "interpolation")
+                if (type == DescriptorType.Interpolation)
                 {
-                    yield { key: attribute.name, type: "raw", value: "" };
+                    yield { key: attribute.name, type: DescriptorType.Attribute, value: "" };
                     yield { key: attribute.name, observables, source: raw, stackTrace, type, value: expression };
                 }
-                else if (type == "twoway")
+                else if (type == DescriptorType.Twoway)
                 {
                     yield { left: key, right: observables[0], source: raw, stackTrace, type };
                 }
@@ -375,7 +376,7 @@ export default class CustomElementParser
             }
             else
             {
-                yield { key: attribute.name, type: "raw", value: attribute.value };
+                yield { key: attribute.name, type: DescriptorType.Attribute, value: attribute.value };
             }
         }
     }
@@ -462,7 +463,7 @@ export default class CustomElementParser
 
             this.stackTrace.push(lastStack);
 
-            return { branches, type: "choice-statement" };
+            return { branches, type: DescriptorType.Choice };
         }
         else if (directive.type == DirectiveType.For)
         {
@@ -482,7 +483,7 @@ export default class CustomElementParser
                 right,
                 source:  directive.raw,
                 stackTrace,
-                type:   "loop-statement",
+                type:   DescriptorType.Loop,
             };
 
             return loopDescriptor;
@@ -504,7 +505,7 @@ export default class CustomElementParser
                 observables: { key: keyObservables, value: observables },
                 source:         { key: rawKey, value: raw },
                 stackTrace,
-                type:        "placeholder-statement",
+                type:        DescriptorType.Placeholder,
                 value:       expression,
             };
 
@@ -529,7 +530,7 @@ export default class CustomElementParser
             observables: { key: keyObservables, value: observables },
             source:      { key: rawKey, value: raw },
             stackTrace,
-            type:        "injection-statement",
+            type:        DescriptorType.Injection,
             value:       pattern,
         };
 
@@ -541,9 +542,9 @@ export default class CustomElementParser
         const descriptor: ElementDescriptor =
         {
             attributes: this.parseAttributes(element, stackTrace),
-            childs:     element.nodeName == "SCRIPT" || element.nodeName == "STYLE" ? [{ type: "text", value: element.textContent ?? "" }] : this.enumerateParsedNodes(element),
+            childs:     element.nodeName == "SCRIPT" || element.nodeName == "STYLE" ? [{ type: DescriptorType.Text, value: element.textContent ?? "" }] : this.enumerateParsedNodes(element),
             tag:        element.nodeName,
-            type:       "element",
+            type:       DescriptorType.Element,
         };
 
         return descriptor;
@@ -568,7 +569,7 @@ export default class CustomElementParser
                 observables,
                 source: node.nodeValue,
                 stackTrace,
-                type:   "text-interpolation",
+                type:   DescriptorType.TextInterpolation,
                 value:  expression,
             };
 
@@ -577,7 +578,7 @@ export default class CustomElementParser
 
         const descriptor: Descriptor =
         {
-            type:  "text",
+            type:  DescriptorType.Text,
             value: scapeBrackets(node.nodeValue!),
         };
 

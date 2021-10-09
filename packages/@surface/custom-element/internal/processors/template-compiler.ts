@@ -1,4 +1,4 @@
-import CustomElementParser                         from "@surface/custom-element-parser";
+import CustomElementParser, { DescriptorType }                         from "@surface/custom-element-parser";
 import type { AttributeBindDescritor, Descriptor } from "@surface/custom-element-parser";
 import createChoiceFactory                         from "../factories/create-choice-factory.js";
 import createCommentFactory                        from "../factories/create-comment-factory.js";
@@ -28,22 +28,22 @@ export default class TemplateCompiler
         {
             switch (bind.type)
             {
-                case "raw":
+                case DescriptorType.Attribute:
                     attributes.push([bind.key, bind.value]);
                     break;
-                case "directive":
+                case DescriptorType.Directive:
                     factories.push(createDirectiveFactory(bind.key, scope => bind.value.evaluate(scope), bind.observables, bind.source, bind.stackTrace));
                     break;
-                case "event":
+                case DescriptorType.Event:
                     factories.push(createEventFactory(bind.key, scope => bind.value.evaluate(scope), scope => bind.context?.evaluate(scope), bind.source, bind.stackTrace));
                     break;
-                case "interpolation":
+                case DescriptorType.Interpolation:
                     factories.push(createInterpolationFactory(bind.key, scope => bind.value.evaluate(scope), bind.observables, bind.source, bind.stackTrace));
                     break;
-                case "oneway":
+                case DescriptorType.Oneway:
                     factories.push(createOnewayFactory(bind.key, scope => bind.value.evaluate(scope), bind.observables, bind.source, bind.stackTrace));
                     break;
-                case "twoway":
+                case DescriptorType.Twoway:
                 default:
                     factories.push(createTwowayFactory(bind.left, bind.right, bind.source, bind.stackTrace));
                     break;
@@ -69,16 +69,16 @@ export default class TemplateCompiler
     {
         switch (descriptor.type)
         {
-            case "element":
+            case DescriptorType.Element:
                 return createElementFactory
                 (
                     descriptor.tag,
                     ...TemplateCompiler.mapAttributes(descriptor.attributes),
                     TemplateCompiler.mapChilds(descriptor.childs),
                 );
-            case "text":
+            case DescriptorType.Text:
                 return createTextNodeFactory(descriptor.value);
-            case "text-interpolation":
+            case DescriptorType.TextInterpolation:
                 return createTextNodeInterpolationFactory
                 (
                     scope => descriptor.value.evaluate(scope),
@@ -86,12 +86,12 @@ export default class TemplateCompiler
                     descriptor.source,
                     descriptor.stackTrace,
                 );
-            case "choice-statement":
+            case DescriptorType.Choice:
                 return createChoiceFactory
                 (
                     descriptor.branches.map(x => [scope => x.expression.evaluate(scope), x.observables, TemplateCompiler.compileDescriptor(x.fragment), x.source, x.stackTrace]),
                 );
-            case "loop-statement":
+            case DescriptorType.Loop:
                 return createLoopFactory
                 (
                     (scope, value) => descriptor.left.evaluate(scope, value),
@@ -102,7 +102,7 @@ export default class TemplateCompiler
                     descriptor.source,
                     descriptor.stackTrace,
                 );
-            case "placeholder-statement":
+            case DescriptorType.Placeholder:
                 return createPlaceholderFactory
                 (
                     scope => descriptor.key.evaluate(scope),
@@ -112,7 +112,7 @@ export default class TemplateCompiler
                     descriptor.source,
                     descriptor.stackTrace,
                 );
-            case "injection-statement":
+            case DescriptorType.Injection:
                 return createInjectionFactory
                 (
                     scope => descriptor.key.evaluate(scope),
@@ -122,9 +122,9 @@ export default class TemplateCompiler
                     descriptor.source,
                     descriptor.stackTrace,
                 );
-            case "comment":
+            case DescriptorType.Comment:
                 return createCommentFactory(descriptor.value);
-            case "fragment":
+            case DescriptorType.Fragment:
             default:
                 return createFragmentFactory
                 (

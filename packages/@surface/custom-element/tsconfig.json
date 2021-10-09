@@ -14,7 +14,7 @@
     [
         "./internal",
         "./tests"
-, "../custom-element-loader/internal/template-compiler.ts", "../custom-element-parser/internal/observer-visitor.ts", "../custom-element-parser/tests/interpolated-expression.spec.ts", "../custom-element-parser/tests/template-parser.spec.d.ts"    ],
+, "../custom-element-loader/internal/template-compiler.ts", "../custom-element-parser/internal/observer-visitor.ts", "../custom-element-parser/tests/interpolated-expression.spec.ts", "../custom-element-parser/tests/template-parser.spec.d.ts", "../custom-element-parser/internal/factory-type.ts"    ],
     "references":
     [
         { "path": "../core" },

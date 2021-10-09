@@ -1,5 +1,6 @@
 /* eslint-disable import/exports-last */
 import type { IExpression, IPattern } from "@surface/expression";
+import type DescriptorType            from "../descriptor-type.js";
 import type ObservablePath            from "./observable-path";
 import type StackTrace                from "./stack-trace";
 
@@ -7,7 +8,7 @@ export type RawAttributeDescritor =
 {
     key:   string,
     value: string,
-    type:  "raw",
+    type:  DescriptorType.Attribute,
 };
 
 export type OneWayAttributeDescritor =
@@ -16,7 +17,7 @@ export type OneWayAttributeDescritor =
     observables: ObservablePath[],
     source:      string,
     stackTrace:  StackTrace,
-    type:        "oneway" | "interpolation",
+    type:        DescriptorType.Oneway | DescriptorType.Interpolation,
     value:       IExpression,
 };
 
@@ -26,7 +27,7 @@ export type TwoWayAttributeDescritor =
     right:      ObservablePath,
     source:     string,
     stackTrace: StackTrace,
-    type:       "twoway",
+    type:       DescriptorType.Twoway,
 };
 
 export type DirectiveAttributeDescritor =
@@ -35,7 +36,7 @@ export type DirectiveAttributeDescritor =
     observables: ObservablePath[],
     source:      string,
     stackTrace:  StackTrace,
-    type:        "directive",
+    type:        DescriptorType.Directive,
     value:       IExpression,
 };
 
@@ -57,14 +58,14 @@ export type BranchDescriptor =
 
 export type CommentDescriptor =
 {
-    type:  "comment",
+    type:  DescriptorType.Comment,
     value: string,
 };
 
 export type ChoiceStatementDescriptor =
 {
     branches: BranchDescriptor[],
-    type:     "choice-statement",
+    type:     DescriptorType.Choice,
 };
 
 export type ElementDescriptor =
@@ -72,7 +73,7 @@ export type ElementDescriptor =
     attributes: Iterable<AttributeBindDescritor>,
     childs:     Iterable<Descriptor>,
     tag:        string,
-    type:       "element",
+    type:       DescriptorType.Element,
 };
 
 export type EventDescritor =
@@ -80,7 +81,7 @@ export type EventDescritor =
     key:        string,
     source:     string,
     stackTrace: StackTrace,
-    type:       "event",
+    type:       DescriptorType.Event,
     value:      IExpression,
     context:    IExpression,
 };
@@ -88,7 +89,7 @@ export type EventDescritor =
 export type FragmentDescriptor =
 {
     childs: Iterable<Descriptor>,
-    type:   "fragment",
+    type:   DescriptorType.Fragment,
 };
 
 export type KeyValueObservable =
@@ -101,7 +102,7 @@ export type InjectionStatementDescriptor =
 {
     fragment:    FragmentDescriptor,
     key:         IExpression,
-    type:        "injection-statement",
+    type:        DescriptorType.Injection,
     value:       IPattern,
     observables: KeyValueObservable,
     source:      { key: string, value: string },
@@ -117,14 +118,14 @@ export type LoopStatementDescriptor =
     source:      string,
     right:       IExpression,
     stackTrace:  StackTrace,
-    type:        "loop-statement",
+    type:        DescriptorType.Loop,
 };
 
 export type PlaceholderStatementDescriptor =
 {
     fragment:    FragmentDescriptor,
     key:         IExpression,
-    type:        "placeholder-statement",
+    type:        DescriptorType.Placeholder,
     value:       IExpression,
     observables: KeyValueObservable,
     source:      { key: string, value: string },
@@ -133,13 +134,13 @@ export type PlaceholderStatementDescriptor =
 
 export type TextDescriptor =
 {
-    type:  "text",
+    type:  DescriptorType.Text,
     value: string,
 };
 
 export type TextInterpolationDescriptor =
 {
-    type:         "text-interpolation",
+    type:         DescriptorType.TextInterpolation,
     value:        IExpression,
     observables?: ObservablePath[],
     source?:      string,

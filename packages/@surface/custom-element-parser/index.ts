@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/indent */
 import CustomElementParser from "./internal/custom-element-parser.js";
 
+export { default as DescriptorType } from "./internal/descriptor-type.js";
+
 export type { default as StackTrace }     from "./internal/types/stack-trace";
 export type { default as ObservablePath } from "./internal/types/observable-path";
 export type

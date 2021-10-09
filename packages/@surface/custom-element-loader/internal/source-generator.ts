@@ -1,5 +1,5 @@
 /* eslint-disable max-lines-per-function */
-import CustomElementParser                                                                  from "@surface/custom-element-parser";
+import CustomElementParser, { DescriptorType }                                              from "@surface/custom-element-parser";
 import type { AttributeBindDescritor, BranchDescriptor, Descriptor, RawAttributeDescritor } from "@surface/custom-element-parser";
 import type { IExpression, IPattern }                                                       from "@surface/expression";
 import { TypeGuard }                                                                        from "@surface/expression";
@@ -8,24 +8,24 @@ import ScopeRewriterVisitor                                                     
 
 const factoryMap: Record<Descriptor["type"], string> =
 {
-    "choice-statement":      "createChoiceFactory",
-    "comment":               "createCommentFactory",
-    "element":               "createElementFactory",
-    "fragment":              "createFragmentFactory",
-    "injection-statement":   "createInjectionFactory",
-    "loop-statement":        "createLoopFactory",
-    "placeholder-statement": "createPlaceholderFactory",
-    "text":                  "createTextNodeFactory",
-    "text-interpolation":    "createTextNodeInterpolationFactory",
+    [DescriptorType.Choice]:            "createChoiceFactory",
+    [DescriptorType.Comment]:           "createCommentFactory",
+    [DescriptorType.Element]:           "createElementFactory",
+    [DescriptorType.Fragment]:          "createFragmentFactory",
+    [DescriptorType.Injection]:         "createInjectionFactory",
+    [DescriptorType.Loop]:              "createLoopFactory",
+    [DescriptorType.Placeholder]:       "createPlaceholderFactory",
+    [DescriptorType.Text]:              "createTextNodeFactory",
+    [DescriptorType.TextInterpolation]: "createTextNodeInterpolationFactory",
 };
 
-const attributeFactoryMap: Record<Exclude<AttributeBindDescritor["type"], "raw">, string> =
+const attributeFactoryMap: Record<Exclude<AttributeBindDescritor["type"], DescriptorType.Attribute>, string> =
 {
-    directive:     "createDirectiveFactory",
-    event:         "createEventFactory",
-    interpolation: "createInterpolationFactory",
-    oneway:        "createOnewayFactory",
-    twoway:        "createTwowayFactory",
+    [DescriptorType.Directive]:     "createDirectiveFactory",
+    [DescriptorType.Event]:         "createEventFactory",
+    [DescriptorType.Interpolation]: "createInterpolationFactory",
+    [DescriptorType.Oneway]:        "createOnewayFactory",
+    [DescriptorType.Twoway]:        "createTwowayFactory",
 };
 
 export default class SourceGenerator
@@ -77,7 +77,7 @@ export default class SourceGenerator
 
         for (const descriptor of descriptors)
         {
-            if (descriptor.type == "raw")
+            if (descriptor.type == DescriptorType.Attribute)
             {
                 attributes.push(descriptor);
             }
@@ -130,23 +130,23 @@ export default class SourceGenerator
 
                 switch (descriptor.type)
                 {
-                    case "oneway":
-                    case "interpolation":
-                    case "directive":
+                    case DescriptorType.Oneway:
+                    case DescriptorType.Interpolation:
+                    case DescriptorType.Directive:
                         this.writeLine(`${JSON.stringify(descriptor.key)},`);
                         this.writeLine(`${this.stringifyExpression(descriptor.value)},`);
                         this.writeLine(`${JSON.stringify(descriptor.observables)},`);
                         this.writeLine(!this.production ? `${JSON.stringify(descriptor.source)},` : "undefined,");
                         this.writeLine(!this.production ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
                         break;
-                    case "event":
+                    case DescriptorType.Event:
                         this.writeLine(`"${descriptor.key}",`);
                         this.writeLine(`${this.stringifyExpression(descriptor.value)},`);
                         this.writeLine(`${this.stringifyExpression(descriptor.context)},`);
                         this.writeLine(!this.production ? `${JSON.stringify(descriptor.source)},` : "undefined,");
                         this.writeLine(!this.production ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
                         break;
-                    case "twoway":
+                    case DescriptorType.Twoway:
                     default:
                         this.writeLine(`"${descriptor.left}",`);
                         this.writeLine(`${JSON.stringify(descriptor.right)},`);
@@ -287,26 +287,26 @@ export default class SourceGenerator
         this.increaseIndent();
         switch (descriptor.type)
         {
-            case "element":
+            case DescriptorType.Element:
                 this.writeLine(`${JSON.stringify(descriptor.tag)},`);
                 this.writeAttributeBinds(descriptor.attributes);
                 this.writeChilds(descriptor.childs, true);
                 this.write(",");
                 break;
-            case "comment":
-            case "text":
+            case DescriptorType.Comment:
+            case DescriptorType.Text:
                 this.writeLine(JSON.stringify(descriptor.value));
                 break;
-            case "text-interpolation":
+            case DescriptorType.TextInterpolation:
                 this.writeLine(`${this.stringifyExpression(descriptor.value)},`);
                 this.writeLine(`${JSON.stringify(descriptor.observables)},`);
                 this.writeLine(!this.production ? `${JSON.stringify(descriptor.source)},` : "undefined,");
                 this.writeLine(!this.production ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
                 break;
-            case "choice-statement":
+            case DescriptorType.Choice:
                 this.writeBranchs(descriptor.branches);
                 break;
-            case "loop-statement":
+            case DescriptorType.Loop:
                 this.writeLine(`${this.stringifyPattern(descriptor.left)},`);
                 this.writeLine(`${JSON.stringify(descriptor.operator)},`);
                 this.writeLine(`${this.stringifyExpression(descriptor.right)},`);
@@ -316,7 +316,7 @@ export default class SourceGenerator
                 this.writeLine(!this.production ? `${JSON.stringify(descriptor.source)},` : "undefined,");
                 this.writeLine(!this.production ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
                 break;
-            case "placeholder-statement":
+            case DescriptorType.Placeholder:
                 this.writeLine(`${this.stringifyExpression(descriptor.key)},`);
                 this.writeLine(`${this.stringifyExpression(descriptor.value)},`);
                 this.writeLine(`${JSON.stringify([descriptor.observables.key, descriptor.observables.value])},`);
@@ -325,7 +325,7 @@ export default class SourceGenerator
                 this.writeLine(!this.production ? `${JSON.stringify(descriptor.source)},` : "undefined,");
                 this.writeLine(!this.production ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
                 break;
-            case "injection-statement":
+            case DescriptorType.Injection:
                 this.writeLine(`${this.stringifyExpression(descriptor.key)},`);
                 this.writeLine(`${this.stringifyPattern(descriptor.value)},`);
                 this.writeLine(`${JSON.stringify([descriptor.observables.key, descriptor.observables.key])},`);
@@ -334,7 +334,7 @@ export default class SourceGenerator
                 this.writeLine(!this.production ? `${JSON.stringify(descriptor.source)},` : "undefined,");
                 this.writeLine(!this.production ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
                 break;
-            case "fragment":
+            case DescriptorType.Fragment:
             default:
                 this.writeChilds(descriptor.childs, false);
         }
