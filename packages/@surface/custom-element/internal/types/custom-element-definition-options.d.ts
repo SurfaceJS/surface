@@ -1,3 +1,5 @@
+import type NodeFactory from "./node-factory.js";
+
 type CustomElementDefinitionOptions =
 {
 
@@ -8,7 +10,7 @@ type CustomElementDefinitionOptions =
     style?: string | string[],
 
     /** Template used by the shadow root */
-    template?: string,
+    template?: string | NodeFactory,
 } & ElementDefinitionOptions;
 
 export default CustomElementDefinitionOptions;

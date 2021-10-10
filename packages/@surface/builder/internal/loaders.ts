@@ -2,9 +2,10 @@ import os from "os";
 
 const loaders =
 {
-    appManifest: { loader: "app-manifest-loader", options: { esModule: false } },
-    css:         { loader: "css-loader", options: { esModule: false, sourceMap: true } },
-    extract:     { loader: "extract-loader" },
+    appManifest:         { loader: "app-manifest-loader", options: { esModule: false } },
+    css:                 { loader: "css-loader", options: { esModule: false, sourceMap: true } },
+    customElementLoader: { loader: "@surface/custom-element-loader" },
+    extract:             { loader: "extract-loader" },
     file:
     {
         loader:  "file-loader",

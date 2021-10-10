@@ -291,6 +291,13 @@ export default async function createConfigurations(type: "analyze" | "build" | "
                         use:  loaders.html,
                     },
                     {
+                        test: /\.htmx$/,
+                        use:
+                        [
+                            loaders.customElementLoader,
+                        ],
+                    },
+                    {
                         test: /\.ts$/,
                         use:
                         [

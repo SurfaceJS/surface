@@ -22,7 +22,7 @@ export default function element(tagname: `${string}-${string}`, options?: Custom
         {
             const staticMetadata = StaticMetadata.from(target);
 
-            const factory = TemplateCompiler.compile(tagname, options?.template ?? "<slot></slot>");
+            const factory = typeof options?.template == "function" ? options.template : TemplateCompiler.compile(tagname, options?.template ?? "<slot></slot>");
 
             if (options?.style)
             {
