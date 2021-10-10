@@ -10,7 +10,7 @@
     "description": "Provides object property reactivity capability.",
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
-        "@types/chai": "^4.2.21",
+        "@types/chai": "^4.2.22",
         "chai": "^4.3.4"
     },
     "homepage": "https://github.com/SurfaceJS/surface#readme",

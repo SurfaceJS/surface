@@ -5,14 +5,14 @@
     },
     "dependencies": {
         "@surface/core": "file:../core",
-        "@types/node": "^16.7.2",
+        "@types/node": "^16.10.3",
         "tslib": "^2.3.1"
     },
     "description": "Provides io functionality.",
     "devDependencies": {
         "@surface/mock": "file:../mock",
         "@surface/test-suite": "file:../test-suite",
-        "@types/chai": "^4.2.21",
+        "@types/chai": "^4.2.22",
         "@types/chai-as-promised": "^7.1.4",
         "chai": "^4.3.4",
         "chai-as-promised": "^7.1.1"
