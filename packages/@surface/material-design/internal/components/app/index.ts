@@ -2,7 +2,7 @@
 import "./root.scss?global";
 
 import CustomElement, { element } from "@surface/custom-element";
-import template                   from "./index.html";
+import template                   from "./index.htmx";
 import style                      from "./index.scss";
 
 declare global

@@ -3,7 +3,7 @@ import CustomElement, { attribute, computed, element, event, query } from "@surf
 import colorable                                                     from "../../mixins/colorable/index.js";
 import lineRippleable                                                from "../../mixins/line-rippleable/index.js";
 import themeable                                                     from "../../mixins/themeable/index.js";
-import template                                                      from "./index.html";
+import template                                                      from "./index.htmx";
 import style                                                         from "./index.scss";
 
 declare global

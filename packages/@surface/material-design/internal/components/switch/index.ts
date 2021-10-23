@@ -5,7 +5,7 @@ import disableable                                                             f
 import elevatable                                                              from "../../mixins/elevatable/index.js";
 import rippleable                                                              from "../../mixins/rippleable/index.js";
 import themeable                                                               from "../../mixins/themeable/index.js";
-import template                                                                from "./index.html";
+import template                                                                from "./index.htmx";
 import style                                                                   from "./index.scss";
 
 declare global
