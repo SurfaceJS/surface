@@ -13,7 +13,7 @@ export default class SourceGeneratorSpec
     public rewrite(seed: (typeof expressionsSeed)[number]): void
     {
         const expression = Expression.parse(seed.source);
-        const actual     = ScopeRewriterVisitor.rewrite(expression).toString();
+        const actual     = ScopeRewriterVisitor.rewriteExpression(expression).toString();
 
         chai.assert.equal(actual, seed.expected);
     }

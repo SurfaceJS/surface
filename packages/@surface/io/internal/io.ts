@@ -37,6 +37,24 @@ function getStats(filepath: string): Stats | null
     }
 }
 
+function getLstats(filepath: string): Stats | null
+{
+    try
+    {
+        return lstatSync(filepath);
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    catch (e: any)
+    {
+        if (e && (e.code == "ENOENT" || e.code == "ENOTDIR"))
+        {
+            return null;
+        }
+
+        throw e;
+    }
+}
+
 /**
  * Create a path.
  * @param path A path to create. If a URL is provided, it must use the `file:` protocol.
@@ -130,6 +148,18 @@ export function isFile(filePath: string): boolean
     const stats = getStats(filePath);
 
     return !!stats && (stats.isFile() || stats.isFIFO());
+}
+
+/**
+ * Verifies if a path is a symbolic link.
+ * @param path Path to verify. If a URL is provided, it must use the `file:` protocol.
+ */
+export function isSymbolicLink(path: string): boolean;
+export function isSymbolicLink(filePath: string): boolean
+{
+    const stats = getLstats(filePath);
+
+    return !!stats && stats.isSymbolicLink();
 }
 
 /**

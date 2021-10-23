@@ -66,6 +66,7 @@ export default class BinSpec
             "--prefer-ts=preferTs-1,preferTs-2",
             "--project=project",
             "--public-path=publicPath",
+            "--template-expression-mode=aot",
             "--target=pwa",
             "--tsconfig=tsconfig",
         ];
@@ -102,6 +103,7 @@ export default class BinSpec
             project:                "project",
             publicPath:             "publicPath",
             target:                 "pwa",
+            templateExpressionMode: "aot",
             tsconfig:               "tsconfig",
         };
 
@@ -141,6 +143,7 @@ export default class BinSpec
             "--project=project",
             "--public-path=publicPath",
             "--target=pwa",
+            "--template-expression-mode=aot",
             "--tsconfig=tsconfig",
             "--watch",
         ];
@@ -149,27 +152,28 @@ export default class BinSpec
 
         const expected: Required<CliOptions & CliBuildOptions> =
         {
-            clean:            true,
-            config:           "config",
-            context:          "context",
-            entry:            ["entry-1", "entry-2"],
-            eslintConfigFile: "eslintConfigFile",
-            eslintEnabled:    true,
-            eslintFiles:      "eslintFiles",
-            eslintFormatter:  "codeframe",
-            filename:         "filename",
-            includeFiles:     ["includeFiles-1", "includeFiles-2"],
-            index:            "index",
-            logging:          "normal",
-            main:             "main",
-            mode:             "development",
-            output:           "output",
-            preferTs:         true,
-            project:          "project",
-            publicPath:       "publicPath",
-            target:           "pwa",
-            tsconfig:         "tsconfig",
-            watch:            true,
+            clean:                  true,
+            config:                 "config",
+            context:                "context",
+            entry:                  ["entry-1", "entry-2"],
+            eslintConfigFile:       "eslintConfigFile",
+            eslintEnabled:          true,
+            eslintFiles:            "eslintFiles",
+            eslintFormatter:        "codeframe",
+            filename:               "filename",
+            includeFiles:           ["includeFiles-1", "includeFiles-2"],
+            index:                  "index",
+            logging:                "normal",
+            main:                   "main",
+            mode:                   "development",
+            output:                 "output",
+            preferTs:               true,
+            project:                "project",
+            publicPath:             "publicPath",
+            target:                 "pwa",
+            templateExpressionMode: "aot",
+            tsconfig:               "tsconfig",
+            watch:                  true,
         };
 
         chai.assert.deepEqual(actual!, expected);
@@ -214,6 +218,7 @@ export default class BinSpec
             "--project=project",
             "--public-path=publicPath",
             "--target=pwa",
+            "--template-expression-mode=aot",
             "--tsconfig=tsconfig",
         ];
 
@@ -246,6 +251,7 @@ export default class BinSpec
             project:                        "project",
             publicPath:                     "publicPath",
             target:                         "pwa",
+            templateExpressionMode:         "aot",
             tsconfig:                       "tsconfig",
         };
 

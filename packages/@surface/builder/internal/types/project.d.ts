@@ -90,6 +90,14 @@ type Project =
 
     /** Path to tsconfig file. */
     tsconfig?: string,
+
+    /**
+     * Compilation mode of templates used by @surface/custom-elements.
+     * - aot: Tree shakeble. All templates will be compiled at build time. Attempting to use runtime templates will raise an error.
+     * - mixed: Non tree shakeble. All templates will be compiled at build time, but it will also be possible to compile at run time.
+     * - runtime: Non tree shakeble. All templates will be compiled at runtime.
+     **/
+    templateExpressionMode?: "aot" | "mixed" | "runtime",
 };
 
 export default Project;

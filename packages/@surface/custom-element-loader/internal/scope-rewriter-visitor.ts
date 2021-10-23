@@ -21,9 +21,27 @@ export default class ScopeRewriterVisitor extends ExpressionRewriterVisitor
     private readonly scopes: Map<number, Set<string>> = new Map();
     private scopeIndex: number = 0;
 
-    public static rewrite(expression: IExpression): IExpression
+    private constructor(private readonly identifier: string = "scope")
+    {
+        super();
+    }
+
+    public static rewriteExpression(expression: IExpression): IExpression
     {
         return new ScopeRewriterVisitor().visit(expression) as IExpression;
+    }
+
+    public static rewritePattern(pattern: IPattern, identifier: string): IPattern
+    {
+        const visitor = new ScopeRewriterVisitor(identifier);
+
+        visitor.createScope();
+
+        const rewritedPattern = visitor.visit(pattern) as IPattern;
+
+        visitor.deleteScope();
+
+        return rewritedPattern;
     }
 
     public static collectScope(pattern: IPattern): IObjectExpression
@@ -190,7 +208,7 @@ export default class ScopeRewriterVisitor extends ExpressionRewriterVisitor
     {
         if (node.name != "undefined" && !this.hasInScope(node.name))
         {
-            return Expression.member(Expression.identifier("scope"), node, false, false);
+            return Expression.member(Expression.identifier(this.identifier), node, false, false);
         }
 
         return node;

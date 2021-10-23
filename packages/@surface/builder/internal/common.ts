@@ -1,9 +1,10 @@
 import fs                 from "fs";
 import { pathToFileURL }  from "url";
 import util               from "util";
-import { booleanPattern } from "./patterns.js";
 
 const readFileAsync = util.promisify(fs.readFile);
+
+const booleanPattern = /^true|false$/;
 
 export function normalizeUrlPath(path: string): string
 {

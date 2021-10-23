@@ -1,6 +1,10 @@
+/* eslint-disable max-statements */
 /* eslint-disable max-lines-per-function */
+import { readlinkSync }                               from "fs";
+import path                                           from "path";
 import { URL }                                        from "url";
 import { DeepMergeFlags, deepMerge }                  from "@surface/core";
+import { isSymbolicLink, lookup }                     from "@surface/io";
 import { CleanWebpackPlugin }                         from "clean-webpack-plugin";
 import CopyPlugin                                     from "copy-webpack-plugin";
 import EslintWebpackPlugin                            from "eslint-webpack-plugin";
@@ -13,6 +17,7 @@ import webpack                                        from "webpack";
 import { BundleAnalyzerPlugin }                       from "webpack-bundle-analyzer";
 import WorkboxPlugin                                  from "workbox-webpack-plugin";
 import loaders                                        from "./loaders.js";
+import type { FileOverride }                          from "./plugins/override-resolver-plugin.js";
 import OverrideResolvePlugin                          from "./plugins/override-resolver-plugin.js";
 import PreferTsResolverPlugin                         from "./plugins/prefer-ts-resolver-plugin.js";
 import type Configuration                             from "./types/configuration";
@@ -178,6 +183,29 @@ export default async function createConfigurations(type: "analyze" | "build" | "
         if (buildConfiguration?.overrides)
         {
             resolvePlugins.push(new OverrideResolvePlugin(buildConfiguration.overrides));
+        }
+
+        if (project.templateExpressionMode == "aot")
+        {
+            let customElement = lookup(project.context ?? process.cwd(), "node_modules/@surface/custom-element");
+
+            if (customElement)
+            {
+                if (isSymbolicLink(customElement))
+                {
+                    customElement = readlinkSync(customElement);
+                }
+
+                const decorators = "internal/decorators";
+
+                const overrides: FileOverride[] =
+                [
+                    { replace: path.join(customElement!, decorators, "element.js"), with: path.join(customElement!, decorators, "element.aot.js") },
+                    { replace: path.join(customElement!, decorators, "element.ts"), with: path.join(customElement!, decorators, "element.aot.ts") },
+                ];
+
+                resolvePlugins.push(new OverrideResolvePlugin(overrides));
+            }
         }
 
         const isTargetingBrowser = project.target == "pwa" || project.target == "web";

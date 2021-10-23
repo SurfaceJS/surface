@@ -202,17 +202,17 @@ export default class SourceGenerator
 
     private stringifyExpression(expression: IExpression): string
     {
-        return `scope => ${ScopeRewriterVisitor.rewrite(expression)}`;
+        return `scope => ${ScopeRewriterVisitor.rewriteExpression(expression)}`;
     }
 
     private stringifyPattern(pattern: IPattern): string
     {
         if (TypeGuard.isIdentifier(pattern))
         {
-            return `scope => ({ ${pattern.name}: scope })`;
+            return `(scope, value) => ({ ${pattern.name}: value })`;
         }
 
-        return `scope => { const ${pattern} = scope; return ${ScopeRewriterVisitor.collectScope(pattern)}; }`;
+        return `(__scope__, __value__) => { const ${ScopeRewriterVisitor.rewritePattern(pattern, "__scope__")} = __value__; return ${ScopeRewriterVisitor.collectScope(pattern)}; }`;
     }
 
     private generate(descriptor: Descriptor): string
@@ -257,19 +257,16 @@ export default class SourceGenerator
 
         for (const branch of branchs)
         {
-            this.writeLine("{");
+            this.writeLine("[");
             this.increaseIndent();
-            /**/this.writeLine(`expression: ${this.stringifyExpression(branch.expression)},`);
-            /**/this.writeLine("fragment:");
-            /*    */this.increaseIndent();
-            /*    */this.writeDescriptor(branch.fragment);
-            /*    */this.write(",");
-            /*    */this.decreaseIndent();
-            /**/this.writeLine(`observables: ${JSON.stringify(branch.observables)},`);
-            /**/this.writeLine(!this.production ? `source: ${JSON.stringify(branch.source)},` : "undefined");
-            /**/this.writeLine(!this.production ? `stackTrace: ${JSON.stringify(branch.stackTrace)},` : "undefined");
+            /**/this.writeLine(`${this.stringifyExpression(branch.expression)},`);
+            /**/this.writeLine(`${JSON.stringify(branch.observables)},`);
+            /**/this.writeDescriptor(branch.fragment);
+            /**/this.write(",");
+            /**/this.writeLine(!this.production ? `${JSON.stringify(branch.source)},` : "undefined");
+            /**/this.writeLine(!this.production ? `${JSON.stringify(branch.stackTrace)},` : "undefined");
             /**/this.decreaseIndent();
-            this.writeLine("},");
+            this.writeLine("],");
         }
 
         this.decreaseIndent();
