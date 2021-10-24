@@ -79,6 +79,7 @@ const PROJECT_DEFAULTS: Project =
             },
         },
     },
+    filename:   "js/[name]/[hash][ext]",
     mode:       "development",
     publicPath: "/",
     target:     "web",
@@ -235,8 +236,6 @@ export default async function createConfigurations(type: "analyze" | "build" | "
                     url.pathname = project.publicPath!;
 
                     project.entry = configureDevServerEntry(project.entry, url);
-
-                    plugins.push(new webpack.HotModuleReplacementPlugin());
                 }
                 break;
             default:
@@ -265,14 +264,34 @@ export default async function createConfigurations(type: "analyze" | "build" | "
                         ],
                     },
                     {
-                        test: /\.(png|jpe?g|svg|ttf|woff2?|eot)$/,
-                        use:  loaders.fileAssets,
+                        generator:
+                        {
+                            filename: "images/[hash][ext][query]",
+                        },
+                        test: /\.(a?png|avif|bmp|cur|gif|ico|jfif|jpe?g|pjp(eg)?|svg|tiff?|webp)$/,
+                        type: "asset/resource",
+                    },
+                    {
+                        generator:
+                        {
+                            filename: "fonts/[hash][ext][query]",
+                        },
+                        test: /\.(ttf|woff2?|eot|otf)$/,
+                        type: "asset/resource",
+                    },
+                    {
+                        generator:
+                        {
+                            filename: "fonts/[hash][ext][query]",
+                        },
+                        test: /\.txt$/,
+                        type: "asset/source",
                     },
                     {
                         oneOf:
                         [
                             {
-                                resourceQuery: /global/,
+                                resourceQuery: /style/,
                                 use:
                                 [
                                     loaders.style,
@@ -326,6 +345,10 @@ export default async function createConfigurations(type: "analyze" | "build" | "
                         ],
                     },
                     {
+                        generator:
+                        {
+                            filename: "js/[hash][ext][query]",
+                        },
                         test: /\.ts$/,
                         use:
                         [

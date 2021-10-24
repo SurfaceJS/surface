@@ -11,15 +11,10 @@ const loaders =
         loader:  "file-loader",
         options: { esModule: false, name: "[hash].[ext]" },
     },
-    fileAssets:
-    {
-        loader:  "file-loader",
-        options: { esModule: false, name: "[hash].[ext]", outputPath: "assets" },
-    },
     fileAssetsCss:
     {
         loader:  "file-loader",
-        options: { esModule: false, name: "[hash].css", outputPath: "assets" },
+        options: { esModule: false, name: "[hash].css", outputPath: "css" },
     },
     html:
     {
