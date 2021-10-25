@@ -301,16 +301,6 @@ export default async function createConfigurations(type: "analyze" | "build" | "
                                 ],
                             },
                             {
-                                resourceQuery: /raw/,
-                                use:
-                                [
-                                    loaders.toString,
-                                    loaders.css,
-                                    loaders.resolveUrl,
-                                    loaders.sass,
-                                ],
-                            },
-                            {
                                 resourceQuery: /file/,
                                 use:
                                 [
@@ -338,10 +328,10 @@ export default async function createConfigurations(type: "analyze" | "build" | "
                         use:  loaders.html,
                     },
                     {
-                        test: /\.htmx$/,
+                        test: /\.htmlx$/,
                         use:
                         [
-                            loaders.customElementLoader,
+                            loaders.htmlx,
                         ],
                     },
                     {

@@ -1,8 +1,8 @@
 // eslint-disable-next-line import/no-unassigned-import
-import "./font-face.scss?global";
+import "./font-face.scss?style";
 
 import CustomElement, { attribute, element } from "@surface/custom-element";
-import template                              from "./index.htmx";
+import template                              from "./index.htmlx";
 import style                                 from "./index.scss";
 
 declare global

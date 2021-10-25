@@ -1,5 +1,5 @@
 import CustomElement, { element } from "@surface/custom-element";
-import template                   from "./index.htmx";
+import template                   from "./index.htmlx";
 import style                      from "./index.scss";
 
 declare global
