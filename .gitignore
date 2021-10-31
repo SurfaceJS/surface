@@ -64,7 +64,7 @@ typings/
 *.orig
 .cache
 tsconfig.tsbuildinfo
-!environment.d.ts
+!shim.d.ts
 !**/cli.js
 !**/cli/index.js
 !**/interfaces/**/*.d.ts

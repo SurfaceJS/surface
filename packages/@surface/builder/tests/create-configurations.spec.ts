@@ -1,5 +1,5 @@
 import { lookup }                                         from "@surface/io";
-import Mock, { It }                                               from "@surface/mock";
+import Mock, { It }                                       from "@surface/mock";
 import { afterEach, beforeEach, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                               from "chai";
 import chaiAsPromised                                     from "chai-as-promised";
