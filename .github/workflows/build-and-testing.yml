@@ -20,7 +20,7 @@ jobs:
         restore-keys: |
           ${{ runner.OS }}-node-
           ${{ runner.OS }}-
-    - run: npm i -g npm@7.0.7
+    - run: npm i -g npm@8.1.2
     - run: npm set unsafe-perm true
     - run: npm ci
     - run: npm run build
