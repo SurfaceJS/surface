@@ -21,6 +21,7 @@
         "typescrypt"
     ],
     "license": "MIT",
+    "main": "index.js",
     "name": "@surface/core",
     "repository": {
         "type": "git",

@@ -1,10 +1,13 @@
 /* eslint-disable max-lines-per-function */
+import { deepMerge }                                                                        from "@surface/core";
 import CustomElementParser, { DescriptorType }                                              from "@surface/custom-element-parser";
 import type { AttributeBindDescritor, BranchDescriptor, Descriptor, RawAttributeDescritor } from "@surface/custom-element-parser";
 import type { IExpression, IPattern }                                                       from "@surface/expression";
 import { TypeGuard }                                                                        from "@surface/expression";
 import { JSDOM }                                                                            from "jsdom";
+import { defaultAttributeHandlers }                                                         from "./attribute-handlers.js";
 import ScopeRewriterVisitor                                                                 from "./scope-rewriter-visitor.js";
+import type { AttributeHandlers }                                                           from "./types/index.js";
 
 const factoryMap: Record<Descriptor["type"], string> =
 {
@@ -31,18 +34,21 @@ const attributeFactoryMap: Record<Exclude<AttributeBindDescritor["type"], Descri
 export default class SourceGenerator
 {
     private readonly lines: string[] = [];
+    private readonly attributeHandlers: AttributeHandlers;
     private indentationLevel: number = 0;
 
     private readonly factories: Set<string> = new Set();
 
-    private constructor(private readonly production: boolean)
-    { }
+    private constructor(attributeHandlers: AttributeHandlers, private readonly generateStackStrace: boolean)
+    {
+        this.attributeHandlers = deepMerge([attributeHandlers, defaultAttributeHandlers]);
+    }
 
-    public static generate(name: string, template: string, production: boolean): string
+    public static generate(name: string, template: string, attributeHandlers: AttributeHandlers, generateStackStrace: boolean): string
     {
         const descriptor = CustomElementParser.parse(new JSDOM().window.document, name, template);
 
-        return new SourceGenerator(production).generate(descriptor);
+        return new SourceGenerator(attributeHandlers, generateStackStrace).generate(descriptor);
     }
 
     private increaseIndent(): void
@@ -90,7 +96,7 @@ export default class SourceGenerator
         return { attributes, directives };
     }
 
-    private writeAttributeBinds(descriptors: Iterable<AttributeBindDescritor>): void
+    private writeAttributeBinds(tag: string, descriptors: Iterable<AttributeBindDescritor>): void
     {
         const binds = this.separateAttributes(descriptors);
 
@@ -99,10 +105,20 @@ export default class SourceGenerator
             this.writeLine("[");
             this.increaseIndent();
 
+            const attributesMap = new Map(binds.attributes.map(x => [x.key, x.value]));
+
             for (const descriptor of binds.attributes)
             {
+                const handler = this.attributeHandlers[tag]?.[descriptor.key];
 
-                this.writeLine(`["${descriptor.key}", "${descriptor.value}"],`);
+                if (handler && (!handler.filter || handler.filter(descriptor.key, descriptor.value, attributesMap)))
+                {
+                    this.writeLine(`["${descriptor.key}", ${handler.resolve(descriptor.key, descriptor.value, attributesMap)}],`);
+                }
+                else
+                {
+                    this.writeLine(`["${descriptor.key}", "${descriptor.value}"],`);
+                }
             }
 
             this.decreaseIndent();
@@ -136,22 +152,22 @@ export default class SourceGenerator
                         this.writeLine(`${JSON.stringify(descriptor.key)},`);
                         this.writeLine(`${this.stringifyExpression(descriptor.value)},`);
                         this.writeLine(`${JSON.stringify(descriptor.observables)},`);
-                        this.writeLine(!this.production ? `${JSON.stringify(descriptor.source)},` : "undefined,");
-                        this.writeLine(!this.production ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
+                        this.writeLine(this.generateStackStrace ? `${JSON.stringify(descriptor.source)},` : "undefined,");
+                        this.writeLine(this.generateStackStrace ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
                         break;
                     case DescriptorType.Event:
                         this.writeLine(`"${descriptor.key}",`);
                         this.writeLine(`${this.stringifyExpression(descriptor.value)},`);
                         this.writeLine(`${this.stringifyExpression(descriptor.context)},`);
-                        this.writeLine(!this.production ? `${JSON.stringify(descriptor.source)},` : "undefined,");
-                        this.writeLine(!this.production ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
+                        this.writeLine(this.generateStackStrace ? `${JSON.stringify(descriptor.source)},` : "undefined,");
+                        this.writeLine(this.generateStackStrace ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
                         break;
                     case DescriptorType.Twoway:
                     default:
                         this.writeLine(`"${descriptor.left}",`);
                         this.writeLine(`${JSON.stringify(descriptor.right)},`);
-                        this.writeLine(!this.production ? `${JSON.stringify(descriptor.source)},` : "undefined,");
-                        this.writeLine(!this.production ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
+                        this.writeLine(this.generateStackStrace ? `${JSON.stringify(descriptor.source)},` : "undefined,");
+                        this.writeLine(this.generateStackStrace ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
                         break;
                 }
 
@@ -263,8 +279,8 @@ export default class SourceGenerator
             /**/this.writeLine(`${JSON.stringify(branch.observables)},`);
             /**/this.writeDescriptor(branch.fragment);
             /**/this.write(",");
-            /**/this.writeLine(!this.production ? `${JSON.stringify(branch.source)},` : "undefined");
-            /**/this.writeLine(!this.production ? `${JSON.stringify(branch.stackTrace)},` : "undefined");
+            /**/this.writeLine(this.generateStackStrace ? `${JSON.stringify(branch.source)},` : "undefined");
+            /**/this.writeLine(this.generateStackStrace ? `${JSON.stringify(branch.stackTrace)},` : "undefined");
             /**/this.decreaseIndent();
             this.writeLine("],");
         }
@@ -286,7 +302,7 @@ export default class SourceGenerator
         {
             case DescriptorType.Element:
                 this.writeLine(`${JSON.stringify(descriptor.tag)},`);
-                this.writeAttributeBinds(descriptor.attributes);
+                this.writeAttributeBinds(descriptor.tag, descriptor.attributes);
                 this.writeChilds(descriptor.childs, true);
                 this.write(",");
                 break;
@@ -297,8 +313,8 @@ export default class SourceGenerator
             case DescriptorType.TextInterpolation:
                 this.writeLine(`${this.stringifyExpression(descriptor.value)},`);
                 this.writeLine(`${JSON.stringify(descriptor.observables)},`);
-                this.writeLine(!this.production ? `${JSON.stringify(descriptor.source)},` : "undefined,");
-                this.writeLine(!this.production ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
+                this.writeLine(this.generateStackStrace ? `${JSON.stringify(descriptor.source)},` : "undefined,");
+                this.writeLine(this.generateStackStrace ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
                 break;
             case DescriptorType.Choice:
                 this.writeBranchs(descriptor.branches);
@@ -310,8 +326,8 @@ export default class SourceGenerator
                 this.writeLine(`${JSON.stringify(descriptor.observables)},`);
                 this.writeDescriptor(descriptor.fragment),
                 this.write(","),
-                this.writeLine(!this.production ? `${JSON.stringify(descriptor.source)},` : "undefined,");
-                this.writeLine(!this.production ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
+                this.writeLine(this.generateStackStrace ? `${JSON.stringify(descriptor.source)},` : "undefined,");
+                this.writeLine(this.generateStackStrace ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
                 break;
             case DescriptorType.Placeholder:
                 this.writeLine(`${this.stringifyExpression(descriptor.key)},`);
@@ -319,8 +335,8 @@ export default class SourceGenerator
                 this.writeLine(`${JSON.stringify([descriptor.observables.key, descriptor.observables.value])},`);
                 this.writeDescriptor(descriptor.fragment);
                 this.write(","),
-                this.writeLine(!this.production ? `${JSON.stringify(descriptor.source)},` : "undefined,");
-                this.writeLine(!this.production ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
+                this.writeLine(this.generateStackStrace ? `${JSON.stringify(descriptor.source)},` : "undefined,");
+                this.writeLine(this.generateStackStrace ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
                 break;
             case DescriptorType.Injection:
                 this.writeLine(`${this.stringifyExpression(descriptor.key)},`);
@@ -328,8 +344,8 @@ export default class SourceGenerator
                 this.writeLine(`${JSON.stringify([descriptor.observables.key, descriptor.observables.key])},`);
                 this.writeDescriptor(descriptor.fragment);
                 this.write(","),
-                this.writeLine(!this.production ? `${JSON.stringify(descriptor.source)},` : "undefined,");
-                this.writeLine(!this.production ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
+                this.writeLine(this.generateStackStrace ? `${JSON.stringify(descriptor.source)},` : "undefined,");
+                this.writeLine(this.generateStackStrace ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
                 break;
             case DescriptorType.Fragment:
             default:

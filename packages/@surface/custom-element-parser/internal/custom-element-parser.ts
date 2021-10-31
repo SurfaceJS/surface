@@ -542,9 +542,13 @@ export default class CustomElementParser
         const descriptor: ElementDescriptor =
         {
             attributes: this.parseAttributes(element, stackTrace),
-            childs:     element.nodeName == "SCRIPT" || element.nodeName == "STYLE" ? [{ type: DescriptorType.Text, value: element.textContent ?? "" }] : this.enumerateParsedNodes(element),
-            tag:        element.nodeName,
-            type:       DescriptorType.Element,
+            childs:     element.nodeName == "SCRIPT" || element.nodeName == "STYLE"
+                ? element.textContent
+                    ? [{ type: DescriptorType.Text, value: element.textContent }]
+                    : []
+                : this.enumerateParsedNodes(element),
+            tag:  element.nodeName.toLowerCase(),
+            type: DescriptorType.Element,
         };
 
         return descriptor;

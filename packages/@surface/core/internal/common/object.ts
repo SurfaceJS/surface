@@ -219,7 +219,7 @@ export function deepMerge<TSources extends object[]>(sources: TSources, flags: D
                         {
                             const leftItem = elements[index as keyof unknown[]];
 
-                            elements[index as keyof unknown[]] = leftItem instanceof Object && rightItem instanceof Object
+                            elements[index as keyof unknown[]] = typeof leftItem == "object" && typeof rightValue == "object"
                                 ? deepMerge([leftItem, rightItem], flags)
                                 : rightItem;
                         }
@@ -234,9 +234,9 @@ export function deepMerge<TSources extends object[]>(sources: TSources, flags: D
                     resultDescriptor = { ...descriptor, value };
                 }
             }
-            else if (hasFlags(flags, DeepMergeFlags.IgnoreUndefined) && rightValue instanceof Object && !Array.isArray(rightValue))
+            else if (hasFlags(flags, DeepMergeFlags.IgnoreUndefined) && typeof rightValue == "object" && !Array.isArray(rightValue))
             {
-                const value = deepMerge([rightValue], flags);
+                const value = deepMerge([rightValue as object], flags);
 
                 resultDescriptor = { ...descriptor, value };
             }

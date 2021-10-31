@@ -25,7 +25,7 @@ export default class SourceGeneratorSpec
             "export default factory;",
         ].join("\n");
 
-        const actual = SourceGenerator.generate("x-component", "", false);
+        const actual = SourceGenerator.generate("x-component", "", { }, true);
 
         chai.assert.equal(actual, expected);
     }
@@ -55,13 +55,13 @@ export default class SourceGeneratorSpec
             "export default factory;",
         ].join("\n");
 
-        const actual = SourceGenerator.generate("x-component", "<!-- This is a Comment -->", false);
+        const actual = SourceGenerator.generate("x-component", "<!-- This is a Comment -->", { }, true);
 
         chai.assert.equal(actual, expected);
     }
 
     @test @shouldPass
-    public generateWithTextNode(): void
+    public generateTextNode(): void
     {
         const expected =
         [
@@ -85,13 +85,13 @@ export default class SourceGeneratorSpec
             "export default factory;",
         ].join("\n");
 
-        const actual = SourceGenerator.generate("x-component", "Hello World!!!", false);
+        const actual = SourceGenerator.generate("x-component", "Hello World!!!", { }, true);
 
         chai.assert.equal(actual, expected);
     }
 
     @test @shouldPass
-    public generateWithElement(): void
+    public generateElement(): void
     {
         const expected =
         [
@@ -107,7 +107,7 @@ export default class SourceGeneratorSpec
             "\t\t[",
             "\t\t\tcreateElementFactory",
             "\t\t\t(",
-            "\t\t\t\t\"SPAN\",",
+            "\t\t\t\t\"span\",",
             "\t\t\t\tundefined,",
             "\t\t\t\tundefined,",
             "\t\t\t\tundefined,",
@@ -118,13 +118,13 @@ export default class SourceGeneratorSpec
             "export default factory;",
         ].join("\n");
 
-        const actual = SourceGenerator.generate("x-component", "<span></span>", false);
+        const actual = SourceGenerator.generate("x-component", "<span></span>", { }, true);
 
         chai.assert.equal(actual, expected);
     }
 
     @test @shouldPass
-    public generateWithElementAndAttributes(): void
+    public generateElementAndAttributes(): void
     {
         const expected =
         [
@@ -140,7 +140,7 @@ export default class SourceGeneratorSpec
             "\t\t[",
             "\t\t\tcreateElementFactory",
             "\t\t\t(",
-            "\t\t\t\t\"SPAN\",",
+            "\t\t\t\t\"span\",",
             "\t\t\t\t[",
             "\t\t\t\t\t[\"foo\", \"\"],",
             "\t\t\t\t\t[\"bar\", \"baz\"],",
@@ -154,13 +154,310 @@ export default class SourceGeneratorSpec
             "export default factory;",
         ].join("\n");
 
-        const actual = SourceGenerator.generate("x-component", "<span foo bar=\"baz\"></span>", false);
+        const actual = SourceGenerator.generate("x-component", "<span foo bar=\"baz\"></span>", { }, true);
 
         chai.assert.equal(actual, expected);
     }
 
     @test @shouldPass
-    public generateWithElementAndAttributesAndInterpolationBindDirective(): void
+    public generateImgWithSrc(): void
+    {
+        const expected =
+        [
+            "import",
+            "{",
+            "\tcreateFragmentFactory,",
+            "\tcreateElementFactory,",
+            "} from \"@surface/custom-element\";",
+            "",
+            "const factory =",
+            "\tcreateFragmentFactory",
+            "\t(",
+            "\t\t[",
+            "\t\t\tcreateElementFactory",
+            "\t\t\t(",
+            "\t\t\t\t\"img\",",
+            "\t\t\t\t[",
+            "\t\t\t\t\t[\"src\", `${new URL(\"./foo.png\", import.meta.url)}`],",
+            "\t\t\t\t],",
+            "\t\t\t\tundefined,",
+            "\t\t\t\tundefined,",
+            "\t\t\t),",
+            "\t\t]",
+            "\t);",
+            "",
+            "export default factory;",
+        ].join("\n");
+
+        const actual = SourceGenerator.generate("x-component", "<img src='./foo.png'></img>", { }, true);
+
+        chai.assert.equal(actual, expected);
+    }
+
+    @test @shouldPass
+    public generateImgWithSrcSet(): void
+    {
+        const expected =
+        [
+            "import",
+            "{",
+            "\tcreateFragmentFactory,",
+            "\tcreateElementFactory,",
+            "} from \"@surface/custom-element\";",
+            "",
+            "const factory =",
+            "\tcreateFragmentFactory",
+            "\t(",
+            "\t\t[",
+            "\t\t\tcreateElementFactory",
+            "\t\t\t(",
+            "\t\t\t\t\"img\",",
+            "\t\t\t\t[",
+            "\t\t\t\t\t[\"srcset\", `${new URL(\"./foo.800-600.png\", import.meta.url)} 800w 600h 1x, ${new URL(\"./foo.1920-1080.png\", import.meta.url)} 1920w 1080h 2x`],",
+            "\t\t\t\t],",
+            "\t\t\t\tundefined,",
+            "\t\t\t\tundefined,",
+            "\t\t\t),",
+            "\t\t]",
+            "\t);",
+            "",
+            "export default factory;",
+        ].join("\n");
+
+        const actual = SourceGenerator.generate("x-component", "<img srcset='./foo.800-600.png 800w 600h 1x, ./foo.1920-1080.png 1920w 1080h 2x'></img>", { }, true);
+
+        chai.assert.equal(actual, expected);
+    }
+
+    @test @shouldPass
+    public generateMetaWithMsApplicationTaskContent(): void
+    {
+        const expected =
+        [
+            "import",
+            "{",
+            "\tcreateFragmentFactory,",
+            "\tcreateElementFactory,",
+            "} from \"@surface/custom-element\";",
+            "",
+            "const factory =",
+            "\tcreateFragmentFactory",
+            "\t(",
+            "\t\t[",
+            "\t\t\tcreateElementFactory",
+            "\t\t\t(",
+            "\t\t\t\t\"meta\",",
+            "\t\t\t\t[",
+            "\t\t\t\t\t[\"content\", \"foo.png\"],",
+            "\t\t\t\t],",
+            "\t\t\t\tundefined,",
+            "\t\t\t\tundefined,",
+            "\t\t\t),",
+            "\t\t\tcreateElementFactory",
+            "\t\t\t(",
+            "\t\t\t\t\"meta\",",
+            "\t\t\t\t[",
+            "\t\t\t\t\t[\"itemprop\", \"image\"],",
+            "\t\t\t\t\t[\"content\", `${new URL(\"./foo.png\", import.meta.url)}`],",
+            "\t\t\t\t],",
+            "\t\t\t\tundefined,",
+            "\t\t\t\tundefined,",
+            "\t\t\t),",
+            "\t\t\tcreateElementFactory",
+            "\t\t\t(",
+            "\t\t\t\t\"meta\",",
+            "\t\t\t\t[",
+            "\t\t\t\t\t[\"name\", \"msapplication-task\"],",
+            "\t\t\t\t\t[\"content\", \"\"],",
+            "\t\t\t\t],",
+            "\t\t\t\tundefined,",
+            "\t\t\t\tundefined,",
+            "\t\t\t),",
+            "\t\t\tcreateElementFactory",
+            "\t\t\t(",
+            "\t\t\t\t\"meta\",",
+            "\t\t\t\t[",
+            "\t\t\t\t\t[\"name\", \"msapplication-task\"],",
+            "\t\t\t\t\t[\"content\", `name=Test;action-uri=https://test.com;icon-uri=${new URL(\"./favicon.ico\", import.meta.url)}`],",
+            "\t\t\t\t],",
+            "\t\t\t\tundefined,",
+            "\t\t\t\tundefined,",
+            "\t\t\t),",
+            "\t\t]",
+            "\t);",
+            "",
+            "export default factory;",
+        ].join("\n");
+
+        const source =
+        [
+            "<meta content='foo.png'></meta>",
+            "<meta itemprop='image' content='./foo.png'></meta>",
+            "<meta name='msapplication-task' content=''></meta>",
+            "<meta name='msapplication-task' content='name=Test;action-uri=https://test.com;icon-uri=./favicon.ico'></meta>",
+        ].join("");
+
+        const actual = SourceGenerator.generate("x-component", source, { }, true);
+
+        chai.assert.equal(actual, expected);
+    }
+
+    @test @shouldPass
+    public generateLinkWithHref(): void
+    {
+        const expected =
+        [
+            "import",
+            "{",
+            "\tcreateFragmentFactory,",
+            "\tcreateElementFactory,",
+            "} from \"@surface/custom-element\";",
+            "",
+            "const factory =",
+            "\tcreateFragmentFactory",
+            "\t(",
+            "\t\t[",
+            "\t\t\tcreateElementFactory",
+            "\t\t\t(",
+            "\t\t\t\t\"link\",",
+            "\t\t\t\t[",
+            "\t\t\t\t\t[\"href\", \"../styles.scss\"],",
+            "\t\t\t\t],",
+            "\t\t\t\tundefined,",
+            "\t\t\t\tundefined,",
+            "\t\t\t),",
+            "\t\t\tcreateElementFactory",
+            "\t\t\t(",
+            "\t\t\t\t\"link\",",
+            "\t\t\t\t[",
+            "\t\t\t\t\t[\"rel\", \"stylesheet\"],",
+            "\t\t\t\t\t[\"href\", `${new URL(\"../styles.scss\", import.meta.url)}`],",
+            "\t\t\t\t],",
+            "\t\t\t\tundefined,",
+            "\t\t\t\tundefined,",
+            "\t\t\t),",
+            "\t\t]",
+            "\t);",
+            "",
+            "export default factory;",
+        ].join("\n");
+
+        const source =
+        [
+            "<link href='../styles.scss'></link>",
+            "<link rel='stylesheet' href='../styles.scss'></link>",
+        ].join("");
+
+        const actual = SourceGenerator.generate("x-component", source, { }, true);
+
+        chai.assert.equal(actual, expected);
+    }
+
+    @test @shouldPass
+    public generateLinkWithItemprop(): void
+    {
+        const expected =
+        [
+            "import",
+            "{",
+            "\tcreateFragmentFactory,",
+            "\tcreateElementFactory,",
+            "} from \"@surface/custom-element\";",
+            "",
+            "const factory =",
+            "\tcreateFragmentFactory",
+            "\t(",
+            "\t\t[",
+            "\t\t\tcreateElementFactory",
+            "\t\t\t(",
+            "\t\t\t\t\"link\",",
+            "\t\t\t\t[",
+            "\t\t\t\t\t[\"href\", \"../foo.png\"],",
+            "\t\t\t\t\t[\"itemprop\", \"foo\"],",
+            "\t\t\t\t],",
+            "\t\t\t\tundefined,",
+            "\t\t\t\tundefined,",
+            "\t\t\t),",
+            "\t\t\tcreateElementFactory",
+            "\t\t\t(",
+            "\t\t\t\t\"link\",",
+            "\t\t\t\t[",
+            "\t\t\t\t\t[\"href\", `${new URL(\"../foo.png\", import.meta.url)}`],",
+            "\t\t\t\t\t[\"itemprop\", \"image\"],",
+            "\t\t\t\t],",
+            "\t\t\t\tundefined,",
+            "\t\t\t\tundefined,",
+            "\t\t\t),",
+            "\t\t]",
+            "\t);",
+            "",
+            "export default factory;",
+        ].join("\n");
+
+        const source =
+        [
+            "<link href='../foo.png' itemprop='foo'></link>",
+            "<link href='../foo.png' itemprop='image'></link>",
+        ].join("");
+
+        const actual = SourceGenerator.generate("x-component", source, { }, true);
+
+        chai.assert.equal(actual, expected);
+    }
+
+    @test @shouldPass
+    public generateScriptWithSrc(): void
+    {
+        const expected =
+        [
+            "import",
+            "{",
+            "\tcreateFragmentFactory,",
+            "\tcreateElementFactory,",
+            "} from \"@surface/custom-element\";",
+            "",
+            "const factory =",
+            "\tcreateFragmentFactory",
+            "\t(",
+            "\t\t[",
+            "\t\t\tcreateElementFactory",
+            "\t\t\t(",
+            "\t\t\t\t\"script\",",
+            "\t\t\t\t[",
+            "\t\t\t\t\t[\"src\", \"../script.js\"],",
+            "\t\t\t\t],",
+            "\t\t\t\tundefined,",
+            "\t\t\t\tundefined,",
+            "\t\t\t),",
+            "\t\t\tcreateElementFactory",
+            "\t\t\t(",
+            "\t\t\t\t\"script\",",
+            "\t\t\t\t[",
+            "\t\t\t\t\t[\"src\", `${new URL(\"../script.js\", import.meta.url)}`],",
+            "\t\t\t\t\t[\"type\", \"module\"],",
+            "\t\t\t\t],",
+            "\t\t\t\tundefined,",
+            "\t\t\t\tundefined,",
+            "\t\t\t),",
+            "\t\t]",
+            "\t);",
+            "",
+            "export default factory;",
+        ].join("\n");
+
+        const source =
+        [
+            "<script src='../script.js'></script>",
+            "<script src='../script.js' type=\"module\"></script>",
+        ].join("");
+
+        const actual = SourceGenerator.generate("x-component", source, { }, true);
+
+        chai.assert.equal(actual, expected);
+    }
+
+    @test @shouldPass
+    public generateElementAndAttributesAndInterpolationBindDirective(): void
     {
         const expected =
         [
@@ -177,7 +474,7 @@ export default class SourceGeneratorSpec
             "\t\t[",
             "\t\t\tcreateElementFactory",
             "\t\t\t(",
-            "\t\t\t\t\"SPAN\",",
+            "\t\t\t\t\"span\",",
             "\t\t\t\t[",
             "\t\t\t\t\t[\"value\", \"\"],",
             "\t\t\t\t],",
@@ -199,13 +496,13 @@ export default class SourceGeneratorSpec
             "export default factory;",
         ].join("\n");
 
-        const actual = SourceGenerator.generate("x-component", "<span value=\"{host.value}\"></span>", false);
+        const actual = SourceGenerator.generate("x-component", "<span value=\"{host.value}\"></span>", { }, true);
 
         chai.assert.equal(actual, expected);
     }
 
     @test @shouldPass
-    public generateWithElementAndAttributesAndEventBindDirective(): void
+    public generateElementAndAttributesAndEventBindDirective(): void
     {
         const expected =
         [
@@ -222,7 +519,7 @@ export default class SourceGeneratorSpec
             "\t\t[",
             "\t\t\tcreateElementFactory",
             "\t\t\t(",
-            "\t\t\t\t\"SPAN\",",
+            "\t\t\t\t\"span\",",
             "\t\t\t\tundefined,",
             "\t\t\t\t[",
             "\t\t\t\t\tcreateEventFactory",
@@ -242,13 +539,13 @@ export default class SourceGeneratorSpec
             "export default factory;",
         ].join("\n");
 
-        const actual = SourceGenerator.generate("x-component", "<span @click=\"host.handler\"></span>", false);
+        const actual = SourceGenerator.generate("x-component", "<span @click=\"host.handler\"></span>", { }, true);
 
         chai.assert.equal(actual, expected);
     }
 
     @test @shouldPass
-    public generateWithElementAndAttributesAndCustomBindDirective(): void
+    public generateElementAndAttributesAndCustomBindDirective(): void
     {
         const expected =
         [
@@ -265,7 +562,7 @@ export default class SourceGeneratorSpec
             "\t\t[",
             "\t\t\tcreateElementFactory",
             "\t\t\t(",
-            "\t\t\t\t\"SPAN\",",
+            "\t\t\t\t\"span\",",
             "\t\t\t\tundefined,",
             "\t\t\t\t[",
             "\t\t\t\t\tcreateDirectiveFactory",
@@ -285,13 +582,13 @@ export default class SourceGeneratorSpec
             "export default factory;",
         ].join("\n");
 
-        const actual = SourceGenerator.generate("x-component", "<span #show=\"host.show\"></span>", false);
+        const actual = SourceGenerator.generate("x-component", "<span #show=\"host.show\"></span>", { }, true);
 
         chai.assert.equal(actual, expected);
     }
 
     @test @shouldPass
-    public generateWithElementAndAttributesAndOneWayBindDirective(): void
+    public generateElementAndAttributesAndOneWayBindDirective(): void
     {
         const expected =
         [
@@ -308,7 +605,7 @@ export default class SourceGeneratorSpec
             "\t\t[",
             "\t\t\tcreateElementFactory",
             "\t\t\t(",
-            "\t\t\t\t\"SPAN\",",
+            "\t\t\t\t\"span\",",
             "\t\t\t\tundefined,",
             "\t\t\t\t[",
             "\t\t\t\t\tcreateOnewayFactory",
@@ -328,13 +625,13 @@ export default class SourceGeneratorSpec
             "export default factory;",
         ].join("\n");
 
-        const actual = SourceGenerator.generate("x-component", "<span :value=\"host.value\"></span>", false);
+        const actual = SourceGenerator.generate("x-component", "<span :value=\"host.value\"></span>", { }, true);
 
         chai.assert.equal(actual, expected);
     }
 
     @test @shouldPass
-    public generateWithElementAndAttributesAndTwoWayBindDirective(): void
+    public generateElementAndAttributesAndTwoWayBindDirective(): void
     {
         const expected =
         [
@@ -351,7 +648,7 @@ export default class SourceGeneratorSpec
             "\t\t[",
             "\t\t\tcreateElementFactory",
             "\t\t\t(",
-            "\t\t\t\t\"SPAN\",",
+            "\t\t\t\t\"span\",",
             "\t\t\t\tundefined,",
             "\t\t\t\t[",
             "\t\t\t\t\tcreateTwowayFactory",
@@ -370,13 +667,13 @@ export default class SourceGeneratorSpec
             "export default factory;",
         ].join("\n");
 
-        const actual = SourceGenerator.generate("x-component", "<span ::value=\"host.value\"></span>", false);
+        const actual = SourceGenerator.generate("x-component", "<span ::value=\"host.value\"></span>", { }, true);
 
         chai.assert.equal(actual, expected);
     }
 
     @test @shouldPass
-    public generateWithConditionalDirective(): void
+    public generateConditionalDirective(): void
     {
         const expected =
         [
@@ -403,7 +700,7 @@ export default class SourceGeneratorSpec
             "\t\t\t\t\t\t\t[",
             "\t\t\t\t\t\t\t\tcreateElementFactory",
             "\t\t\t\t\t\t\t\t(",
-            "\t\t\t\t\t\t\t\t\t\"SPAN\",",
+            "\t\t\t\t\t\t\t\t\t\"span\",",
             "\t\t\t\t\t\t\t\t\tundefined,",
             "\t\t\t\t\t\t\t\t\tundefined,",
             "\t\t\t\t\t\t\t\t\t[",
@@ -426,7 +723,7 @@ export default class SourceGeneratorSpec
             "\t\t\t\t\t\t\t[",
             "\t\t\t\t\t\t\t\tcreateElementFactory",
             "\t\t\t\t\t\t\t\t(",
-            "\t\t\t\t\t\t\t\t\t\"SPAN\",",
+            "\t\t\t\t\t\t\t\t\t\"span\",",
             "\t\t\t\t\t\t\t\t\tundefined,",
             "\t\t\t\t\t\t\t\t\tundefined,",
             "\t\t\t\t\t\t\t\t\t[",
@@ -449,13 +746,13 @@ export default class SourceGeneratorSpec
             "export default factory;",
         ].join("\n");
 
-        const actual = SourceGenerator.generate("x-component", "<span #if=\"host.value\">Show</span><span #else>Hide</span>", false);
+        const actual = SourceGenerator.generate("x-component", "<span #if=\"host.value\">Show</span><span #else>Hide</span>", { }, true);
 
         chai.assert.equal(actual, expected);
     }
 
     @test @shouldPass
-    public generateWithLoopDirective(): void
+    public generateLoopDirective(): void
     {
         const expected =
         [
@@ -482,7 +779,7 @@ export default class SourceGeneratorSpec
             "\t\t\t\t\t[",
             "\t\t\t\t\t\tcreateElementFactory",
             "\t\t\t\t\t\t(",
-            "\t\t\t\t\t\t\t\"SPAN\",",
+            "\t\t\t\t\t\t\t\"span\",",
             "\t\t\t\t\t\t\tundefined,",
             "\t\t\t\t\t\t\tundefined,",
             "\t\t\t\t\t\t\t[",
@@ -506,7 +803,7 @@ export default class SourceGeneratorSpec
             "export default factory;",
         ].join("\n");
 
-        const actual = SourceGenerator.generate("x-component", "<span #for=\"value of host.values\">Value: {value}</span>", false);
+        const actual = SourceGenerator.generate("x-component", "<span #for=\"value of host.values\">Value: {value}</span>", { }, true);
 
         // writeFileSync("test.js", actual);
 
@@ -514,7 +811,7 @@ export default class SourceGeneratorSpec
     }
 
     @test @shouldPass
-    public generateWithPlaceholderDirective(): void
+    public generatePlaceholderDirective(): void
     {
         const expected =
         [
@@ -540,7 +837,7 @@ export default class SourceGeneratorSpec
             "\t\t\t\t\t[",
             "\t\t\t\t\t\tcreateElementFactory",
             "\t\t\t\t\t\t(",
-            "\t\t\t\t\t\t\t\"SPAN\",",
+            "\t\t\t\t\t\t\t\"span\",",
             "\t\t\t\t\t\t\tundefined,",
             "\t\t\t\t\t\t\tundefined,",
             "\t\t\t\t\t\t\t[",
@@ -564,7 +861,7 @@ export default class SourceGeneratorSpec
             "export default factory;",
         ].join("\n");
 
-        const actual = SourceGenerator.generate("x-component", "<span #placeholder=\"{ value: host.value }\">Value: {host.value}</span>", false);
+        const actual = SourceGenerator.generate("x-component", "<span #placeholder=\"{ value: host.value }\">Value: {host.value}</span>", { }, true);
 
         // writeFileSync("test.js", actual);
 
@@ -572,7 +869,7 @@ export default class SourceGeneratorSpec
     }
 
     @test @shouldPass
-    public generateWithInjectionDirective(): void
+    public generateInjectionDirective(): void
     {
         const expected =
         [
@@ -598,7 +895,7 @@ export default class SourceGeneratorSpec
             "\t\t\t\t\t[",
             "\t\t\t\t\t\tcreateElementFactory",
             "\t\t\t\t\t\t(",
-            "\t\t\t\t\t\t\t\"SPAN\",",
+            "\t\t\t\t\t\t\t\"span\",",
             "\t\t\t\t\t\t\tundefined,",
             "\t\t\t\t\t\t\tundefined,",
             "\t\t\t\t\t\t\t[",
@@ -622,7 +919,7 @@ export default class SourceGeneratorSpec
             "export default factory;",
         ].join("\n");
 
-        const actual = SourceGenerator.generate("x-component", "<span #Inject=\"{ value }\">Value: {value}</span>", false);
+        const actual = SourceGenerator.generate("x-component", "<span #Inject=\"{ value }\">Value: {value}</span>", { }, true);
 
         // writeFileSync("test.js", actual);
 
