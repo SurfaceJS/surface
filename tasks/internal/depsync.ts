@@ -1,10 +1,10 @@
+import type { PrereleaseTypes } from "@surface/core";
+import { Version }              from "@surface/core";
 import chalk                    from "chalk";
 import type { IPackage }        from "npm-registry-client";
 import Status                   from "./enums/status.js";
 import StrategyType             from "./enums/strategy-type.js";
 import NpmRepository            from "./npm-repository.js";
-import type { PrereleaseTypes } from "./version.js";
-import Version                  from "./version.js";
 
 const blue      = chalk.rgb(0, 115, 230);
 const darkGreen = chalk.rgb(0, 128, 0);

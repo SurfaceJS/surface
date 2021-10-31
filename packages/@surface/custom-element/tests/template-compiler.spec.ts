@@ -2,22 +2,24 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "@surface/dom-shim";
 
-import type { Delegate }                        from "@surface/core";
-import { AggregateError, resolveError, uuidv4 } from "@surface/core";
-import { shouldFail, shouldPass, suite, test }  from "@surface/test-suite";
-import chai                                     from "chai";
-import CustomElement                            from "../internal/custom-element.js";
-import element                                  from "../internal/decorators/element.js";
-import LoopDirective                            from "../internal/directives/loop-directive.js";
-import CustomStackError                         from "../internal/errors/custom-stack-error.js";
-import TemplateEvaluationError                  from "../internal/errors/template-evaluation-error.js";
-import TemplateCompiler                         from "../internal/processors/template-compiler.js";
-import { scheduler }                            from "../internal/singletons.js";
-import type DirectiveEntry                      from "../internal/types/directive-entry";
-import customDirectiveFactory                   from "./fixtures/custom-directive-factory.js";
-import CustomDirective                          from "./fixtures/custom-directive.js";
+import type { Delegate }                                 from "@surface/core";
+import { AggregateError, Version, resolveError, uuidv4 } from "@surface/core";
+import { shouldFail, shouldPass, suite, test }           from "@surface/test-suite";
+import chai                                              from "chai";
+import CustomElement                                     from "../internal/custom-element.js";
+import element                                           from "../internal/decorators/element.js";
+import LoopDirective                                     from "../internal/directives/loop-directive.js";
+import CustomStackError                                  from "../internal/errors/custom-stack-error.js";
+import TemplateEvaluationError                           from "../internal/errors/template-evaluation-error.js";
+import TemplateCompiler                                  from "../internal/processors/template-compiler.js";
+import { scheduler }                                     from "../internal/singletons.js";
+import type DirectiveEntry                               from "../internal/types/directive-entry";
+import customDirectiveFactory                            from "./fixtures/custom-directive-factory.js";
+import CustomDirective                                   from "./fixtures/custom-directive.js";
 
 const globalCustomDirectives = new Map<string, DirectiveEntry>();
+
+declare const process: { version: string };
 
 // @ts-ignore
 LoopDirective.maximumAmount = 2;
@@ -1642,8 +1644,11 @@ export default class TemplateCompilerSpec
 
         const shadowRoot = "<span @click=\"host.deep.fn\"></span>";
 
-        const message = "Evaluation error in '@click=\"host.deep.fn\"': Cannot read property 'fn' of undefined";
-        const stack   = "<y-component>\n   #shadow-root\n      <span @click=\"host.deep.fn\">";
+        const message = Version.compare(Version.parse(process.version), new Version(16, 0, 0)) == 1
+            ? "Evaluation error in '@click=\"host.deep.fn\"': Cannot read properties of undefined (reading 'fn')"
+            : "Evaluation error in '@click=\"host.deep.fn\"': Cannot read property 'fn' of undefined";
+
+        const stack = "<y-component>\n   #shadow-root\n      <span @click=\"host.deep.fn\">";
 
         const actual   = tryAction(() => compile({ host, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));

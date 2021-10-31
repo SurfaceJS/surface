@@ -1,6 +1,6 @@
 // eslint-disable-next-line sort-keys
 const prereleaseMap = { dev: 0, alpha: 1, beta:  2, rc: 3 };
-const pattern       = /^(\d+)\.(\d+)\.(\d+)(?:-(\w+)\.(\d+))?$/;
+const pattern       = /^v?(\d+)\.(\d+)\.(\d+)(?:-(\w+)\.(\d+))?$/;
 
 export type PrereleaseTypes = "alpha" | "beta" | "dev" | "rc";
 export type Prerelease      = { type: PrereleaseTypes, version: number };

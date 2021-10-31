@@ -1,7 +1,7 @@
 import type { IDisTags, IPackage } from "npm-registry-client";
 import RegClient                   from "npm-registry-client";
 import Status                      from "./enums/status.js";
-import Version                     from "./version.js";
+import Version                     from "@surface/core/internal/version";
 
 const silentLog =
 {
