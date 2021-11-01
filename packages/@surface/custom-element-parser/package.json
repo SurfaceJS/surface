@@ -13,7 +13,7 @@
     "devDependencies": {
         "@surface/dom-shim": "file:../dom-shim",
         "@surface/test-suite": "file:../test-suite",
-        "@types/chai": "^4.2.21",
+        "@types/chai": "^4.2.22",
         "@types/chai-as-promised": "^7.1.4",
         "chai": "^4.3.4",
         "chai-as-promised": "^7.1.1"
@@ -31,9 +31,6 @@
     "repository": {
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/surface.git"
-    },
-    "peerDependencies": {
-        "webpack": "^5.52.1"
     },
     "sideEffects": false,
     "type": "module",
