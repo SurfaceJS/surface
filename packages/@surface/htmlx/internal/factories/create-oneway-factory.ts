@@ -1,5 +1,5 @@
 import type { Delegate }                                              from "@surface/core";
-import type { ObservablePath, StackTrace      }                       from "@surface/custom-element-parser";
+import type { ObservablePath, StackTrace      }                       from "@surface/htmlx-parser";
 import { checkProperty, classMap, styleMap, tryEvaluate, tryObserve } from "../common.js";
 import type AttributeFactory                                          from "../types/attribute-factory.js";
 import type Evaluator                                                 from "../types/evaluator.js";

@@ -1,4 +1,4 @@
-import type { ObservablePath, StackTrace }   from "@surface/custom-element-parser";
+import type { ObservablePath, StackTrace }   from "@surface/htmlx-parser";
 import { checkPath, checkProperty, tryBind } from "../common.js";
 import type AttributeFactory                 from "../types/attribute-factory.js";
 

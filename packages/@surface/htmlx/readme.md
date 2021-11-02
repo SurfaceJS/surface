@@ -1,7 +1,7 @@
 # Summary
 * [Introduction](#introduction)
-* [Getting Started](#getting-started)
-* [Templating](#templating)
+* [Compiling](#compiling)
+* [Template Syntax](#template-syntax)
 * [Interpolation](#interpolation)
 * [Bindings](#bindings)
     * [One Way](#one-way)
@@ -9,9 +9,8 @@
     * [Events](#events)
     * [Class and Style](#class-and-style)
 * [Reactivity](#reactivity)
-    * [Computed properties](#computed-properties)
     * [Scopes](#scopes)
-* [Template Directive Statements](#template-directive-statements)
+* [Template Directives](#template-directives)
     * [Conditional](#conditional)
     * [Loop](#loop)
     * [Placeholder and Injection](#placeholder-and-injection)
@@ -19,78 +18,58 @@
     * [Styling injections](#styling-injections)
     * [Awaiting painting](#awaiting-painting)
     * [Custom Directives](#custom-directives)
-    * [Custom Processing](#custom-processing)
-* [Decorators](#decorators)
-    * [attribute](#attribute)
-    * [event](#event)
-    * [listener](#listener)
-    * [query](#query)
-    * [queryAll](#queryall)
-    * [styles](#styles)
 
 # Introduction
 [Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components) are a set of web platform APIs that allow you to create new custom, reusable, encapsulated HTML tags to use in web pages and web apps. Custom components and widgets build on the Web Component standards, will work across modern browsers, and can be used with any JavaScript library or framework that works with HTML.
 
 However, the technology still lacks some important features presents on everyday workflow.
 
-**@surface/custom-element** aims fill this gap adding the ability to use directives and data bindings within web components templates enabling the creation of more complex components with less effort.  
+**@surface/htmlx** aims fill this gap adding the ability to use directives and data bindings within web components templates enabling the creation of more complex components with less effort.
 
-# Getting Started
-A minimal component requires two things: Extend the Custom Element class and annotate the class with the element's decorator.
-
-Simple hello world component
-
-Typescript.
-```ts
-import CustomElement, { element } from "@surface/custom-element";
-
-const template = "<span>Hello {host.name}!!!</span>";
-const style    = "span { color: red; }";
-
-@element("my-element", { template, style })
-class MyElement extends CustomElement
-{
-    public name: string = "World";
-}
-
-document.body.appendChild(new MyElement());
-```
-
-Javascript (no decorators).
-```js
-import CustomElement, { element } from "@surface/custom-element";
-
-const template = "<span>Hello {host.name}!!!</span>";
-const style    = "span { color: red; }";
-
-class _MyElement extends CustomElement
-{
-    name = "World";
-}
-
-const MyElement = element("my-element", { template, style })(_MyElement);
-
-document.body.appendChild(new MyElement());
-```
-
-You also can extends builtin elements using the `extends` option with the mixin `CustomElement.as`.
+### Compiling
+Note that it is not recommended to use the runtime compiler for more serious work.. Consider using the `webpack` with `@surface/htmlx-loader`.
 
 ```ts
-import CustomElement, { element } from "@surface/custom-element";
+import type { IDisposable } from "@surface/core";
+import Compiler             from "@surface/htmlx";
 
-@element("my-element", { extends: "button" })
-class MyElement extends CustomElement.as(HTMLButtonElement)
+class MyComponent extends HTMLElement implements IDisposable
 {
-    /* ... */
+    private readonly disposable: IDisposable;
+
+    public constructor()
+    {
+        this.attachShadow({ mode: "open" });
+
+        const [content, activator] = Compiler.compile("my-element", "<span>Hello {name}!!!</span>");
+
+        this.shadowRoot!.appendChild(content);
+
+        // Activate providing the root element, host element, scope object and custom directives map.
+        this.disposable = activator(this.shadowRoot, this, { name: "World" }, new Map());
+    }
+
+    public dispose(): void
+    {
+
+        // Disposes template bindings
+        this.disposable.dispose();
+    }
 }
 
-document.body.appendChild(new MyElement());
+window.HTMLXElements.define("my-element", MyComponent);
+
+const myComponent = new MyComponent();
+
+document.body.appendChild(myComponent);
+
+/* ... */
+
+// Always call dispose before discard processed element to prevent memory leak.
+myComponent.dispose();
 ```
 
-Note that currently custom elements are registered at declaration time in the global scope due a limitation of the current [web components spec](https://www.webcomponents.org/specs). This is expected to change with the arrival of [Custom Element Registry](https://github.com/WICG/webcomponents/pull/865).
-
-## Templating
-Templates are where the magic happens. It can handle some types of directives to present data in dynamic ways.
+# Template Syntax
 
 ### Interpolation
 Interpolation has the syntax `"Some Text {expression}"` and can be used in the text node or in the attributes.
@@ -156,7 +135,7 @@ Binded events are executed in the scope of the template as opposed to events pas
 
 ### Reactivity
 The core of the binding system is reactivity that allows the ui keep sync with the data.  
-Templates can evaluate almost any valid javascript expression ([see more](../expression/readme.md)). But only properties can be observed and requires that observed properties to be **`configurable`** and not **`readonly`**.  
+HTMLx templates can evaluate almost any valid javascript expression ([see more](../expression/readme.md)). But only properties can be observed and requires that observed properties to be **`configurable`** and not **`readonly`**.  
 
 By design, no error or warning will be fired when trying to use an non observable property in an expression. Except for **two way** binding higher members.
 
@@ -167,48 +146,16 @@ Example assuming that the scope contains variables called amount and item:
 
 The above expression only be reevaluated when the properties **`host.value`** or **`item.value`** changes since the variables like **amount** are not reactive.
 
-### Computed properties
-Since readonly properties cannot be observed, to make them reactive it is necessary to map their dependencies using the `@computed` decorator.
 
-```ts
-import CustomElement, { computed, element } from "@surface/custom-element";
 
-const template = "<span>Computed: {host.sum}</span>";
 
-@element("my-element", { template })
-class MyElement extends CustomElement
-{
-    private a: number = 0;
-    private b: number = 0;
 
-    // When **a** or **b** changes, the **sum** is notified.
-    @computed("a", "b")
-    public get sum(): number
-    {
-        return this.a + this.b;
-    }
-}
-```
 
 ### Scopes
 Reactivity depends on the scope which may vary according to the context.
 
-The upper scope contains only the variable **`host`** which refers to the model owner (shadowroot host).
-Inside the child elements, it is possible to access the variable **`this`** which refers to the element itself.
-
-```html
-<div>{this.nodeName}<span name="{this.nodeName}">{this.nodeName}</span></div>
-<!-- Results -->
-<div>DIV<span name="SPAN">SPAN</span></div>
-```
-
-The base scope resembles something like this but it can also be extended using directives as we'll see later.
-```ts
-type Scope = { host: MyElement, this?: HTMLElement };
-```
-
-### Template Directive Statements
-Template Directive Statements allows us to dynamically create content associated with local scopes.
+### Template Directives
+Template Directives allows us to dynamically create content associated with local scopes.
 
 Directives can be used with templates or elements.
 
@@ -263,7 +210,7 @@ Transclusion means the inclusion of the content of one document within another d
 
 Html5 already provides this through slots.
 
-On surface/custom-element, templates additionally provide the ability to inject the client's html into the component's shadowdom.
+On surface/htmlx-element, templates additionally provide the ability to inject the client's templates into the component's shadowdom.
 
 ```html
 <!--my-element-->
@@ -400,79 +347,16 @@ my-element::part(header)
 </my-element>
 ```
 
-### Awaiting painting
-Sometimes you may need to access some interface element that can be dynamically rendered as some data changes.
-
-```ts
-import CustomElement { element } from "@surface/custom-element";
-
-const template =
-`
-    <table>
-        <tr #for="item of host.items">
-            <td>{item.name}</td>
-        </tr>
-    </table>
-`;
-
-@element("my-element", { template })
-class MyComponent extends CustomElement
-{
-    public items: string[] = [];
-
-    public changeData(): void
-    {
-        this.items = ["One", "Two", "Three"];
-
-        const table = this.shadowRoot.querySelector("table");
-
-        console.log(table.rows.length) // expected 3, but logged 0;
-    }
-}
-```
-
-When the data changes, all associated ui updated is scheduled and executed asynchronously.
-Therefore, it is necessary to wait for the execution of all updates before accessing the element.
-
-This can be done awaiting the promise returned by the `painting` method.
-
-```ts
-import CustomElement { element, painting } from "@surface/custom-element";
-
-const template =
-`
-    <table>
-        <tr #for="item of host.items">
-            <td>{item.name}</td>
-        </tr>
-    </table>
-`;
-
-@element("my-element", { template })
-class MyComponent extends CustomElement
-{
-    public items: string[] = [];
-
-    public async changeData(): Promise<void>
-    {
-        this.items = ["One", "Two", "Three"];
-
-        await painting();
-
-        const table = this.shadowRoot.querySelector("table");
-
-        console.log(table.rows.length) // logged 3;
-    }
-}
-```
-
 ### Custom Directives
 Custom directives enables behaviors without a need to dive into the elements internals.
-It requires extending the `Directive` class and registering using `CustomElement.registerDirective` on global scope or element scope through `@element` decorator.
+It requires extending the `Directive` class and registering using `HTMLXElement.registerDirective` on global scope or element scope through `@element` decorator.
 
 ```ts
-import type { DirectiveContext }   from "@surface/custom-element";
-import CustomElement { Directive } from "@surface/custom-element";
+import type { DirectiveContext, DirectiveEntry } from "@surface/htmlx";
+import { Directive }                             from "@surface/htmlx";
+import HTMLXElement { Directive }                from "@surface/htmlx-element";
+
+const customDirectives: Map<string, DirectiveEntry> = new Map();
 
 class ShowDirective extends Directive
 {
@@ -491,8 +375,7 @@ class ShowDirective extends Directive
     }
 }
 
-// Registered at global scope
-CustomElement.registerDirective("show", ShowDirective);
+customDirectives.set("show", ShowDirective);
 
 const template =
 `
@@ -505,25 +388,6 @@ const template =
     </span>
 `;
 
-// Registered at my-element scope
-@element("my-element", { template, directives: { 'el-show': ShowDirective } })
-class MyElement extends CustomElement
-{ /* ... */ }
-```
-
-
-
-
-
-
-### Custom Processing
-If you need more control over you component but do not want to give up the reactivity it is also possible to manually process the template. Just remember of always dispose your unused stuffs.
-
-```ts
-
-import type { IDisposable }                  from "@surface/core";
-import type { disposeTree, processTemplate } from "@surface/custom-element";
-
 class MyComponent extends HTMLElement implements IDisposable
 {
     private readonly disposable: IDisposable;
@@ -532,11 +396,12 @@ class MyComponent extends HTMLElement implements IDisposable
     {
         this.attachShadow({ mode: "open" });
 
-        const [content, disposable] = processTemplate("<span>Hello {name}!!!</span>", { name: "World" });
+        const [content, activator] = Compiler.compile("my-element", "<span>Hello {name}!!!</span>");
 
         this.shadowRoot!.appendChild(content);
 
-        this.disposable = disposable;
+        // Activate providing the root element, host element, scope object and custom directives map.
+        this.disposable = activator(this.shadowRoot, this, { name: "World" }, customDirectives);
     }
 
     public dispose(): void
@@ -544,166 +409,6 @@ class MyComponent extends HTMLElement implements IDisposable
 
         // Disposes template bindings
         this.disposable.dispose();
-
-        // Disposes nested custom elements
-        disposeTree(this.shadowRoot);
     }
 }
-
-window.customElements.define("my-element", MyComponent);
-
-const myComponent = new MyComponent();
-
-document.body.appendChild(myComponent);
-
-/* ... */
-
-// Always call dispose before discard processed element to prevent memory leak.
-myComponent.dispose();
-
-```
-
-## Decorators
-In addition, @surface / custom-element also provides a set of decorators that help with most trivial tasks.
-
-### attribute
-Keeps sync between property and decorator.
-
-```ts
-import CustomElement { attribute, element } from "@surface/custom-element";
-
-@element("my-element")
-class MyComponent extends CustomElement
-{
-    @attribute
-    public string: string = "some string";
-
-    @attribute(Boolean)
-    public boolean: boolean = false;
-
-    @attribute({ type: Number })
-    public number: number = 5;
-
-    @attribute({ name: "json" type: JSON })
-    public object: object = { foo: "bar" };
-
-    @attribute({ type: { parse: x => x === "true" || x === "", stringfy: String }, })
-    public customParser: boolean = false;
-}
-```
-
-Results
-```html
-    <my-element string="some string" boolean number="5" json='{"foo":"bar"}' custom-parser="false"></my-element>
-```
-
-### event
-Listen for a host event using the decorated method as a handler.
-
-```ts
-import CustomElement { event } from "@surface/custom-element";
-
-@element("my-element")
-class MyComponent extends CustomElement
-{
-    @event("click")
-    public onClick(event: Event): void
-    {
-        /* Do Something */
-    }
-}
-```
-
-### listener
-Listen to property changes.
-
-```ts
-import CustomElement { listener } from "@surface/custom-element";
-
-@element("my-element")
-class MyComponent extends CustomElement
-{
-    public value: number = 0;
-
-    @listener("value")
-    public valueListener(value: number): void
-    {
-        /* Do Something */
-    }
-}
-```
-
-### query
-Injects and optionally cache lazy queried element.
-
-```ts
-import CustomElement { query } from "@surface/custom-element";
-
-const template = "<input type='text' /><button>Click Me</button>";
-
-@element("my-element", { template })
-class MyComponent extends CustomElement
-{
-    @query("input")
-    public input: HTMLInputElement!;
-
-    @query("button", true) // no cache
-    public button: HTMLButtonElement!;
-}
-```
-
-### queryAll
-Injects and optionally cache lazy queried an list of elements.
-
-```ts
-import CustomElement { queryAll } from "@surface/custom-element";
-
-const template =
-`
-    <table>
-        <tr>
-            <td>
-                <input type='text' />
-                <button>Click Me</button>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <input type='text' />
-                <button>Click Me</button>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <input type='text' />
-                <button>Click Me</button>
-            </td>
-        </tr>
-    </table>
-`;
-
-@element("my-element", { template })
-class MyComponent extends CustomElement
-{
-    @queryAll("tr td input")
-    public input: HTMLInputElement[]!;
-
-    @queryAll("tr td button", true) // no cache
-    public button: HTMLButtonElement[]!;
-}
-```
-
-### styles
-Styles adopted by the shadow root. Particularly useful when used with inheritance or mixins.
-
-```ts
-import CustomElement { element, styles } from "@surface/custom-element";
-
-@styles(".danger { color: red; }")
-class StyleableElement extends CustomElement
-{ }
-
-@element("my-element", { template: "<span class='danger'>Some critical message</span>" })
-class MyElement extends StyleableElement
-{ }
 ```

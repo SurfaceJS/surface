@@ -1,4 +1,4 @@
-import type { ObservablePath, StackTrace } from "@surface/custom-element-parser";
+import type { ObservablePath, StackTrace } from "@surface/htmlx-parser";
 import Block                               from "../directives/block.js";
 import LoopDirective                       from "../directives/loop-directive.js";
 import type Activator                      from "../types/activator";

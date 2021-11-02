@@ -1,4 +1,4 @@
-import type { StackTrace }   from "@surface/custom-element-parser";
+import type { StackTrace }   from "@surface/htmlx-parser";
 import { tryEvaluate }       from "../common.js";
 import type AttributeFactory from "../types/attribute-factory.js";
 import type Evaluator        from "../types/evaluator.js";

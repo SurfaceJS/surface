@@ -2,8 +2,8 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "@surface/dom-shim";
 
-import CustomElement, { define, element }      from "@surface/custom-element";
 import Container, { inject }                   from "@surface/dependency-injection";
+import HTMLXElement, { define, element }      from "@surface/htmlx-element";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                    from "chai";
 import chaiAsPromised                          from "chai-as-promised";
@@ -19,7 +19,7 @@ import WebRouter                               from "../internal/web-router.js";
 chai.use(chaiAsPromised);
 
 @element("home-view", { template: "<router-outlet></router-outlet><router-outlet name='non-default'></router-outlet>" })
-class HomeView extends CustomElement
+class HomeView extends HTMLXElement
 {
     public fullscreen: boolean = false;
 
@@ -58,7 +58,7 @@ class HomeOtherDetailView extends HTMLElement
 { }
 
 @element("home-index-view", { template: "<div id='router-outlet' name='non-default'></div>" })
-class HomeIndexView extends CustomElement implements IRouteableElement
+class HomeIndexView extends HTMLXElement implements IRouteableElement
 { }
 
 @define("home-index-detail-view")
@@ -113,7 +113,7 @@ const template =
     `;
 
 @element("app-root", { template })
-class AppRoot extends CustomElement
+class AppRoot extends HTMLXElement
 {
     public fullscreen: boolean = false;
 }
@@ -213,7 +213,7 @@ export default class WebRouterSpec
 
         this.router = new WebRouter(options);
 
-        CustomElement.registerDirective("to", x => new RouterLinkDirective(this.router, x));
+        HTMLXElement.registerDirective("to", x => new RouterLinkDirective(this.router, x));
 
         this.appRoot = document.body.appendChild(new AppRoot());
     }

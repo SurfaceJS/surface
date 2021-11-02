@@ -1,4 +1,4 @@
-import type { ObservablePath, StackTrace } from "@surface/custom-element-parser";
+import type { ObservablePath, StackTrace } from "@surface/htmlx-parser";
 import { tryEvaluate, tryObserve }         from "../common.js";
 import type Activator                      from "../types/activator";
 import type Evaluator                      from "../types/evaluator";

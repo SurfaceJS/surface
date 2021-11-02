@@ -60,7 +60,7 @@
             // [
             //     "publish", "https://registry.npmjs.org1",
             //     "-t"     , "123",
-            //     "-m"     , "@surface/custom-element",
+            //     "-m"     , "@surface/htmlx-element",
             //     "-d"     , "true"
             // ],
             "args":     ["clean"],

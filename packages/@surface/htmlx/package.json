@@ -5,8 +5,8 @@
     },
     "dependencies": {
         "@surface/core": "file:../core",
-        "@surface/custom-element-parser": "file:../custom-element-parser",
         "@surface/expression": "file:../expression",
+        "@surface/htmlx-parser": "file:../htmlx-parser",
         "@surface/observer": "file:../observer",
         "@surface/reflection": "file:../reflection",
         "tslib": "^2.3.1"
@@ -19,6 +19,10 @@
         "@types/chai-as-promised": "^7.1.4",
         "chai": "^4.3.4",
         "chai-as-promised": "^7.1.1"
+    },
+    "exports": {
+        ".": "./index.js",
+        "./aot": "./index.aot.js"
     },
     "homepage": "https://github.com/SurfaceJS/surface#readme",
     "keywords": [

@@ -10,11 +10,6 @@ const loaders =
         loader:  "file-loader",
         options: { esModule: false, name: "[hash].[ext]" },
     },
-    fileAssetsCss:
-    {
-        loader:  "file-loader",
-        options: { esModule: false, name: "[hash].css", outputPath: "css" },
-    },
     html:
     {
         loader:  "html-loader",
@@ -25,7 +20,6 @@ const loaders =
             sources:  true,
         },
     },
-    htmlx:      { loader: "@surface/custom-element-loader" },
     resolveUrl:
     {
         loader:  "resolve-url-loader",

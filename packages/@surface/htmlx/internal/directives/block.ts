@@ -2,7 +2,7 @@
 import type { IDisposable } from "@surface/core";
 import { enumerateRange }   from "../common.js";
 
-const BLOCKS = Symbol("custom-element:block");
+const BLOCKS = Symbol("htmlx:block");
 
 type Anchor = Comment & { [BLOCKS]: Set<Block> };
 

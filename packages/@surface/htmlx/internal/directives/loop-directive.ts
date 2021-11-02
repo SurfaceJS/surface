@@ -1,7 +1,7 @@
 
 import { CancellationTokenSource, DisposableMetadata } from "@surface/core";
 import type { Delegate, IDisposable, Subscription }    from "@surface/core";
-import type { ObservablePath, StackTrace          }    from "@surface/custom-element-parser";
+import type { ObservablePath, StackTrace          }    from "@surface/htmlx-parser";
 import { tryEvaluate, tryEvaluatePattern, tryObserve } from "../common.js";
 import { scheduler }                                   from "../singletons.js";
 import type DestructuredEvaluator                      from "../types/destructured-evaluator";

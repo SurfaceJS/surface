@@ -68,6 +68,22 @@
             },
             "type": "object"
         },
+        "AttributeHandler": {
+            "properties": {
+                "attribute": {
+                    "type": "string"
+                },
+                "tag": {
+                    "type": "string"
+                },
+                "type": {
+                    "enum": [
+                        "src",
+                        "srcset"
+                    ]
+                }
+            }
+        },
         "BuildConfiguration": {
             "additionalProperties": false,
             "properties": {
@@ -283,6 +299,28 @@
                     "enum": [
                         "filesystem"
                     ]
+                }
+            }
+        },
+        "HTMLXMode": {
+            "description": "Compilation mode of templates used by @surface/htmlx. * aot: Tree shakeble. All templates will be compiled at build time. Attempting to use runtime templates will raise an error. * mixed: Non tree shakeble. All templates will be compiled at build time, but it will also be possible to compile at run time. * runtime: Non tree shakeble. All templates will be compiled at runtime.",
+            "enum": [
+                "aot",
+                "mixed",
+                "runtime"
+            ]
+        },
+        "HTMLXOptions": {
+            "properties": {
+                "attributeHandlers": {
+                    "description": "Set attributes that need special resolution. Like the attributes src and srcset of tag img.",
+                    "items": {
+                        "$ref": "#/definitions/AttributeHandler"
+                    },
+                    "type": "array"
+                },
+                "mode": {
+                    "$ref": "#/definitions/HTMLXMode"
                 }
             }
         },
@@ -548,6 +586,16 @@
                     "description": "The filename of the entry chunk as relative path inside the output path directory.",
                     "type": "string"
                 },
+                "htmlx": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/HTMLXMode"
+                        },
+                        {
+                            "$ref": "#/definitions/HTMLXOptions"
+                        }
+                    ]
+                },
                 "includeFiles": {
                     "$ref": "#/definitions/IncludeFiles",
                     "description": "File patterns to copy to output path."
@@ -575,14 +623,6 @@
                 "target": {
                     "$ref": "#/definitions/Target",
                     "description": "Environment to build for."
-                },
-                "templateExpressionMode": {
-                    "description": "Compilation mode of templates used by @surface/custom-elements. * aot: Tree shakeble. All templates will be compiled at build time. Attempting to use runtime templates will raise an error. * mixed: Non tree shakeble. All templates will be compiled at build time, but it will also be possible to compile at run time. * runtime: Non tree shakeble. All templates will be compiled at runtime.",
-                    "enum": [
-                        "aot",
-                        "mixed",
-                        "runtime"
-                    ]
                 },
                 "tsconfig": {
                     "description": "Path to tsconfig file.",

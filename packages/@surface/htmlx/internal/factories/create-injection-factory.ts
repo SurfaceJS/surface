@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import type { ObservablePath, StackTrace } from "@surface/custom-element-parser";
+import type { ObservablePath, StackTrace } from "@surface/htmlx-parser";
 import Block                               from "../directives/block.js";
 import InjectDirective                     from "../directives/inject-directive.js";
 import type Activator                      from "../types/activator";

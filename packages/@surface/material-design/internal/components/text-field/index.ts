@@ -1,5 +1,5 @@
 import { assert, mix }                                               from "@surface/core";
-import CustomElement, { attribute, computed, element, event, query } from "@surface/custom-element";
+import HTMLXElement, { attribute, computed, element, event, query } from "@surface/htmlx-element";
 import colorable                                                     from "../../mixins/colorable/index.js";
 import lineRippleable                                                from "../../mixins/line-rippleable/index.js";
 import themeable                                                     from "../../mixins/themeable/index.js";
@@ -16,7 +16,7 @@ declare global
 }
 
 @element("smd-text-field", { style, template })
-export default class TextField extends mix(CustomElement, [colorable, lineRippleable, themeable])
+export default class TextField extends mix(HTMLXElement, [colorable, lineRippleable, themeable])
 {
     private _selectionEnd:   number = 0;
     private _selectionStart: number = 0;

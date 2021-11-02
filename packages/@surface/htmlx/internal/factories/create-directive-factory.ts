@@ -1,6 +1,6 @@
 import type { IDisposable }                from "@surface/core";
 import { typeGuard }                       from "@surface/core";
-import type { ObservablePath, StackTrace } from "@surface/custom-element-parser";
+import type { ObservablePath, StackTrace } from "@surface/htmlx-parser";
 import { buildStackTrace }                 from "../common.js";
 import TemplateProcessError                from "../errors/template-process-error.js";
 import type AttributeFactory               from "../types/attribute-factory";

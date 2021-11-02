@@ -20,7 +20,7 @@
     "references":
     [
         { "path": "../core" },
-        { "path": "../custom-element-loader" },
+        { "path": "../htmlx-loader" },
         { "path": "../io" },
         { "path": "../mock" },
         { "path": "../test-suite" },

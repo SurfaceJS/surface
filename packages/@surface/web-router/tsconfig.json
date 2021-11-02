@@ -18,7 +18,7 @@
     "references":
     [
         { "path": "../core" },
-        { "path": "../custom-element" },
+        { "path": "../htmlx" },
         { "path": "../dependency-injection" },
         { "path": "../dom-shim" },
         { "path": "../router" },

@@ -1,4 +1,4 @@
-import CustomElement, { element } from "@surface/custom-element";
+import HTMLXElement, { element } from "@surface/htmlx-element";
 import template                   from "./index.htmlx";
 import style                      from "./index.scss";
 
@@ -12,5 +12,5 @@ declare global
 }
 
 @element("smd-content", { style, template })
-export default class Content extends CustomElement
+export default class Content extends HTMLXElement
 { }

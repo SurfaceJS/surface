@@ -1,5 +1,5 @@
 import { mix }                                     from "@surface/core";
-import CustomElement, { computed, element, query } from "@surface/custom-element";
+import HTMLXElement, { computed, element, query } from "@surface/htmlx-element";
 import colorable                                   from "../../mixins/colorable/index.js";
 import elevationable                               from "../../mixins/elevatable/index.js";
 import themeable                                   from "../../mixins/themeable/index.js";
@@ -16,7 +16,7 @@ declare global
 }
 
 @element("smd-footer", { style, template })
-export default class Footer extends mix(CustomElement, [colorable, elevationable, themeable])
+export default class Footer extends mix(HTMLXElement, [colorable, elevationable, themeable])
 {
     @query("#root")
     public colorable!: HTMLElement;

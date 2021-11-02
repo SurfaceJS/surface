@@ -1,6 +1,5 @@
-import type StackTrace     from "../../types/stack-trace";
-import type Evaluator      from "./evaluator.js";
-import type ObservablePath from "./observable-path.js";
+import type { ObservablePath, StackTrace } from "@surface/htmlx-parser";
+import type Evaluator                      from "./evaluator.js";
 
 type DirectiveContext =
 {

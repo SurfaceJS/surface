@@ -65,16 +65,17 @@ export default class CreateConfigurationsSpec
                             variables: ["Foo", "Bar"],
                         },
                     },
-                    eslint:                 { enabled: true },
-                    index:                  "template.html",
-                    mode:                   "production",
-                    preferTs:               true,
-                    target:                 "pwa",
-                    templateExpressionMode: "aot",
+                    eslint:   { enabled: true },
+                    htmlx:    { attributeHandlers: [], mode: "aot" },
+                    index:    "template.html",
+                    mode:     "production",
+                    preferTs: true,
+                    target:   "pwa",
                 },
                 empty:
                 {
                     eslint: undefined,
+                    htmlx:  "aot",
                     mode:   undefined,
                 },
                 webworker:

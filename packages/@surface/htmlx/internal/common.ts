@@ -1,6 +1,6 @@
 import type { Delegate, Subscription }                                         from "@surface/core";
 import { getPropertyDescriptor, getValue, isReadonly, resolveError, setValue } from "@surface/core";
-import type { ObservablePath, StackTrace }                                     from "@surface/custom-element-parser";
+import type { ObservablePath, StackTrace }                                     from "@surface/htmlx-parser";
 import TemplateEvaluationError                                                 from "./errors/template-evaluation-error.js";
 import TemplateObservationError                                                from "./errors/template-observation-error.js";
 import TemplateProcessError                                                    from "./errors/template-process-error.js";

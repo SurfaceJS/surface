@@ -1,5 +1,5 @@
 import { mix }                                                                 from "@surface/core";
-import CustomElement, { attribute, computed, element, event, listener, query } from "@surface/custom-element";
+import HTMLXElement, { attribute, computed, element, event, listener, query } from "@surface/htmlx-element";
 import colorable                                                               from "../../mixins/colorable/index.js";
 import disableable                                                             from "../../mixins/disableable/index.js";
 import elevatable                                                              from "../../mixins/elevatable/index.js";
@@ -18,7 +18,7 @@ declare global
 }
 
 @element("smd-switch", { style, template })
-export default class Switch extends mix(CustomElement, [colorable, disableable, elevatable, rippleable, themeable])
+export default class Switch extends mix(HTMLXElement, [colorable, disableable, elevatable, rippleable, themeable])
 {
     @query("#root")
     public colorable!: HTMLElement;

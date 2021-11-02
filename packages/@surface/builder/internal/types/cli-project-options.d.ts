@@ -19,7 +19,7 @@ type CliProjectOptions =
     preferTs?:               boolean | string[],
     publicPath?:             string,
     target?:                 Project["target"],
-    templateExpressionMode?: Project["templateExpressionMode"],
+    htmlx?:                  Project["htmlx"],
     tsconfig?:               string,
 };
 

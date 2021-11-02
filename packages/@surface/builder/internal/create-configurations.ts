@@ -1,10 +1,7 @@
 /* eslint-disable max-statements */
 /* eslint-disable max-lines-per-function */
-import { readlinkSync }                               from "fs";
-import path                                           from "path";
 import { URL }                                        from "url";
 import { DeepMergeFlags, deepMerge }                  from "@surface/core";
-import { isSymbolicLink, lookup }                     from "@surface/io";
 import { CleanWebpackPlugin }                         from "clean-webpack-plugin";
 import CopyPlugin                                     from "copy-webpack-plugin";
 import EslintWebpackPlugin                            from "eslint-webpack-plugin";
@@ -17,7 +14,6 @@ import webpack                                        from "webpack";
 import { BundleAnalyzerPlugin }                       from "webpack-bundle-analyzer";
 import WorkboxPlugin                                  from "workbox-webpack-plugin";
 import loaders                                        from "./loaders.js";
-import type { FileOverride }                          from "./plugins/override-resolver-plugin.js";
 import OverrideResolvePlugin                          from "./plugins/override-resolver-plugin.js";
 import PreferTsResolverPlugin                         from "./plugins/prefer-ts-resolver-plugin.js";
 import type Configuration                             from "./types/configuration";
@@ -79,7 +75,7 @@ const PROJECT_DEFAULTS: Project =
             },
         },
     },
-    filename:   "js/[name]/[hash][ext]",
+    filename:   "js/[name]/[hash].js",
     mode:       "development",
     publicPath: "/",
     target:     "web",
@@ -186,29 +182,6 @@ export default async function createConfigurations(type: "analyze" | "build" | "
             resolvePlugins.push(new OverrideResolvePlugin(buildConfiguration.overrides));
         }
 
-        if (project.templateExpressionMode == "aot")
-        {
-            let customElement = lookup(project.context ?? process.cwd(), "node_modules/@surface/custom-element");
-
-            if (customElement)
-            {
-                if (isSymbolicLink(customElement))
-                {
-                    customElement = readlinkSync(customElement);
-                }
-
-                const decorators = "internal/decorators";
-
-                const overrides: FileOverride[] =
-                [
-                    { replace: path.join(customElement!, decorators, "element.js"), with: path.join(customElement!, decorators, "element.aot.js") },
-                    { replace: path.join(customElement!, decorators, "element.ts"), with: path.join(customElement!, decorators, "element.aot.ts") },
-                ];
-
-                resolvePlugins.push(new OverrideResolvePlugin(overrides));
-            }
-        }
-
         const isTargetingBrowser = project.target == "pwa" || project.target == "web";
 
         if (isTargetingBrowser)
@@ -244,6 +217,8 @@ export default async function createConfigurations(type: "analyze" | "build" | "
 
         const isProduction = project.mode == "production";
 
+        const useAotHtmlx = typeof project.htmlx == "object" && project.htmlx.mode == "aot" || project.htmlx == "aot";
+
         const webpackConfiguration: webpack.Configuration =
         {
             cache:   buildConfiguration?.cache,
@@ -257,9 +232,9 @@ export default async function createConfigurations(type: "analyze" | "build" | "
                 [
                     {
                         test: /(manifest\.webmanifest|browserconfig\.xml)$/,
+                        type: "asset/resource",
                         use:
                         [
-                            loaders.file,
                             loaders.appManifest,
                         ],
                     },
@@ -301,10 +276,14 @@ export default async function createConfigurations(type: "analyze" | "build" | "
                                 ],
                             },
                             {
+                                generator:
+                                {
+                                    filename: "css/[hash].css",
+                                },
                                 resourceQuery: /file/,
+                                type:          "asset/resource",
                                 use:
                                 [
-                                    loaders.fileAssetsCss,
                                     loaders.extract,
                                     loaders.css,
                                     loaders.resolveUrl,
@@ -321,7 +300,7 @@ export default async function createConfigurations(type: "analyze" | "build" | "
                                 ],
                             },
                         ],
-                        test:  /\.s?css$/,
+                        test: /\.s?css$/,
                     },
                     {
                         test: /\.html$/,
@@ -331,7 +310,13 @@ export default async function createConfigurations(type: "analyze" | "build" | "
                         test: /\.htmlx$/,
                         use:
                         [
-                            loaders.htmlx,
+                            {
+                                loader:  "@surface/htmlx-loader",
+                                options:
+                                {
+                                    handlers: typeof project.htmlx == "object" ? project.htmlx.attributeHandlers : [],
+                                },
+                            },
                         ],
                     },
                     {
@@ -361,6 +346,10 @@ export default async function createConfigurations(type: "analyze" | "build" | "
             plugins,
             resolve:
             {
+                alias:
+                {
+                    "@surface/htmlx": useAotHtmlx ? "@surface/htmlx/aot" : "@surface/htmlx",
+                },
                 extensions:     [".ts", ".js", ".json", ".wasm"],
                 plugins:        resolvePlugins,
                 preferRelative: true,

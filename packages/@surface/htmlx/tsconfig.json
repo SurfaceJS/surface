@@ -8,18 +8,19 @@
     },
     "files":
     [
-        "./index.ts"
+        "./index.ts",
+        "./index.aot.ts"
     ],
     "include":
     [
         "./internal",
         "./tests"
-    ],
+, "../htmlx-parser/tests/observer-visitor-expected.ts"    ],
     "references":
     [
         { "path": "../core" },
-        { "path": "../custom-element-parser" },
         { "path": "../dom-shim" },
+        { "path": "../htmlx-parser" },
         { "path": "../observer" },
         { "path": "../test-suite" },
     ]

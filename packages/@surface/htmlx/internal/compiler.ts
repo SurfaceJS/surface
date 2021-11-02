@@ -1,5 +1,5 @@
-import CustomElementParser, { DescriptorType }     from "@surface/custom-element-parser";
-import type { AttributeBindDescritor, Descriptor } from "@surface/custom-element-parser";
+import HTMLXElementParser, { DescriptorType }     from "@surface/htmlx-parser";
+import type { AttributeBindDescritor, Descriptor } from "@surface/htmlx-parser";
 import createChoiceFactory                         from "./factories/create-choice-factory.js";
 import createCommentFactory                        from "./factories/create-comment-factory.js";
 import createDirectiveFactory                      from "./factories/create-directive-factory.js";
@@ -135,7 +135,7 @@ export default class Compiler
 
     public static compile(name: string, template: string): NodeFactory
     {
-        const descriptor = CustomElementParser.parse(window.document, name, template);
+        const descriptor = HTMLXElementParser.parse(window.document, name, template);
 
         return Compiler.compileDescriptor(descriptor);
     }

@@ -11,7 +11,7 @@
         "@surface/router": "file:../router",
         "tslib": "2.3.1"
     },
-    "description": "Web Router compatible with @surface/custom-element.",
+    "description": "Web Router compatible with @surface/htmlx.",
     "devDependencies": {
         "@surface/dom-shim": "file:../dom-shim",
         "@surface/test-suite": "file:../test-suite",

@@ -1,0 +1,50 @@
+{
+    "author": "HitalloExiled",
+    "bugs": {
+        "url": "https://github.com/SurfaceJS/surface/issues"
+    },
+    "dependencies": {
+        "@surface/core": "file:../core",
+        "@surface/htmlx-parser": "file:../htmlx-parser",
+        "@surface/expression": "file:../expression",
+        "@types/jsdom": "^16.2.13",
+        "jsdom": "^18.0.0",
+        "tslib": "^2.3.1"
+    },
+    "description": "Compiles htmlx templates ahead of time .",
+    "devDependencies": {
+        "@surface/test-suite": "file:../test-suite",
+        "@types/chai": "^4.2.22",
+        "@types/chai-as-promised": "^7.1.4",
+        "chai": "^4.3.4",
+        "chai-as-promised": "^7.1.1"
+    },
+    "homepage": "https://github.com/SurfaceJS/surface#readme",
+    "keywords": [
+        "surface",
+        "typescript",
+        "webcomponents",
+        "webpack",
+        "loader",
+        "htmlx",
+        "aot"
+    ],
+    "license": "MIT",
+    "main": "index.js",
+    "name": "@surface/htmlx-loader",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/SurfaceJS/surface.git"
+    },
+    "peerDependencies": {
+        "webpack": "^5.58.1"
+    },
+    "exports":
+    {
+        "import": "./index.js",
+        "require": "./index.cjs"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "version": "1.0.0-alpha.1"
+}

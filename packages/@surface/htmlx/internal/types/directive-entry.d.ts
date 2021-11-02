@@ -1,4 +1,4 @@
-import type DirectiveContext from "../aot/types/directive-context";
+import type DirectiveContext from "./directive-context";
 
 type DirectiveEntry = DirectiveConstructor | DirectiveFactory;
 

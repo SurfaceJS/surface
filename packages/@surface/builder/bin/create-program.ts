@@ -25,6 +25,6 @@ export default function createProgram(): commander.Command
         .option("--project                        <n>", "When a configuration file is specified. Defines which project will have the settings overwritten. Otherwise, it will be used as the project name.")
         .option("--public-path                    <n>", "The output path from the view of the Javascript / HTML page.")
         .option("--target                         <n>", "Environment to build for. Can be 'pwa', 'web' or 'webworker'.", toEnum("pwa", "web", "webworker"))
-        .option("--template-expression-mode       <n>", "Compilation mode of htmlx templates used by @surface/custom-elements. Can be 'aot', 'mixed' or 'runtime'.", toEnum("aot", "mixed", "runtime"))
+        .option("--htmlx                          <n>", "Compilation mode of htmlx templates used by @surface/htmlx. Can be 'aot', 'mixed' or 'runtime'.", toEnum("aot", "mixed", "runtime"))
         .option("--tsconfig                       <n>", "Path to tsconfig file.");
 }

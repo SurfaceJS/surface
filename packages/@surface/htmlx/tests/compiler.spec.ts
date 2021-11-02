@@ -15,7 +15,7 @@ import type DirectiveEntry                       from "../internal/types/directi
 import customDirectiveFactory                    from "./fixtures/custom-directive-factory.js";
 import CustomDirective                           from "./fixtures/custom-directive.js";
 
-const globalCustomDirectives = new Map<string, DirectiveEntry>();
+const customDirectivesRegistry = new Map<string, DirectiveEntry>();
 
 declare const process: { version: string };
 
@@ -28,8 +28,8 @@ class YComponent extends HTMLElement { }
 
 window.customElements.define("y-component", YComponent);
 
-globalCustomDirectives.set("custom", CustomDirective as unknown as DirectiveEntry);
-globalCustomDirectives.set("custom-factory", customDirectiveFactory as unknown as DirectiveEntry);
+customDirectivesRegistry.set("custom", CustomDirective as unknown as DirectiveEntry);
+customDirectivesRegistry.set("custom-factory", customDirectiveFactory as unknown as DirectiveEntry);
 
 function tryAction(action: Delegate): RawError
 {
@@ -105,7 +105,7 @@ function compile(options: CompileOptions): void
 
         options.host.shadowRoot!.appendChild(content);
 
-        activator(options.host.shadowRoot!, options.host, { host: options.host }, globalCustomDirectives);
+        activator(options.host.shadowRoot!, options.host, { host: options.host }, customDirectivesRegistry);
     }
 
     if (options.innerHTML)
@@ -116,7 +116,7 @@ function compile(options: CompileOptions): void
 
         options.host.appendChild(content);
 
-        activator(options.host, parentHost, { host: parentHost }, globalCustomDirectives);
+        activator(options.host, parentHost, { host: parentHost }, customDirectivesRegistry);
     }
 }
 

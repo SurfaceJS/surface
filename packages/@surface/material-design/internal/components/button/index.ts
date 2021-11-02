@@ -1,5 +1,5 @@
 import { mix }                                                from "@surface/core";
-import CustomElement, { attribute, computed, element, query } from "@surface/custom-element";
+import HTMLXElement, { attribute, computed, element, query } from "@surface/htmlx-element";
 import colorable                                              from "../../mixins/colorable/index.js";
 import disableable                                            from "../../mixins/disableable/index.js";
 import elevatable                                             from "../../mixins/elevatable/index.js";
@@ -25,7 +25,7 @@ export type Size = ""
 | "x-large";
 
 @element("smd-button", { style, template })
-export default class Button extends mix(CustomElement, [colorable, disableable, elevatable, rippleable, themeable])
+export default class Button extends mix(HTMLXElement, [colorable, disableable, elevatable, rippleable, themeable])
 {
     @query("#root")
     public colorable!: HTMLElement;
