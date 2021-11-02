@@ -1,8 +1,8 @@
 import type { Constructor }                             from "@surface/core";
 import { Event, Lazy, assertGet, joinPaths, typeGuard } from "@surface/core";
-import { painting }                                     from "@surface/custom-element";
 import type { IScopedProvider }                         from "@surface/dependency-injection";
 import Container                                        from "@surface/dependency-injection";
+import { painting }                                     from "@surface/htmlx";
 import { computed }                                     from "@surface/observer";
 import Router                                           from "@surface/router";
 import type { RouteData }                               from "@surface/router";

@@ -1,4 +1,4 @@
-import type Activator from "../types/activator.js";
+import type { Activator } from "@surface/htmlx";
 
 export const METADATA = Symbol("custom-element:metadata");
 

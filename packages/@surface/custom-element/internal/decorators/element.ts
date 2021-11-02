@@ -1,6 +1,6 @@
 import type { Constructor }                from "@surface/core";
+import TemplateCompiler                    from "@surface/htmlx";
 import type ICustomElement                 from "../interfaces/custom-element.js";
-import TemplateCompiler                    from "../processors/template-compiler.js";
 import type CustomElementDefinitionOptions from "../types/custom-element-definition-options.js";
 import elementAot                          from "./element.aot.js";
 

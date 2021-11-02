@@ -1,11 +1,4 @@
-import Scheduler           from "./processors/scheduler.js";
-import type DirectiveEntry from "./types/directive-entry";
+/* eslint-disable import/prefer-default-export */
+import type { DirectiveEntry } from "@surface/htmlx";
 
-export const globalCustomDirectives = new Map<string, DirectiveEntry>();
-export const scheduler              = new Scheduler(16.17);
-
-/** Returns a promise that will be resolved when all scheduled updated was executed. */
-export async function painting(): Promise<void>
-{
-    return scheduler.execution();
-}
+export const directivesRegistry = new Map<string, DirectiveEntry>();

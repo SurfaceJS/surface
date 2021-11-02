@@ -1,6 +1,5 @@
-import type Directive         from "../../internal/directives/directive.js";
-import type DirectiveContext  from "../../internal/types/directive-context.js";
-import CustomDirective        from "./custom-directive.js";
+import type { Directive, DirectiveContext } from "@surface/htmlx";
+import CustomDirective                      from "./custom-directive.js";
 
 const customDirectiveFactory = (context: DirectiveContext): Directive =>
     new CustomDirective(context);

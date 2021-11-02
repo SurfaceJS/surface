@@ -1,6 +1,6 @@
 import type { Constructor }                     from "@surface/core";
 import { DisposableMetadata, HookableMetadata } from "@surface/core";
-import AsyncObserver                            from "../reactivity/async-observer.js";
+import { AsyncObserver }                        from "@surface/htmlx";
 
 /**
  * Listen to property changes.

@@ -1,5 +1,5 @@
-import type { DirectiveContext } from "@surface/custom-element";
-import { Directive }             from "@surface/custom-element";
+import type { DirectiveContext } from "@surface/htmlx";
+import { Directive }             from "@surface/htmlx";
 import type WebRouter            from "./web-router.js";
 
 export default class RouterLinkDirective extends Directive

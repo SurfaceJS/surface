@@ -5,13 +5,13 @@
     },
     "dependencies": {
         "@surface/core": "file:../core",
-        "@surface/htmlx": "file:../htmlx",
-        "@surface/dependency-injection": "file:../dependency-injection",
+        "@surface/custom-element-parser": "file:../custom-element-parser",
+        "@surface/expression": "file:../expression",
         "@surface/observer": "file:../observer",
-        "@surface/router": "file:../router",
-        "tslib": "2.3.1"
+        "@surface/reflection": "file:../reflection",
+        "tslib": "^2.3.1"
     },
-    "description": "Web Router compatible with @surface/custom-element.",
+    "description": "Provides support of directives and data binding on templates.",
     "devDependencies": {
         "@surface/dom-shim": "file:../dom-shim",
         "@surface/test-suite": "file:../test-suite",
@@ -23,14 +23,13 @@
     "homepage": "https://github.com/SurfaceJS/surface#readme",
     "keywords": [
         "surface",
-        "web",
-        "router",
         "typescript",
-        "webcomponents"
+        "webcomponents",
+        "htmlx"
     ],
     "license": "MIT",
     "main": "index.js",
-    "name": "@surface/web-router",
+    "name": "@surface/htmlx",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/surface.git"

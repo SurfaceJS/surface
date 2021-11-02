@@ -2,7 +2,7 @@ import { CancellationTokenSource }         from "@surface/core";
 import type { IDisposable, Subscription }  from "@surface/core";
 import type { ObservablePath, StackTrace } from "@surface/custom-element-parser";
 import { tryEvaluate, tryObserve }         from "../common.js";
-import TemplateMetadata                    from "../metadata/template-metadata.js";
+import Metadata                            from "../metadata.js";
 import { scheduler }                       from "../singletons.js";
 import type DestructuredEvaluator          from "../types/destructured-evaluator.js";
 import type DirectiveEntry                 from "../types/directive-entry";
@@ -30,7 +30,7 @@ export default class InjectDirective implements IDisposable
 {
     private readonly cancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
     private readonly keySubscription:         Subscription;
-    private readonly metadata:                TemplateMetadata;
+    private readonly metadata:                Metadata;
     private readonly subscription:            Subscription;
 
     private disposed: boolean = false;
@@ -38,7 +38,7 @@ export default class InjectDirective implements IDisposable
 
     public constructor(private readonly context: Context)
     {
-        this.metadata = TemplateMetadata.from(context.parent);
+        this.metadata = Metadata.from(context.parent);
 
         const listener = (): void => void scheduler.enqueue(this.task, "normal", this.cancellationTokenSource.token);
 

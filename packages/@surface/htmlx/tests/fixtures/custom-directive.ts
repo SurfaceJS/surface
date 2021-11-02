@@ -1,4 +1,4 @@
-import { Directive } from "@surface/htmlx";
+import Directive from "../../internal/directives/directive.js";
 
 export default class CustomDirective extends Directive
 {

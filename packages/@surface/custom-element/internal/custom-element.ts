@@ -1,10 +1,10 @@
 import type { Constructor }                            from "@surface/core";
 import { DisposableMetadata, HookableMetadata }        from "@surface/core";
+import type { DirectiveConstructor, DirectiveFactory } from "@surface/htmlx";
 import type ICustomElement                             from "./interfaces/custom-element";
 import Metadata                                        from "./metadata/metadata.js";
 import StaticMetadata                                  from "./metadata/static-metadata.js";
-import { globalCustomDirectives }                      from "./singletons.js";
-import type { DirectiveConstructor, DirectiveFactory } from "./types/directive-entry.js";
+import { directivesRegistry }                          from "./singletons.js";
 
 const CUSTOM_ELEMENT = Symbol("custom-element:instance");
 
@@ -83,7 +83,7 @@ export default class CustomElement extends HTMLElement implements ICustomElement
      */
     public static registerDirective(name: string, handler: DirectiveConstructor | DirectiveFactory): void
     {
-        globalCustomDirectives.set(name, handler);
+        directivesRegistry.set(name, handler);
     }
 
     /** Disposes resources. */

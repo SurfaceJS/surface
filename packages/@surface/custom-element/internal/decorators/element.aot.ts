@@ -1,12 +1,12 @@
 import type { Constructor }                     from "@surface/core";
 import { DisposableMetadata, HookableMetadata } from "@surface/core";
+import { createFragmentFactory }                from "@surface/htmlx";
 import { stringToCSSStyleSheet }                from "../common.js";
 import CustomElement                            from "../custom-element.js";
-import createFragmentFactory                    from "../factories/create-fragment-factory.js";
 import type ICustomElement                      from "../interfaces/custom-element.js";
 import Metadata                                 from "../metadata/metadata.js";
 import StaticMetadata                           from "../metadata/static-metadata.js";
-import { globalCustomDirectives }               from "../singletons.js";
+import { directivesRegistry }                   from "../singletons.js";
 import type CustomElementDefinitionOptions      from "../types/custom-element-definition-options.js";
 
 /**
@@ -36,7 +36,7 @@ export default function element(tagname: `${string}-${string}`, options?: Custom
                 staticMetadata.styles.push(...styles.map(stringToCSSStyleSheet));
             }
 
-            staticMetadata.directives = options?.directives ? new Map([...globalCustomDirectives, ...Object.entries(options.directives)]) : globalCustomDirectives;
+            staticMetadata.directives = options?.directives ? new Map([...directivesRegistry, ...Object.entries(options.directives)]) : directivesRegistry;
             staticMetadata.factory    = factory;
 
             const handler: ProxyHandler<T> =

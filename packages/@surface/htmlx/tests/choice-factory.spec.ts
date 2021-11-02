@@ -6,7 +6,7 @@ import chai                        from "chai";
 import createChoiceFactory         from "../internal/factories/create-choice-factory.js";
 import createElementFactory        from "../internal/factories/create-element-factory.js";
 import createFragmentFactory       from "../internal/factories/create-fragment-factory.js";
-import { scheduler }               from "../internal/singletons.js";
+import { scheduler }               from "../../htmlx/internal/singletons.js";
 import type Activator              from "../internal/types/activator";
 import type Evaluator              from "../internal/types/evaluator.js";
 

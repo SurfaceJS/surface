@@ -1,23 +1,23 @@
-import CustomElementParser, { DescriptorType }                         from "@surface/custom-element-parser";
+import CustomElementParser, { DescriptorType }     from "@surface/custom-element-parser";
 import type { AttributeBindDescritor, Descriptor } from "@surface/custom-element-parser";
-import createChoiceFactory                         from "../factories/create-choice-factory.js";
-import createCommentFactory                        from "../factories/create-comment-factory.js";
-import createDirectiveFactory                      from "../factories/create-directive-factory.js";
-import createElementFactory                        from "../factories/create-element-factory.js";
-import createEventFactory                          from "../factories/create-event-factory.js";
-import createFragmentFactory                       from "../factories/create-fragment-factory.js";
-import createInjectionFactory                      from "../factories/create-injection-factory.js";
-import createInterpolationFactory                  from "../factories/create-interpolation-factory.js";
-import createLoopFactory                           from "../factories/create-loop-factory.js";
-import createOnewayFactory                         from "../factories/create-oneway-factory.js";
-import createPlaceholderFactory                    from "../factories/create-placeholder-factory.js";
-import createTextNodeFactory                       from "../factories/create-text-node-factory.js";
-import createTextNodeInterpolationFactory          from "../factories/create-text-node-interpolation-factory.js";
-import createTwowayFactory                         from "../factories/create-twoway-factory.js";
-import type AttributeFactory                       from "../types/attribute-factory.js";
-import type NodeFactory                            from "../types/node-factory.js";
+import createChoiceFactory                         from "./factories/create-choice-factory.js";
+import createCommentFactory                        from "./factories/create-comment-factory.js";
+import createDirectiveFactory                      from "./factories/create-directive-factory.js";
+import createElementFactory                        from "./factories/create-element-factory.js";
+import createEventFactory                          from "./factories/create-event-factory.js";
+import createFragmentFactory                       from "./factories/create-fragment-factory.js";
+import createInjectionFactory                      from "./factories/create-injection-factory.js";
+import createInterpolationFactory                  from "./factories/create-interpolation-factory.js";
+import createLoopFactory                           from "./factories/create-loop-factory.js";
+import createOnewayFactory                         from "./factories/create-oneway-factory.js";
+import createPlaceholderFactory                    from "./factories/create-placeholder-factory.js";
+import createTextNodeFactory                       from "./factories/create-text-node-factory.js";
+import createTextNodeInterpolationFactory          from "./factories/create-text-node-interpolation-factory.js";
+import createTwowayFactory                         from "./factories/create-twoway-factory.js";
+import type AttributeFactory                       from "./types/attribute-factory.js";
+import type NodeFactory                            from "./types/node-factory.js";
 
-export default class TemplateCompiler
+export default class Compiler
 {
     private static mapAttributes(binds: Iterable<AttributeBindDescritor>): [[string, string][], AttributeFactory[]]
     {
@@ -59,7 +59,7 @@ export default class TemplateCompiler
 
         for (const child of childs)
         {
-            factories.push(TemplateCompiler.compileDescriptor(child));
+            factories.push(Compiler.compileDescriptor(child));
         }
 
         return factories;
@@ -73,8 +73,8 @@ export default class TemplateCompiler
                 return createElementFactory
                 (
                     descriptor.tag,
-                    ...TemplateCompiler.mapAttributes(descriptor.attributes),
-                    TemplateCompiler.mapChilds(descriptor.childs),
+                    ...Compiler.mapAttributes(descriptor.attributes),
+                    Compiler.mapChilds(descriptor.childs),
                 );
             case DescriptorType.Text:
                 return createTextNodeFactory(descriptor.value);
@@ -89,7 +89,7 @@ export default class TemplateCompiler
             case DescriptorType.Choice:
                 return createChoiceFactory
                 (
-                    descriptor.branches.map(x => [scope => x.expression.evaluate(scope), x.observables, TemplateCompiler.compileDescriptor(x.fragment), x.source, x.stackTrace]),
+                    descriptor.branches.map(x => [scope => x.expression.evaluate(scope), x.observables, Compiler.compileDescriptor(x.fragment), x.source, x.stackTrace]),
                 );
             case DescriptorType.Loop:
                 return createLoopFactory
@@ -98,7 +98,7 @@ export default class TemplateCompiler
                     descriptor.operator,
                     scope => descriptor.right.evaluate(scope),
                     descriptor.observables,
-                    TemplateCompiler.compileDescriptor(descriptor.fragment),
+                    Compiler.compileDescriptor(descriptor.fragment),
                     descriptor.source,
                     descriptor.stackTrace,
                 );
@@ -108,7 +108,7 @@ export default class TemplateCompiler
                     scope => descriptor.key.evaluate(scope),
                     scope => descriptor.value.evaluate(scope),
                     [descriptor.observables.key, descriptor.observables.value],
-                    TemplateCompiler.compileDescriptor(descriptor.fragment),
+                    Compiler.compileDescriptor(descriptor.fragment),
                     descriptor.source,
                     descriptor.stackTrace,
                 );
@@ -118,7 +118,7 @@ export default class TemplateCompiler
                     scope => descriptor.key.evaluate(scope),
                     (scope, value) => descriptor.value.evaluate(scope, value),
                     [descriptor.observables.key, descriptor.observables.value],
-                    TemplateCompiler.compileDescriptor(descriptor.fragment),
+                    Compiler.compileDescriptor(descriptor.fragment),
                     descriptor.source,
                     descriptor.stackTrace,
                 );
@@ -128,7 +128,7 @@ export default class TemplateCompiler
             default:
                 return createFragmentFactory
                 (
-                    TemplateCompiler.mapChilds(descriptor.childs),
+                    Compiler.mapChilds(descriptor.childs),
                 );
         }
     }
@@ -137,6 +137,6 @@ export default class TemplateCompiler
     {
         const descriptor = CustomElementParser.parse(window.document, name, template);
 
-        return TemplateCompiler.compileDescriptor(descriptor);
+        return Compiler.compileDescriptor(descriptor);
     }
 }

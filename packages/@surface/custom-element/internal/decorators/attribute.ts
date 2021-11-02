@@ -1,11 +1,10 @@
 import type { Constructor, Indexer }                           from "@surface/core";
 import { DisposableMetadata, HookableMetadata, camelToDashed } from "@surface/core";
+import { AsyncObserver, scheduler }                            from "@surface/htmlx";
 import type ICustomElement                                     from "../interfaces/custom-element";
 import Metadata                                                from "../metadata/metadata.js";
 import PrototypeMetadata                                       from "../metadata/prototype-metadata.js";
 import StaticMetadata                                          from "../metadata/static-metadata.js";
-import AsyncObserver                                           from "../reactivity/async-observer.js";
-import { scheduler }                                           from "../singletons.js";
 
 type Serializer =
 {

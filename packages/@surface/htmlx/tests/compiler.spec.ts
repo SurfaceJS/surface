@@ -2,20 +2,18 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "@surface/dom-shim";
 
-import type { Delegate }                                 from "@surface/core";
-import { AggregateError, Version, resolveError, uuidv4 } from "@surface/core";
-import { shouldFail, shouldPass, suite, test }           from "@surface/test-suite";
-import chai                                              from "chai";
-import CustomElement                                     from "../internal/custom-element.js";
-import element                                           from "../internal/decorators/element.js";
-import LoopDirective                                     from "../internal/directives/loop-directive.js";
-import CustomStackError                                  from "../internal/errors/custom-stack-error.js";
-import TemplateEvaluationError                           from "../internal/errors/template-evaluation-error.js";
-import TemplateCompiler                                  from "../internal/processors/template-compiler.js";
-import { scheduler }                                     from "../internal/singletons.js";
-import type DirectiveEntry                               from "../internal/types/directive-entry";
-import customDirectiveFactory                            from "./fixtures/custom-directive-factory.js";
-import CustomDirective                                   from "./fixtures/custom-directive.js";
+import type { Delegate }                         from "@surface/core";
+import { AggregateError, Version, resolveError } from "@surface/core";
+import { shouldFail, shouldPass, suite, test }   from "@surface/test-suite";
+import chai                                      from "chai";
+import Compiler                                  from "../internal/compiler.js";
+import LoopDirective                             from "../internal/directives/loop-directive.js";
+import CustomStackError                          from "../internal/errors/custom-stack-error.js";
+import TemplateEvaluationError                   from "../internal/errors/template-evaluation-error.js";
+import { scheduler }                             from "../internal/singletons.js";
+import type DirectiveEntry                       from "../internal/types/directive-entry";
+import customDirectiveFactory                    from "./fixtures/custom-directive-factory.js";
+import CustomDirective                           from "./fixtures/custom-directive.js";
 
 const globalCustomDirectives = new Map<string, DirectiveEntry>();
 
@@ -103,7 +101,7 @@ function compile(options: CompileOptions): void
 {
     if (options.shadowRoot)
     {
-        const [content, activator] = TemplateCompiler.compile(options.host.nodeName.toLowerCase(), options.shadowRoot)();
+        const [content, activator] = Compiler.compile(options.host.nodeName.toLowerCase(), options.shadowRoot)();
 
         options.host.shadowRoot!.appendChild(content);
 
@@ -114,7 +112,7 @@ function compile(options: CompileOptions): void
     {
         const parentHost: Node = options.parentHost ?? document.createElement("parent-host");
 
-        const [content, activator] = TemplateCompiler.compile(parentHost.nodeName.toLowerCase(), options.innerHTML)();
+        const [content, activator] = Compiler.compile(parentHost.nodeName.toLowerCase(), options.innerHTML)();
 
         options.host.appendChild(content);
 
@@ -123,7 +121,7 @@ function compile(options: CompileOptions): void
 }
 
 @suite
-export default class TemplateCompilerSpec
+export default class CompilerSpec
 {
     @test @shouldPass
     public elementWithAttributes(): void
@@ -1572,53 +1570,6 @@ export default class TemplateCompilerSpec
         const actual2 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
         chai.assert.deepEqual(actual2, expected2, "#2");
-    }
-
-    @test @shouldPass
-    public async elementWithLazyDefinition(): Promise<void>
-    {
-        // TODO: Test on browser
-        // const host = document.createElement("div");
-
-        // document.body.appendChild(host);
-
-        const DUMMY_CHILD  = `dummy-child-${uuidv4()}`  as `${string}-${string}`;
-        const DUMMY_PARENT = `dummy-parent-${uuidv4()}` as `${string}-${string}`;
-        const X_ELEMENT    = `x-element-${uuidv4()}`    as `${string}-${string}`;
-
-        @element(DUMMY_CHILD)
-        class DummyChild extends CustomElement
-        { }
-
-        @element(DUMMY_PARENT)
-        class DummyParent extends CustomElement
-        { }
-
-        const template =
-        `
-            <template #for="const i in host.indexes">
-                <${DUMMY_PARENT}>
-                    <${DUMMY_CHILD} data-index="{i}">
-                    </${DUMMY_CHILD}>
-                </${DUMMY_PARENT}>
-            </template>
-        `;
-
-        @element(X_ELEMENT, { template })
-        class XElement extends CustomElement
-        {
-            public indexes: number[] = [1, 2, 3];
-        }
-
-        const xelement = new XElement();
-
-        await scheduler.execution();
-
-        // host.appendChild(xelement);
-
-        chai.assert.instanceOf(xelement, XElement);
-        chai.assert.instanceOf(xelement!.shadowRoot!.firstElementChild, DummyParent);
-        chai.assert.instanceOf(xelement!.shadowRoot!.firstElementChild!.firstElementChild, DummyChild);
     }
 
     @test @shouldFail

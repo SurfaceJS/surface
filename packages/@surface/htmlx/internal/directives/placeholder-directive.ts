@@ -2,7 +2,7 @@ import { CancellationTokenSource, DisposableMetadata, assert } from "@surface/co
 import type { IDisposable, Subscription }                      from "@surface/core";
 import type { ObservablePath, StackTrace }                     from "@surface/custom-element-parser";
 import { tryEvaluate, tryEvaluatePattern, tryObserve }         from "../common.js";
-import TemplateMetadata                                        from "../metadata/template-metadata.js";
+import Metadata                                                from "../metadata.js";
 import { scheduler }                                           from "../singletons.js";
 import type DirectiveEntry                                     from "../types/directive-entry";
 import type Evaluator                                          from "../types/evaluator.js";
@@ -28,7 +28,7 @@ export default class PlaceholdeDirective implements IDisposable
 {
     private readonly cancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
     private readonly keySubscription:         Subscription;
-    private readonly metadata:                TemplateMetadata;
+    private readonly metadata:                Metadata;
 
     private currentDisposable:                    IDisposable | null      = null;
     private disposed:                             boolean                 = false;
@@ -40,7 +40,7 @@ export default class PlaceholdeDirective implements IDisposable
 
     public constructor(private readonly context: Context)
     {
-        this.metadata = TemplateMetadata.from(context.host);
+        this.metadata = Metadata.from(context.host);
 
         this.keySubscription = tryObserve(context.scope, context.observables[0], this.onKeyChange, true, context.source?.key, context.stackTrace);
 
