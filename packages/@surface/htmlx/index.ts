@@ -16,9 +16,11 @@ export type { default as DirectiveEntry }        from "./internal/types/directiv
 export type { default as Evaluator }             from "./internal/types/evaluator.js";
 export type { default as InjectionContext }      from "./internal/types/injection-context.js";
 export type { default as NodeFactory }           from "./internal/types/node-factory.js";
+export type { default as TemplateFactory }       from "./internal/types/template-factory.js";
 
-export { default as AsyncObserver } from "./internal/reactivity/async-observer.js";
+export { toTemplateFactory }        from "./internal/common.js";
 export { default as Directive }     from "./internal/directives/directive.js";
+export { default as AsyncObserver } from "./internal/reactivity/async-observer.js";
 export { scheduler, painting }      from "./internal/singletons.js";
 
 export * from "./internal/factories/index.js";

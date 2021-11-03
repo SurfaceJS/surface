@@ -1,5 +1,5 @@
-import type { Indexer }                     from "@surface/core";
-import type { DirectiveEntry, NodeFactory } from "@surface/htmlx";
+import type { Indexer }         from "@surface/core";
+import type { TemplateFactory } from "@surface/htmlx";
 
 export const STATIC_METADATA = Symbol("htmlx:static-metadata");
 
@@ -10,8 +10,7 @@ export default class StaticMetadata
     public observedAttributes: string[]                                          = [];
     public styles:             CSSStyleSheet[]                                   = [];
 
-    public directives: Map<string, DirectiveEntry> = new Map();
-    public factory?:   NodeFactory;
+    public template?: TemplateFactory;
 
     public static from(target: Function): StaticMetadata
     {
@@ -34,7 +33,6 @@ export default class StaticMetadata
         clone.converters         = { ...this.converters };
         clone.observedAttributes = [...this.observedAttributes];
         clone.styles             = [...this.styles];
-        clone.directives         = new Map(this.directives);
 
         return clone;
     }

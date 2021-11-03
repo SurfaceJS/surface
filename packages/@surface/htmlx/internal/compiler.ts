@@ -1,5 +1,6 @@
-import HTMLXElementParser, { DescriptorType }     from "@surface/htmlx-parser";
+import Parser, { DescriptorType }                  from "@surface/htmlx-parser";
 import type { AttributeBindDescritor, Descriptor } from "@surface/htmlx-parser";
+import { toTemplateFactory }                       from "./common.js";
 import createChoiceFactory                         from "./factories/create-choice-factory.js";
 import createCommentFactory                        from "./factories/create-comment-factory.js";
 import createDirectiveFactory                      from "./factories/create-directive-factory.js";
@@ -16,6 +17,7 @@ import createTextNodeInterpolationFactory          from "./factories/create-text
 import createTwowayFactory                         from "./factories/create-twoway-factory.js";
 import type AttributeFactory                       from "./types/attribute-factory.js";
 import type NodeFactory                            from "./types/node-factory.js";
+import type TemplateFactory                        from "./types/template-factory.js";
 
 export default class Compiler
 {
@@ -133,10 +135,12 @@ export default class Compiler
         }
     }
 
-    public static compile(name: string, template: string): NodeFactory
+    public static compile(name: string, template: string): TemplateFactory
     {
-        const descriptor = HTMLXElementParser.parse(window.document, name, template);
+        const descriptor = Parser.parse(window.document, name, template);
 
-        return Compiler.compileDescriptor(descriptor);
+        const factory = Compiler.compileDescriptor(descriptor);
+
+        return toTemplateFactory(factory);
     }
 }

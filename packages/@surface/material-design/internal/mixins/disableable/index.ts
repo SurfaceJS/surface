@@ -1,5 +1,5 @@
 import type { Constructor }  from "@surface/core";
-import type HTMLXElement    from "@surface/htmlx-element";
+import type HTMLXElement     from "@surface/htmlx-element";
 import { attribute, styles } from "@surface/htmlx-element";
 import style                 from "./index.scss";
 

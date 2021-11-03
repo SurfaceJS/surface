@@ -1,10 +1,10 @@
-import { assert, mix }                                               from "@surface/core";
+import { assert, mix }                                              from "@surface/core";
 import HTMLXElement, { attribute, computed, element, event, query } from "@surface/htmlx-element";
-import colorable                                                     from "../../mixins/colorable/index.js";
-import lineRippleable                                                from "../../mixins/line-rippleable/index.js";
-import themeable                                                     from "../../mixins/themeable/index.js";
-import template                                                      from "./index.htmlx";
-import style                                                         from "./index.scss";
+import colorable                                                    from "../../mixins/colorable/index.js";
+import lineRippleable                                               from "../../mixins/line-rippleable/index.js";
+import themeable                                                    from "../../mixins/themeable/index.js";
+import template                                                     from "./index.htmlx";
+import style                                                        from "./index.scss";
 
 declare global
 {

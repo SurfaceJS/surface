@@ -33,6 +33,8 @@ Note that it is not recommended to use the runtime compiler for more serious wor
 import type { IDisposable } from "@surface/core";
 import Compiler             from "@surface/htmlx";
 
+const template = Compiler.compile("my-element", "<span>Hello {name}!!!</span>")
+
 class MyComponent extends HTMLElement implements IDisposable
 {
     private readonly disposable: IDisposable;
@@ -41,7 +43,7 @@ class MyComponent extends HTMLElement implements IDisposable
     {
         this.attachShadow({ mode: "open" });
 
-        const [content, activator] = Compiler.compile("my-element", "<span>Hello {name}!!!</span>");
+        const { content, activator } = template.create();
 
         this.shadowRoot!.appendChild(content);
 
@@ -388,6 +390,8 @@ const template =
     </span>
 `;
 
+const template = Compiler.compile("my-element", "<span>Hello {name}!!!</span>")
+
 class MyComponent extends HTMLElement implements IDisposable
 {
     private readonly disposable: IDisposable;
@@ -396,7 +400,7 @@ class MyComponent extends HTMLElement implements IDisposable
     {
         this.attachShadow({ mode: "open" });
 
-        const [content, activator] = Compiler.compile("my-element", "<span>Hello {name}!!!</span>");
+        const { content, activator } = template.create();
 
         this.shadowRoot!.appendChild(content);
 

@@ -239,7 +239,7 @@ export default class SourceGenerator
         this.write(";");
         this.decreaseIndent();
         this.writeLine("");
-        this.writeLine("export default factory;");
+        this.writeLine("export default toTemplateFactory(factory);");
 
         const statements = this.lines.join("\n");
 
@@ -248,7 +248,8 @@ export default class SourceGenerator
         this.writeLine("import");
         this.writeLine("{");
         this.increaseIndent();
-        Array.from(this.factories).forEach(x => this.writeLine(`${x},`));
+        /**/Array.from(this.factories).forEach(x => this.writeLine(`${x},`));
+        /**/this.writeLine("toTemplateFactory,");
         this.decreaseIndent();
         this.writeLine("} from \"@surface/htmlx\";");
         this.writeLine("");
@@ -279,8 +280,8 @@ export default class SourceGenerator
             /**/this.writeLine(`${JSON.stringify(branch.observables)},`);
             /**/this.writeDescriptor(branch.fragment);
             /**/this.write(",");
-            /**/this.writeLine(this.generateStackStrace ? `${JSON.stringify(branch.source)},` : "undefined");
-            /**/this.writeLine(this.generateStackStrace ? `${JSON.stringify(branch.stackTrace)},` : "undefined");
+            /**/this.writeLine(this.generateStackStrace ? `${JSON.stringify(branch.source)},` : "undefined,");
+            /**/this.writeLine(this.generateStackStrace ? `${JSON.stringify(branch.stackTrace)},` : "undefined,");
             /**/this.decreaseIndent();
             this.writeLine("],");
         }

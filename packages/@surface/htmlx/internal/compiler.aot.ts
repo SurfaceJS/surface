@@ -1,8 +1,8 @@
-import type NodeFactory from "./types/node-factory.js";
+import type TemplateFactory from "./types/template-factory.js";
 
 export default class CompilerAot
 {
-    public static compile(_name: string, template: string | NodeFactory): NodeFactory
+    public static compile(_name: string, template: string | TemplateFactory): TemplateFactory
     {
         if (typeof template == "string")
         {

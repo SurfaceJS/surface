@@ -101,7 +101,7 @@ function compile(options: CompileOptions): void
 {
     if (options.shadowRoot)
     {
-        const [content, activator] = Compiler.compile(options.host.nodeName.toLowerCase(), options.shadowRoot)();
+        const { content, activator } = Compiler.compile(options.host.nodeName.toLowerCase(), options.shadowRoot).create();
 
         options.host.shadowRoot!.appendChild(content);
 
@@ -112,7 +112,7 @@ function compile(options: CompileOptions): void
     {
         const parentHost: Node = options.parentHost ?? document.createElement("parent-host");
 
-        const [content, activator] = Compiler.compile(parentHost.nodeName.toLowerCase(), options.innerHTML)();
+        const { content, activator } = Compiler.compile(parentHost.nodeName.toLowerCase(), options.innerHTML).create();
 
         options.host.appendChild(content);
 

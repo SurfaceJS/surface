@@ -1,7 +1,6 @@
 import type { Constructor }                     from "@surface/core";
 import { DisposableMetadata, HookableMetadata } from "@surface/core";
-import type { NodeFactory }                     from "@surface/htmlx";
-import Compiler, { createFragmentFactory }      from "@surface/htmlx";
+import Compiler                                 from "@surface/htmlx";
 import { stringToCSSStyleSheet }                from "../common.js";
 import HTMLXElement                             from "../htmlx-element.js";
 import type IHTMLXElement                       from "../interfaces/htmlx-element.js";
@@ -23,9 +22,9 @@ export default function element(tagname: `${string}-${string}`, options?: HTMLXE
         {
             const staticMetadata = StaticMetadata.from(target);
 
-            const factory: NodeFactory = typeof options?.template == "string"
-                ? Compiler.compile(tagname, options.template)
-                : options?.template ?? createFragmentFactory([]);
+            const template = typeof options?.template == "object"
+                ? options.template
+                : Compiler.compile(tagname, options?.template ?? "");
 
             if (options?.style)
             {
@@ -34,8 +33,9 @@ export default function element(tagname: `${string}-${string}`, options?: HTMLXE
                 staticMetadata.styles.push(...styles.map(stringToCSSStyleSheet));
             }
 
-            staticMetadata.directives = options?.directives ? new Map([...directivesRegistry, ...Object.entries(options.directives)]) : directivesRegistry;
-            staticMetadata.factory    = factory;
+            const directives = options?.directives ? new Map([...directivesRegistry, ...Object.entries(options.directives)]) : directivesRegistry;
+
+            staticMetadata.template = template;
 
             const handler: ProxyHandler<T> =
             {
@@ -47,7 +47,7 @@ export default function element(tagname: `${string}-${string}`, options?: HTMLXE
 
                     const scope = { host: instance };
 
-                    const disposable = Metadata.from(instance).activator!(instance.shadowRoot!, instance, scope, staticMetadata.directives);
+                    const disposable = Metadata.from(instance).activator!(instance.shadowRoot!, instance, scope, directives);
 
                     DisposableMetadata.from(instance).add(disposable);
                     DisposableMetadata.from(instance).add(DisposableMetadata.from(scope));

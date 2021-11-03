@@ -1,6 +1,6 @@
 import HTMLXElement, { element } from "@surface/htmlx-element";
-import template                   from "./index.htmlx";
-import style                      from "./index.scss";
+import template                  from "./index.htmlx";
+import style                     from "./index.scss";
 
 declare global
 {

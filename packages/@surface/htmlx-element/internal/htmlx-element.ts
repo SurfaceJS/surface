@@ -32,9 +32,9 @@ export default class HTMLXElement extends HTMLElement implements IHTMLXElement
 
         const hookableMetadata = HookableMetadata.from(instance.constructor as Constructor<HTMLElement>);
 
-        if (staticMetadata.factory)
+        if (staticMetadata.template)
         {
-            const [content, activator] = staticMetadata.factory();
+            const { content, activator } = staticMetadata.template.create();
 
             instance.shadowRoot.appendChild(content);
 

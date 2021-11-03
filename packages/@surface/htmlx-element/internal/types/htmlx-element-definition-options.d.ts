@@ -1,4 +1,4 @@
-import type NodeFactory from "./node-factory.js";
+import type { TemplateFactory } from "@surface/htmlx";
 
 type HTMLXElementDefinitionOptions =
 {
@@ -10,7 +10,7 @@ type HTMLXElementDefinitionOptions =
     style?: string | string[],
 
     /** Template used by the shadow root */
-    template?: string | NodeFactory,
+    template?: string | TemplateFactory,
 } & ElementDefinitionOptions;
 
 export default HTMLXElementDefinitionOptions;

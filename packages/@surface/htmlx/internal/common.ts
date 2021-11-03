@@ -1,6 +1,7 @@
 import type { Delegate, Subscription }                                         from "@surface/core";
 import { getPropertyDescriptor, getValue, isReadonly, resolveError, setValue } from "@surface/core";
 import type { ObservablePath, StackTrace }                                     from "@surface/htmlx-parser";
+import type { NodeFactory, TemplateFactory }                                   from "../index.js";
 import TemplateEvaluationError                                                 from "./errors/template-evaluation-error.js";
 import TemplateObservationError                                                from "./errors/template-observation-error.js";
 import TemplateProcessError                                                    from "./errors/template-process-error.js";
@@ -8,6 +9,18 @@ import AsyncObserver                                                           f
 import { scheduler }                                                           from "./singletons.js";
 import type DestructuredEvaluator                                              from "./types/destructured-evaluator.js";
 import type Evaluator                                                          from "./types/evaluator.js";
+
+export function toTemplateFactory(nodeFactory: NodeFactory): TemplateFactory
+{
+    return {
+        create()
+        {
+            const [content, activator] = nodeFactory();
+
+            return { activator, content };
+        },
+    };
+}
 
 export function bind(left: object, leftPath: ObservablePath, right: object, rightPath: ObservablePath): Subscription
 {
