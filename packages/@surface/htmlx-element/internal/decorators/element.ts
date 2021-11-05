@@ -1,6 +1,6 @@
 import type { Constructor }                     from "@surface/core";
 import { DisposableMetadata, HookableMetadata } from "@surface/core";
-import Compiler                                 from "@surface/htmlx";
+import { Compiler }                             from "@surface/htmlx";
 import { stringToCSSStyleSheet }                from "../common.js";
 import HTMLXElement                             from "../htmlx-element.js";
 import type IHTMLXElement                       from "../interfaces/htmlx-element.js";

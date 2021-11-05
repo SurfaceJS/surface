@@ -31,7 +31,7 @@ Note that it is not recommended to use the runtime compiler for more serious wor
 
 ```ts
 import type { IDisposable } from "@surface/core";
-import Compiler             from "@surface/htmlx";
+import { Compiler }         from "@surface/htmlx";
 
 const template = Compiler.compile("my-element", "<span>Hello {name}!!!</span>")
 
@@ -270,7 +270,7 @@ Placeholders allow you to expose scopes that injections can use to customize the
 </my-element>
 ```
 
-And, unlike slots, placeholders can instantiate the injected model many times as needed. Necessary for templating iterated data.
+And, unlike slots, placeholders can instantiate the injected template many times as needed. Necessary for templating iterated data.
 
 ```html
 <!--my-element-->
@@ -355,7 +355,7 @@ It requires extending the `Directive` class and registering using `HTMLXElement.
 
 ```ts
 import type { DirectiveContext, DirectiveEntry } from "@surface/htmlx";
-import { Directive }                             from "@surface/htmlx";
+import { Compiler, Directive }                   from "@surface/htmlx";
 import HTMLXElement { Directive }                from "@surface/htmlx-element";
 
 const customDirectives: Map<string, DirectiveEntry> = new Map();

@@ -14,7 +14,7 @@ export default class SourceGeneratorSpec
             "import",
             "{",
             "\tcreateFragmentFactory,",
-            "\ttoTemplateFactory,",
+            "\tTemplateFactory,",
             "} from \"@surface/htmlx\";",
             "",
             "const factory =",
@@ -23,7 +23,7 @@ export default class SourceGeneratorSpec
             "\t\t[]",
             "\t);",
             "",
-            "export default toTemplateFactory(factory);",
+            "export default new TemplateFactory(factory);",
         ].join("\n");
 
         const actual = SourceGenerator.generate("x-component", "", { }, true);
@@ -40,7 +40,7 @@ export default class SourceGeneratorSpec
             "{",
             "\tcreateFragmentFactory,",
             "\tcreateCommentFactory,",
-            "\ttoTemplateFactory,",
+            "\tTemplateFactory,",
             "} from \"@surface/htmlx\";",
             "",
             "const factory =",
@@ -54,7 +54,7 @@ export default class SourceGeneratorSpec
             "\t\t]",
             "\t);",
             "",
-            "export default toTemplateFactory(factory);",
+            "export default new TemplateFactory(factory);",
         ].join("\n");
 
         const actual = SourceGenerator.generate("x-component", "<!-- This is a Comment -->", { }, true);
@@ -71,7 +71,7 @@ export default class SourceGeneratorSpec
             "{",
             "\tcreateFragmentFactory,",
             "\tcreateTextNodeFactory,",
-            "\ttoTemplateFactory,",
+            "\tTemplateFactory,",
             "} from \"@surface/htmlx\";",
             "",
             "const factory =",
@@ -85,7 +85,7 @@ export default class SourceGeneratorSpec
             "\t\t]",
             "\t);",
             "",
-            "export default toTemplateFactory(factory);",
+            "export default new TemplateFactory(factory);",
         ].join("\n");
 
         const actual = SourceGenerator.generate("x-component", "Hello World!!!", { }, true);
@@ -102,7 +102,7 @@ export default class SourceGeneratorSpec
             "{",
             "\tcreateFragmentFactory,",
             "\tcreateElementFactory,",
-            "\ttoTemplateFactory,",
+            "\tTemplateFactory,",
             "} from \"@surface/htmlx\";",
             "",
             "const factory =",
@@ -119,7 +119,7 @@ export default class SourceGeneratorSpec
             "\t\t]",
             "\t);",
             "",
-            "export default toTemplateFactory(factory);",
+            "export default new TemplateFactory(factory);",
         ].join("\n");
 
         const actual = SourceGenerator.generate("x-component", "<span></span>", { }, true);
@@ -136,7 +136,7 @@ export default class SourceGeneratorSpec
             "{",
             "\tcreateFragmentFactory,",
             "\tcreateElementFactory,",
-            "\ttoTemplateFactory,",
+            "\tTemplateFactory,",
             "} from \"@surface/htmlx\";",
             "",
             "const factory =",
@@ -156,7 +156,7 @@ export default class SourceGeneratorSpec
             "\t\t]",
             "\t);",
             "",
-            "export default toTemplateFactory(factory);",
+            "export default new TemplateFactory(factory);",
         ].join("\n");
 
         const actual = SourceGenerator.generate("x-component", "<span foo bar=\"baz\"></span>", { }, true);
@@ -173,7 +173,7 @@ export default class SourceGeneratorSpec
             "{",
             "\tcreateFragmentFactory,",
             "\tcreateElementFactory,",
-            "\ttoTemplateFactory,",
+            "\tTemplateFactory,",
             "} from \"@surface/htmlx\";",
             "",
             "const factory =",
@@ -192,7 +192,7 @@ export default class SourceGeneratorSpec
             "\t\t]",
             "\t);",
             "",
-            "export default toTemplateFactory(factory);",
+            "export default new TemplateFactory(factory);",
         ].join("\n");
 
         const actual = SourceGenerator.generate("x-component", "<img src='./foo.png'></img>", { }, true);
@@ -209,7 +209,7 @@ export default class SourceGeneratorSpec
             "{",
             "\tcreateFragmentFactory,",
             "\tcreateElementFactory,",
-            "\ttoTemplateFactory,",
+            "\tTemplateFactory,",
             "} from \"@surface/htmlx\";",
             "",
             "const factory =",
@@ -228,7 +228,7 @@ export default class SourceGeneratorSpec
             "\t\t]",
             "\t);",
             "",
-            "export default toTemplateFactory(factory);",
+            "export default new TemplateFactory(factory);",
         ].join("\n");
 
         const actual = SourceGenerator.generate("x-component", "<img srcset='./foo.800-600.png 800w 600h 1x, ./foo.1920-1080.png 1920w 1080h 2x'></img>", { }, true);
@@ -245,7 +245,7 @@ export default class SourceGeneratorSpec
             "{",
             "\tcreateFragmentFactory,",
             "\tcreateElementFactory,",
-            "\ttoTemplateFactory,",
+            "\tTemplateFactory,",
             "} from \"@surface/htmlx\";",
             "",
             "const factory =",
@@ -294,7 +294,7 @@ export default class SourceGeneratorSpec
             "\t\t]",
             "\t);",
             "",
-            "export default toTemplateFactory(factory);",
+            "export default new TemplateFactory(factory);",
         ].join("\n");
 
         const source =
@@ -319,7 +319,7 @@ export default class SourceGeneratorSpec
             "{",
             "\tcreateFragmentFactory,",
             "\tcreateElementFactory,",
-            "\ttoTemplateFactory,",
+            "\tTemplateFactory,",
             "} from \"@surface/htmlx\";",
             "",
             "const factory =",
@@ -348,7 +348,7 @@ export default class SourceGeneratorSpec
             "\t\t]",
             "\t);",
             "",
-            "export default toTemplateFactory(factory);",
+            "export default new TemplateFactory(factory);",
         ].join("\n");
 
         const source =
@@ -371,7 +371,7 @@ export default class SourceGeneratorSpec
             "{",
             "\tcreateFragmentFactory,",
             "\tcreateElementFactory,",
-            "\ttoTemplateFactory,",
+            "\tTemplateFactory,",
             "} from \"@surface/htmlx\";",
             "",
             "const factory =",
@@ -401,7 +401,7 @@ export default class SourceGeneratorSpec
             "\t\t]",
             "\t);",
             "",
-            "export default toTemplateFactory(factory);",
+            "export default new TemplateFactory(factory);",
         ].join("\n");
 
         const source =
@@ -424,7 +424,7 @@ export default class SourceGeneratorSpec
             "{",
             "\tcreateFragmentFactory,",
             "\tcreateElementFactory,",
-            "\ttoTemplateFactory,",
+            "\tTemplateFactory,",
             "} from \"@surface/htmlx\";",
             "",
             "const factory =",
@@ -453,7 +453,7 @@ export default class SourceGeneratorSpec
             "\t\t]",
             "\t);",
             "",
-            "export default toTemplateFactory(factory);",
+            "export default new TemplateFactory(factory);",
         ].join("\n");
 
         const source =
@@ -477,7 +477,7 @@ export default class SourceGeneratorSpec
             "\tcreateFragmentFactory,",
             "\tcreateElementFactory,",
             "\tcreateInterpolationFactory,",
-            "\ttoTemplateFactory,",
+            "\tTemplateFactory,",
             "} from \"@surface/htmlx\";",
             "",
             "const factory =",
@@ -505,7 +505,7 @@ export default class SourceGeneratorSpec
             "\t\t]",
             "\t);",
             "",
-            "export default toTemplateFactory(factory);",
+            "export default new TemplateFactory(factory);",
         ].join("\n");
 
         const actual = SourceGenerator.generate("x-component", "<span value=\"{host.value}\"></span>", { }, true);
@@ -523,7 +523,7 @@ export default class SourceGeneratorSpec
             "\tcreateFragmentFactory,",
             "\tcreateElementFactory,",
             "\tcreateEventFactory,",
-            "\ttoTemplateFactory,",
+            "\tTemplateFactory,",
             "} from \"@surface/htmlx\";",
             "",
             "const factory =",
@@ -549,7 +549,7 @@ export default class SourceGeneratorSpec
             "\t\t]",
             "\t);",
             "",
-            "export default toTemplateFactory(factory);",
+            "export default new TemplateFactory(factory);",
         ].join("\n");
 
         const actual = SourceGenerator.generate("x-component", "<span @click=\"host.handler\"></span>", { }, true);
@@ -567,7 +567,7 @@ export default class SourceGeneratorSpec
             "\tcreateFragmentFactory,",
             "\tcreateElementFactory,",
             "\tcreateDirectiveFactory,",
-            "\ttoTemplateFactory,",
+            "\tTemplateFactory,",
             "} from \"@surface/htmlx\";",
             "",
             "const factory =",
@@ -593,7 +593,7 @@ export default class SourceGeneratorSpec
             "\t\t]",
             "\t);",
             "",
-            "export default toTemplateFactory(factory);",
+            "export default new TemplateFactory(factory);",
         ].join("\n");
 
         const actual = SourceGenerator.generate("x-component", "<span #show=\"host.show\"></span>", { }, true);
@@ -611,7 +611,7 @@ export default class SourceGeneratorSpec
             "\tcreateFragmentFactory,",
             "\tcreateElementFactory,",
             "\tcreateOnewayFactory,",
-            "\ttoTemplateFactory,",
+            "\tTemplateFactory,",
             "} from \"@surface/htmlx\";",
             "",
             "const factory =",
@@ -637,7 +637,7 @@ export default class SourceGeneratorSpec
             "\t\t]",
             "\t);",
             "",
-            "export default toTemplateFactory(factory);",
+            "export default new TemplateFactory(factory);",
         ].join("\n");
 
         const actual = SourceGenerator.generate("x-component", "<span :value=\"host.value\"></span>", { }, true);
@@ -655,7 +655,7 @@ export default class SourceGeneratorSpec
             "\tcreateFragmentFactory,",
             "\tcreateElementFactory,",
             "\tcreateTwowayFactory,",
-            "\ttoTemplateFactory,",
+            "\tTemplateFactory,",
             "} from \"@surface/htmlx\";",
             "",
             "const factory =",
@@ -680,7 +680,7 @@ export default class SourceGeneratorSpec
             "\t\t]",
             "\t);",
             "",
-            "export default toTemplateFactory(factory);",
+            "export default new TemplateFactory(factory);",
         ].join("\n");
 
         const actual = SourceGenerator.generate("x-component", "<span ::value=\"host.value\"></span>", { }, true);
@@ -699,7 +699,7 @@ export default class SourceGeneratorSpec
             "\tcreateChoiceFactory,",
             "\tcreateElementFactory,",
             "\tcreateTextNodeFactory,",
-            "\ttoTemplateFactory,",
+            "\tTemplateFactory,",
             "} from \"@surface/htmlx\";",
             "",
             "const factory =",
@@ -760,7 +760,7 @@ export default class SourceGeneratorSpec
             "\t\t]",
             "\t);",
             "",
-            "export default toTemplateFactory(factory);",
+            "export default new TemplateFactory(factory);",
         ].join("\n");
 
         const actual = SourceGenerator.generate("x-component", "<span #if=\"host.value\">Show</span><span #else>Hide</span>", { }, true);
@@ -779,7 +779,7 @@ export default class SourceGeneratorSpec
             "\tcreateLoopFactory,",
             "\tcreateElementFactory,",
             "\tcreateTextNodeInterpolationFactory,",
-            "\ttoTemplateFactory,",
+            "\tTemplateFactory,",
             "} from \"@surface/htmlx\";",
             "",
             "const factory =",
@@ -818,7 +818,7 @@ export default class SourceGeneratorSpec
             "\t\t]",
             "\t);",
             "",
-            "export default toTemplateFactory(factory);",
+            "export default new TemplateFactory(factory);",
         ].join("\n");
 
         const actual = SourceGenerator.generate("x-component", "<span #for=\"value of host.values\">Value: {value}</span>", { }, true);
@@ -839,7 +839,7 @@ export default class SourceGeneratorSpec
             "\tcreatePlaceholderFactory,",
             "\tcreateElementFactory,",
             "\tcreateTextNodeInterpolationFactory,",
-            "\ttoTemplateFactory,",
+            "\tTemplateFactory,",
             "} from \"@surface/htmlx\";",
             "",
             "const factory =",
@@ -877,7 +877,7 @@ export default class SourceGeneratorSpec
             "\t\t]",
             "\t);",
             "",
-            "export default toTemplateFactory(factory);",
+            "export default new TemplateFactory(factory);",
         ].join("\n");
 
         const actual = SourceGenerator.generate("x-component", "<span #placeholder=\"{ value: host.value }\">Value: {host.value}</span>", { }, true);
@@ -898,7 +898,7 @@ export default class SourceGeneratorSpec
             "\tcreateInjectionFactory,",
             "\tcreateElementFactory,",
             "\tcreateTextNodeInterpolationFactory,",
-            "\ttoTemplateFactory,",
+            "\tTemplateFactory,",
             "} from \"@surface/htmlx\";",
             "",
             "const factory =",
@@ -936,7 +936,7 @@ export default class SourceGeneratorSpec
             "\t\t]",
             "\t);",
             "",
-            "export default toTemplateFactory(factory);",
+            "export default new TemplateFactory(factory);",
         ].join("\n");
 
         const actual = SourceGenerator.generate("x-component", "<span #Inject=\"{ value }\">Value: {value}</span>", { }, true);

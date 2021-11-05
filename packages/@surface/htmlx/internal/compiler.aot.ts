@@ -1,4 +1,4 @@
-import type TemplateFactory from "./types/template-factory.js";
+import type TemplateFactory from "./template-factory.js";
 
 export default class CompilerAot
 {

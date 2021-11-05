@@ -2,7 +2,7 @@
 import { deepMerge }                                                                        from "@surface/core";
 import type { IExpression, IPattern }                                                       from "@surface/expression";
 import { TypeGuard }                                                                        from "@surface/expression";
-import HTMLXElementParser, { DescriptorType }                                               from "@surface/htmlx-parser";
+import { DescriptorType, Parser }                                                           from "@surface/htmlx-parser";
 import type { AttributeBindDescritor, BranchDescriptor, Descriptor, RawAttributeDescritor } from "@surface/htmlx-parser";
 import { JSDOM }                                                                            from "jsdom";
 import { defaultAttributeHandlers }                                                         from "./attribute-handlers.js";
@@ -46,7 +46,7 @@ export default class SourceGenerator
 
     public static generate(name: string, template: string, attributeHandlers: AttributeHandlers, generateStackStrace: boolean): string
     {
-        const descriptor = HTMLXElementParser.parse(new JSDOM().window.document, name, template);
+        const descriptor = Parser.parse(new JSDOM().window.document, name, template);
 
         return new SourceGenerator(attributeHandlers, generateStackStrace).generate(descriptor);
     }
@@ -239,7 +239,7 @@ export default class SourceGenerator
         this.write(";");
         this.decreaseIndent();
         this.writeLine("");
-        this.writeLine("export default toTemplateFactory(factory);");
+        this.writeLine("export default new TemplateFactory(factory);");
 
         const statements = this.lines.join("\n");
 
@@ -249,7 +249,7 @@ export default class SourceGenerator
         this.writeLine("{");
         this.increaseIndent();
         /**/Array.from(this.factories).forEach(x => this.writeLine(`${x},`));
-        /**/this.writeLine("toTemplateFactory,");
+        /**/this.writeLine("TemplateFactory,");
         this.decreaseIndent();
         this.writeLine("} from \"@surface/htmlx\";");
         this.writeLine("");

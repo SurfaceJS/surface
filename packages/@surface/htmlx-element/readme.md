@@ -194,7 +194,7 @@ class MyElement extends HTMLXElement
 ### Scopes
 Reactivity depends on the scope which may vary according to the context.
 
-The upper scope contains only the variable **`host`** which refers to the model owner (shadowroot host).
+The upper scope contains only the variable **`host`** which refers to the template owner (shadowroot host).
 
 The base scope resembles something like this but it can also be extended using directives as we'll see later.
 ```ts
@@ -315,7 +315,7 @@ Placeholders allow you to expose scopes that injections can use to customize the
 </my-element>
 ```
 
-And, unlike slots, placeholders can instantiate the injected model many times as needed. Necessary for templating iterated data.
+And, unlike slots, placeholders can instantiate the injected template many times as needed. Necessary for templating iterated data.
 
 ```html
 <!--my-element-->

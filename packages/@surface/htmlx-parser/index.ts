@@ -1,8 +1,4 @@
 /* eslint-disable @typescript-eslint/indent */
-import HTMLXElementParser from "./internal/parser.js";
-
-export { default as DescriptorType } from "./internal/descriptor-type.js";
-
 export type { default as StackTrace }     from "./internal/types/stack-trace";
 export type { default as ObservablePath } from "./internal/types/observable-path";
 export type
@@ -27,4 +23,5 @@ export type
     TwoWayAttributeDescritor,
 } from "./internal/types/descriptor";
 
-export default HTMLXElementParser;
+export { default as DescriptorType } from "./internal/descriptor-type.js";
+export { default as Parser }         from "./internal/parser.js";
