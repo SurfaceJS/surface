@@ -1,0 +1,59 @@
+<span value="{name}" @click="host.handler" ::value-a="host.value" :value-b="host.x++">
+    Some {"interpolation"} here
+</span>
+<custom-element>
+    <span #injectinvalid>
+        <h1>Default</h1>
+    </span>
+    <span #inject.invalid>
+        <h1>Default</h1>
+    </span>
+    <span #inject>
+        <h1>Default</h1>
+    </span>
+    <span #inject:title="{ title }">
+        <h1>{title}</h1>
+    </span>
+    <span #inject.key="host.key" #inject.scope="{ title }">
+        <h1>{title}</h1>
+    </span>
+</custom-element>
+<hr>
+<span #if="host.status == 1">
+    Active
+</span>
+<span #else-if="host.status == 2">
+    Waiting
+</span>
+<span #else>
+    Suspended
+</span>
+<span #placeholderinvalid>
+    <h1>Default</h1>
+</span>
+<span #placeholder.invalid>
+    <h1>Default</h1>
+</span>
+<span #placeholder>
+    Default
+</span>
+<span #placeholder:title="{ name: host.name }">
+    Default {name}
+</span>
+<span #placeholder.scope="{ name: host.name }" #placeholder.key="host.key">
+    Default {name}
+</span>
+<table>
+    <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th>Status</th>
+    </tr>
+    <tr #for="const item of host.items">
+        <th>{item.id}</th>
+        <th>{item.name}</th>
+        <th>{item.status}</th>
+    </tr>
+</table>
+<hr>
+<span>{host.footer}</span>

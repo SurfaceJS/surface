@@ -339,8 +339,8 @@ And, unlike slots, placeholders can instantiate the injected template many times
 **`#placeholder`** and **`#inject`** also supports dynamic keys using the syntax:
 
 ```html
-<span #placeholder="scope" #placeholder-key="key"></span>
-<span #inject="scope" #inject-key="key"></span>
+<span #placeholder.scope="scope" #placeholder.key="key"></span>
+<span #inject.scope="scope" #inject.key="key"></span>
 ```
 
 Usefull to elaborate more complex scenarios.  
@@ -349,11 +349,11 @@ Usefull to elaborate more complex scenarios.
 <!--my-element-->
 <table>
     <th #for="header of host.headers">
-        <template #placeholder="{ header }" #placeholder-key="`header.${header}`">{header}</template>
+        <template #placeholder.scope="{ header }" #placeholder.key="`header.${header}`">{header}</template>
     </th>
     <tr #for="item of host.items">
         <td #for="header of host.headers">
-            <template #placeholder="{ value: item[header] }" #placeholder-key="`item.${header}`">{item.name}</template>
+            <template #placeholder.scope="{ value: item[header] }" #placeholder.key="`item.${header}`">{item.name}</template>
         </td>
     </tr>
 </table>

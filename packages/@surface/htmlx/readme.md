@@ -27,7 +27,7 @@ However, the technology still lacks some important features presents on everyday
 **@surface/htmlx** aims fill this gap adding the ability to use directives and data bindings within web components templates enabling the creation of more complex components with less effort.
 
 ### Compiling
-Note that it is not recommended to use the runtime compiler for more serious work.. Consider using the `webpack` with `@surface/htmlx-loader`.
+Note that it is not recommended to use the runtime compiler for more serious work. Consider using the `webpack` with `@surface/htmlx-loader`.
 
 ```ts
 import type { IDisposable } from "@surface/core";
@@ -148,11 +148,6 @@ Example assuming that the scope contains variables called amount and item:
 
 The above expression only be reevaluated when the properties **`host.value`** or **`item.value`** changes since the variables like **amount** are not reactive.
 
-
-
-
-
-
 ### Scopes
 Reactivity depends on the scope which may vary according to the context.
 
@@ -212,7 +207,7 @@ Transclusion means the inclusion of the content of one document within another d
 
 Html5 already provides this through slots.
 
-On surface/htmlx-element, templates additionally provide the ability to inject the client's templates into the component's shadowdom.
+On `surface/htmlx`, templates additionally provide the ability to inject the client's templates into the component's shadowdom.
 
 ```html
 <!--my-element-->
@@ -294,8 +289,8 @@ And, unlike slots, placeholders can instantiate the injected template many times
 **`#placeholder`** and **`#inject`** also supports dynamic keys using the syntax:
 
 ```html
-<span #placeholder="scope" #placeholder-key="key"></span>
-<span #inject="scope" #inject-key="key"></span>
+<span #placeholder.scope="scope" #placeholder.key="key"></span>
+<span #inject.scope="scope" #inject.key="key"></span>
 ```
 
 Usefull to elaborate more complex scenarios.  
@@ -304,11 +299,11 @@ Usefull to elaborate more complex scenarios.
 <!--my-element-->
 <table>
     <th #for="header of host.headers">
-        <template #placeholder="{ header }" #placeholder-key="`header.${header}`">{header}</template>
+        <template #placeholder.scope="{ header }" #placeholder.key="`header.${header}`">{header}</template>
     </th>
     <tr #for="item of host.items">
         <td #for="header of host.headers">
-            <template #placeholder="{ value: item[header] }" #placeholder-key="`item.${header}`">{item.name}</template>
+            <template #placeholder.scope="{ value: item[header] }" #placeholder.key="`item.${header}`">{item.name}</template>
         </td>
     </tr>
 </table>

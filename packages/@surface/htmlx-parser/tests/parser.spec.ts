@@ -221,7 +221,9 @@ export default class HTMLXElementParserSpec
         [
             "<span #inject>Empty</span>",
             "<span #inject:title=\"{ title }\"><h1>{title}</h1></span>",
-            "<span #inject=\"{ title }\" #inject-key=\"host.dynamicInjectKey\"><h1>{title}</h1></span>",
+            "<span #inject.scope=\"{ title }\"><h1>{title}</h1></span>",
+            "<span #inject.key=\"host.dynamicInjectKey\"><h1>Dynamic Content</h1></span>",
+            "<span #inject.scope=\"{ title }\" #inject.key=\"host.dynamicInjectKey\"><h1>{title}</h1></span>",
         ].join("");
 
         const expected: Descriptor =
@@ -330,7 +332,97 @@ export default class HTMLXElementParserSpec
                                                 [
                                                     ["<x-component>"],
                                                     ["#shadow-root"],
-                                                    ["...2 other(s) node(s)", "<span #inject=\"{ title }\" #inject-key=\"host.dynamicInjectKey\">"],
+                                                    ["...2 other(s) node(s)", "<span #inject.scope=\"{ title }\">"],
+                                                    ["<h1>"],
+                                                    ["{title}"],
+                                                ],
+                                                type:  DescriptorType.TextInterpolation,
+                                                value: parseExpression("`${title}`"),
+                                            },
+                                        ],
+                                        tag:  "h1",
+                                        type: DescriptorType.Element,
+                                    },
+                                ],
+                                tag:  "span",
+                                type: DescriptorType.Element,
+                            },
+                        ],
+                        type: DescriptorType.Fragment,
+                    },
+                    key:         parseExpression("'default'"),
+                    observables: { key: [], value: [] },
+                    source:      { key: "", value: "#inject.scope=\"{ title }\"" },
+                    stackTrace:
+                    [
+                        ["<x-component>"],
+                        ["#shadow-root"],
+                        ["...2 other(s) node(s)", "<span #inject.scope=\"{ title }\">"],
+                    ],
+                    type:  DescriptorType.Injection,
+                    value: parseDestructuredPattern("{ title }"),
+                },
+                {
+                    fragment:
+                    {
+                        childs:
+                        [
+                            {
+                                attributes: [],
+                                childs:
+                                [
+                                    {
+                                        attributes: [],
+                                        childs:
+                                        [
+                                            {
+                                                type:  DescriptorType.Text,
+                                                value: "Dynamic Content",
+                                            },
+                                        ],
+                                        tag:  "h1",
+                                        type: DescriptorType.Element,
+                                    },
+                                ],
+                                tag:  "span",
+                                type: DescriptorType.Element,
+                            },
+                        ],
+                        type: DescriptorType.Fragment,
+                    },
+                    key:         parseExpression("host.dynamicInjectKey"),
+                    observables: { key: [["host", "dynamicInjectKey"]], value: [] },
+                    source:      { key: "#inject.key=\"host.dynamicInjectKey\"", value: "" },
+                    stackTrace:
+                    [
+                        ["<x-component>"],
+                        ["#shadow-root"],
+                        ["...3 other(s) node(s)", "<span #inject.key=\"host.dynamicInjectKey\">"],
+                    ],
+                    type:  DescriptorType.Injection,
+                    value: parseDestructuredPattern("{ }"),
+                },
+                {
+                    fragment:
+                    {
+                        childs:
+                        [
+                            {
+                                attributes: [],
+                                childs:
+                                [
+                                    {
+                                        attributes: [],
+                                        childs:
+                                        [
+                                            {
+                                                observables: [],
+                                                source:      "{title}",
+                                                stackTrace:
+                                                [
+                                                    ["<x-component>"],
+                                                    ["#shadow-root"],
+                                                    ["...4 other(s) node(s)", "<span #inject.scope=\"{ title }\" #inject.key=\"host.dynamicInjectKey\">"],
                                                     ["<h1>"],
                                                     ["{title}"],
                                                 ],
@@ -350,12 +442,12 @@ export default class HTMLXElementParserSpec
                     },
                     key:         parseExpression("host.dynamicInjectKey"),
                     observables: { key: [["host", "dynamicInjectKey"]], value: [] },
-                    source:      { key: "#inject-key=\"host.dynamicInjectKey\"", value: "#inject=\"{ title }\"" },
+                    source:      { key: "#inject.key=\"host.dynamicInjectKey\"", value: "#inject.scope=\"{ title }\"" },
                     stackTrace:
                     [
                         ["<x-component>"],
                         ["#shadow-root"],
-                        ["...2 other(s) node(s)", "<span #inject=\"{ title }\" #inject-key=\"host.dynamicInjectKey\">"],
+                        ["...4 other(s) node(s)", "<span #inject.scope=\"{ title }\" #inject.key=\"host.dynamicInjectKey\">"],
                     ],
                     type:  DescriptorType.Injection,
                     value: parseDestructuredPattern("{ title }"),
@@ -369,7 +461,7 @@ export default class HTMLXElementParserSpec
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
 
-        chai.assert.deepEqual(a, e);
+        chai.assert.deepEqual(a.childs, e.childs);
     }
 
     @shouldPass @test
@@ -503,7 +595,9 @@ export default class HTMLXElementParserSpec
         [
             "<span #placeholder>Default Empty</span>",
             "<span #placeholder:value=\"{ name: host.name }\">Default {name}</span>",
-            "<span #placeholder-key=\"host.dynamicPlaceholderKey\" #placeholder=\"{ name: host.name }\">Default {name}</span>",
+            "<span #placeholder.scope=\"{ name: host.name }\">Default {name}</span>",
+            "<span #placeholder.key=\"host.dynamicPlaceholderKey\">Dynamic Content</span>",
+            "<span #placeholder.key=\"host.dynamicPlaceholderKey\" #placeholder.scope=\"{ name: host.name }\">Default {name}</span>",
         ].join("");
 
         const expected: Descriptor =
@@ -540,7 +634,7 @@ export default class HTMLXElementParserSpec
                         ["<span #placeholder>"],
                     ],
                     type:  DescriptorType.Placeholder,
-                    value: parseExpression("undefined"),
+                    value: parseExpression("{ }"),
                 },
                 {
                     fragment:
@@ -599,7 +693,80 @@ export default class HTMLXElementParserSpec
                                         [
                                             ["<x-component>"],
                                             ["#shadow-root"],
-                                            ["...2 other(s) node(s)", "<span #placeholder-key=\"host.dynamicPlaceholderKey\" #placeholder=\"{ name: host.name }\">"],
+                                            ["...2 other(s) node(s)", "<span #placeholder.scope=\"{ name: host.name }\">"],
+                                            ["Default {name}"],
+                                        ],
+                                        type:  DescriptorType.TextInterpolation,
+                                        value: parseExpression("`Default ${name}`"),
+                                    },
+                                ],
+                                tag:  "span",
+                                type: DescriptorType.Element,
+                            },
+                        ],
+                        type:   DescriptorType.Fragment,
+                    },
+                    key:         parseExpression("'default'"),
+                    observables: { key: [], value: [["host", "name"]] },
+                    source:      { key: "", value: "#placeholder.scope=\"{ name: host.name }\"" },
+                    stackTrace:
+                    [
+                        ["<x-component>"],
+                        ["#shadow-root"],
+                        ["...2 other(s) node(s)", "<span #placeholder.scope=\"{ name: host.name }\">"],
+                    ],
+                    type:        DescriptorType.Placeholder,
+                    value:       parseExpression("{ name: host.name }"),
+                },
+                {
+                    fragment:
+                    {
+                        childs:
+                        [
+                            {
+                                attributes: [],
+                                childs:
+                                [
+                                    {
+                                        type:  DescriptorType.Text,
+                                        value: "Dynamic Content",
+                                    },
+                                ],
+                                tag:  "span",
+                                type: DescriptorType.Element,
+                            },
+                        ],
+                        type:   DescriptorType.Fragment,
+                    },
+                    key:         parseExpression("host.dynamicPlaceholderKey"),
+                    observables: { key: [["host", "dynamicPlaceholderKey"]], value: [] },
+                    source:      { key: "#placeholder.key=\"host.dynamicPlaceholderKey\"", value: "" },
+                    stackTrace:
+                    [
+                        ["<x-component>"],
+                        ["#shadow-root"],
+                        ["...3 other(s) node(s)", "<span #placeholder.key=\"host.dynamicPlaceholderKey\">"],
+                    ],
+                    type:  DescriptorType.Placeholder,
+                    value: parseExpression("{ }"),
+                },
+                {
+                    fragment:
+                    {
+                        childs:
+                        [
+                            {
+                                attributes: [],
+                                childs:
+                                [
+                                    {
+                                        observables: [],
+                                        source:      "Default {name}",
+                                        stackTrace:
+                                        [
+                                            ["<x-component>"],
+                                            ["#shadow-root"],
+                                            ["...4 other(s) node(s)", "<span #placeholder.key=\"host.dynamicPlaceholderKey\" #placeholder.scope=\"{ name: host.name }\">"],
                                             ["Default {name}"],
                                         ],
                                         type:  DescriptorType.TextInterpolation,
@@ -614,12 +781,12 @@ export default class HTMLXElementParserSpec
                     },
                     key:         parseExpression("host.dynamicPlaceholderKey"),
                     observables: { key: [["host", "dynamicPlaceholderKey"]], value: [["host", "name"]] },
-                    source:      { key: "#placeholder-key=\"host.dynamicPlaceholderKey\"", value: "#placeholder=\"{ name: host.name }\"" },
+                    source:      { key: "#placeholder.key=\"host.dynamicPlaceholderKey\"", value: "#placeholder.scope=\"{ name: host.name }\"" },
                     stackTrace:
                     [
                         ["<x-component>"],
                         ["#shadow-root"],
-                        ["...2 other(s) node(s)", "<span #placeholder-key=\"host.dynamicPlaceholderKey\" #placeholder=\"{ name: host.name }\">"],
+                        ["...4 other(s) node(s)", "<span #placeholder.key=\"host.dynamicPlaceholderKey\" #placeholder.scope=\"{ name: host.name }\">"],
                     ],
                     type:  DescriptorType.Placeholder,
                     value: parseExpression("{ name: host.name }"),
@@ -1062,7 +1229,7 @@ export default class HTMLXElementParserSpec
     @shouldPass @test
     public decomposeForAndPlaceholder(): void
     {
-        const template = "<span #for=\"const [key, value] of items\" #placeholder-key=\"key\" #placeholder=\"source\">{source.value}</span>";
+        const template = "<span #for=\"const [key, value] of items\" #placeholder.key=\"key\" #placeholder.scope=\"source\">{source.value}</span>";
 
         const expected: Descriptor =
         {
@@ -1089,7 +1256,7 @@ export default class HTMLXElementParserSpec
                                                     [
                                                         ["<x-component>"],
                                                         ["#shadow-root"],
-                                                        ["<span #for=\"const [key, value] of items\" #placeholder-key=\"key\" #placeholder=\"source\">"],
+                                                        ["<span #for=\"const [key, value] of items\" #placeholder.key=\"key\" #placeholder.scope=\"source\">"],
                                                         ["{source.value}"],
                                                     ],
                                                     type:  DescriptorType.TextInterpolation,
@@ -1104,12 +1271,12 @@ export default class HTMLXElementParserSpec
                                 },
                                 key:         parseExpression("key"),
                                 observables: { key: [], value: [] },
-                                source:      { key: "#placeholder-key=\"key\"", value: "#placeholder=\"source\"" },
+                                source:      { key: "#placeholder.key=\"key\"", value: "#placeholder.scope=\"source\"" },
                                 stackTrace:
                                 [
                                     ["<x-component>"],
                                     ["#shadow-root"],
-                                    ["<span #for=\"const [key, value] of items\" #placeholder-key=\"key\" #placeholder=\"source\">"],
+                                    ["<span #for=\"const [key, value] of items\" #placeholder.key=\"key\" #placeholder.scope=\"source\">"],
                                 ],
                                 type:  DescriptorType.Placeholder,
                                 value: parseExpression("source"),
@@ -1126,7 +1293,7 @@ export default class HTMLXElementParserSpec
                     [
                         ["<x-component>"],
                         ["#shadow-root"],
-                        ["<span #for=\"const [key, value] of items\" #placeholder-key=\"key\" #placeholder=\"source\">"],
+                        ["<span #for=\"const [key, value] of items\" #placeholder.key=\"key\" #placeholder.scope=\"source\">"],
                     ],
                     type: DescriptorType.Loop,
                 },
@@ -1448,7 +1615,7 @@ export default class HTMLXElementParserSpec
     @shouldPass @test
     public decomposePlaceholderWithPlaceholderKey(): void
     {
-        const template = "<span #placeholder-key=\"key\" #placeholder=\"source\">{source.value}</span>";
+        const template = "<span #placeholder.key=\"key\" #placeholder.scope=\"source\">{source.value}</span>";
 
         const expected: Descriptor =
         {
@@ -1470,7 +1637,7 @@ export default class HTMLXElementParserSpec
                                         [
                                             ["<x-component>"],
                                             ["#shadow-root"],
-                                            ["<span #placeholder-key=\"key\" #placeholder=\"source\">"],
+                                            ["<span #placeholder.key=\"key\" #placeholder.scope=\"source\">"],
                                             ["{source.value}"],
                                         ],
                                         type:  DescriptorType.TextInterpolation,
@@ -1485,12 +1652,12 @@ export default class HTMLXElementParserSpec
                     },
                     key:         parseExpression("key"),
                     observables: { key: [], value: [] },
-                    source:      { key: "#placeholder-key=\"key\"", value: "#placeholder=\"source\"" },
+                    source:      { key: "#placeholder.key=\"key\"", value: "#placeholder.scope=\"source\"" },
                     stackTrace:
                     [
                         ["<x-component>"],
                         ["#shadow-root"],
-                        ["<span #placeholder-key=\"key\" #placeholder=\"source\">"],
+                        ["<span #placeholder.key=\"key\" #placeholder.scope=\"source\">"],
                     ],
                     type:  DescriptorType.Placeholder,
                     value: parseExpression("source"),
@@ -1587,6 +1754,62 @@ export default class HTMLXElementParserSpec
         const e = stringifyExpressions(expected);
 
         chai.assert.deepEqual(a, e);
+    }
+
+    @shouldFail @test
+    public ErrorMultiplesDirectivesOfSameType(): void
+    {
+        const template = "<div #inject #inject.key='key'></div>";
+
+        const message = "Multiples #inject directives on same element is not supported.";
+        const stack   = "<x-component>\n   #shadow-root\n      <div #inject #inject.key=\"key\">";
+
+        const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
+        const expected = toRaw(new TemplateParseError(message, stack));
+
+        chai.assert.deepEqual(actual, expected);
+    }
+
+    @shouldFail @test
+    public ErrorMultiplesDirectivesOfSameType2(): void
+    {
+        const template = "<div #inject #inject.scope='scope'></div>";
+
+        const message = "Multiples #inject directives on same element is not supported.";
+        const stack   = "<x-component>\n   #shadow-root\n      <div #inject #inject.scope=\"scope\">";
+
+        const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
+        const expected = toRaw(new TemplateParseError(message, stack));
+
+        chai.assert.deepEqual(actual, expected);
+    }
+
+    @shouldFail @test
+    public ErrorMultiplesDirectivesOfSameType3(): void
+    {
+        const template = "<div #inject:key #inject></div>";
+
+        const message = "Multiples #inject directives on same element is not supported.";
+        const stack   = "<x-component>\n   #shadow-root\n      <div #inject:key #inject>";
+
+        const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
+        const expected = toRaw(new TemplateParseError(message, stack));
+
+        chai.assert.deepEqual(actual, expected);
+    }
+
+    @shouldFail @test
+    public ErrorMultiplesDirectivesOfSameType4(): void
+    {
+        const template = "<div #inject:a #inject:b></div>";
+
+        const message = "Multiples #inject directives on same element is not supported.";
+        const stack   = "<x-component>\n   #shadow-root\n      <div #inject:a #inject:b>";
+
+        const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
+        const expected = toRaw(new TemplateParseError(message, stack));
+
+        chai.assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test

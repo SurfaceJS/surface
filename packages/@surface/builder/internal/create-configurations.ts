@@ -2,7 +2,6 @@
 /* eslint-disable max-lines-per-function */
 import { URL }                                        from "url";
 import { DeepMergeFlags, deepMerge }                  from "@surface/core";
-import { CleanWebpackPlugin }                         from "clean-webpack-plugin";
 import CopyPlugin                                     from "copy-webpack-plugin";
 import EslintWebpackPlugin                            from "eslint-webpack-plugin";
 import type { Options as EslintWebpackPluginOptions } from "eslint-webpack-plugin";
@@ -75,7 +74,7 @@ const PROJECT_DEFAULTS: Project =
             },
         },
     },
-    filename:   "js/[name]/[hash].js",
+    filename:   "js/[name]/[fullhash].js",
     mode:       "development",
     publicPath: "/",
     target:     "web",
@@ -147,11 +146,6 @@ export default async function createConfigurations(type: "analyze" | "build" | "
                 mangle:   true,
             },
         });
-
-        if (configuration.clean)
-        {
-            plugins.push(new CleanWebpackPlugin());
-        }
 
         if (project.includeFiles)
         {
@@ -241,7 +235,7 @@ export default async function createConfigurations(type: "analyze" | "build" | "
                     {
                         generator:
                         {
-                            filename: "images/[hash][ext][query]",
+                            filename: "images/[fullhash][ext][query]",
                         },
                         test: /\.(a?png|avif|bmp|cur|gif|ico|jfif|jpe?g|pjp(eg)?|svg|tiff?|webp)$/,
                         type: "asset/resource",
@@ -249,7 +243,7 @@ export default async function createConfigurations(type: "analyze" | "build" | "
                     {
                         generator:
                         {
-                            filename: "fonts/[hash][ext][query]",
+                            filename: "fonts/[fullhash][ext][query]",
                         },
                         test: /\.(ttf|woff2?|eot|otf)$/,
                         type: "asset/resource",
@@ -257,7 +251,7 @@ export default async function createConfigurations(type: "analyze" | "build" | "
                     {
                         generator:
                         {
-                            filename: "fonts/[hash][ext][query]",
+                            filename: "fonts/[fullhash][ext][query]",
                         },
                         test: /\.txt$/,
                         type: "asset/source",
@@ -278,7 +272,7 @@ export default async function createConfigurations(type: "analyze" | "build" | "
                             {
                                 generator:
                                 {
-                                    filename: "css/[hash].css",
+                                    filename: "css/[fullhash].css",
                                 },
                                 resourceQuery: /file/,
                                 type:          "asset/resource",
@@ -322,7 +316,7 @@ export default async function createConfigurations(type: "analyze" | "build" | "
                     {
                         generator:
                         {
-                            filename: "js/[hash][ext][query]",
+                            filename: "js/[fullhash][ext][query]",
                         },
                         test: /\.ts$/,
                         use:
@@ -337,10 +331,12 @@ export default async function createConfigurations(type: "analyze" | "build" | "
             optimization: { minimizer: [tersePlugin],  ...buildConfiguration?.optimization },
             output:
             {
-                filename:   project.filename,
-                path:       project.output,
-                pathinfo:   !isProduction,
-                publicPath: project.publicPath,
+                // chunkLoading: "import",
+                clean:        configuration.clean,
+                filename:     project.filename,
+                path:         project.output,
+                pathinfo:     !isProduction,
+                publicPath:   project.publicPath,
             },
             performance: buildConfiguration?.performance,
             plugins,

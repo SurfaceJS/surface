@@ -443,8 +443,8 @@ export default class CompilerSpec
 
         host.id = "key-a";
 
-        const shadowRoot = "<template #placeholder #placeholder-key='host.id'>Placeholder Key: {host.id}</template>";
-        const innerHTML  = "<template #inject #inject-key='host.id'>Inject Key: {host.id}</template>";
+        const shadowRoot = "<template #placeholder.key='host.id'>Placeholder Key: {host.id}</template>";
+        const innerHTML  = "<template #inject.key='host.id'>Inject Key: {host.id}</template>";
 
         compile({ host, innerHTML, parentHost, shadowRoot });
 
@@ -1709,10 +1709,10 @@ export default class CompilerSpec
     {
         const host = createNode();
 
-        const shadowRoot = "<h1>Title</h1><template #placeholder #placeholder-key='key'></template>";
+        const shadowRoot = "<h1>Title</h1><template #placeholder.key='key'></template>";
 
-        const message = "Evaluation error in '#placeholder-key=\"key\"': key is not defined";
-        const stack   = "<y-component>\n   #shadow-root\n      ...1 other(s) node(s)\n      <template #placeholder #placeholder-key=\"key\">";
+        const message = "Evaluation error in '#placeholder.key=\"key\"': key is not defined";
+        const stack   = "<y-component>\n   #shadow-root\n      ...1 other(s) node(s)\n      <template #placeholder.key=\"key\">";
 
         const actual   = await tryActionAsync(() => compile({ host, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
@@ -1742,11 +1742,11 @@ export default class CompilerSpec
     {
         const host = createNode();
 
-        const innerHTML  = "<template #inject #inject-key='key'></template>";
+        const innerHTML  = "<template #inject.key='key'></template>";
         const shadowRoot = "<div class=\"foo\"><span></span><template #placeholder></template></div>";
 
-        const message = "Evaluation error in '#inject-key=\"key\"': key is not defined";
-        const stack   = "<parent-host>\n   #shadow-root\n      <template #inject #inject-key=\"key\">";
+        const message = "Evaluation error in '#inject.key=\"key\"': key is not defined";
+        const stack   = "<parent-host>\n   #shadow-root\n      <template #inject.key=\"key\">";
 
         const actual   = await tryActionAsync(() => compile({ host, innerHTML, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
@@ -1909,10 +1909,10 @@ export default class CompilerSpec
         const host = createNode();
 
         const innerHTML  = "<template #inject></template>";
-        const shadowRoot = "<template #placeholder #placeholder-key=\"host.key\"></template>";
+        const shadowRoot = "<template #placeholder.key=\"host.key\"></template>";
 
-        const message = "Binding error in '#placeholder-key=\"host.key\"': Property \"key\" does not exists on type YComponent";
-        const stack   = "<y-component>\n   #shadow-root\n      <template #placeholder #placeholder-key=\"host.key\">";
+        const message = "Binding error in '#placeholder.key=\"host.key\"': Property \"key\" does not exists on type YComponent";
+        const stack   = "<y-component>\n   #shadow-root\n      <template #placeholder.key=\"host.key\">";
 
         const actual   = tryAction(() => compile({ host, innerHTML, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
@@ -1942,11 +1942,11 @@ export default class CompilerSpec
     {
         const host = createNode();
 
-        const innerHTML  = "<template #inject #inject-key=\"host.key\"></template>";
+        const innerHTML  = "<template #inject.key=\"host.key\"></template>";
         const shadowRoot = "<template #placeholder></template>";
 
-        const message = "Binding error in '#inject-key=\"host.key\"': Property \"key\" does not exists on type HTMLElement";
-        const stack   = "<parent-host>\n   #shadow-root\n      <template #inject #inject-key=\"host.key\">";
+        const message = "Binding error in '#inject.key=\"host.key\"': Property \"key\" does not exists on type HTMLElement";
+        const stack   = "<parent-host>\n   #shadow-root\n      <template #inject.key=\"host.key\">";
 
         const actual   = await tryActionAsync(() => compile({ host, innerHTML, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));

@@ -35,14 +35,16 @@ enum NodeType
 
 enum DirectiveType
 {
-    If             = "#if",
-    ElseIf         = "#else-if",
-    Else           = "#else",
-    For            = "#for",
-    Inject         = "#inject",
-    InjectKey      = "#inject-key",
-    Placeholder    = "#placeholder",
-    PlaceholderKey = "#placeholder-key",
+    If               = "#if",
+    ElseIf           = "#else-if",
+    Else             = "#else",
+    For              = "#for",
+    Inject           = "#inject",
+    InjectKey        = "#inject.key",
+    InjectScope      = "#inject.scope",
+    Placeholder      = "#placeholder",
+    PlaceholderKey   = "#placeholder.key",
+    PlaceholderScope = "#placeholder.scope",
 }
 
 const directiveTypes = Object.values(DirectiveType);
@@ -51,8 +53,7 @@ type Directive  =
 {
     key:    string,
     name:   string,
-    raw:    string,
-    rawKey: string,
+    source: { key: string, value: string },
     type:   DirectiveType,
     value:  string,
 };
@@ -96,7 +97,8 @@ export default class Parser
             directives.forEach(x => template.removeAttribute(x.name));
 
             innerTemplate.removeAttribute(directive.name);
-            innerTemplate.removeAttribute(`${directive.name}-key`);
+            innerTemplate.removeAttribute(`${directive.name}.key`);
+            innerTemplate.removeAttribute(`${directive.name}.scope`);
 
             this.markAsDecomposed(innerTemplate);
 
@@ -141,57 +143,90 @@ export default class Parser
     {
         const KEYED_DIRECTIVES = [DirectiveType.Inject, DirectiveType.Placeholder];
 
+        const duplications = new Set<string>();
+        const resolved     = new Set<string>();
+
         // eslint-disable-next-line @typescript-eslint/prefer-for-of
         for (let i = 0; i < namedNodeMap.length; i++)
         {
             const attribute = namedNodeMap[i];
 
-            if (!attribute.name.endsWith("-key"))
+            if (!resolved.has(attribute.name))
             {
                 const raw = this.attributeToString(attribute);
 
-                let isKeyed = false;
+                let handled = false;
 
                 for (const directive of KEYED_DIRECTIVES)
                 {
-                    if (attribute.name == directive || attribute.name.startsWith(`${directive}:`))
+                    if (attribute.name == directive || attribute.name == `${directive}.key` || attribute.name == `${directive}.scope` || attribute.name.startsWith(`${directive}:`))
                     {
-                        const DEFAULT_KEY = "'default'";
+                        if (attribute.name == directive && namedNodeMap[`${directive}.key`] || duplications.has(directive))
+                        {
+                            const message = `Multiples ${directive} directives on same element is not supported.`;
 
-                        const directiveKey = `${directive}-key`;
+                            throwTemplateParseError(message, this.stackTrace);
+                        }
 
-                        const [type, _key] = attribute.name.split(":") as [DirectiveType, string | undefined];
+                        duplications.add(directive);
 
-                        const hasStaticKey = typeof _key == "string";
+                        if (attribute.name == directive)
+                        {
+                            yield {
+                                key:    "'default'",
+                                name:   attribute.name,
+                                source: { key: "", value: raw },
+                                type:   directive,
+                                value:  attribute.value,
+                            };
+                        }
+                        else if (attribute.name.includes(":"))
+                        {
+                            const [type, key] = attribute.name.split(":") as [DirectiveType, string | undefined];
 
-                        const key = hasStaticKey
-                            ? `'${_key}'`
-                            : `${namedNodeMap[directiveKey]?.value ?? DEFAULT_KEY}`;
+                            if (!key)
+                            {
+                                const message = `Directive ${directive} has no key.`;
 
-                        const rawKey = !hasStaticKey && key != DEFAULT_KEY ? `${directiveKey}=\"${key}\"` : "";
+                                throwTemplateParseError(message, this.stackTrace);
+                            }
 
-                        yield {
-                            key,
-                            name:  attribute.name,
-                            raw,
-                            rawKey,
-                            type,
-                            value: attribute.value,
-                        };
+                            yield {
+                                key:    `"${key}"`,
+                                name:   attribute.name,
+                                source: { key: "", value: raw },
+                                type,
+                                value:  attribute.value,
+                            };
+                        }
+                        else
+                        {
+                            resolved.add(`${directive}.key`);
+                            resolved.add(`${directive}.scope`);
 
-                        isKeyed = true;
+                            const [key, scope] = attribute.name == `${directive}.key`
+                                ? [attribute.value, namedNodeMap[`${directive}.scope`]?.value]
+                                : [namedNodeMap[`${directive}.key`]?.value, attribute.value];
 
-                        break;
+                            yield {
+                                key:    key ?? "'default'",
+                                name:   attribute.name,
+                                source: { key: key ? `${directive}.key="${key}"` : "", value: scope ? `${directive}.scope="${scope}"` : "" },
+                                type:   directive,
+                                value:  scope ?? "",
+                            };
+                        }
+
+                        handled = true;
                     }
                 }
 
-                if (!isKeyed)
+                if (!handled)
                 {
                     yield {
                         key:    "",
                         name:   attribute.name,
-                        raw,
-                        rawKey: "",
+                        source: { key: "", value: raw },
                         type:   attribute.name as DirectiveType,
                         value:  attribute.value,
                     };
@@ -278,7 +313,8 @@ export default class Parser
 
     private hasTemplateDirectives(element: Element): boolean
     {
-        return element.getAttributeNames().some(attribute => directiveTypes.some(directive => attribute.startsWith(directive)));
+        return element.getAttributeNames()
+            .some(attribute => directiveTypes.some(directive => attribute == directive || attribute.startsWith(`${DirectiveType.Inject}:`) || attribute.startsWith(`${DirectiveType.Placeholder}:`)));
     }
 
     private markAsDecomposed(element: Element & { [DECOMPOSED]?: boolean }): void
@@ -389,7 +425,7 @@ export default class Parser
         {
             const branches: BranchDescriptor[] = [];
 
-            const expression = this.tryParseExpression(parseExpression, directive.value, directive.raw);
+            const expression = this.tryParseExpression(parseExpression, directive.value, directive.source.value);
             const fragment = this.parseTemplate(template);
 
             const branchDescriptor: BranchDescriptor =
@@ -397,7 +433,7 @@ export default class Parser
                 expression,
                 fragment,
                 observables: ObserverVisitor.observe(expression),
-                source:      directive.raw,
+                source:      directive.source.value,
                 stackTrace,
             };
 
@@ -442,7 +478,7 @@ export default class Parser
 
                 this.index++;
 
-                const expression = this.tryParseExpression(parseExpression, value, simblingDirective.raw);
+                const expression = this.tryParseExpression(parseExpression, value, simblingDirective.source.value);
                 const fragment = this.parseTemplate(simblingTemplate);
 
                 const conditionalBranchDescriptor: BranchDescriptor =
@@ -450,7 +486,7 @@ export default class Parser
                     expression,
                     fragment,
                     observables: ObserverVisitor.observe(expression),
-                    source:      simblingDirective.raw,
+                    source:      simblingDirective.source.value,
                     stackTrace:  [...this.stackTrace],
                 };
 
@@ -469,7 +505,7 @@ export default class Parser
         {
             const value = directive.value;
 
-            const { left, right, operator } = this.tryParseExpression(parseForLoopStatement, value, directive.raw);
+            const { left, right, operator } = this.tryParseExpression(parseForLoopStatement, value, directive.source.value);
 
             const fragment    = this.parseTemplate(template);
             const observables = ObserverVisitor.observe(right);
@@ -481,7 +517,7 @@ export default class Parser
                 observables,
                 operator,
                 right,
-                source:  directive.raw,
+                source:  directive.source.value,
                 stackTrace,
                 type:   DescriptorType.Loop,
             };
@@ -490,10 +526,10 @@ export default class Parser
         }
         else if (directive.type == DirectiveType.Placeholder)
         {
-            const { key, raw, rawKey, value } = directive;
+            const { key, source, value } = directive;
 
-            const keyExpression  = this.tryParseExpression(parseExpression, key, rawKey);
-            const expression     = this.tryParseExpression(parseExpression, `${value || "undefined"}`, raw);
+            const keyExpression  = this.tryParseExpression(parseExpression, key, source.key);
+            const expression     = this.tryParseExpression(parseExpression, `${value || "{ }"}`, source.value);
             const keyObservables = ObserverVisitor.observe(keyExpression);
             const observables    = ObserverVisitor.observe(expression);
             const fragment       = this.parseTemplate(template);
@@ -503,7 +539,7 @@ export default class Parser
                 fragment,
                 key:         keyExpression,
                 observables: { key: keyObservables, value: observables },
-                source:         { key: rawKey, value: raw },
+                source,
                 stackTrace,
                 type:        DescriptorType.Placeholder,
                 value:       expression,
@@ -512,12 +548,12 @@ export default class Parser
             return placeholderDirective;
         }
 
-        const { key, raw, rawKey, value } = directive;
+        const { key, source, value } = directive;
 
         const destructured = /^\s*\{/.test(value);
 
-        const keyExpression  = this.tryParseExpression(parseExpression, key, rawKey);
-        const pattern        = this.tryParseExpression(destructured ? parseDestructuredPattern : parseExpression, `${value || "{ }"}`, raw) as IPattern | IIdentifier;
+        const keyExpression  = this.tryParseExpression(parseExpression, key, source.key);
+        const pattern        = this.tryParseExpression(destructured ? parseDestructuredPattern : parseExpression, `${value || "{ }"}`, source.value) as IPattern | IIdentifier;
         const keyObservables = ObserverVisitor.observe(keyExpression);
         const observables    = ObserverVisitor.observe(pattern);
 
@@ -528,7 +564,7 @@ export default class Parser
             fragment,
             key:         keyExpression,
             observables: { key: keyObservables, value: observables },
-            source:      { key: rawKey, value: raw },
+            source,
             stackTrace,
             type:        DescriptorType.Injection,
             value:       pattern,
