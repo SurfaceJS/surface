@@ -5,7 +5,6 @@ import { fileURLToPath }   from "url";
 import { promisify }       from "util";
 import { resolveError }    from "@surface/core";
 import chalk               from "chalk";
-import type { Credential } from "npm-registry-client";
 import
 {
     backupFile,
@@ -92,9 +91,9 @@ export default class Commands
         await execute(`cover ${chalk.bold.blue(filepath)} tests`, command);
     }
 
-    public static async publish(registry: string, options: CliPublishOptions): Promise<void>
+    public static async publish(_: string, options: CliPublishOptions): Promise<void>
     {
-        console.log(options.target);
+        console.log(options.dry);
 
         const publishignore = (await readFileAsync(path.join(DIRNAME, "../.publishignore"))).toString();
 
@@ -106,7 +105,7 @@ export default class Commands
 
         try
         {
-            if (options.config == "release")
+            if (options.mode == "release")
             {
                 await Commands.sync(StrategyType.Default);
             }
@@ -119,13 +118,11 @@ export default class Commands
                 await Commands.sync(StrategyType.ForceVersion, `*.*.*-dev.${timestamp}` as SemanticVersion);
             }
 
-            const auth = { alwaysAuth: true, token: options.token } as Credential;
-
             const packages = Array.from(lookup.keys()).filter(x => !exclude.has(x));
 
-            const repository = new NpmRepository(registry, false);
+            const repository = new NpmRepository(options.token);
 
-            await new Publisher(lookup, repository, auth, "public", options.debug).publish(packages);
+            await new Publisher(repository, lookup, options.dry).publish(packages);
         }
         catch (error)
         {

@@ -16,7 +16,7 @@
         "./@types",
         "./internal",
         "./tests"
-, "../packages/@surface/core/internal/version.d.ts"    ],
+    ],
     "references":
     [
         { "path": "../packages/@surface/core" },

@@ -8,9 +8,10 @@ program
     .action(Commands.cover);
 program
     .command("publish <registry>")
+    .storeOptionsAsProperties(false)
     .requiredOption("--token     <n>", "NPM token", toString)
-    .option("--config    <n>", "Configuration", parsePattern(/^nightly|release$/))
-    .option("--debug     [n]", "Debug mode", x => x === "" || x == "true")
-    .action(Commands.publish);
-program.parse(process.argv);
+    .option("--mode       <n>", "Configuration mode", parsePattern(/^nightly|release$/))
+    .option("--dry        [n]", "Dry mode", x => x === "" || x == "true")
+    .action(Commands.publish)
+    .parse();
 //# sourceMappingURL=cli.js.map

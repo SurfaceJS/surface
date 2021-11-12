@@ -8,7 +8,7 @@ import util                                 from "util";
 import { resolveError }                     from "@surface/core";
 import { createPathAsync, removePathAsync } from "@surface/io";
 import chalk                                from "chalk";
-import type { IPackage }                    from "npm-registry-client";
+import type { Manifest }                    from "pacote";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
@@ -85,7 +85,7 @@ export async function execute(label: string, command: string): Promise<void>
     }
 }
 
-export function getPackages(packagesRoot: string): IPackage[]
+export function getPackages(packagesRoot: string): Manifest[]
 {
     return Array.from(fs.readdirSync(packagesRoot))
         .map(x => path.join(packagesRoot, x, "package.json"))
@@ -160,9 +160,9 @@ export async function restoreBackup(source: string): Promise<void>
     await removePathAsync(`${source}.backup`);
 }
 
-export function toLookup(packages: IPackage[]): Map<string, IPackage>
+export function toLookup(packages: Manifest[]): Map<string, Manifest>
 {
-    return new Map(packages.map((x: IPackage) => [x.name, x] as [string, IPackage]));
+    return new Map(packages.map((x: Manifest) => [x.name, x] as [string, Manifest]));
 }
 
 export function typeGuard<T>(_: unknown, condition: boolean): _ is T

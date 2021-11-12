@@ -3,11 +3,12 @@ import type SemanticVersion from "./semantic-version";
 
 type CliPublishOptions =
 {
-    config?:   "development" | "release",
-    debug?:    boolean,
-    strategy?: StrategyType,
-    target?:  SemanticVersion,
-    token:     string,
+    mode?:      "development" | "release",
+    timestamp?: string,
+    dry?:       boolean,
+    strategy?:  StrategyType,
+    target?:    SemanticVersion,
+    token:      string,
 };
 
 export default CliPublishOptions;

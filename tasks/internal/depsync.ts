@@ -1,7 +1,7 @@
 import type { PrereleaseTypes } from "@surface/core";
 import { Version }              from "@surface/core";
 import chalk                    from "chalk";
-import type { IPackage }        from "npm-registry-client";
+import type { Manifest }        from "pacote";
 import Status                   from "./enums/status.js";
 import StrategyType             from "./enums/strategy-type.js";
 import NpmRepository            from "./npm-repository.js";
@@ -20,14 +20,14 @@ export type Options =
 
 export default class Depsync
 {
-    private readonly  updated:    Set<IPackage> = new Set();
-    private readonly  lookup:     Map<string, IPackage>;
+    private readonly  updated:    Set<Manifest> = new Set();
+    private readonly  lookup:     Map<string, Manifest>;
     private readonly  repository: NpmRepository;
     private readonly  silent:     boolean;
     private readonly  strategy:   StrategyType;
     private readonly  template?:  string;
 
-    public constructor(repository: NpmRepository, lookup: Map<string, IPackage>, options?: Options)
+    public constructor(repository: NpmRepository, lookup: Map<string, Manifest>, options?: Options)
     {
         this.repository = repository;
         this.lookup     = lookup;
@@ -41,7 +41,7 @@ export default class Depsync
     }
 
     // c8 ignore next
-    public static async sync(lookup: Map<string, IPackage>, options?: Options): Promise<IPackage[]>
+    public static async sync(lookup: Map<string, Manifest>, options?: Options): Promise<Manifest[]>
     {
         return new Depsync(new NpmRepository(), lookup, options).sync();
     }
@@ -77,32 +77,32 @@ export default class Depsync
         return version;
     }
 
-    private async hasUpdate($package: IPackage): Promise<boolean>
+    private async hasUpdate(manifest: Manifest): Promise<boolean>
     {
         if (this.template)
         {
-            const targetVersion = this.parseTemplate($package.version, this.template);
+            const targetVersion = this.parseTemplate(manifest.version, this.template);
 
-            if (this.hasStrategies(StrategyType.ForceVersion) || Version.compare(targetVersion, Version.parse($package.version)) == 1)
+            if (this.hasStrategies(StrategyType.ForceVersion) || Version.compare(targetVersion, Version.parse(manifest.version)) == 1)
             {
                 if (!targetVersion.prerelease || !this.hasStrategies(StrategyType.OnlyStable))
                 {
-                    const actual = $package.version;
+                    const actual = manifest.version;
 
-                    $package.version = targetVersion.toString();
+                    manifest.version = targetVersion.toString();
 
                     // c8 ignore if
                     if (!this.silent)
                     {
-                        console.log(`${chalk.bold.gray("[UPDATE]:")} ${blue($package.name)} - ${darkGreen(actual)} >> ${green($package.version)}`);
+                        console.log(`${chalk.bold.gray("[UPDATE]:")} ${blue(manifest.name)} - ${darkGreen(actual)} >> ${green(manifest.version)}`);
                     }
                 }
             }
         }
 
-        if (await this.repository.getStatus($package) != Status.InRegistry)
+        if (await this.repository.getStatus(manifest) != Status.InRegistry)
         {
-            this.updated.add($package);
+            this.updated.add(manifest);
 
             return true;
         }
@@ -115,26 +115,26 @@ export default class Depsync
         return strategies.every(x => (this.strategy & x) == x);
     }
 
-    private async updateDependents($package: IPackage): Promise<void>
+    private async updateDependents(manifest: Manifest): Promise<void>
     {
-        if (this.hasStrategies(StrategyType.OnlyStable) && Version.parse($package.version).prerelease)
+        if (this.hasStrategies(StrategyType.OnlyStable) && Version.parse(manifest.version).prerelease)
         {
             return;
         }
 
         const dependentPackages = Array.from(this.lookup.values())
-            .filter(x => !!x.dependencies?.[$package.name] && x.dependencies?.[$package.name] != $package.version);
+            .filter(x => !!x.dependencies?.[manifest.name] && x.dependencies?.[manifest.name] != manifest.version);
 
         for (const dependent of dependentPackages)
         {
-            const version = dependent.dependencies![$package.name];
+            const version = dependent.dependencies![manifest.name];
 
-            dependent.dependencies![$package.name] = $package.version;
+            dependent.dependencies![manifest.name] = manifest.version;
 
             // c8 ignore if
             if (!this.silent)
             {
-                console.log(`${chalk.bold.gray("[UPDATE]:")} ${blue($package.name)} dependency in ${blue(dependent.name)} - ${darkGreen(version)} >> ${green($package.version)}`);
+                console.log(`${chalk.bold.gray("[UPDATE]:")} ${blue(manifest.name)} dependency in ${blue(dependent.name)} - ${darkGreen(version)} >> ${green(manifest.version)}`);
             }
 
             if (!this.updated.has(dependent))
@@ -151,18 +151,18 @@ export default class Depsync
         }
 
         const devDependentPackages = Array.from(this.lookup.values())
-            .filter(x => !!x.devDependencies?.[$package.name] && x.devDependencies?.[$package.name] != $package.version);
+            .filter(x => !!x.devDependencies?.[manifest.name] && x.devDependencies?.[manifest.name] != manifest.version);
 
         for (const devDependent of devDependentPackages)
         {
-            const version = devDependent.devDependencies![$package.name];
+            const version = devDependent.devDependencies![manifest.name];
 
-            devDependent.devDependencies![$package.name] = $package.version;
+            devDependent.devDependencies![manifest.name] = manifest.version;
 
             // c8 ignore if
             if (!this.silent)
             {
-                console.log(`${chalk.bold.gray("[UPDATE]:")} ${blue($package.name)} dev dependency in ${blue(devDependent.name)} - ${darkGreen(version)} >> ${green($package.version)}`);
+                console.log(`${chalk.bold.gray("[UPDATE]:")} ${blue(manifest.name)} dev dependency in ${blue(devDependent.name)} - ${darkGreen(version)} >> ${green(manifest.version)}`);
             }
 
             if (!this.updated.has(devDependent))
@@ -174,9 +174,9 @@ export default class Depsync
         }
     }
 
-    private update($package: IPackage): void
+    private update(manifest: Manifest): void
     {
-        const version = Version.parse($package.version);
+        const version = Version.parse(manifest.version);
 
         if (version.prerelease)
         {
@@ -187,18 +187,18 @@ export default class Depsync
             version.revision++;
         }
 
-        const actual = $package.version;
+        const actual = manifest.version;
 
-        $package.version = version.toString();
+        manifest.version = version.toString();
 
         // c8 ignore if
         if (!this.silent)
         {
-            console.log(`${chalk.bold.gray("[UPDATE]:")} ${blue($package.name)} - ${darkGreen(actual)} >> ${green($package.version)}`);
+            console.log(`${chalk.bold.gray("[UPDATE]:")} ${blue(manifest.name)} - ${darkGreen(actual)} >> ${green(manifest.version)}`);
         }
     }
 
-    public async sync(): Promise<IPackage[]>
+    public async sync(): Promise<Manifest[]>
     {
         // c8 ignore if
         if (this.template && !this.silent)
