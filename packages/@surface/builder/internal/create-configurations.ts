@@ -10,7 +10,7 @@ import type { ForkTsCheckerWebpackPluginOptions }     from "fork-ts-checker-webp
 import HtmlWebpackPlugin                              from "html-webpack-plugin";
 import TerserWebpackPlugin                            from "terser-webpack-plugin";
 import webpack                                        from "webpack";
-import { BundleAnalyzerPlugin }                       from "webpack-bundle-analyzer";
+import webpackBundleAnalyzer                          from "webpack-bundle-analyzer";
 import WorkboxPlugin                                  from "workbox-webpack-plugin";
 import loaders                                        from "./loaders.js";
 import OverrideResolvePlugin                          from "./plugins/override-resolver-plugin.js";
@@ -190,7 +190,7 @@ export default async function createConfigurations(type: "analyze" | "build" | "
         switch (type)
         {
             case "analyze":
-                plugins.push(new BundleAnalyzerPlugin({ reportFilename: `${name}.html`, ...project.analyzer }));
+                plugins.push(new webpackBundleAnalyzer.BundleAnalyzerPlugin({ reportFilename: `${name}.html`, ...project.analyzer }));
                 break;
             case "serve":
                 if (name == main && isTargetingBrowser)

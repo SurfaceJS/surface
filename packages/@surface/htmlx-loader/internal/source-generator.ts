@@ -4,7 +4,7 @@ import type { IExpression, IPattern }                                           
 import { TypeGuard }                                                                        from "@surface/expression";
 import { DescriptorType, Parser }                                                           from "@surface/htmlx-parser";
 import type { AttributeBindDescritor, BranchDescriptor, Descriptor, RawAttributeDescritor } from "@surface/htmlx-parser";
-import { JSDOM }                                                                            from "jsdom";
+import jsdom                                                                                from "jsdom";
 import { defaultAttributeHandlers }                                                         from "./attribute-handlers.js";
 import ScopeRewriterVisitor                                                                 from "./scope-rewriter-visitor.js";
 import type { AttributeHandlers }                                                           from "./types/index.js";
@@ -46,7 +46,7 @@ export default class SourceGenerator
 
     public static generate(name: string, template: string, attributeHandlers: AttributeHandlers, generateStackStrace: boolean): string
     {
-        const descriptor = Parser.parse(new JSDOM().window.document, name, template);
+        const descriptor = Parser.parse(new jsdom.JSDOM().window.document, name, template);
 
         return new SourceGenerator(attributeHandlers, generateStackStrace).generate(descriptor);
     }

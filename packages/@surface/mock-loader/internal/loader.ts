@@ -76,7 +76,7 @@ async function internalGetSource(url: URL): Promise<GetSourceResult | null>
     return null;
 }
 
-export async function resolve(specifier: string, context: ResolveContext, defaultResolve: (specifier: string, context: ResolveContext, defaultResolve: Function) => Promise<ResolveResult>): Promise<ResolveResult>
+export async function resolve(specifier: string, context: ResolveContext, defaultResolve: (specifier: string, context: ResolveContext) => Promise<ResolveResult>): Promise<ResolveResult>
 {
     let resolved = specifier;
 
@@ -87,7 +87,7 @@ export async function resolve(specifier: string, context: ResolveContext, defaul
 
         if (isRelativePath)
         {
-            resolved = (await defaultResolve(specifier, proxyContext, defaultResolve)).url;
+            resolved = (await defaultResolve(specifier, proxyContext)).url;
         }
         else
         {
@@ -100,7 +100,7 @@ export async function resolve(specifier: string, context: ResolveContext, defaul
                     ? targetHint
                     : "";
 
-            resolved = (await defaultResolve(specifier.replace(proxyHint, "").replace(targetHint, ""), proxyContext, defaultResolve)).url + searchParams;
+            resolved = (await defaultResolve(specifier.replace(proxyHint, "").replace(targetHint, ""), proxyContext)).url + searchParams;
         }
     }
 
@@ -146,19 +146,19 @@ export async function resolve(specifier: string, context: ResolveContext, defaul
     return { url: url.href };
 }
 
-export async function getSource(specifier: string, context: GetSourceContext, defaultGetSource: (specifier: string, context: GetSourceContext, defaultGetSource: Function) => Promise<GetSourceResult>): Promise<GetSourceResult>
+export async function getSource(specifier: string, context: GetSourceContext, defaultGetSource: (specifier: string, context: GetSourceContext) => Promise<GetSourceResult>): Promise<GetSourceResult>
 {
     const url = new URL(specifier);
 
-    return await internalGetSource(url) ?? defaultGetSource(url.href, context, defaultGetSource);
+    return await internalGetSource(url) ?? defaultGetSource(url.href, context);
 }
 
-export async function getFormat(specifier: string, context: GetFormatContext, defaultGetFormat: (specifier: string, context: object, defaultGetFormat: Function) => Promise<GetFormatResult>): Promise<GetFormatResult>
+export async function getFormat(specifier: string, context: GetFormatContext, defaultGetFormat: (specifier: string, context: GetFormatContext) => Promise<GetFormatResult>): Promise<GetFormatResult>
 {
-    return internalGetFormat(specifier) ?? defaultGetFormat(specifier, context, defaultGetFormat);
+    return internalGetFormat(specifier) ?? defaultGetFormat(specifier, context);
 }
 
-export async function load(specifier: string, context: LoadContext, defaultLoad: (specifier: string, context: LoadContext, defaultLoad: Function) => Promise<LoadResult>): Promise<LoadResult>
+export async function load(specifier: string, context: LoadContext, defaultLoad: (specifier: string, context: LoadContext) => Promise<LoadResult>): Promise<LoadResult>
 {
     const source = (await internalGetSource(new URL(specifier)))?.source;
 
@@ -174,5 +174,5 @@ export async function load(specifier: string, context: LoadContext, defaultLoad:
         return { format, source: String(await readFile(new URL(specifier))) };
     }
 
-    return defaultLoad(specifier, context, defaultLoad);
+    return defaultLoad(specifier, context);
 }
