@@ -849,7 +849,7 @@ export default class SourceGeneratorSpec
             "\t\t\tcreatePlaceholderFactory",
             "\t\t\t(",
             "\t\t\t\tscope => \"default\",",
-            "\t\t\t\tscope => { value: scope.host.value },",
+            "\t\t\t\tscope => ({ value: scope.host.value }),",
             "\t\t\t\t[[],[[\"host\",\"value\"]]],",
             "\t\t\t\tcreateFragmentFactory",
             "\t\t\t\t(",

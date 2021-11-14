@@ -30,6 +30,7 @@
         "html-webpack-plugin": "^5.5.0",
         "loader-utils": "^3.2.0",
         "resolve-url-loader": "^4.0.0",
+        "sass": "^1.43.4",
         "sass-loader": "^12.3.0",
         "style-loader": "^3.3.1",
         "terser-webpack-plugin": "^5.2.5",
@@ -39,7 +40,7 @@
         "tslib": "^2.3.1",
         "webpack": "^5.64.0",
         "webpack-bundle-analyzer": "^4.5.0",
-        "webpack-dev-server": "^4.4.0",
+        "webpack-dev-server": "^4.5.0",
         "workbox-webpack-plugin": "^6.3.0"
     },
     "description": "Module responsible for managing the compilation of typescript, scss/sass and packaging with webpack.",
@@ -64,8 +65,7 @@
     "main": "index.js",
     "name": "@surface/builder",
     "peerDependencies": {
-        "sass": "^1.32.8",
-        "typescript": "^4.*"
+        "typescript": "^4.0.2"
     },
     "repository": {
         "type": "git",

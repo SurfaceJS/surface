@@ -218,7 +218,9 @@ export default class SourceGenerator
 
     private stringifyExpression(expression: IExpression): string
     {
-        return `scope => ${ScopeRewriterVisitor.rewriteExpression(expression)}`;
+        const scopedExpression = ScopeRewriterVisitor.rewriteExpression(expression);
+
+        return `scope => ${TypeGuard.isObjectExpression(scopedExpression) ? `(${scopedExpression})` : scopedExpression}`;
     }
 
     private stringifyPattern(pattern: IPattern): string
