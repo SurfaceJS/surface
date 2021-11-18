@@ -15,6 +15,7 @@ import WorkboxPlugin                                  from "workbox-webpack-plug
 import loaders                                        from "./loaders.js";
 import OverrideResolvePlugin                          from "./plugins/override-resolver-plugin.js";
 import PreferTsResolverPlugin                         from "./plugins/prefer-ts-resolver-plugin.js";
+import WebManifestPlugin                              from "./plugins/web-manifest-plugin.js";
 import type Configuration                             from "./types/configuration";
 import type Project                                   from "./types/project";
 
@@ -156,6 +157,7 @@ export default async function createConfigurations(type: "analyze" | "build" | "
 
         if (project.target == "pwa")
         {
+            plugins.push(new WebManifestPlugin({ publicPath: project.publicPath }));
             plugins.push(new WorkboxPlugin.GenerateSW({ clientsClaim: true, skipWaiting: true, swDest: `${name}-service-worker.js` }));
         }
 
@@ -180,9 +182,12 @@ export default async function createConfigurations(type: "analyze" | "build" | "
 
         if (isTargetingBrowser)
         {
-            const htmlWebpackPluginOptions: HtmlWebpackPlugin.Options = typeof project.index == "string"
-                ? { template: project.index }
-                : { title: "Surface App", ...project.index };
+            const htmlWebpackPluginOptions: HtmlWebpackPlugin.Options =
+            {
+                publicPath:    project.publicPath,
+                scriptLoading: "module",
+                ...typeof project.index == "string" ? { template: project.index } : project.index,
+            };
 
             plugins.push(new HtmlWebpackPlugin(htmlWebpackPluginOptions));
         }
@@ -225,17 +230,19 @@ export default async function createConfigurations(type: "analyze" | "build" | "
                 rules:
                 [
                     {
-                        test: /(manifest\.webmanifest|browserconfig\.xml)$/,
+                        generator:
+                        {
+                            filename:   "[name].[contenthash][ext][query]",
+                            publicPath: project.publicPath,
+                        },
+                        test: /\.webmanifest$/,
                         type: "asset/resource",
-                        use:
-                        [
-                            loaders.appManifest,
-                        ],
                     },
                     {
                         generator:
                         {
-                            filename: "images/[fullhash][ext][query]",
+                            filename:   "images/[contenthash][ext][query]",
+                            publicPath: project.publicPath,
                         },
                         test: /\.(a?png|avif|bmp|cur|gif|ico|jfif|jpe?g|pjp(eg)?|svg|tiff?|webp)$/,
                         type: "asset/resource",
@@ -243,7 +250,8 @@ export default async function createConfigurations(type: "analyze" | "build" | "
                     {
                         generator:
                         {
-                            filename: "fonts/[fullhash][ext][query]",
+                            filename:   "fonts/[contenthash][ext][query]",
+                            publicPath: project.publicPath,
                         },
                         test: /\.(ttf|woff2?|eot|otf)$/,
                         type: "asset/resource",
@@ -251,7 +259,8 @@ export default async function createConfigurations(type: "analyze" | "build" | "
                     {
                         generator:
                         {
-                            filename: "fonts/[fullhash][ext][query]",
+                            filename:   "fonts/[contenthash][ext][query]",
+                            publicPath: project.publicPath,
                         },
                         test: /\.txt$/,
                         type: "asset/source",
@@ -272,7 +281,8 @@ export default async function createConfigurations(type: "analyze" | "build" | "
                             {
                                 generator:
                                 {
-                                    filename: "css/[fullhash].css",
+                                    filename:   "css/[contenthash].css",
+                                    publicPath: project.publicPath,
                                 },
                                 resourceQuery: /file/,
                                 type:          "asset/resource",
@@ -314,10 +324,6 @@ export default async function createConfigurations(type: "analyze" | "build" | "
                         ],
                     },
                     {
-                        generator:
-                        {
-                            filename: "js/[fullhash][ext][query]",
-                        },
                         test: /\.ts$/,
                         use:
                         [
@@ -331,12 +337,11 @@ export default async function createConfigurations(type: "analyze" | "build" | "
             optimization: { minimizer: [tersePlugin],  ...buildConfiguration?.optimization },
             output:
             {
-                // chunkLoading: "import",
-                clean:        configuration.clean,
-                filename:     project.filename,
-                path:         project.output,
-                pathinfo:     !isProduction,
-                publicPath:   project.publicPath,
+                clean:      configuration.clean,
+                filename:   project.filename,
+                path:       project.output,
+                pathinfo:   !isProduction,
+                publicPath: project.publicPath,
             },
             performance: buildConfiguration?.performance,
             plugins,

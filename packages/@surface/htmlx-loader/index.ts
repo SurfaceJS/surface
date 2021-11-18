@@ -15,7 +15,7 @@ export type
 }
 from "./internal/types";
 
-export default async function loader(this: webpack.LoaderContext<{ handlers?: Handler[] }>, content: string): Promise<string>
+export default async function apply(this: webpack.LoaderContext<{ handlers?: Handler[] }>, content: string): Promise<string>
 {
     const file = path.relative(this.rootContext, this.resourcePath);
 

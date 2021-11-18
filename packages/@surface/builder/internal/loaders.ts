@@ -2,20 +2,13 @@ import os from "os";
 
 const loaders =
 {
-    appManifest: { loader: "app-manifest-loader", options: { esModule: false } },
-    css:         { loader: "css-loader", options: { esModule: false, sourceMap: true } },
-    extract:     { loader: "extract-loader" },
-    file:
-    {
-        loader:  "file-loader",
-        options: { esModule: false, name: "[hash].[ext]" },
-    },
+    css:     { loader: "css-loader" },
+    extract: { loader: "extract-loader" },
     html:
     {
         loader:  "html-loader",
         options:
         {
-            esModule: false,
             minimize: true,
             sources:  true,
         },
