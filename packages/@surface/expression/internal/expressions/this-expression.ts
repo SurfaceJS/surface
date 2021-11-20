@@ -1,8 +1,7 @@
-import type { Indexer }     from "@surface/core";
-import { hasValue }         from "@surface/core";
-import type IExpression     from "../interfaces/expression";
-import type IThisExpression from "../interfaces/this-expression";
-import NodeType             from "../node-type.js";
+import type { Indexer } from "@surface/core";
+import { hasValue }     from "@surface/core";
+import type IExpression from "../interfaces/expression";
+import NodeType         from "../node-type.js";
 
 export default class ThisExpression implements IExpression
 {
@@ -13,7 +12,7 @@ export default class ThisExpression implements IExpression
         return NodeType.ThisExpression;
     }
 
-    public clone(): IThisExpression
+    public clone(): ThisExpression
     {
         return new ThisExpression();
     }

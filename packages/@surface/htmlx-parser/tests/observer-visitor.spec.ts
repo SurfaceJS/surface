@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "@surface/dom-shim";
 
-import Expression                                         from "@surface/expression";
+import { Parser }                                         from "@surface/expression";
 import { batchTest, suite }                               from "@surface/test-suite";
 import chai                                               from "chai";
 import ObserverVisitor                                    from "../internal/observer-visitor.js";
@@ -15,7 +15,7 @@ export default class ObserverVisitorSpec
     @batchTest(observableExpressions, x => `observable expression ${x.expression}; expected paths: ${x.expected.map(x => `[${x}]`)}`)
     public observableExpressions(observableExpression: ObservableExpression): void
     {
-        const expression = Expression.parse(observableExpression.expression);
+        const expression = Parser.parse(observableExpression.expression);
 
         const actual = ObserverVisitor.observe(expression);
 
@@ -25,7 +25,7 @@ export default class ObserverVisitorSpec
     @batchTest(unobservableExpressions, x => `unobservable expression ${x}; shouldn't have observers`)
     public unobservableExpressions(unobservableExpression: string): void
     {
-        const expression = Expression.parse(unobservableExpression);
+        const expression = Parser.parse(unobservableExpression);
 
         const paths = ObserverVisitor.observe(expression);
 

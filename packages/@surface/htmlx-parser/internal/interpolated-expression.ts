@@ -1,7 +1,7 @@
-import { assert }                                               from "@surface/core";
-import type { IExpression, ITemplateElement, ITemplateLiteral } from "@surface/expression";
-import Expression, { SyntaxError }                              from "@surface/expression";
-import { getOffsetSyntaxError, parseExpression }                from "./expression-parsers.js";
+import { assert }                                        from "@surface/core";
+import type { IExpression }                              from "@surface/expression";
+import { SyntaxError, TemplateElement, TemplateLiteral } from "@surface/expression";
+import { getOffsetSyntaxError, parseExpression }         from "./expression-parsers.js";
 
 const stringTokens = ["\"", "'", "`"];
 
@@ -9,8 +9,8 @@ export default class InterpolatedExpression
 {
     private readonly source: string;
 
-    private readonly quasis:      ITemplateElement[] = [];
-    private readonly expressions: IExpression[] = [];
+    private readonly quasis:      TemplateElement[] = [];
+    private readonly expressions: IExpression[]     = [];
 
     private expressionEnd:   number = 0;
     private expressionStart: number = 0;
@@ -31,7 +31,7 @@ export default class InterpolatedExpression
         this.source  = source;
     }
 
-    public static parse(source: string): ITemplateLiteral
+    public static parse(source: string): TemplateLiteral
     {
         return new InterpolatedExpression(source).scan();
     }
@@ -48,7 +48,7 @@ export default class InterpolatedExpression
             .replace(/\\\\{/g, "\\")
             .replace(/{$/, "");
 
-        this.quasis.push(Expression.templateElement(textFragment, textFragment, end >= this.source.length));
+        this.quasis.push(new TemplateElement(textFragment, textFragment, end >= this.source.length));
     }
 
     private parse(start: number): void
@@ -111,11 +111,11 @@ export default class InterpolatedExpression
         }
     }
 
-    private scan(): ITemplateLiteral
+    private scan(): TemplateLiteral
     {
         this.parse(0);
 
-        return Expression.template(this.quasis, this.expressions);
+        return new TemplateLiteral(this.quasis, this.expressions);
     }
 
     private scanBalance(): boolean

@@ -1,20 +1,19 @@
-import type
+import
 {
-    IArrayPattern,
-    IArrowFunctionExpression,
-    IAssignmentPattern,
-    IAssignmentProperty,
-    IExpression,
-    IIdentifier,
-    IMemberExpression,
-    INode,
-    IObjectExpression,
-    IObjectPattern,
-    IPattern,
-    IProperty,
-    IRestElement,
+    ArrayPattern,
+    ArrowFunctionExpression,
+    AssignmentPattern,
+    AssignmentProperty,
+    ExpressionRewriterVisitor,
+    Identifier,
+    MemberExpression,
+    ObjectExpression,
+    ObjectPattern,
+    Property,
+    TypeGuard,
 } from "@surface/expression";
-import Expression, { ExpressionRewriterVisitor, TypeGuard } from "@surface/expression";
+import type { IExpression, INode, IPattern,
+    RestElement } from "@surface/expression";
 
 export default class ScopeRewriterVisitor extends ExpressionRewriterVisitor
 {
@@ -44,7 +43,7 @@ export default class ScopeRewriterVisitor extends ExpressionRewriterVisitor
         return rewritedPattern;
     }
 
-    public static collectScope(pattern: IPattern): IObjectExpression
+    public static collectScope(pattern: IPattern): ObjectExpression
     {
         return new ScopeRewriterVisitor().collectScope(pattern);
     }
@@ -54,17 +53,17 @@ export default class ScopeRewriterVisitor extends ExpressionRewriterVisitor
         return this.scopes.get(this.scopeIndex);
     }
 
-    private collectScope(pattern: IPattern): IObjectExpression
+    private collectScope(pattern: IPattern): ObjectExpression
     {
         const scope = this.createScope();
 
         this.visit(pattern);
 
-        const properties = Array.from(scope).map(x => Expression.property(Expression.identifier(x)));
+        const properties = Array.from(scope).map(x => new Property(new Identifier(x), new Identifier(x), false, true));
 
         this.deleteScope();
 
-        return Expression.object(properties);
+        return new ObjectExpression(properties);
     }
 
     private createScope(): Set<string>
@@ -100,7 +99,7 @@ export default class ScopeRewriterVisitor extends ExpressionRewriterVisitor
         return false;
     }
 
-    protected override visitArrayPattern(node: IArrayPattern): INode
+    protected override visitArrayPattern(node: ArrayPattern): INode
     {
         const scope = this.getScope()!;
 
@@ -133,10 +132,10 @@ export default class ScopeRewriterVisitor extends ExpressionRewriterVisitor
             }
         }
 
-        return Expression.arrayPattern(elements);
+        return new ArrayPattern(elements);
     }
 
-    protected override visitArrowFunctionExpression(node: IArrowFunctionExpression): INode
+    protected override visitArrowFunctionExpression(node: ArrowFunctionExpression): INode
     {
         const scope = this.createScope();
 
@@ -166,10 +165,10 @@ export default class ScopeRewriterVisitor extends ExpressionRewriterVisitor
 
         this.deleteScope();
 
-        return Expression.arrowFunction(parameters, body);
+        return new ArrowFunctionExpression(parameters, body);
     }
 
-    protected override visitAssignmentPattern(node: IAssignmentPattern): INode
+    protected override visitAssignmentPattern(node: AssignmentPattern): INode
     {
         const scope = this.getScope()!;
 
@@ -177,13 +176,13 @@ export default class ScopeRewriterVisitor extends ExpressionRewriterVisitor
         {
             scope.add(node.left.name);
 
-            return Expression.assignmentPattern(node.left, this.visit(node.right) as IExpression) as IPattern;
+            return new AssignmentPattern(node.left, this.visit(node.right) as IExpression) as IPattern;
         }
 
         return this.visit(node);
     }
 
-    protected override visitAssignmentProperty(node: IAssignmentProperty): INode
+    protected override visitAssignmentProperty(node: AssignmentProperty): INode
     {
         const scope = this.getScope()!;
 
@@ -198,23 +197,23 @@ export default class ScopeRewriterVisitor extends ExpressionRewriterVisitor
                 scope.add(node.value.name);
             }
 
-            return Expression.assignmentProperty(node.computed ? this.visit(node.key) as IExpression : node.key, this.visit(node.value) as IPattern, node.computed, node.shorthand);
+            return new AssignmentProperty(node.computed ? this.visit(node.key) as IExpression : node.key, this.visit(node.value) as IPattern, node.computed, node.shorthand);
         }
 
         return super.visitAssignmentProperty(node);
     }
 
-    protected override visitIdentifier(node: IIdentifier): INode
+    protected override visitIdentifier(node: Identifier): INode
     {
         if (node.name != "undefined" && !this.hasInScope(node.name))
         {
-            return Expression.member(Expression.identifier(this.identifier), node, false, false);
+            return new MemberExpression(new Identifier(this.identifier), node, false, false);
         }
 
         return node;
     }
 
-    protected override visitMemberExpression(node: IMemberExpression): INode
+    protected override visitMemberExpression(node: MemberExpression): INode
     {
         if (node.computed)
         {
@@ -226,35 +225,35 @@ export default class ScopeRewriterVisitor extends ExpressionRewriterVisitor
             ? node.property
             : this.visit(node.property) as IExpression;
 
-        return Expression.member(object, property, false, false);
+        return new MemberExpression(object, property, false, false);
     }
 
-    protected override visitObjectExpression(node: IObjectExpression): INode
+    protected override visitObjectExpression(node: ObjectExpression): INode
     {
         const scope = this.getScope();
 
-        const properties: IProperty[] = [];
+        const properties: Property[] = [];
 
         for (const property of node.properties)
         {
             if (TypeGuard.isProperty(property) && TypeGuard.isIdentifier(property.key) && !property.computed)
             {
-                properties.push(Expression.property(property.key, this.visit(property.shorthand ? property.key : property.value) as IExpression, false, property.shorthand && scope?.has(property.key.name)));
+                properties.push(new Property(property.key, this.visit(property.shorthand ? property.key : property.value) as IExpression, false, property.shorthand && scope?.has(property.key.name)));
             }
             else
             {
-                properties.push(this.visit(property) as IProperty);
+                properties.push(this.visit(property) as Property);
             }
         }
 
-        return Expression.object(properties);
+        return new ObjectExpression(properties);
     }
 
-    protected override visitObjectPattern(node: IObjectPattern): INode
+    protected override visitObjectPattern(node: ObjectPattern): INode
     {
         const scope = this.getScope()!;
 
-        const properties: (IAssignmentProperty | IRestElement)[] = [];
+        const properties: (AssignmentProperty | RestElement)[] = [];
 
         for (const property of node.properties)
         {
@@ -266,10 +265,10 @@ export default class ScopeRewriterVisitor extends ExpressionRewriterVisitor
             }
             else
             {
-                properties.push(this.visit(property) as IAssignmentProperty | IRestElement);
+                properties.push(this.visit(property) as AssignmentProperty | RestElement);
             }
         }
 
-        return Expression.objectPattern(properties);
+        return new ObjectPattern(properties);
     }
 }

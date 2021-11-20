@@ -1,10 +1,9 @@
-import { format }                     from "@surface/core";
-import { getThisArg } from "../common.js";
-import type IExpression               from "../interfaces/expression";
-import type ITaggedTemplateExpression from "../interfaces/tagged-template-expression";
-import Messages                       from "../messages.js";
-import NodeType                       from "../node-type.js";
-import type TemplateLiteral           from "./template-literal.js";
+import { format }           from "@surface/core";
+import { getThisArg }       from "../common.js";
+import type IExpression     from "../interfaces/expression";
+import Messages             from "../messages.js";
+import NodeType             from "../node-type.js";
+import type TemplateLiteral from "./template-literal.js";
 
 export default class TaggedTemplateExpression implements IExpression
 {
@@ -43,7 +42,7 @@ export default class TaggedTemplateExpression implements IExpression
         this._quasi  = quasi;
     }
 
-    public clone(): ITaggedTemplateExpression
+    public clone(): TaggedTemplateExpression
     {
         return new TaggedTemplateExpression(this.callee.clone(), this.quasi.clone());
     }

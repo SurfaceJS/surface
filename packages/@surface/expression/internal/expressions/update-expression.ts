@@ -1,10 +1,9 @@
 import type IExpression        from "../interfaces/expression";
-import type IIdentifier        from "../interfaces/identifier";
-import type IMemberExpression  from "../interfaces/member-expression";
-import type IUpdateExpression  from "../interfaces/update-expression";
 import NodeType                from "../node-type.js";
 import TypeGuard               from "../type-guard.js";
 import type { UpdateOperator } from "../types/operators";
+import type Identifier         from "./identifier.js";
+import type MemberExpression   from "./member-expression.js";
 
 type Operation = (object: Record<string | number, number>, property: string | number) => number;
 type Operators = "++*" | "--*" | "*++" | "*--";
@@ -21,17 +20,17 @@ export default class UpdateExpression implements IExpression
 {
     private readonly operation: Operation;
 
-    private _argument: IIdentifier | IMemberExpression;
+    private _argument: Identifier | MemberExpression;
     private _operator: UpdateOperator;
     private _prefix: boolean;
 
-    public get argument(): IIdentifier | IMemberExpression
+    public get argument(): Identifier | MemberExpression
     {
         return this._argument;
     }
 
     /* c8 ignore next 4 */
-    public set argument(value: IIdentifier | IMemberExpression)
+    public set argument(value: Identifier | MemberExpression)
     {
         this._argument = value;
     }
@@ -63,7 +62,7 @@ export default class UpdateExpression implements IExpression
         return NodeType.UpdateExpression;
     }
 
-    public constructor(argument: IIdentifier | IMemberExpression, operator: UpdateOperator, prefix: boolean)
+    public constructor(argument: Identifier | MemberExpression, operator: UpdateOperator, prefix: boolean)
     {
         this._argument = argument;
         this._prefix   = prefix;
@@ -71,7 +70,7 @@ export default class UpdateExpression implements IExpression
         this.operation = this.prefix ? updateFunctions[`${this.operator}*` as Operators] : updateFunctions[`*${this.operator}` as Operators];
     }
 
-    public clone(): IUpdateExpression
+    public clone(): UpdateExpression
     {
         return new UpdateExpression(this.argument.clone(), this.operator, this.prefix);
     }

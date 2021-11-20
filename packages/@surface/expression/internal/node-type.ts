@@ -20,7 +20,6 @@ enum NodeType
     ObjectPattern,
     ParenthesizedExpression,
     Property,
-    RegExpLiteral,
     RestElement,
     SequenceExpression,
     SpreadElement,

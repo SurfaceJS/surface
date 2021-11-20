@@ -1,21 +1,20 @@
-import { format }          from "@surface/core";
-import type IExpression    from "../interfaces/expression";
-import type INewExpression from "../interfaces/new-expression";
-import type ISpreadElement from "../interfaces/spread-element";
-import Messages            from "../messages.js";
-import NodeType            from "../node-type.js";
-import TypeGuard           from "../type-guard.js";
+import { format }         from "@surface/core";
+import type SpreadElement from "../elements/spread-element";
+import type IExpression   from "../interfaces/expression";
+import Messages           from "../messages.js";
+import NodeType           from "../node-type.js";
+import TypeGuard          from "../type-guard.js";
 
 export default class NewExpression implements IExpression
 {
-    private _arguments: (IExpression | ISpreadElement)[];
-    public get arguments(): (IExpression | ISpreadElement)[]
+    private _arguments: (IExpression | SpreadElement)[];
+    public get arguments(): (IExpression | SpreadElement)[]
     {
         return this._arguments;
     }
 
     /* c8 ignore next 4 */
-    public set arguments(value: (IExpression | ISpreadElement)[])
+    public set arguments(value: (IExpression | SpreadElement)[])
     {
         this._arguments = value;
     }
@@ -37,13 +36,13 @@ export default class NewExpression implements IExpression
         return NodeType.NewExpression;
     }
 
-    public constructor(callee: IExpression, $arguments: (IExpression | ISpreadElement)[])
+    public constructor(callee: IExpression, $arguments: (IExpression | SpreadElement)[] = [])
     {
         this._callee    = callee;
         this._arguments = $arguments;
     }
 
-    public clone(): INewExpression
+    public clone(): NewExpression
     {
         return new NewExpression(this.callee.clone(), this.arguments.map(x => x.clone()));
     }

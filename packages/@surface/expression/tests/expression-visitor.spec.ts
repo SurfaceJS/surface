@@ -1,9 +1,8 @@
-import { batchTest, shouldPass, suite, test } from "@surface/test-suite";
-import chai                                   from "chai";
-import Expression                             from "../internal/expression.js";
-import RegExpLiteral                          from "../internal/expressions/reg-exp-literal.js";
-import { validVisitors }                      from "./expression-visitor-expectations.js";
-import FixtureExpressionVisitor               from "./fixtures/fixture-expression-visitor.js";
+import { batchTest, shouldPass, suite } from "@surface/test-suite";
+import chai                             from "chai";
+import Parser                           from "../internal/parser.js";
+import { validVisitors }                from "./expression-visitor-expectations.js";
+import FixtureExpressionVisitor         from "./fixtures/fixture-expression-visitor.js";
 
 @suite
 export default class ExpressionVisitorSpec
@@ -12,21 +11,11 @@ export default class ExpressionVisitorSpec
     @batchTest(validVisitors, x => `${x.raw}; visit ${x.value}`)
     public visitsShouldWork(spec: { raw: string, value: string }): void
     {
-        const expression = Expression.parse(spec.raw);
+        const expression = Parser.parse(spec.raw);
         const visitor    = new FixtureExpressionVisitor();
 
         visitor.visit(expression);
 
         chai.assert.equal(visitor.toString(), spec.value);
-    }
-
-    @test @shouldPass
-    public visitRegExpLiteral(): void
-    {
-        const visitor = new FixtureExpressionVisitor();
-
-        visitor.visit(new RegExpLiteral("\\d", "i"));
-
-        chai.assert.equal(visitor.toString(), "RegExpLiteral");
     }
 }

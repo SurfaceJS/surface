@@ -1,23 +1,23 @@
 import type
 {
-    IArrayPattern,
-    IArrowFunctionExpression,
-    IAssignmentExpression,
-    IAssignmentPattern,
-    IAssignmentProperty,
-    ICallExpression,
-    IConditionalExpression,
-    IIdentifier,
-    ILogicalExpression,
-    IMemberExpression,
-    INewExpression,
+    ArrayPattern,
+    ArrowFunctionExpression,
+    AssignmentExpression,
+    AssignmentPattern,
+    AssignmentProperty,
+    CallExpression,
+    ConditionalExpression,
     INode,
-    IParenthesizedExpression,
-    IProperty,
-    IRestElement,
-    ITaggedTemplateExpression,
-    IThisExpression,
-    IUpdateExpression,
+    Identifier,
+    LogicalExpression,
+    MemberExpression,
+    NewExpression,
+    ParenthesizedExpression,
+    Property,
+    RestElement,
+    TaggedTemplateExpression,
+    ThisExpression,
+    UpdateExpression,
 } from "@surface/expression";
 import
 {
@@ -66,7 +66,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         this.stack      = [];
     }
 
-    protected visitArrayPattern(expression: IArrayPattern): INode
+    protected visitArrayPattern(expression: ArrayPattern): INode
     {
         for (const element of expression.elements)
         {
@@ -79,7 +79,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         return expression;
     }
 
-    protected visitArrowFunctionExpression(expression: IArrowFunctionExpression): INode
+    protected visitArrowFunctionExpression(expression: ArrowFunctionExpression): INode
     {
         for (const paramenter of expression.parameters)
         {
@@ -92,21 +92,21 @@ export default class ObserverVisitor extends ExpressionVisitor
         return expression;
     }
 
-    protected visitAssignmentExpression(expression: IAssignmentExpression): INode
+    protected visitAssignmentExpression(expression: AssignmentExpression): INode
     {
         this.visit(expression.right);
 
         return expression;
     }
 
-    protected visitAssignmentPattern(expression: IAssignmentPattern): INode
+    protected visitAssignmentPattern(expression: AssignmentPattern): INode
     {
         this.visit(expression.right);
 
         return expression;
     }
 
-    protected visitAssignmentProperty(expression: IAssignmentProperty): INode
+    protected visitAssignmentProperty(expression: AssignmentProperty): INode
     {
         if (TypeGuard.isAssignmentPattern(expression.value))
         {
@@ -116,7 +116,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         return expression;
     }
 
-    protected visitCallExpression(expression: ICallExpression): INode
+    protected visitCallExpression(expression: CallExpression): INode
     {
         this.rollback();
 
@@ -129,7 +129,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         return expression;
     }
 
-    protected visitLogicalExpression(expression: ILogicalExpression): INode
+    protected visitLogicalExpression(expression: LogicalExpression): INode
     {
         if (expression.operator == "??")
         {
@@ -143,14 +143,14 @@ export default class ObserverVisitor extends ExpressionVisitor
         return expression;
     }
 
-    protected visitConditionalExpression(expression: IConditionalExpression): INode
+    protected visitConditionalExpression(expression: ConditionalExpression): INode
     {
         this.visit(expression.test);
 
         return expression;
     }
 
-    protected visitIdentifier(expression: IIdentifier): INode
+    protected visitIdentifier(expression: Identifier): INode
     {
         if (expression.name != "undefined")
         {
@@ -162,7 +162,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         return expression;
     }
 
-    protected visitMemberExpression(expression: IMemberExpression): INode
+    protected visitMemberExpression(expression: MemberExpression): INode
     {
         if (expression.computed && expression.property.type != NodeType.Literal)
         {
@@ -186,7 +186,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         return expression;
     }
 
-    protected visitNewExpression(expression: INewExpression): INode
+    protected visitNewExpression(expression: NewExpression): INode
     {
         this.rollback();
 
@@ -199,7 +199,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         return expression;
     }
 
-    protected visitParenthesizedExpression(expression: IParenthesizedExpression): INode
+    protected visitParenthesizedExpression(expression: ParenthesizedExpression): INode
     {
         this.reset();
 
@@ -208,7 +208,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         return expression;
     }
 
-    protected visitProperty(expression: IProperty): INode
+    protected visitProperty(expression: Property): INode
     {
         if (expression.computed)
         {
@@ -220,7 +220,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         return expression;
     }
 
-    protected visitRestElement(expression: IRestElement): INode
+    protected visitRestElement(expression: RestElement): INode
     {
         if (!TypeGuard.isIdentifier(expression.argument))
         {
@@ -230,7 +230,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         return expression;
     }
 
-    protected visitTaggedTemplateExpression(expression: ITaggedTemplateExpression): INode
+    protected visitTaggedTemplateExpression(expression: TaggedTemplateExpression): INode
     {
         this.rollback();
 
@@ -243,7 +243,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         return expression;
     }
 
-    protected visitThisExpression(expression: IThisExpression): INode
+    protected visitThisExpression(expression: ThisExpression): INode
     {
         this.stack.unshift("this");
 
@@ -252,7 +252,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         return expression;
     }
 
-    protected visitUpdateExpression(expression: IUpdateExpression): INode
+    protected visitUpdateExpression(expression: UpdateExpression): INode
     {
         this.rollback();
 

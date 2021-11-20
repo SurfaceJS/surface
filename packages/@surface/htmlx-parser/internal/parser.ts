@@ -4,10 +4,10 @@
 /* eslint-disable @typescript-eslint/indent */
 import type { Indexer }                                                                         from "@surface/core";
 import { assert, contains, dashedToCamel, typeGuard }                                           from "@surface/core";
-import type { IExpression, IIdentifier, IPattern }                                              from "@surface/expression";
-import Expression, { SyntaxError, TypeGuard }                                                   from "@surface/expression";
+import type { IExpression, IPattern, Identifier }                                               from "@surface/expression";
+import { ArrowFunctionExpression, Literal, SyntaxError, TypeGuard }                             from "@surface/expression";
 import { buildStackTrace, scapeBrackets, throwTemplateParseError }                              from "./common.js";
-import DescriptorType from "./descriptor-type.js";
+import DescriptorType                                                                           from "./descriptor-type.js";
 import { parseDestructuredPattern, parseExpression, parseForLoopStatement, parseInterpolation } from "./expression-parsers.js";
 import nativeEvents                                                                             from "./native-events.js";
 import ObserverVisitor                                                                          from "./observer-visitor.js";
@@ -359,9 +359,9 @@ export default class Parser
 
                 const expression = TypeGuard.isMemberExpression(unknownExpression) || TypeGuard.isArrowFunctionExpression(unknownExpression)
                     ? unknownExpression
-                    : Expression.arrowFunction([], unknownExpression);
+                    : new ArrowFunctionExpression([], unknownExpression);
 
-                const context = TypeGuard.isMemberExpression(expression) ? expression.object : Expression.literal(null);
+                const context = TypeGuard.isMemberExpression(expression) ? expression.object : new Literal(null);
 
                 yield { context, key: name, source: raw, stackTrace, type: DescriptorType.Event, value: expression };
             }
@@ -553,7 +553,7 @@ export default class Parser
         const destructured = /^\s*\{/.test(value);
 
         const keyExpression  = this.tryParseExpression(parseExpression, key, source.key);
-        const pattern        = this.tryParseExpression(destructured ? parseDestructuredPattern : parseExpression, `${value || "{ }"}`, source.value) as IPattern | IIdentifier;
+        const pattern        = this.tryParseExpression(destructured ? parseDestructuredPattern : parseExpression, `${value || "{ }"}`, source.value) as IPattern | Identifier;
         const keyObservables = ObserverVisitor.observe(keyExpression);
         const observables    = ObserverVisitor.observe(pattern);
 

@@ -1,6 +1,5 @@
 import type { Delegate, Indexer } from "@surface/core";
 import type IExpression           from "../interfaces/expression";
-import type IUnaryExpression      from "../interfaces/unary-expression";
 import NodeType                   from "../node-type.js";
 import type { UnaryOperator }     from "../types/operators";
 
@@ -55,7 +54,7 @@ export default class UnaryExpression implements IExpression
         this.operation = unaryFunctions[this.operator] as Delegate<[unknown], Object>;
     }
 
-    public clone(): IUnaryExpression
+    public clone(): UnaryExpression
     {
         return new UnaryExpression(this.argument.clone(), this.operator);
     }

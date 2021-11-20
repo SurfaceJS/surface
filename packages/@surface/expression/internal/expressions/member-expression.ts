@@ -1,10 +1,9 @@
-import type { Indexer }       from "@surface/core";
-import { hasValue }           from "@surface/core";
-import type IChainElement     from "../interfaces/chain-element.js";
-import type IExpression       from "../interfaces/expression";
-import type IMemberExpression from "../interfaces/member-expression";
-import NodeType               from "../node-type.js";
-import TypeGuard              from "../type-guard.js";
+import type { Indexer }   from "@surface/core";
+import { hasValue }       from "@surface/core";
+import type IChainElement from "../interfaces/chain-element.js";
+import type IExpression   from "../interfaces/expression";
+import NodeType           from "../node-type.js";
+import TypeGuard          from "../type-guard.js";
 
 export default class MemberExpression implements IExpression, IChainElement
 {
@@ -69,7 +68,7 @@ export default class MemberExpression implements IExpression, IChainElement
         this._optional = optional;
     }
 
-    public clone(): IMemberExpression
+    public clone(): MemberExpression
     {
         return new MemberExpression(this.object.clone(), this.property.clone(), this.computed, this.optional);
     }

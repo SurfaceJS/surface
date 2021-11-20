@@ -1,6 +1,5 @@
 import type IExpression    from "../interfaces/expression";
 import type INode          from "../interfaces/node";
-import type ISpreadElement from "../interfaces/spread-element";
 import NodeType            from "../node-type.js";
 
 export default class SpreadElement implements INode
@@ -27,7 +26,7 @@ export default class SpreadElement implements INode
         this._argument = argument;
     }
 
-    public clone(): ISpreadElement
+    public clone(): SpreadElement
     {
         return new SpreadElement(this.argument.clone());
     }

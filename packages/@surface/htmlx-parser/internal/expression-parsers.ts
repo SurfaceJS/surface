@@ -1,14 +1,14 @@
 import { assert } from "@surface/core";
 import type
 {
-    IArrowFunctionExpression,
+    ArrowFunctionExpression,
     IExpression,
-    IIdentifier,
     INode,
     IPattern,
-    ITemplateLiteral,
+    Identifier,
+    TemplateLiteral,
 } from "@surface/expression";
-import Expression, { SyntaxError, TypeGuard } from "@surface/expression";
+import { Parser, SyntaxError, TypeGuard } from "@surface/expression";
 import InterpolatedExpression                 from "./interpolated-expression.js";
 import { forExpression }                      from "./patterns.js";
 
@@ -17,7 +17,7 @@ const forLoopStatementCache: Record<string, ForLoopStatement> = { };
 
 type ForLoopStatement =
 {
-    left:     IPattern | IIdentifier,
+    left:     IPattern | Identifier,
     operator: "of" | "in",
     right:    IExpression,
 };
@@ -54,14 +54,14 @@ export function parseExpression(expression: string): IExpression
         return expressionCache[expression] as IExpression;
     }
 
-    return expressionCache[expression] = Expression.parse(expression);
+    return expressionCache[expression] = Parser.parse(expression);
 }
 
-export function parseInterpolation(expression: string): ITemplateLiteral
+export function parseInterpolation(expression: string): TemplateLiteral
 {
     if (expression in expressionCache)
     {
-        return expressionCache[expression] as ITemplateLiteral;
+        return expressionCache[expression] as TemplateLiteral;
     }
 
     return expressionCache[expression] = InterpolatedExpression.parse(expression);
@@ -78,7 +78,7 @@ export function parseDestructuredPattern(expression: string): IPattern
 
     try
     {
-        return expressionCache[arrowExpression] = (parseExpression(arrowExpression) as IArrowFunctionExpression).parameters[0];
+        return expressionCache[arrowExpression] = (parseExpression(arrowExpression) as ArrowFunctionExpression).parameters[0];
     }
     catch (error)
     {

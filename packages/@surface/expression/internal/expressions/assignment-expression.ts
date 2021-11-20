@@ -1,11 +1,10 @@
 import type { Delegate, Indexer }  from "@surface/core";
-import type IAssignmentExpression  from "../interfaces/assignment-expression";
 import type IExpression            from "../interfaces/expression";
-import type IIdentifier            from "../interfaces/identifier";
-import type IMemberExpression      from "../interfaces/member-expression";
 import NodeType                    from "../node-type.js";
 import TypeGuard                   from "../type-guard.js";
 import type { AssignmentOperator } from "../types/operators";
+import type Identifier             from "./identifier";
+import type MemberExpression       from "./member-expression";
 
 const assignmentOperations: Record<AssignmentOperator, Delegate<[Indexer, string | number, unknown], unknown>> =
 {
@@ -31,14 +30,14 @@ export default class AssignmentExpression implements IExpression
 {
     private readonly operation: Delegate<[Indexer, string | number, unknown], unknown>;
 
-    private _left:     IIdentifier | IMemberExpression;
-    public get left(): IIdentifier | IMemberExpression
+    private _left:     Identifier | MemberExpression;
+    public get left(): Identifier | MemberExpression
     {
         return this._left;
     }
 
     /* c8 ignore next 4 */
-    public set left(value: IIdentifier | IMemberExpression)
+    public set left(value: Identifier | MemberExpression)
     {
         this._left = value;
     }
@@ -72,7 +71,7 @@ export default class AssignmentExpression implements IExpression
         return NodeType.AssignmentExpression;
     }
 
-    public constructor(left: IIdentifier | IMemberExpression, right: IExpression, operator: AssignmentOperator)
+    public constructor(left: Identifier | MemberExpression, right: IExpression, operator: AssignmentOperator)
     {
         this._left     = left;
         this._right    = right;
@@ -81,7 +80,7 @@ export default class AssignmentExpression implements IExpression
         this.operation = assignmentOperations[operator];
     }
 
-    public clone(): IAssignmentExpression
+    public clone(): AssignmentExpression
     {
         return new AssignmentExpression(this.left.clone(), this.right.clone(), this.operator);
     }

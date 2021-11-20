@@ -1,8 +1,8 @@
-import type ILiteral         from "../interfaces/literal";
+import type IExpression      from "../interfaces/expression.js";
 import NodeType              from "../node-type.js";
 import type { LiteralValue } from "../types/operators";
 
-export default class Literal implements ILiteral
+export default class Literal implements IExpression
 {
     public get type(): NodeType
     {
@@ -26,7 +26,7 @@ export default class Literal implements ILiteral
         this._value = value;
     }
 
-    public clone(): ILiteral
+    public clone(): Literal
     {
         return new Literal(this.value);
     }
