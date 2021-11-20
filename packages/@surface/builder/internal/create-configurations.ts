@@ -136,6 +136,7 @@ export default async function createConfigurations(type: "analyze" | "build" | "
         };
 
         plugins.push(new ForkTsCheckerWebpackPlugin(forkTsCheckerWebpackPluginOptions));
+        plugins.push(new WebManifestPlugin({ publicPath: project.publicPath }));
 
         const tersePlugin = new TerserWebpackPlugin
         ({
@@ -157,7 +158,6 @@ export default async function createConfigurations(type: "analyze" | "build" | "
 
         if (project.target == "pwa")
         {
-            plugins.push(new WebManifestPlugin({ publicPath: project.publicPath }));
             plugins.push(new WorkboxPlugin.GenerateSW({ clientsClaim: true, skipWaiting: true, swDest: `${name}-service-worker.js` }));
         }
 

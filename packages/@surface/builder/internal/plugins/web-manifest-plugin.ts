@@ -100,20 +100,23 @@ export default class WebManifestPlugin implements webpack.WebpackPluginInstance
         return new Promise((resolve, reject) => loaderContext.fs.readFile(resourcePath, (error, content) => error ? reject(error) : resolve(content)));
     }
 
-    private async resourceReader(loaderContext: webpack.LoaderContext<undefined>, context: Context): Promise<string | Buffer>
+    private async resourceReader(loaderContext: webpack.LoaderContext<undefined>, context: Context): Promise<string | Buffer | undefined>
     {
         const { resourcePath } = loaderContext;
 
-        const buffer = await this.readFile(loaderContext, resourcePath) as Buffer;
-
         if (resourcePath.endsWith(EXTENSION))
         {
+            loaderContext.addDependency(resourcePath);
+
+            const buffer  = await this.readFile(loaderContext, resourcePath) as Buffer;
             const content = buffer!.toString();
 
             await this.collectDependencies(loaderContext, context, content);
+
+            console.log(this.collectDependencies, context);
         }
 
-        return buffer;
+        return undefined;
     }
 
     private hookIntoBuildModule(compilation: webpack.Compilation, context: Context): void
@@ -163,20 +166,23 @@ export default class WebManifestPlugin implements webpack.WebpackPluginInstance
                 WebManifestPlugin.name,
                 (entry, options) =>
                 {
-                    const modules = compilation.chunkGraph.getChunkModules(options.chunk) as webpack.NormalModule[];
-                    const builds  = new Map(modules.map(x => [x.request, x.buildInfo]));
-
-                    for (const manifest of context.manifests.values())
+                    if (context.manifests.size > 0)
                     {
-                        if (manifest.icons)
-                        {
-                            for (const icon of manifest.icons)
-                            {
-                                const buildInfo = builds.get(icon.src);
+                        const modules = compilation.chunkGraph.getChunkModules(options.chunk) as webpack.NormalModule[];
+                        const builds  = new Map(modules.map(x => [x.request, x.buildInfo]));
 
-                                if (buildInfo)
+                        for (const manifest of context.manifests.values())
+                        {
+                            if (manifest.icons)
+                            {
+                                for (const icon of manifest.icons)
                                 {
-                                    icon.src = buildInfo.filename;
+                                    const buildInfo = builds.get(icon.src);
+
+                                    if (buildInfo)
+                                    {
+                                        icon.src = buildInfo.filename;
+                                    }
                                 }
                             }
                         }
@@ -200,17 +206,20 @@ export default class WebManifestPlugin implements webpack.WebpackPluginInstance
                 },
                 () =>
                 {
-                    const assets = new Map(compilation.getAssets().map(x => [x.info.sourceFilename, x]));
-
-                    for (const [key, manifest] of context.manifests)
+                    if (context.manifests.size > 0)
                     {
-                        const manifestAsset = assets.get(key);
+                        const assets = new Map(compilation.getAssets().map(x => [x.info.sourceFilename, x]));
 
-                        if (manifestAsset && manifest.icons)
+                        for (const [key, manifest] of context.manifests)
                         {
-                            const content = JSON.stringify(manifest, null, 4);
+                            const manifestAsset = assets.get(key);
 
-                            compilation.updateAsset(manifestAsset.name, new webpack.sources.RawSource(content));
+                            if (manifestAsset && manifest.icons)
+                            {
+                                const content = JSON.stringify(manifest, null, 4);
+
+                                compilation.updateAsset(manifestAsset.name, new webpack.sources.RawSource(content));
+                            }
                         }
                     }
                 },
@@ -229,6 +238,7 @@ export default class WebManifestPlugin implements webpack.WebpackPluginInstance
                 {
                     const context = { manifests: new Map(), modules: new Map() };
 
+                    // this.hookIntoReadResource;
                     this.hookIntoReadResource(compilation, context);
                     this.hookIntoBuildModule(compilation, context);
                     this.hookIntoRenderManifest(compilation, context);
