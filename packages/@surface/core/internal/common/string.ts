@@ -93,20 +93,6 @@ export function toTitle(value: string): string
     return value.replace(/(^[a-z]|\s+[a-z])/g, (_, group) => group.toUpperCase());
 }
 
-export function uuidv4(): string
-{
-    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace
-    (
-        /[xy]/g,
-        character =>
-        {
-            const random = Math.random() * 16 | 0;
-            const value  = character == "x" ? random : random & 0x3 | 0x8;
-            return value.toString(16);
-        },
-    );
-}
-
 export function *enumeratePropertyPath(source: object): Iterable<[string, unknown]>
 {
     const sourceIsArray = Array.isArray(source);

@@ -8,7 +8,8 @@
     },
     "files":
     [
-        "./index.ts"
+        "./index.ts",
+        "./index.aot.ts"
     ],
     "include":
     [

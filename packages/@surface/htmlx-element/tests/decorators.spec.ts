@@ -1,12 +1,11 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "@surface/dom-shim";
 
-import { uuidv4 }                  from "@surface/core";
 import { shouldPass, suite, test } from "@surface/test-suite";
 import chai                        from "chai";
 import attribute                   from "../internal/decorators/attribute.js";
 import element                     from "../internal/decorators/element.js";
-import HTMLXElement               from "../internal/htmlx-element.js";
+import HTMLXElement                from "../internal/htmlx-element.js";
 import CustomDirective             from "./fixtures/custom-directive.js";
 
 @suite
@@ -15,7 +14,7 @@ export default class DecoratorsSpec
     @test @shouldPass
     public elementDecoratorHtmlElementWithObservedAttibute(): void
     {
-        @element(`mock-${uuidv4()}` as `${string}-${string}`)
+        @element(`mock-${crypto.randomUUID()}` as `${string}-${string}`)
         class Mock extends HTMLXElement
         {
             public static observedAttributes?: string[];
@@ -44,7 +43,7 @@ export default class DecoratorsSpec
     // @test @shouldPass
     // public elementDecoratorHtmlElementWithMultiplesObservedAttibute(): void
     // {
-    //     @element(`mock-${uuidv4()}` as `${string}-${string}`)
+    //     @element(`mock-${crypto.randomUUID()}` as `${string}-${string}`)
     //     class Mock extends HTMLXElement
     //     {
     //         public static observedAttributes?: string[];
@@ -87,7 +86,7 @@ export default class DecoratorsSpec
     @test @shouldPass
     public elementDecoratorHTMLXElement(): void
     {
-        @element(`mock-${uuidv4()}` as `${string}-${string}`)
+        @element(`mock-${crypto.randomUUID()}` as `${string}-${string}`)
         class Mock extends HTMLXElement
         {
             public constructor()
@@ -102,7 +101,7 @@ export default class DecoratorsSpec
     @test @shouldPass
     public elementDecoratorHTMLXElementWithTemplate(): void
     {
-        @element(`mock-${uuidv4()}` as `${string}-${string}`, { template: "<div>Template</div>" })
+        @element(`mock-${crypto.randomUUID()}` as `${string}-${string}`, { template: "<div>Template</div>" })
         class Mock extends HTMLXElement
         {
             public constructor()
@@ -117,7 +116,7 @@ export default class DecoratorsSpec
     @test @shouldPass
     public elementDecoratorHTMLXElementWithTemplateAndStyle(): void
     {
-        @element(`mock-${uuidv4()}` as `${string}-${string}`, { style: ["div { color: red; }"], template: "<div>Template</div>" })
+        @element(`mock-${crypto.randomUUID()}` as `${string}-${string}`, { style: ["div { color: red; }"], template: "<div>Template</div>" })
         class Mock extends HTMLXElement
         {
             public constructor()
@@ -140,7 +139,7 @@ export default class DecoratorsSpec
             template:   "<div #custom>Template</div>",
         };
 
-        @element(`mock-${uuidv4()}` as `${string}-${string}`, options)
+        @element(`mock-${crypto.randomUUID()}` as `${string}-${string}`, options)
         class Mock extends HTMLXElement.as(HTMLDivElement)
         {
             public constructor()

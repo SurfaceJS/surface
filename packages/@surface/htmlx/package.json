@@ -20,10 +20,6 @@
         "chai": "^4.3.4",
         "chai-as-promised": "^7.1.1"
     },
-    "exports": {
-        ".": "./index.js",
-        "./aot": "./index.aot.js"
-    },
     "homepage": "https://github.com/SurfaceJS/surface#readme",
     "keywords": [
         "surface",

@@ -1,10 +1,11 @@
+import crypto    from "crypto";
 import { JSDOM } from "jsdom";
 
-const jsdom = new JSDOM();
+const instance = new JSDOM();
 
-jsdom.reconfigure({ url: "http://localhost.com" });
+instance.reconfigure({ url: "http://localhost.com" });
 
-const window = jsdom.window;
+const window = instance.window;
 
 window.requestAnimationFrame = setImmediate as unknown as (typeof window)["requestAnimationFrame"];
 
@@ -12,13 +13,13 @@ const windows = [window];
 
 window.open = url =>
 {
-    const jsdom = new JSDOM();
+    const instance = new JSDOM();
 
-    jsdom.reconfigure({ url: `http://localhost.com${url}` });
+    instance.reconfigure({ url: `http://localhost.com${url}` });
 
-    windows.push(jsdom.window);
+    windows.push(instance.window);
 
-    return jsdom.window as object as Window;
+    return instance.window as object as Window;
 };
 
 Object.assign
@@ -38,6 +39,7 @@ Object.assign
         NodeList:              window.NodeList,
         ShadowRoot:            window.ShadowRoot,
         Window:                window.constructor,
+        crypto,
         document:              window.document,
         location:              window.location,
         navigator:             window.navigator,
@@ -50,4 +52,9 @@ Object.assign
 declare global
 {
     const windows: Window[];
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    interface Crypto
+    {
+        randomUUID(): string;
+    }
 }

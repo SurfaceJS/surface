@@ -1,13 +1,8 @@
-import type { Constructor }                     from "@surface/core";
-import { DisposableMetadata, HookableMetadata } from "@surface/core";
-import { Compiler }                             from "@surface/htmlx";
-import { stringToCSSStyleSheet }                from "../common.js";
-import HTMLXElement                             from "../htmlx-element.js";
-import type IHTMLXElement                       from "../interfaces/htmlx-element.js";
-import Metadata                                 from "../metadata/metadata.js";
-import StaticMetadata                           from "../metadata/static-metadata.js";
-import { directivesRegistry }                   from "../singletons.js";
-import type HTMLXElementDefinitionOptions       from "../types/htmlx-element-definition-options.js";
+import type { Constructor }               from "@surface/core";
+import { Compiler }                       from "@surface/htmlx";
+import type IHTMLXElement                 from "../interfaces/htmlx-element.js";
+import type HTMLXElementDefinitionOptions from "../types/htmlx-element-definition-options.js";
+import elementAot                         from "./element.aot.js";
 
 /**
  * Defines a new custom element.
@@ -18,55 +13,13 @@ export default function element(tagname: `${string}-${string}`, options?: HTMLXE
 {
     return <T extends Constructor<IHTMLXElement>>(target: T) =>
     {
-        if (target.prototype instanceof HTMLXElement)
+        const $options = options;
+
+        if (typeof $options?.template == "string")
         {
-            const staticMetadata = StaticMetadata.from(target);
-
-            const template = typeof options?.template == "object"
-                ? options.template
-                : Compiler.compile(tagname, options?.template ?? "");
-
-            if (options?.style)
-            {
-                const styles = Array.isArray(options.style) ? options.style : [options.style];
-
-                staticMetadata.styles.push(...styles.map(stringToCSSStyleSheet));
-            }
-
-            const directives = options?.directives ? new Map([...directivesRegistry, ...Object.entries(options.directives)]) : directivesRegistry;
-
-            staticMetadata.template = template;
-
-            const handler: ProxyHandler<T> =
-            {
-                construct: (target, args, newTarget) =>
-                {
-                    const instance = Reflect.construct(target, args, newTarget) as InstanceType<T>;
-
-                    HookableMetadata.from(target).finish(instance);
-
-                    const scope = { host: instance };
-
-                    const disposable = Metadata.from(instance).activator!(instance.shadowRoot!, instance, scope, directives);
-
-                    DisposableMetadata.from(instance).add(disposable);
-                    DisposableMetadata.from(instance).add(DisposableMetadata.from(scope));
-
-                    return instance;
-                },
-            };
-
-            HookableMetadata.from(target).hooked = true;
-
-            const proxy = new Proxy(target, handler);
-
-            window.customElements.define(tagname, proxy, options);
-
-            return proxy;
+            $options.template = Compiler.compile(tagname, $options.template);
         }
 
-        window.customElements.define(tagname, target, options);
-
-        return target;
+        return elementAot(tagname, $options)(target);
     };
 }

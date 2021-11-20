@@ -349,7 +349,7 @@ export default async function createConfigurations(type: "analyze" | "build" | "
             {
                 alias:
                 {
-                    "@surface/htmlx": useAotHtmlx ? "@surface/htmlx/aot" : "@surface/htmlx",
+                    "@surface/htmlx-element": useAotHtmlx ? "@surface/htmlx-element/aot" : "@surface/htmlx-element",
                 },
                 extensions:     [".ts", ".js", ".json", ".wasm"],
                 plugins:        resolvePlugins,

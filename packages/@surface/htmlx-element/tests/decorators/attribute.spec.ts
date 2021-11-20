@@ -1,7 +1,6 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "@surface/dom-shim";
 
-import { uuidv4 }                  from "@surface/core";
 import { scheduler }               from "@surface/htmlx";
 import { shouldPass, suite, test } from "@surface/test-suite";
 import chai                        from "chai";
@@ -12,88 +11,98 @@ import HTMLXElement                from "../../internal/htmlx-element.js";
 @suite
 export default class ElementDecoratorSpec
 {
-    // @test @shouldPass
-    // public elementWithDefaults(): void
-    // {
-    //     @element(`mock-${uuidv4()}` as `${string}-${string}`)
-    //     class Mock extends HTMLXElement
-    //     {
-    //         public static observedAttributes?: string[];
+    @test @shouldPass
+    public async elementWithDefaults(): Promise<void>
+    {
+        @element(`mock-${crypto.randomUUID()}` as `${string}-${string}`)
+        class Mock extends HTMLXElement
+        {
+            public static observedAttributes?: string[];
 
-    //         private _property: string = "";
+            private _property: string = "";
 
-    //         @attribute
-    //         public field: string = "";
+            @attribute
+            public field: string = "";
 
-    //         @attribute
-    //         public get property(): string
-    //         {
-    //             return this._property;
-    //         }
+            @attribute
+            public get property(): string
+            {
+                return this._property;
+            }
 
-    //         public set property(value: string)
-    //         {
-    //             this._property = value;
-    //         }
-    //     }
+            public set property(value: string)
+            {
+                this._property = value;
+            }
+        }
 
-    //     chai.assert.deepEqual(Mock.observedAttributes, ["field", "property"]);
+        chai.assert.deepEqual(Mock.observedAttributes, ["field", "property"]);
 
-    //     const mock = new Mock();
+        const mock = new Mock();
 
-    //     chai.assert.equal(mock.field, "");
-    //     chai.assert.equal(mock.property, "");
+        chai.assert.equal(mock.field, "");
+        chai.assert.equal(mock.property, "");
 
-    //     chai.assert.equal(mock.getAttribute("field"), null);
-    //     chai.assert.equal(mock.getAttribute("property"), null);
+        chai.assert.equal(mock.getAttribute("field"), null);
+        chai.assert.equal(mock.getAttribute("property"), null);
 
-    //     mock.field    = "changed";
-    //     mock.property = "changed";
+        mock.field    = "changed";
+        mock.property = "changed";
 
-    //     chai.assert.equal(mock.getAttribute("field"), "changed");
-    //     chai.assert.equal(mock.getAttribute("property"), "changed");
+        await scheduler.execution();
 
-    //     mock.setAttribute("field", "changed-again");
-    //     mock.setAttribute("property", "changed-again");
+        chai.assert.equal(mock.getAttribute("field"), "changed");
+        chai.assert.equal(mock.getAttribute("property"), "changed");
 
-    //     chai.assert.equal(mock.field, "changed-again");
-    //     chai.assert.equal(mock.property, "changed-again");
-    // }
+        mock.setAttribute("field", "changed-again");
+        mock.setAttribute("property", "changed-again");
 
-    // @test @shouldPass
-    // public elementWithDefaultsAndAttributeChangedCallback(): void
-    // {
-    //     @element(`mock-${uuidv4()}` as `${string}-${string}`)
-    //     class Mock extends HTMLXElement
-    //     {
-    //         @attribute
-    //         public field: string = "";
+        await scheduler.execution();
 
-    //         public callbackValue: string = "";
+        chai.assert.equal(mock.field, "changed-again");
+        chai.assert.equal(mock.property, "changed-again");
+    }
 
-    //         public attributeChangedCallback(name: string, _: string | undefined, value: string): void
-    //         {
-    //             this.callbackValue = `${name}:${value}`;
-    //         }
-    //     }
+    @test @shouldPass
+    public async elementWithDefaultsAndAttributeChangedCallback(): Promise<void>
+    {
+        @element(`mock-${crypto.randomUUID()}` as `${string}-${string}`)
+        class Mock extends HTMLXElement
+        {
+            @attribute
+            public field: string = "";
 
-    //     const mock = new Mock();
+            public callbackValue: string = "";
 
-    //     chai.assert.equal(mock.field, "");
-    //     chai.assert.equal(mock.callbackValue, "");
+            public attributeChangedCallback(name: string, _: string | undefined, value: string): void
+            {
+                this.callbackValue = `${name}:${value}`;
+            }
+        }
 
-    //     chai.assert.equal(mock.getAttribute("field"), null);
+        const mock = new Mock();
 
-    //     mock.field = "changed";
+        chai.assert.equal(mock.field, "");
+        chai.assert.equal(mock.callbackValue, "");
 
-    //     chai.assert.equal(mock.callbackValue, "");
-    //     chai.assert.equal(mock.getAttribute("field"), "changed");
+        chai.assert.equal(mock.getAttribute("field"), null);
 
-    //     mock.setAttribute("field", "changed-again");
+        mock.field = "changed";
 
-    //     chai.assert.equal(mock.field, "changed-again");
-    //     chai.assert.equal(mock.callbackValue, "field:changed-again");
-    // }
+        await scheduler.execution();
+
+        chai.assert.equal(mock.getAttribute("field"), "changed");
+        chai.assert.equal(mock.field, "changed");
+        chai.assert.equal(mock.callbackValue, "field:changed");
+
+        mock.setAttribute("field", "changed-again");
+
+        await scheduler.execution();
+
+        chai.assert.equal(mock.getAttribute("field"), "changed-again");
+        chai.assert.equal(mock.field, "changed-again");
+        chai.assert.equal(mock.callbackValue, "field:changed-again");
+    }
 
     @test @shouldPass
     public async elementWithDefaultsAndAttributeChangedCallbackWithInheritance(): Promise<void>
@@ -121,7 +130,7 @@ export default class ElementDecoratorSpec
             }
         }
 
-        @element(`mock-${uuidv4()}` as `${string}-${string}`)
+        @element(`mock-${crypto.randomUUID()}` as `${string}-${string}`)
         class Mock extends Base
         {
             private _property: string = "";
