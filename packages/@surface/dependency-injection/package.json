@@ -5,7 +5,6 @@
     },
     "dependencies": {
         "@surface/core": "file:../core",
-        "@surface/reflection": "file:../reflection",
         "tslib": "^2.3.1"
     },
     "description": "Provides dependency injection capabilities.",

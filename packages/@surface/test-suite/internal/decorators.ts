@@ -1,19 +1,7 @@
-import mocha from "./mocha.js";
-import
-{
-    AFTER,
-    AFTER_EACH,
-    BATCH,
-    BEFORE,
-    BEFORE_EACH,
-    CATEGORY,
-    DATA,
-    DESCRIPTION,
-    EXPECTATION,
-    TEST,
-} from "./symbols.js";
+/* eslint-disable max-lines-per-function */
+import Metadata        from "./metadata.js";
+import mocha           from "./mocha.js";
 import type Test       from "./types/test";
-import type TestMethod from "./types/test-method";
 import type TestObject from "./types/test-object";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -26,14 +14,18 @@ function camelToText(value: string): string
     return value.split(/(?:(?<![A-Z])(?=[A-Z]))|(?:(?<![a-zA-Z])(?=[a-z]))|(?:(?<![0-9])(?=[0-9]))/g).join(" ").toLowerCase();
 }
 
+const noop = () => void 0;
+
 export function after(description: string): MethodDecorator;
 export function after(target: object, key: string | symbol): void;
 export function after(...args: [string] | [object, string | symbol]): MethodDecorator | void
 {
     const decorator = (target: TestObject, key: string | symbol, description: string): void =>
     {
-        target[key as string][AFTER]       = true;
-        target[key as string][DESCRIPTION] = description;
+        const metadata = Metadata.from(target[key as string]);
+
+        metadata.after       = true;
+        metadata.description = description;
     };
 
     if (args.length == 1)
@@ -52,8 +44,10 @@ export function afterEach(...args: [string] | [object, string | symbol]): Method
 {
     const decorator = (target: TestObject, key: string | symbol, description: string): void =>
     {
-        target[key as keyof TestObject][AFTER_EACH]  = true;
-        target[key as keyof TestObject][DESCRIPTION] = description;
+        const metadata = Metadata.from(target[key as string]);
+
+        metadata.afterEach   = true;
+        metadata.description = description;
     };
 
     if (args.length == 1)
@@ -70,8 +64,9 @@ export function batchTest<T = unknown>(source: T[], expectation: Delegate<[T], s
 {
     return (target: object, key: string | symbol) =>
     {
-        (target as TestObject<T>)[key as keyof TestObject<T>][BATCH] = true;
-        (target as TestObject<T>)[key as keyof TestObject<T>][DATA]  = { expectation, source };
+        const metadata = Metadata.from((target as TestObject)[key as string]);
+
+        metadata.batch = { expectation: expectation as Delegate<[unknown], string>, source };
     };
 }
 
@@ -81,8 +76,10 @@ export function before(...args: [string] | [object, string | symbol]): MethodDec
 {
     const decorator = (target: TestObject, key: string | symbol, description: string): void =>
     {
-        target[key as string][BEFORE]      = true;
-        target[key as string][DESCRIPTION] = description;
+        const metadata = Metadata.from(target[key as string]);
+
+        metadata.before      = true;
+        metadata.description = description;
     };
 
     if (args.length == 1)
@@ -101,8 +98,10 @@ export function beforeEach(...args: [string] | [object, string | symbol]): Metho
 {
     const decorator = (target: TestObject, key: string | symbol, description: string): void =>
     {
-        target[key as keyof TestObject][BEFORE_EACH] = true;
-        target[key as keyof TestObject][DESCRIPTION] = description;
+        const metadata = Metadata.from(target[key as string]);
+
+        metadata.beforeEach  = true;
+        metadata.description = description;
     };
 
     if (args.length == 1)
@@ -119,7 +118,9 @@ export function category(name: string): MethodDecorator
 {
     return (target: object, key: string | symbol) =>
     {
-        (target as TestObject)[key as string][CATEGORY] = name;
+        const metadata = Metadata.from((target as TestObject)[key as string]);
+
+        metadata.category = name;
     };
 }
 
@@ -133,87 +134,112 @@ export function shouldFail(target: object, propertyKey: string | symbol): void
     category("should fail")(target, propertyKey, Object.getOwnPropertyDescriptor(target, propertyKey) as TypedPropertyDescriptor<object>);
 }
 
-export function suite(target: Function): void;
-export function suite(description: string): ClassDecorator;
-export function suite(targetOrDescription: Function | string): ClassDecorator | void
+export function skip<T extends Function>(target: T): T;
+export function skip<T>(target: object, key: string | symbol, descriptor: TypedPropertyDescriptor<T>): void;
+export function skip(...args: [Function] | [object, string | symbol, TypedPropertyDescriptor<unknown>]): void | Function
 {
-    const decorator = (target: Function, description: string): void =>
+    if (args.length == 1)
     {
-        const tests:       Test[]          = [];
-        const catergories: Indexer<Test[]> = { };
+        if (Metadata.from(args[0]).suite)
+        {
+            throw new Error("@skip @suite order is invalid. Use @suite @skip instead.");
+        }
 
-        let afterCallback:      TestMethod | null = null;
-        let afterEachCallback:  TestMethod | null = null;
-        let beforeCallback:     TestMethod | null = null;
-        let beforeEachCallback: TestMethod | null = null;
+        for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(args[0].prototype)))
+        {
+            if (key != "constructor" && typeof descriptor.value == "function")
+            {
+                Metadata.from(descriptor.value).skip = true;
+            }
+        }
+
+        return args[0];
+    }
+
+    const [target, key] = args as [TestObject, string, unknown];
+
+    Metadata.from(target[key]).skip = true;
+}
+
+export function suite<T extends Function>(target: T): T;
+export function suite(description: string): ClassDecorator;
+export function suite(targetOrDescription: Function | string): ClassDecorator | Function
+{
+    const decorator = (target: Function, description: string): Function =>
+    {
+        Metadata.from(target).suite = true;
+
+        const tests:       Test[]          = [];
+        const categories: Indexer<Test[]> = { };
+
+        let afterCallback:      Function | null = null;
+        let afterEachCallback:  Function | null = null;
+        let beforeCallback:     Function | null = null;
+        let beforeEachCallback: Function | null = null;
 
         for (const name of Object.getOwnPropertyNames(target.prototype))
         {
-            const method = target.prototype[name] as TestMethod;
-            if (method[AFTER])
+            const method   = target.prototype[name] as Function;
+            const metadata = Metadata.from(method);
+
+            if (!metadata.skip)
             {
-                afterCallback = method as Delegate;
+                if (metadata.after)
+                {
+                    afterCallback = method as Delegate;
+                }
+
+                if (metadata.afterEach)
+                {
+                    afterEachCallback = method as Delegate;
+                }
+
+                if (metadata.before)
+                {
+                    beforeCallback = method as Delegate;
+                }
+
+                if (metadata.beforeEach)
+                {
+                    beforeEachCallback = method as Delegate;
+                }
             }
 
-            if (method[AFTER_EACH])
+            if (metadata.test)
             {
-                afterEachCallback = method as Delegate;
-            }
+                const categoryName = metadata.category;
+                const getMethod    = metadata.skip ? () => noop : (context: object) => method.bind(context);
+                const expectation = (metadata.skip ? "(Skipped) " : "") + metadata.expectation;
 
-            if (method[BEFORE])
-            {
-                beforeCallback = method as Delegate;
-            }
-
-            if (method[BEFORE_EACH])
-            {
-                beforeEachCallback = method as Delegate;
-            }
-
-            if (method[TEST])
-            {
-                const categoryName = method[CATEGORY];
                 if (categoryName)
                 {
-                    const category = catergories[categoryName] = catergories[categoryName] ?? [];
-                    category.push
-                    ({
-                        expectation: method[EXPECTATION] ?? "",
-                        getMethod:   (context: object) => method.bind(context),
-                    });
+                    const category = categories[categoryName] = categories[categoryName] ?? [];
+
+                    category.push({ expectation, getMethod });
                 }
                 else
                 {
-                    tests.push
-                    ({
-                        expectation: method[EXPECTATION] ?? "",
-                        getMethod:   context => method.bind(context),
-                    });
+                    tests.push({ expectation, getMethod });
                 }
             }
 
-            if (method[BATCH])
+            if (metadata.batch)
             {
-                const batch = method[DATA] as { source: object[], expectation: Delegate<[object], string> };
+                const batch = metadata.batch;
                 for (const data of batch.source)
                 {
-                    const categoryName = method[CATEGORY];
+                    const categoryName = metadata.category;
+                    const getMethod    = metadata.skip ? () => noop : (context: object) => () => method.call(context, data);
+                    const expectation = (metadata.skip ? "(Skipped) " : "") + batch.expectation(data);
+
                     if (categoryName)
                     {
-                        const category = catergories[categoryName] = catergories[categoryName] ?? [];
-                        category.push
-                        ({
-                            expectation: batch.expectation(data),
-                            getMethod:   (context: object) => () => method.call(context, data),
-                        });
+                        const category = categories[categoryName] = categories[categoryName] ?? [];
+                        category.push({ expectation, getMethod });
                     }
                     else
                     {
-                        tests.push
-                        ({
-                            expectation: batch.expectation(data),
-                            getMethod:   context => () => method.call(context, data),
-                        });
+                        tests.push({ expectation, getMethod });
                     }
                 }
             }
@@ -228,12 +254,12 @@ export function suite(targetOrDescription: Function | string): ClassDecorator | 
 
                 if (beforeCallback)
                 {
-                    mocha.before(beforeCallback[DESCRIPTION]!, beforeCallback.bind(context));
+                    mocha.before(Metadata.from(beforeCallback).description, beforeCallback.bind(context));
                 }
 
                 if (beforeEachCallback)
                 {
-                    mocha.beforeEach(beforeEachCallback[DESCRIPTION]!, beforeEachCallback.bind(context));
+                    mocha.beforeEach(Metadata.from(beforeEachCallback).description, beforeEachCallback.bind(context));
                 }
 
                 for (const test of tests)
@@ -241,7 +267,7 @@ export function suite(targetOrDescription: Function | string): ClassDecorator | 
                     mocha.test(test.expectation, test.getMethod(context));
                 }
 
-                for (const [name, tests] of Object.entries(catergories) as [string, Test[]][])
+                for (const [name, tests] of Object.entries(categories) as [string, Test[]][])
                 {
                     mocha.suite
                     (
@@ -258,15 +284,17 @@ export function suite(targetOrDescription: Function | string): ClassDecorator | 
 
                 if (afterEachCallback)
                 {
-                    mocha.afterEach(afterEachCallback[DESCRIPTION]!, afterEachCallback.bind(context));
+                    mocha.afterEach(Metadata.from(afterEachCallback).description, afterEachCallback.bind(context));
                 }
 
                 if (afterCallback)
                 {
-                    mocha.after(afterCallback[DESCRIPTION]!, afterCallback.bind(context));
+                    mocha.after(Metadata.from(afterCallback).description, afterCallback.bind(context));
                 }
             },
         );
+
+        return target;
     };
 
     if (typeof targetOrDescription == "string")
@@ -274,7 +302,7 @@ export function suite(targetOrDescription: Function | string): ClassDecorator | 
         return (target: Function) => decorator(target, targetOrDescription);
     }
 
-    decorator(targetOrDescription, camelToText(targetOrDescription.name));
+    return decorator(targetOrDescription, camelToText(targetOrDescription.name));
 }
 
 export function test(target: object, key: string | symbol): void;
@@ -283,8 +311,10 @@ export function test(...args: [string] | [object, string | symbol]): MethodDecor
 {
     const decorator = (target: TestObject, key: string, expectation: string): void =>
     {
-        target[key][TEST]        = true;
-        target[key][EXPECTATION] = expectation;
+        const metadata = Metadata.from(target[key]);
+
+        metadata.test        = true;
+        metadata.expectation = expectation;
     };
 
     if (args.length == 1)

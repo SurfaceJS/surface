@@ -1,5 +1,3 @@
-import type TestMethod from "./test-method";
-
-type TestObject<T = unknown> = { [key: string]: TestMethod<T> };
+type TestObject = Record<string, Function>;
 
 export default TestObject;

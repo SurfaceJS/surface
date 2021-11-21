@@ -8,10 +8,9 @@ program
     .action(Commands.cover);
 program
     .command("publish <registry>")
-    .storeOptionsAsProperties(false)
     .requiredOption("--token     <n>", "NPM token", toString)
     .option("--mode       <n>", "Configuration mode", parsePattern(/^nightly|release$/))
     .option("--dry        [n]", "Dry mode", x => x === "" || x == "true")
-    .action(Commands.publish)
-    .parse();
+    .action(Commands.publish);
+program.parse();
 //# sourceMappingURL=cli.js.map
