@@ -1,0 +1,15 @@
+{
+    "$schema": "./node_modules/@surface/builder/schema.json",
+    "clean": true,
+    "projects": {
+        "app": {
+            "entry": "./source/index.ts",
+            "eslint": {
+                "enabled": false
+            },
+            "htmlx": "aot",
+            "index": "./template.html",
+            "target": "pwa"
+        }
+    }
+}

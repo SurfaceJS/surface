@@ -3,11 +3,11 @@
         "description": "Simple Hello World application.",
         "files": [
             {
-                "name": "e0e5b986d9b301f390284e8cbbf523e2c70f7328",
+                "name": "65675feaa87ea0c67fc80d7b0430f4f1009124ee",
                 "path": ".eslintrc.json"
             },
             {
-                "name": "18437256d6f427a95a8a46ed6a609dc56eb74419",
+                "name": "500c25cd9b6d97283c06383956ad50d22094a0fb",
                 "path": "package.json"
             },
             {
@@ -15,7 +15,7 @@
                 "path": "README.md"
             },
             {
-                "name": "b38f31a54ecc504c21066d3c3f68d1b3520a9975",
+                "name": "a55826487aa840efa810f4a81b6b007029996c5f",
                 "path": "source/index.ts"
             },
             {
@@ -36,11 +36,35 @@
         "description": "Simple Hello World application using router.",
         "files": [
             {
-                "name": "e0e5b986d9b301f390284e8cbbf523e2c70f7328",
+                "name": "65675feaa87ea0c67fc80d7b0430f4f1009124ee",
                 "path": ".eslintrc.json"
             },
             {
-                "name": "6a84220d31eb6540062d1b6e89c6c413bad6a148",
+                "name": "bbb2cc2538a27d6ad392c00e371ae77312ced79b",
+                "path": "dist/index.html"
+            },
+            {
+                "name": "0d498a41b0c9ce62e1516a6e17f90c2a0696bea7",
+                "path": "dist/js/0/8b03df4b7630328bc087.js"
+            },
+            {
+                "name": "d6fb2ba09fa531f92b220143e4c4259dd17ad404",
+                "path": "dist/js/2/8b03df4b7630328bc087.js"
+            },
+            {
+                "name": "e3c073726f6e83646cdf9ef71c319e3ee6aaab4d",
+                "path": "dist/js/3/8b03df4b7630328bc087.js"
+            },
+            {
+                "name": "ff31b9bfcaf215356d9adae84fef28d1f0a5257d",
+                "path": "dist/js/4/8b03df4b7630328bc087.js"
+            },
+            {
+                "name": "25a3f275287f9f06ea5c48fc32e7386e51c8f851",
+                "path": "dist/js/main/8b03df4b7630328bc087.js"
+            },
+            {
+                "name": "7eadb5cf5a3625679819929b098b1154fb7d2382",
                 "path": "package.json"
             },
             {
@@ -49,50 +73,50 @@
             },
             {
                 "name": "b116a786a2730f010a91978b88b0790da85b5e42",
-                "path": "source/app/index.html"
+                "path": "source/app/index.htmlx"
             },
             {
                 "name": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
                 "path": "source/app/index.scss"
             },
             {
-                "name": "61e616ae77216b4556732ea9b908d21f192e65ff",
+                "name": "9df19536db2b56e6009094c968666cef387c2994",
                 "path": "source/app/index.ts"
             },
             {
-                "name": "98bc319dd0629f29396b9a5f0f7fe7084da42c6d",
-                "path": "source/environment.d.ts"
-            },
-            {
-                "name": "9b8dbf8f0777c6874c03465fdd636f777a1d1fcf",
+                "name": "401935b58157cfd3a5c3de0663a7f06f6dd77b75",
                 "path": "source/index.ts"
             },
             {
+                "name": "f9ec481defa928daff121020dc8f2d84b2adeb9e",
+                "path": "source/shim.d.ts"
+            },
+            {
                 "name": "6b2825b8dc7d97d4dbfcf06e9139f899772f810f",
-                "path": "source/views/hello/index.html"
+                "path": "source/views/hello/index.htmlx"
             },
             {
                 "name": "e4d2343bcc10ae77a880434a4fb13eec95495af7",
                 "path": "source/views/hello/index.scss"
             },
             {
-                "name": "54ada020713b938877dc4fb8f1f2a60a93b024b3",
+                "name": "9d6d76871b4d81b77de1cac1d149356eadc4f689",
                 "path": "source/views/hello/index.ts"
             },
             {
                 "name": "7329ef621492272d4e9d120559d75d4869f59420",
-                "path": "source/views/world/index.html"
+                "path": "source/views/world/index.htmlx"
             },
             {
                 "name": "a09b62dbeb673031bc3094f1d9de7b388d593eb7",
                 "path": "source/views/world/index.scss"
             },
             {
-                "name": "e061f5345575f164146b11661a0d53cf646f71b8",
+                "name": "6cee769f9d044714d3a9bdba5d76118ac8bcc737",
                 "path": "source/views/world/index.ts"
             },
             {
-                "name": "9f3f5d5cb5d4a8dfea870ac5f1b4e5a6d0c3dfda",
+                "name": "11aeecb85fae85d0dd25ffc5b734359358c8c2cd",
                 "path": "surface.builder.json"
             },
             {
@@ -109,15 +133,11 @@
         "description": "PWA Todo application.",
         "files": [
             {
-                "name": "e0e5b986d9b301f390284e8cbbf523e2c70f7328",
+                "name": "65675feaa87ea0c67fc80d7b0430f4f1009124ee",
                 "path": ".eslintrc.json"
             },
             {
-                "name": "30e3795c13f7adb778f6dd1edce3a1211a93ffe9",
-                "path": "manifest.webmanifest"
-            },
-            {
-                "name": "70b207b15c2e1184112847242b25dbdbe68497a4",
+                "name": "be1e7f68dccf4252c64f564e919c9d95de681f17",
                 "path": "package.json"
             },
             {
@@ -126,19 +146,15 @@
             },
             {
                 "name": "6274d015c44c3e3ab7260b473ff31b915be717ac",
-                "path": "source/app/index.html"
+                "path": "source/app/index.htmlx"
             },
             {
                 "name": "d365bcfaa2e3d6fedec7ecb8a61a921f19a01072",
                 "path": "source/app/index.scss"
             },
             {
-                "name": "8cb580fd74098924e2e113b3c95a23d64712bdf9",
+                "name": "47b6ba1896b95fa91ec4de86c43cb5323221d8c4",
                 "path": "source/app/index.ts"
-            },
-            {
-                "name": "d24cf11c58995c7131a35e511c5be702bb743dd3",
-                "path": "source/assets/app-icon.png"
             },
             {
                 "name": "9ec434d120183557c6175c4e86e6e11057ddbdb6",
@@ -146,14 +162,14 @@
             },
             {
                 "name": "0ed51d29c5fed4e8e05858029aaac4922077d377",
-                "path": "source/components/app-button/index.html"
+                "path": "source/components/app-button/index.htmlx"
             },
             {
                 "name": "3c746aabd6c42e8deb98788a7ef66e79c1bc070b",
                 "path": "source/components/app-button/index.scss"
             },
             {
-                "name": "eb3d3d782c6ba7c9775902db17b66228a12e8148",
+                "name": "91e0042d21dd2100ecf7228555c01e1c6228c267",
                 "path": "source/components/app-button/index.ts"
             },
             {
@@ -162,74 +178,74 @@
             },
             {
                 "name": "1576657c4237ccc35765ad79a9861cdb8b72d206",
-                "path": "source/components/app-icon/index.html"
+                "path": "source/components/app-icon/index.htmlx"
             },
             {
                 "name": "4d535ab98f950c87fdf2e7c4d03f2921e9bdf5eb",
                 "path": "source/components/app-icon/index.scss"
             },
             {
-                "name": "f68ea38d23dd9eaffd87a55a718c0235dbfe5fa6",
+                "name": "9f74d8a7dd4d0bf699137d9eaf49e6fca9105870",
                 "path": "source/components/app-icon/index.ts"
             },
             {
                 "name": "427893328ea94514140e46a2b9dc52eee0c988b2",
-                "path": "source/components/app-image-pick/index.html"
+                "path": "source/components/app-image-pick/index.htmlx"
             },
             {
                 "name": "af41c975ae83fd9ee75ff871bbd757c3f07394e7",
                 "path": "source/components/app-image-pick/index.scss"
             },
             {
-                "name": "251206a46768bcc0d72efc8dd2b3dfa1d69dd454",
+                "name": "40707f65d181b90b412dd4c99e4d37e898d8a0ed",
                 "path": "source/components/app-image-pick/index.ts"
             },
             {
                 "name": "b9f29962142ae9a71ef6e6ff36b059f512619260",
-                "path": "source/components/app-input/index.html"
+                "path": "source/components/app-input/index.htmlx"
             },
             {
                 "name": "6f252e5dc56c8823867c16ece2d87c642d01a475",
                 "path": "source/components/app-input/index.scss"
             },
             {
-                "name": "d90cb1a30c1bb8ad8822e4b524c35ea263350dc6",
+                "name": "4015911a439c876d8e4e0a6626be428a93ac8e8b",
                 "path": "source/components/app-input/index.ts"
             },
             {
                 "name": "eb24b67bf87602bc4335136a5a94482eb579784f",
-                "path": "source/components/app-loading/index.html"
+                "path": "source/components/app-loading/index.htmlx"
             },
             {
                 "name": "bc01b5c3920466ed544d8a2a05204c3b2a47dce3",
                 "path": "source/components/app-loading/index.scss"
             },
             {
-                "name": "677e3761a291392012935153a26617f02d666043",
+                "name": "d32a93ae62fef97f7791680b3cb5d1d7a2de6b13",
                 "path": "source/components/app-loading/index.ts"
             },
             {
                 "name": "bbd2bbaf13ea793bd3c169c2e9c182eafe40d991",
-                "path": "source/components/app-message-dialog/index.html"
+                "path": "source/components/app-message-dialog/index.htmlx"
             },
             {
                 "name": "03219bd48177e730d4eccffc2b69ae81c1444973",
                 "path": "source/components/app-message-dialog/index.scss"
             },
             {
-                "name": "3c057eefc0b22a549cfe84f451a11d7ca01a0415",
+                "name": "9c84c7b7cd1f3da55e2609eb51f0bb27ef1c75ee",
                 "path": "source/components/app-message-dialog/index.ts"
             },
             {
                 "name": "cb238e46c7c783a46ccce658a25dbd407880661a",
-                "path": "source/components/app-text-input/index.html"
+                "path": "source/components/app-text-input/index.htmlx"
             },
             {
                 "name": "23de7b151cacbfef49d26466e92034fc8124ac5e",
                 "path": "source/components/app-text-input/index.scss"
             },
             {
-                "name": "f656b037e448a14b0ecabb5cb0056778fbeaa413",
+                "name": "2505fea4ae414bb7e7277f2e0be493d4b4f6a214",
                 "path": "source/components/app-text-input/index.ts"
             },
             {
@@ -245,15 +261,11 @@
                 "path": "source/context/store.ts"
             },
             {
-                "name": "8f0dc5fb045e6b7e0c78adf8427a5a2cd9d2c1b5",
+                "name": "7070e8111b85ebe4a1702ed483bd0d99ead607f6",
                 "path": "source/directives/key-press-directive.ts"
             },
             {
-                "name": "98bc319dd0629f29396b9a5f0f7fe7084da42c6d",
-                "path": "source/environment.d.ts"
-            },
-            {
-                "name": "33e10c316c551d57fc33d5411d6c3abb85e9e2da",
+                "name": "86f5f4fe043e469de1b671a15ee7a9345e3866f7",
                 "path": "source/index.ts"
             },
             {
@@ -281,7 +293,7 @@
                 "path": "source/repositories/todo-repository.ts"
             },
             {
-                "name": "41bafcb18fd9beaf59db6aa4c087365532cbc2e4",
+                "name": "d29d8f670d5ba70bca54541f3397add50192b6a9",
                 "path": "source/repositories/user-repository.ts"
             },
             {
@@ -291,6 +303,10 @@
             {
                 "name": "a081a4f69c3a9c31f50f0b4225f5315acd46e21f",
                 "path": "source/services/auth-service.ts"
+            },
+            {
+                "name": "f9ec481defa928daff121020dc8f2d84b2adeb9e",
+                "path": "source/shim.d.ts"
             },
             {
                 "name": "28598423560f893c0b1cadb07dcbd02dab3b4db9",
@@ -309,7 +325,7 @@
                 "path": "source/styles/mixins.scss"
             },
             {
-                "name": "b3d8f07bb54357543e2c0844a65168f04ffcedf5",
+                "name": "8c97869a092fa0361f3483889c0fb34ceca287a5",
                 "path": "source/types/item.d.ts"
             },
             {
@@ -326,62 +342,62 @@
             },
             {
                 "name": "77cb0c3a7268f1bfdb35b2a5f4f2d68bdf635a31",
-                "path": "source/views/account-create/index.html"
+                "path": "source/views/account-create/index.htmlx"
             },
             {
                 "name": "b9d63d0f65a1e923ee4c3d1e0fbcfd4f05bf739e",
                 "path": "source/views/account-create/index.scss"
             },
             {
-                "name": "57998d6951cd52113fd770eb9957eb8cd8924ed2",
+                "name": "ca7db1c53845d6523e924fef1ea50cc7ee3abecd",
                 "path": "source/views/account-create/index.ts"
             },
             {
                 "name": "deeed476189c785f8743cdcdb3ad214322219376",
-                "path": "source/views/account-edit/index.html"
+                "path": "source/views/account-edit/index.htmlx"
             },
             {
                 "name": "b9d63d0f65a1e923ee4c3d1e0fbcfd4f05bf739e",
                 "path": "source/views/account-edit/index.scss"
             },
             {
-                "name": "f9dbb220687b03aa38857574663d33fe5cbeca5a",
+                "name": "1caac5b75f2ed7284395a126b52bfec29d9920b3",
                 "path": "source/views/account-edit/index.ts"
             },
             {
-                "name": "3321a8d1a8c5614589efa08c62bdfc0bbd27f6d3",
-                "path": "source/views/home/index.html"
+                "name": "3d7845639440b4ed2a46679e18b6ddfe3a447bfd",
+                "path": "source/views/home/index.htmlx"
             },
             {
                 "name": "d56f976a9c7179f8893434a4338b3691aa032663",
                 "path": "source/views/home/index.scss"
             },
             {
-                "name": "10a680fd64b34a57f8d33260149ae467457538f1",
+                "name": "59ab3ba0ac404da1861c361d5c5485db707e762a",
                 "path": "source/views/home/index.ts"
             },
             {
                 "name": "22e6e94e204fa2a50a4cba1aa91fe201dfd874cc",
-                "path": "source/views/login/index.html"
+                "path": "source/views/login/index.htmlx"
             },
             {
                 "name": "7f7fc828af0357ff6d7f14b9286cafa52f437cc8",
                 "path": "source/views/login/index.scss"
             },
             {
-                "name": "0e071b7a683f1ef88b9f6d1ceac5ff03555e894f",
+                "name": "9c08845a4548b0f71b22c25794d5ec5ea8b17868",
                 "path": "source/views/login/index.ts"
             },
             {
-                "name": "32a2034a8d2cbe91ea69ece324c5610ffa8fab9e",
+                "name": "bad03b385dbae9e66f5293c36e8a207d4449248d",
                 "path": "surface.builder.json"
             },
             {
-                "name": "bdc8c8eef22b9261f75a91ebe81e8540f539f6e5",
+                "name": "041537447022a4202fd64f164da07a5312df4091",
                 "path": "template.html"
             },
             {
-                "name": "e22e8df3fcecfcd31d9634699286b2ace8aa0f7b",
+                "name": "6ef347ebdfc0325c88842de5086eb77eb0e72d12",
                 "path": "tsconfig.json"
             }
         ]
@@ -390,11 +406,11 @@
         "description": "SPA Todo application.",
         "files": [
             {
-                "name": "e0e5b986d9b301f390284e8cbbf523e2c70f7328",
+                "name": "65675feaa87ea0c67fc80d7b0430f4f1009124ee",
                 "path": ".eslintrc.json"
             },
             {
-                "name": "70b207b15c2e1184112847242b25dbdbe68497a4",
+                "name": "be1e7f68dccf4252c64f564e919c9d95de681f17",
                 "path": "package.json"
             },
             {
@@ -403,14 +419,14 @@
             },
             {
                 "name": "6274d015c44c3e3ab7260b473ff31b915be717ac",
-                "path": "source/app/index.html"
+                "path": "source/app/index.htmlx"
             },
             {
                 "name": "d365bcfaa2e3d6fedec7ecb8a61a921f19a01072",
                 "path": "source/app/index.scss"
             },
             {
-                "name": "8cb580fd74098924e2e113b3c95a23d64712bdf9",
+                "name": "47b6ba1896b95fa91ec4de86c43cb5323221d8c4",
                 "path": "source/app/index.ts"
             },
             {
@@ -419,14 +435,14 @@
             },
             {
                 "name": "0ed51d29c5fed4e8e05858029aaac4922077d377",
-                "path": "source/components/app-button/index.html"
+                "path": "source/components/app-button/index.htmlx"
             },
             {
                 "name": "3c746aabd6c42e8deb98788a7ef66e79c1bc070b",
                 "path": "source/components/app-button/index.scss"
             },
             {
-                "name": "eb3d3d782c6ba7c9775902db17b66228a12e8148",
+                "name": "91e0042d21dd2100ecf7228555c01e1c6228c267",
                 "path": "source/components/app-button/index.ts"
             },
             {
@@ -435,74 +451,74 @@
             },
             {
                 "name": "1576657c4237ccc35765ad79a9861cdb8b72d206",
-                "path": "source/components/app-icon/index.html"
+                "path": "source/components/app-icon/index.htmlx"
             },
             {
                 "name": "4d535ab98f950c87fdf2e7c4d03f2921e9bdf5eb",
                 "path": "source/components/app-icon/index.scss"
             },
             {
-                "name": "f68ea38d23dd9eaffd87a55a718c0235dbfe5fa6",
+                "name": "9f74d8a7dd4d0bf699137d9eaf49e6fca9105870",
                 "path": "source/components/app-icon/index.ts"
             },
             {
                 "name": "427893328ea94514140e46a2b9dc52eee0c988b2",
-                "path": "source/components/app-image-pick/index.html"
+                "path": "source/components/app-image-pick/index.htmlx"
             },
             {
                 "name": "af41c975ae83fd9ee75ff871bbd757c3f07394e7",
                 "path": "source/components/app-image-pick/index.scss"
             },
             {
-                "name": "251206a46768bcc0d72efc8dd2b3dfa1d69dd454",
+                "name": "40707f65d181b90b412dd4c99e4d37e898d8a0ed",
                 "path": "source/components/app-image-pick/index.ts"
             },
             {
                 "name": "b9f29962142ae9a71ef6e6ff36b059f512619260",
-                "path": "source/components/app-input/index.html"
+                "path": "source/components/app-input/index.htmlx"
             },
             {
                 "name": "6f252e5dc56c8823867c16ece2d87c642d01a475",
                 "path": "source/components/app-input/index.scss"
             },
             {
-                "name": "d90cb1a30c1bb8ad8822e4b524c35ea263350dc6",
+                "name": "4015911a439c876d8e4e0a6626be428a93ac8e8b",
                 "path": "source/components/app-input/index.ts"
             },
             {
                 "name": "eb24b67bf87602bc4335136a5a94482eb579784f",
-                "path": "source/components/app-loading/index.html"
+                "path": "source/components/app-loading/index.htmlx"
             },
             {
                 "name": "bc01b5c3920466ed544d8a2a05204c3b2a47dce3",
                 "path": "source/components/app-loading/index.scss"
             },
             {
-                "name": "677e3761a291392012935153a26617f02d666043",
+                "name": "d32a93ae62fef97f7791680b3cb5d1d7a2de6b13",
                 "path": "source/components/app-loading/index.ts"
             },
             {
                 "name": "bbd2bbaf13ea793bd3c169c2e9c182eafe40d991",
-                "path": "source/components/app-message-dialog/index.html"
+                "path": "source/components/app-message-dialog/index.htmlx"
             },
             {
                 "name": "03219bd48177e730d4eccffc2b69ae81c1444973",
                 "path": "source/components/app-message-dialog/index.scss"
             },
             {
-                "name": "3c057eefc0b22a549cfe84f451a11d7ca01a0415",
+                "name": "9c84c7b7cd1f3da55e2609eb51f0bb27ef1c75ee",
                 "path": "source/components/app-message-dialog/index.ts"
             },
             {
                 "name": "cb238e46c7c783a46ccce658a25dbd407880661a",
-                "path": "source/components/app-text-input/index.html"
+                "path": "source/components/app-text-input/index.htmlx"
             },
             {
                 "name": "23de7b151cacbfef49d26466e92034fc8124ac5e",
                 "path": "source/components/app-text-input/index.scss"
             },
             {
-                "name": "f656b037e448a14b0ecabb5cb0056778fbeaa413",
+                "name": "2505fea4ae414bb7e7277f2e0be493d4b4f6a214",
                 "path": "source/components/app-text-input/index.ts"
             },
             {
@@ -518,15 +534,11 @@
                 "path": "source/context/store.ts"
             },
             {
-                "name": "8f0dc5fb045e6b7e0c78adf8427a5a2cd9d2c1b5",
+                "name": "7070e8111b85ebe4a1702ed483bd0d99ead607f6",
                 "path": "source/directives/key-press-directive.ts"
             },
             {
-                "name": "98bc319dd0629f29396b9a5f0f7fe7084da42c6d",
-                "path": "source/environment.d.ts"
-            },
-            {
-                "name": "8e941a2885d3d1a8f0c0f84a3d7d9dd5ce52f705",
+                "name": "86f5f4fe043e469de1b671a15ee7a9345e3866f7",
                 "path": "source/index.ts"
             },
             {
@@ -554,7 +566,7 @@
                 "path": "source/repositories/todo-repository.ts"
             },
             {
-                "name": "41bafcb18fd9beaf59db6aa4c087365532cbc2e4",
+                "name": "d29d8f670d5ba70bca54541f3397add50192b6a9",
                 "path": "source/repositories/user-repository.ts"
             },
             {
@@ -564,6 +576,10 @@
             {
                 "name": "a081a4f69c3a9c31f50f0b4225f5315acd46e21f",
                 "path": "source/services/auth-service.ts"
+            },
+            {
+                "name": "f9ec481defa928daff121020dc8f2d84b2adeb9e",
+                "path": "source/shim.d.ts"
             },
             {
                 "name": "28598423560f893c0b1cadb07dcbd02dab3b4db9",
@@ -582,7 +598,7 @@
                 "path": "source/styles/mixins.scss"
             },
             {
-                "name": "b3d8f07bb54357543e2c0844a65168f04ffcedf5",
+                "name": "8c97869a092fa0361f3483889c0fb34ceca287a5",
                 "path": "source/types/item.d.ts"
             },
             {
@@ -599,54 +615,54 @@
             },
             {
                 "name": "77cb0c3a7268f1bfdb35b2a5f4f2d68bdf635a31",
-                "path": "source/views/account-create/index.html"
+                "path": "source/views/account-create/index.htmlx"
             },
             {
                 "name": "b9d63d0f65a1e923ee4c3d1e0fbcfd4f05bf739e",
                 "path": "source/views/account-create/index.scss"
             },
             {
-                "name": "57998d6951cd52113fd770eb9957eb8cd8924ed2",
+                "name": "ca7db1c53845d6523e924fef1ea50cc7ee3abecd",
                 "path": "source/views/account-create/index.ts"
             },
             {
                 "name": "deeed476189c785f8743cdcdb3ad214322219376",
-                "path": "source/views/account-edit/index.html"
+                "path": "source/views/account-edit/index.htmlx"
             },
             {
                 "name": "b9d63d0f65a1e923ee4c3d1e0fbcfd4f05bf739e",
                 "path": "source/views/account-edit/index.scss"
             },
             {
-                "name": "f9dbb220687b03aa38857574663d33fe5cbeca5a",
+                "name": "1caac5b75f2ed7284395a126b52bfec29d9920b3",
                 "path": "source/views/account-edit/index.ts"
             },
             {
-                "name": "3321a8d1a8c5614589efa08c62bdfc0bbd27f6d3",
-                "path": "source/views/home/index.html"
+                "name": "3d7845639440b4ed2a46679e18b6ddfe3a447bfd",
+                "path": "source/views/home/index.htmlx"
             },
             {
                 "name": "d56f976a9c7179f8893434a4338b3691aa032663",
                 "path": "source/views/home/index.scss"
             },
             {
-                "name": "10a680fd64b34a57f8d33260149ae467457538f1",
+                "name": "59ab3ba0ac404da1861c361d5c5485db707e762a",
                 "path": "source/views/home/index.ts"
             },
             {
                 "name": "22e6e94e204fa2a50a4cba1aa91fe201dfd874cc",
-                "path": "source/views/login/index.html"
+                "path": "source/views/login/index.htmlx"
             },
             {
                 "name": "7f7fc828af0357ff6d7f14b9286cafa52f437cc8",
                 "path": "source/views/login/index.scss"
             },
             {
-                "name": "0e071b7a683f1ef88b9f6d1ceac5ff03555e894f",
+                "name": "9c08845a4548b0f71b22c25794d5ec5ea8b17868",
                 "path": "source/views/login/index.ts"
             },
             {
-                "name": "9f3f5d5cb5d4a8dfea870ac5f1b4e5a6d0c3dfda",
+                "name": "9c12ca94d9ac1ac82f102c3feb45b0d5407aa5ad",
                 "path": "surface.builder.json"
             },
             {
@@ -654,7 +670,7 @@
                 "path": "template.html"
             },
             {
-                "name": "e22e8df3fcecfcd31d9634699286b2ace8aa0f7b",
+                "name": "6ef347ebdfc0325c88842de5086eb77eb0e72d12",
                 "path": "tsconfig.json"
             }
         ]
