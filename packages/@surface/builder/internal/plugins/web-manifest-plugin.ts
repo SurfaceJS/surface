@@ -112,8 +112,6 @@ export default class WebManifestPlugin implements webpack.WebpackPluginInstance
             const content = buffer!.toString();
 
             await this.collectDependencies(loaderContext, context, content);
-
-            console.log(this.collectDependencies, context);
         }
 
         return undefined;

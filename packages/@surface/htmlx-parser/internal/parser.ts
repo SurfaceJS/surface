@@ -285,7 +285,7 @@ export default class Parser
                         yield this.parseElement(childNode, stackTrace);
                     }
                 }
-                else
+                else if (!!childNode.nodeValue?.trim())
                 {
                     yield this.parseTextNode(childNode as Text, stackTrace);
 

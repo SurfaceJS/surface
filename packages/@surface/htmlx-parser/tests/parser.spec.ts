@@ -215,6 +215,47 @@ export default class HTMLXElementParserSpec
     }
 
     @shouldPass @test
+    public parseElementWithEmptyTextNode(): void
+    {
+        const template = "<span>\n\t<div> \n\tSome Idented Text\n</div>\n\t </span>";
+
+        const expected: Descriptor =
+        {
+            childs:
+            [
+                {
+                    attributes: [],
+                    childs:
+                    [
+                        {
+                            attributes: [],
+                            childs:
+                            [
+                                {
+                                    type:  DescriptorType.Text,
+                                    value: " \n\tSome Idented Text\n",
+                                },
+                            ],
+                            tag:  "div",
+                            type: DescriptorType.Element,
+                        },
+                    ],
+                    tag:  "span",
+                    type: DescriptorType.Element,
+                },
+            ],
+            type: DescriptorType.Fragment,
+        };
+
+        const actual = Parser.parse(window.document, "x-component", template);
+
+        const a = stringifyExpressions(actual);
+        const e = stringifyExpressions(expected);
+
+        chai.assert.deepEqual(a, e);
+    }
+
+    @shouldPass @test
     public parseInjection(): void
     {
         const template =
