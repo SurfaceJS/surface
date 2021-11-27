@@ -1,3 +1,4 @@
+/* eslint-disable complexity */
 /* eslint-disable max-lines-per-function */
 /* eslint-disable max-statements */
 /* eslint-disable @typescript-eslint/prefer-for-of */
@@ -35,28 +36,64 @@ enum NodeType
 
 enum DirectiveType
 {
-    If               = "#if",
-    ElseIf           = "#else-if",
-    Else             = "#else",
-    For              = "#for",
-    Inject           = "#inject",
-    InjectKey        = "#inject.key",
-    InjectScope      = "#inject.scope",
-    Placeholder      = "#placeholder",
-    PlaceholderKey   = "#placeholder.key",
-    PlaceholderScope = "#placeholder.scope",
+    Else              = "#else",
+    ElseIf            = "#else-if",
+    Extends           = "#extends",
+    ExtendsAttributes = "#extends.attributes",
+    ExtendsBinds      = "#extends.binds",
+    ExtendsInjections = "#extends.injections",
+    ExtendsListeners  = "#extends.listeners",
+    For               = "#for",
+    If                = "#if",
+    Inject            = "#inject",
+    InjectKey         = "#inject.key",
+    InjectScope       = "#inject.scope",
+    Placeholder       = "#placeholder",
+    PlaceholderKey    = "#placeholder.key",
+    PlaceholderScope  = "#placeholder.scope",
 }
 
-const directiveTypes = Object.values(DirectiveType);
+const directiveTypes    = Object.values(DirectiveType);
+const directiveTypesSet = new Set(directiveTypes);
 
-type Directive  =
+type DirectiveValue =
 {
-    key:    string,
-    name:   string,
-    source: { key: string, value: string },
-    type:   DirectiveType,
-    value:  string,
+    expression: string,
+    source:     string,
 };
+
+type KeyedDirective  =
+{
+    name:  string,
+    key:   DirectiveValue,
+    scope: DirectiveValue,
+    type:  DirectiveType.Inject | DirectiveType.Placeholder,
+};
+
+type StatementDirective  =
+{
+    name:       string,
+    source:     string,
+    type:       DirectiveType.If | DirectiveType.Else | DirectiveType.ElseIf | DirectiveType.For,
+    expression: string,
+};
+
+type ExtendsDirective  =
+{
+    name:     string,
+    metadata: DirectiveValue,
+    type:     DirectiveType.Extends,
+} |
+{
+    name:  string,
+    attributes: DirectiveValue,
+    binds:      DirectiveValue,
+    injections: DirectiveValue,
+    listeners:  DirectiveValue,
+    type:       DirectiveType.Extends,
+};
+
+type Directive = ExtendsDirective | KeyedDirective | StatementDirective;
 
 export default class Parser
 {
@@ -94,11 +131,9 @@ export default class Parser
         {
             const innerTemplate = template.cloneNode(false) as HTMLTemplateElement;
 
-            directives.forEach(x => template.removeAttribute(x.name));
+            directives.forEach(x => this.removeDirectives(template, x));
 
-            innerTemplate.removeAttribute(directive.name);
-            innerTemplate.removeAttribute(`${directive.name}.key`);
-            innerTemplate.removeAttribute(`${directive.name}.scope`);
+            this.removeDirectives(innerTemplate, directive);
 
             this.markAsDecomposed(innerTemplate);
 
@@ -141,7 +176,7 @@ export default class Parser
     private enumerateDirectives(namedNodeMap: NamedNodeMap): Iterable<Directive>;
     private *enumerateDirectives(namedNodeMap: NamedNodeMap & Indexer<Attr>): Iterable<Directive>
     {
-        const KEYED_DIRECTIVES = [DirectiveType.Inject, DirectiveType.Placeholder];
+        const KEYED_DIRECTIVES = [DirectiveType.Inject, DirectiveType.Placeholder] as const;
 
         const duplications = new Set<string>();
         const resolved     = new Set<string>();
@@ -153,7 +188,7 @@ export default class Parser
 
             if (!resolved.has(attribute.name))
             {
-                const raw = this.attributeToString(attribute);
+                const source = this.attributeToString(attribute);
 
                 let handled = false;
 
@@ -161,7 +196,7 @@ export default class Parser
                 {
                     if (attribute.name == directive || attribute.name == `${directive}.key` || attribute.name == `${directive}.scope` || attribute.name.startsWith(`${directive}:`))
                     {
-                        if (attribute.name == directive && namedNodeMap[`${directive}.key`] || duplications.has(directive))
+                        if (attribute.name == directive && (namedNodeMap[`${directive}.key`] || namedNodeMap[`${directive}.scope`]) || duplications.has(directive))
                         {
                             const message = `Multiples ${directive} directives on same element is not supported.`;
 
@@ -173,16 +208,15 @@ export default class Parser
                         if (attribute.name == directive)
                         {
                             yield {
-                                key:    "'default'",
-                                name:   attribute.name,
-                                source: { key: "", value: raw },
-                                type:   directive,
-                                value:  attribute.value,
+                                key:   { expression: "'default'", source: "" },
+                                name:  directive,
+                                scope: { expression: attribute.value, source },
+                                type:  directive,
                             };
                         }
                         else if (attribute.name.includes(":"))
                         {
-                            const [type, key] = attribute.name.split(":") as [DirectiveType, string | undefined];
+                            const [type, key] = attribute.name.split(":") as [DirectiveType.Inject, DirectiveType.Placeholder, string | undefined];
 
                             if (!key)
                             {
@@ -192,11 +226,10 @@ export default class Parser
                             }
 
                             yield {
-                                key:    `"${key}"`,
-                                name:   attribute.name,
-                                source: { key: "", value: raw },
+                                key:   { expression: `"${key}"`, source: "" },
+                                name:  attribute.name,
+                                scope: { expression: attribute.value, source },
                                 type,
-                                value:  attribute.value,
                             };
                         }
                         else
@@ -209,11 +242,10 @@ export default class Parser
                                 : [namedNodeMap[`${directive}.key`]?.value, attribute.value];
 
                             yield {
-                                key:    key ?? "'default'",
-                                name:   attribute.name,
-                                source: { key: key ? `${directive}.key="${key}"` : "", value: scope ? `${directive}.scope="${scope}"` : "" },
-                                type:   directive,
-                                value:  scope ?? "",
+                                key:   { expression: key ?? "'default'", source: key ? `${directive}.key="${key}"` : "" },
+                                name:  directive,
+                                scope: { expression: scope ?? "", source: scope ? `${directive}.scope="${scope}"` : "" },
+                                type:  directive,
                             };
                         }
 
@@ -223,13 +255,64 @@ export default class Parser
 
                 if (!handled)
                 {
-                    yield {
-                        key:    "",
-                        name:   attribute.name,
-                        source: { key: "", value: raw },
-                        type:   attribute.name as DirectiveType,
-                        value:  attribute.value,
-                    };
+                    if (attribute.name == DirectiveType.Extends || attribute.name.startsWith(DirectiveType.Extends))
+                    {
+                        resolved.add(DirectiveType.ExtendsAttributes);
+                        resolved.add(DirectiveType.ExtendsBinds);
+                        resolved.add(DirectiveType.ExtendsInjections);
+                        resolved.add(DirectiveType.ExtendsListeners);
+
+                        if (attribute.name == DirectiveType.Extends)
+                        {
+
+                            yield {
+                                metadata: { expression: attribute.value, source },
+                                name:       DirectiveType.Extends,
+                                type:       DirectiveType.Extends,
+                            };
+                        }
+                        else
+                        {
+                            const attributes = namedNodeMap[DirectiveType.ExtendsAttributes]?.value;
+                            const binds      = namedNodeMap[DirectiveType.ExtendsBinds]?.value;
+                            const injections = namedNodeMap[DirectiveType.ExtendsInjections]?.value;
+                            const listeners  = namedNodeMap[DirectiveType.ExtendsListeners]?.value;
+
+                            yield {
+                                attributes:
+                                {
+                                    expression: attributes ?? "null",
+                                    source:     attributes ? `${DirectiveType.ExtendsAttributes}="${attributes}"` : "",
+                                },
+                                binds:
+                                {
+                                    expression: binds ?? "null",
+                                    source:     binds ? `${DirectiveType.ExtendsBinds}="${binds}"` : "",
+                                },
+                                injections:
+                                {
+                                    expression: injections ?? "null",
+                                    source:     injections ? `${DirectiveType.ExtendsInjections}="${injections}"` : "",
+                                },
+                                listeners:
+                                {
+                                    expression: listeners ?? "null",
+                                    source:     listeners ? `${DirectiveType.ExtendsListeners}="${listeners}"` : "",
+                                },
+                                name: DirectiveType.Extends,
+                                type: DirectiveType.Extends,
+                            };
+                        }
+                    }
+                    else if (directiveTypesSet.has(attribute.name as DirectiveType))
+                    {
+                        yield {
+                            expression: attribute.value,
+                            name:       attribute.name,
+                            source,
+                            type:       attribute.name as DirectiveType.If | DirectiveType.Else | DirectiveType.ElseIf | DirectiveType.For,
+                        };
+                    }
                 }
             }
         }
@@ -425,15 +508,15 @@ export default class Parser
         {
             const branches: BranchDescriptor[] = [];
 
-            const expression = this.tryParseExpression(parseExpression, directive.value, directive.source.value);
-            const fragment = this.parseTemplate(template);
+            const expression = this.tryParseExpression(parseExpression, directive.expression, directive.source);
+            const fragment   = this.parseTemplate(template);
 
             const branchDescriptor: BranchDescriptor =
             {
                 expression,
                 fragment,
                 observables: ObserverVisitor.observe(expression),
-                source:      directive.source.value,
+                source:      directive.source,
                 stackTrace,
             };
 
@@ -467,18 +550,18 @@ export default class Parser
 
                 const nextElementSibling = node.nextElementSibling!;
 
-                const [simblingTemplate, simblingDirective] = this.decomposeDirectives(node.nextElementSibling!);
+                const [simblingTemplate, simblingDirective] = this.decomposeDirectives(node.nextElementSibling!) as [HTMLTemplateElement, StatementDirective];
 
                 if (!this.isDecomposed(nextElementSibling))
                 {
                     this.pushToStack(nextElementSibling, ++elementIndex);
                 }
 
-                const value = simblingDirective.type == DirectiveType.Else ? "true" : simblingDirective.value;
+                const value = simblingDirective.type == DirectiveType.Else ? "true" : simblingDirective.expression;
 
                 this.index++;
 
-                const expression = this.tryParseExpression(parseExpression, value, simblingDirective.source.value);
+                const expression = this.tryParseExpression(parseExpression, value, simblingDirective.source);
                 const fragment = this.parseTemplate(simblingTemplate);
 
                 const conditionalBranchDescriptor: BranchDescriptor =
@@ -486,7 +569,7 @@ export default class Parser
                     expression,
                     fragment,
                     observables: ObserverVisitor.observe(expression),
-                    source:      simblingDirective.source.value,
+                    source:      simblingDirective.source,
                     stackTrace:  [...this.stackTrace],
                 };
 
@@ -503,9 +586,7 @@ export default class Parser
         }
         else if (directive.type == DirectiveType.For)
         {
-            const value = directive.value;
-
-            const { left, right, operator } = this.tryParseExpression(parseForLoopStatement, value, directive.source.value);
+            const { left, right, operator } = this.tryParseExpression(parseForLoopStatement, directive.expression, directive.source);
 
             const fragment    = this.parseTemplate(template);
             const observables = ObserverVisitor.observe(right);
@@ -517,7 +598,7 @@ export default class Parser
                 observables,
                 operator,
                 right,
-                source:  directive.source.value,
+                source:  directive.source,
                 stackTrace,
                 type:   DescriptorType.Loop,
             };
@@ -526,10 +607,8 @@ export default class Parser
         }
         else if (directive.type == DirectiveType.Placeholder)
         {
-            const { key, source, value } = directive;
-
-            const keyExpression  = this.tryParseExpression(parseExpression, key, source.key);
-            const expression     = this.tryParseExpression(parseExpression, `${value || "{ }"}`, source.value);
+            const keyExpression  = this.tryParseExpression(parseExpression, directive.key.expression, directive.key.source);
+            const expression     = this.tryParseExpression(parseExpression, `${directive.scope.expression || "{ }"}`, directive.scope.source);
             const keyObservables = ObserverVisitor.observe(keyExpression);
             const observables    = ObserverVisitor.observe(expression);
             const fragment       = this.parseTemplate(template);
@@ -539,38 +618,90 @@ export default class Parser
                 fragment,
                 key:         keyExpression,
                 observables: { key: keyObservables, value: observables },
-                source,
+                scope:       expression,
+                source:      { key: directive.key.source, scope: directive.scope.source },
                 stackTrace,
                 type:        DescriptorType.Placeholder,
-                value:       expression,
             };
 
             return placeholderDirective;
         }
-
-        const { key, source, value } = directive;
-
-        const destructured = /^\s*\{/.test(value);
-
-        const keyExpression  = this.tryParseExpression(parseExpression, key, source.key);
-        const pattern        = this.tryParseExpression(destructured ? parseDestructuredPattern : parseExpression, `${value || "{ }"}`, source.value) as IPattern | Identifier;
-        const keyObservables = ObserverVisitor.observe(keyExpression);
-        const observables    = ObserverVisitor.observe(pattern);
-
-        const fragment = this.parseTemplate(template);
-
-        const injectionDescriptor: InjectionStatementDescriptor =
+        else if (directive.type == DirectiveType.Inject)
         {
-            fragment,
-            key:         keyExpression,
-            observables: { key: keyObservables, value: observables },
-            source,
-            stackTrace,
-            type:        DescriptorType.Injection,
-            value:       pattern,
-        };
+            const destructured = /^\s*\{/.test(directive.scope.expression);
 
-        return injectionDescriptor;
+            const keyExpression  = this.tryParseExpression(parseExpression, directive.key.expression, directive.key.source);
+            const pattern        = this.tryParseExpression(destructured ? parseDestructuredPattern : parseExpression, `${directive.scope.expression || "{ }"}`, directive.scope.source) as IPattern | Identifier;
+            const keyObservables = ObserverVisitor.observe(keyExpression);
+            const observables    = ObserverVisitor.observe(pattern);
+
+            const fragment = this.parseTemplate(template);
+
+            const injectionDescriptor: InjectionStatementDescriptor =
+            {
+                fragment,
+                key:         keyExpression,
+                observables: { key: keyObservables, value: observables },
+                scope:       pattern,
+                source:      { key: directive.key.source, scope: directive.scope.source },
+                stackTrace,
+                type:        DescriptorType.Injection,
+            };
+
+            return injectionDescriptor;
+        }
+
+        assert(directive.type == DirectiveType.Extends);
+
+        if ("metadata" in directive)
+        {
+            const expression = this.tryParseExpression(parseExpression, directive.metadata.expression, directive.metadata.source);
+
+            return {
+                metadata:
+                {
+                    expression,
+                    source: directive.metadata.source,
+                },
+                stackTrace,
+                type: DescriptorType.Extends,
+            };
+        }
+
+        const attributesExpression = this.tryParseExpression(parseExpression, directive.attributes.expression, directive.attributes.source);
+        const bindsExpression      = this.tryParseExpression(parseExpression, directive.binds.expression, directive.binds.source);
+        const injectionsExpression = this.tryParseExpression(parseExpression, directive.injections.expression, directive.injections.source);
+        const listenersExpression  = this.tryParseExpression(parseExpression, directive.listeners.expression, directive.listeners.source);
+
+        // const attributesObservables = ObserverVisitor.observe(attributesExpression);
+        // const bindsObservables = ObserverVisitor.observe(bindsExpression);
+        // const injectionsObservables = ObserverVisitor.observe(injectionsExpression);
+        // const listenersObservables = ObserverVisitor.observe(listenersExpression);
+
+        return {
+            attributes:
+            {
+                expression:  attributesExpression,
+                source:      directive.attributes.source,
+            },
+            binds:
+            {
+                expression:  bindsExpression,
+                source:      directive.binds.source,
+            },
+            injections:
+            {
+                expression:  injectionsExpression,
+                source:      directive.injections.source,
+            },
+            listeners:
+            {
+                expression:  listenersExpression,
+                source:      directive.listeners.source,
+            },
+            stackTrace,
+            type: DescriptorType.Extends,
+        };
     }
 
     private parseElement(element: Element, stackTrace: StackTrace): ElementDescriptor
@@ -637,6 +768,24 @@ export default class Parser
         stackEntry.push(this.nodeToString(node));
 
         this.stackTrace.push(stackEntry);
+    }
+
+    private removeDirectives(template: HTMLTemplateElement, directive: Directive): void
+    {
+        template.removeAttribute(directive.name);
+
+        if (directive.type == DirectiveType.Extends)
+        {
+            template.removeAttribute(DirectiveType.ExtendsAttributes);
+            template.removeAttribute(DirectiveType.ExtendsBinds);
+            template.removeAttribute(DirectiveType.ExtendsInjections);
+            template.removeAttribute(DirectiveType.ExtendsListeners);
+        }
+        else if (directive.type == DirectiveType.Inject || directive.type == DirectiveType.Placeholder)
+        {
+            template.removeAttribute(`${directive.type}.key`);
+            template.removeAttribute(`${directive.type}.scope`);
+        }
     }
 
     private trimContent(content: DocumentFragment): void

@@ -14,6 +14,7 @@ const factoryMap: Record<Descriptor["type"], string> =
     [DescriptorType.Choice]:            "createChoiceFactory",
     [DescriptorType.Comment]:           "createCommentFactory",
     [DescriptorType.Element]:           "createElementFactory",
+    [DescriptorType.Extends]:           "createExtendsFactory",
     [DescriptorType.Fragment]:          "createFragmentFactory",
     [DescriptorType.Injection]:         "createInjectionFactory",
     [DescriptorType.Loop]:              "createLoopFactory",
@@ -334,7 +335,7 @@ export default class SourceGenerator
                 break;
             case DescriptorType.Placeholder:
                 this.writeLine(`${this.stringifyExpression(descriptor.key)},`);
-                this.writeLine(`${this.stringifyExpression(descriptor.value)},`);
+                this.writeLine(`${this.stringifyExpression(descriptor.scope)},`);
                 this.writeLine(`${JSON.stringify([descriptor.observables.key, descriptor.observables.value])},`);
                 this.writeDescriptor(descriptor.fragment);
                 this.write(","),
@@ -343,12 +344,14 @@ export default class SourceGenerator
                 break;
             case DescriptorType.Injection:
                 this.writeLine(`${this.stringifyExpression(descriptor.key)},`);
-                this.writeLine(`${this.stringifyPattern(descriptor.value)},`);
+                this.writeLine(`${this.stringifyPattern(descriptor.scope)},`);
                 this.writeLine(`${JSON.stringify([descriptor.observables.key, descriptor.observables.key])},`);
                 this.writeDescriptor(descriptor.fragment);
                 this.write(","),
                 this.writeLine(this.generateStackStrace ? `${JSON.stringify(descriptor.source)},` : "undefined,");
                 this.writeLine(this.generateStackStrace ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
+                break;
+            case DescriptorType.Extends:
                 break;
             case DescriptorType.Fragment:
             default:

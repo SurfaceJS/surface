@@ -22,7 +22,7 @@ type Context =
     parent:      Node,
     scope:       object,
     value:       DestructuredEvaluator,
-    source?:     { key: string, value: string },
+    source?:     { key: string, scope: string },
     stackTrace?: StackTrace,
 };
 
@@ -43,7 +43,7 @@ export default class InjectDirective implements IDisposable
         const listener = (): void => void scheduler.enqueue(this.task, "normal", this.cancellationTokenSource.token);
 
         this.keySubscription = tryObserve(context.scope, context.observables[0], listener, true, context.source?.key, context.stackTrace);
-        this.subscription    = tryObserve(context.scope, context.observables[1], listener, true, context.source?.value, context.stackTrace);
+        this.subscription    = tryObserve(context.scope, context.observables[1], listener, true, context.source?.scope, context.stackTrace);
 
         this.task();
     }
@@ -61,7 +61,7 @@ export default class InjectDirective implements IDisposable
             host:       this.context.host,
             parent:     this.context.parent,
             scope:      this.context.scope,
-            source:     this.context.source?.value,
+            source:     this.context.source?.scope,
             stackTrace: this.context.stackTrace,
             value:      this.context.value,
         };

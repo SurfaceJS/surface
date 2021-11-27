@@ -21,7 +21,7 @@ type Context =
     parent:      Node,
     scope:       object,
     value:       Evaluator,
-    source?:     { key: string, value: string },
+    source?:     { key: string, scope: string },
     stackTrace?: StackTrace,
 };
 export default class PlaceholdeDirective implements IDisposable
@@ -77,7 +77,7 @@ export default class PlaceholdeDirective implements IDisposable
 
         const listener = (): void => void scheduler.enqueue(task, "normal", this.cancellationTokenSource.token);
 
-        this.subscription = tryObserve(this.context.scope, this.context.observables[1], listener, true, this.context.source?.value, this.context.stackTrace);
+        this.subscription = tryObserve(this.context.scope, this.context.observables[1], listener, true, this.context.source?.scope, this.context.stackTrace);
 
         listener();
     };
@@ -106,7 +106,7 @@ export default class PlaceholdeDirective implements IDisposable
 
         this.context.block.clear();
 
-        const value          = tryEvaluate(this.context.scope, this.context.value, this.context.source?.value, this.context.stackTrace);
+        const value          = tryEvaluate(this.context.scope, this.context.value, this.context.source?.scope, this.context.stackTrace);
         const directiveScope = tryEvaluatePattern(this.context.scope, this.injectionContext.value, value, this.injectionContext.source, this.injectionContext.stackTrace);
         const scope          = { ...this.injectionContext.scope, ...directiveScope };
 

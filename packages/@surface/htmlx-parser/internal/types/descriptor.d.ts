@@ -76,6 +76,26 @@ export type ElementDescriptor =
     type:       DescriptorType.Element,
 };
 
+type ExtendsStatementValue =
+{
+    source:     string,
+    expression: IExpression,
+};
+
+export type ExtendsStatementDescriptor =
+{
+    metadata: ExtendsStatementValue,
+    type:     DescriptorType.Extends,
+} |
+{
+    attributes: ExtendsStatementValue,
+    binds:      ExtendsStatementValue,
+    injections: ExtendsStatementValue,
+    listeners:  ExtendsStatementValue,
+    stackTrace: StackTrace,
+    type:       DescriptorType.Extends,
+};
+
 export type EventDescritor =
 {
     key:        string,
@@ -103,9 +123,9 @@ export type InjectionStatementDescriptor =
     fragment:    FragmentDescriptor,
     key:         IExpression,
     type:        DescriptorType.Injection,
-    value:       IPattern,
+    scope:       IPattern,
     observables: KeyValueObservable,
-    source:      { key: string, value: string },
+    source:      { key: string, scope: string },
     stackTrace:  StackTrace,
 };
 
@@ -126,9 +146,9 @@ export type PlaceholderStatementDescriptor =
     fragment:    FragmentDescriptor,
     key:         IExpression,
     type:        DescriptorType.Placeholder,
-    value:       IExpression,
+    scope:       IExpression,
     observables: KeyValueObservable,
-    source:      { key: string, value: string },
+    source:      { key: string, scope: string },
     stackTrace:  StackTrace,
 };
 
@@ -150,6 +170,7 @@ export type TextInterpolationDescriptor =
 export type Descriptor =
     | ChoiceStatementDescriptor
     | CommentDescriptor
+    | ExtendsStatementDescriptor
     | ElementDescriptor
     | FragmentDescriptor
     | InjectionStatementDescriptor

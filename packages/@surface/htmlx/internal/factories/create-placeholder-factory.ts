@@ -6,7 +6,7 @@ import type Evaluator                      from "../types/evaluator";
 import type NodeFactory                    from "../types/node-factory";
 
 // eslint-disable-next-line max-len
-export default function createPlaceholderFactory(keyEvaluator: Evaluator, valueEvaluator: Evaluator, observables: [key: ObservablePath[], value: ObservablePath[]], factory: NodeFactory, source?: { key: string, value: string }, stackTrace?: StackTrace): NodeFactory
+export default function createPlaceholderFactory(keyEvaluator: Evaluator, valueEvaluator: Evaluator, observables: [key: ObservablePath[], scope: ObservablePath[]], factory: NodeFactory, source?: { key: string, scope: string }, stackTrace?: StackTrace): NodeFactory
 {
     return () =>
     {

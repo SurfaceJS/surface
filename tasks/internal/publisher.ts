@@ -1,11 +1,11 @@
 import path                from "path";
+import { Version }         from "@surface/core";
 import chalk               from "chalk";
 import pack                from "libnpmpack";
 import type { Manifest }   from "pacote";
 import { log, paths }      from "./common.js";
 import Status              from "./enums/status.js";
 import type NpmRepository  from "./npm-repository.js";
-import { Version } from "@surface/core";
 
 export default class Publisher
 {

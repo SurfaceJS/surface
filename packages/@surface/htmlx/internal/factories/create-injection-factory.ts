@@ -7,7 +7,7 @@ import type DestructuredEvaluator          from "../types/destructured-evaluator
 import type Evaluator                      from "../types/evaluator.js";
 import type NodeFactory                    from "../types/node-factory";
 
-export default function createInjectionFactory(keyEvaluator: Evaluator, valueEvaluator: DestructuredEvaluator, observables: [key: ObservablePath[], value: ObservablePath[]], factory: NodeFactory, source?: { key: string, value: string }, stackTrace?: StackTrace): NodeFactory
+export default function createInjectionFactory(keyEvaluator: Evaluator, valueEvaluator: DestructuredEvaluator, observables: [key: ObservablePath[], value: ObservablePath[]], factory: NodeFactory, source?: { key: string, scope: string }, stackTrace?: StackTrace): NodeFactory
 {
     return () =>
     {

@@ -107,7 +107,7 @@ export default class Compiler
                 return createPlaceholderFactory
                 (
                     scope => descriptor.key.evaluate(scope),
-                    scope => descriptor.value.evaluate(scope),
+                    scope => descriptor.scope.evaluate(scope),
                     [descriptor.observables.key, descriptor.observables.value],
                     Compiler.compileDescriptor(descriptor.fragment),
                     descriptor.source,
@@ -117,7 +117,7 @@ export default class Compiler
                 return createInjectionFactory
                 (
                     scope => descriptor.key.evaluate(scope),
-                    (scope, value) => descriptor.value.evaluate(scope, value),
+                    (scope, value) => descriptor.scope.evaluate(scope, value),
                     [descriptor.observables.key, descriptor.observables.value],
                     Compiler.compileDescriptor(descriptor.fragment),
                     descriptor.source,
@@ -125,6 +125,8 @@ export default class Compiler
                 );
             case DescriptorType.Comment:
                 return createCommentFactory(descriptor.value);
+            case DescriptorType.Extends:
+                return (() => []) as unknown as NodeFactory;
             case DescriptorType.Fragment:
             default:
                 return createFragmentFactory

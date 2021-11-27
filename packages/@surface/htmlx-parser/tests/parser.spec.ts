@@ -293,15 +293,15 @@ export default class HTMLXElementParserSpec
                     },
                     key:          parseExpression("'default'"),
                     observables:  { key: [], value: [] },
-                    source:       { key: "", value: "#inject" },
+                    scope:       parseDestructuredPattern("{}"),
+                    source:       { key: "", scope: "#inject" },
                     stackTrace:
                     [
                         ["<x-component>"],
                         ["#shadow-root"],
                         ["<span #inject>"],
                     ],
-                    type:        DescriptorType.Injection,
-                    value:       parseDestructuredPattern("{}"),
+                    type: DescriptorType.Injection,
                 },
                 {
                     fragment:
@@ -343,7 +343,8 @@ export default class HTMLXElementParserSpec
                     },
                     key:         parseExpression("'title'"),
                     observables: { key: [], value: [] },
-                    source:      { key: "", value: "#inject:title=\"{ title }\"" },
+                    scope:       parseDestructuredPattern("{ title }"),
+                    source:      { key: "", scope: "#inject:title=\"{ title }\"" },
                     stackTrace:
                     [
                         ["<x-component>"],
@@ -351,7 +352,6 @@ export default class HTMLXElementParserSpec
                         ["...1 other(s) node(s)", "<span #inject:title=\"{ title }\">"],
                     ],
                     type:  DescriptorType.Injection,
-                    value: parseDestructuredPattern("{ title }"),
                 },
                 {
                     fragment:
@@ -393,7 +393,8 @@ export default class HTMLXElementParserSpec
                     },
                     key:         parseExpression("'default'"),
                     observables: { key: [], value: [] },
-                    source:      { key: "", value: "#inject.scope=\"{ title }\"" },
+                    scope:       parseDestructuredPattern("{ title }"),
+                    source:      { key: "", scope: "#inject.scope=\"{ title }\"" },
                     stackTrace:
                     [
                         ["<x-component>"],
@@ -401,7 +402,6 @@ export default class HTMLXElementParserSpec
                         ["...2 other(s) node(s)", "<span #inject.scope=\"{ title }\">"],
                     ],
                     type:  DescriptorType.Injection,
-                    value: parseDestructuredPattern("{ title }"),
                 },
                 {
                     fragment:
@@ -433,7 +433,8 @@ export default class HTMLXElementParserSpec
                     },
                     key:         parseExpression("host.dynamicInjectKey"),
                     observables: { key: [["host", "dynamicInjectKey"]], value: [] },
-                    source:      { key: "#inject.key=\"host.dynamicInjectKey\"", value: "" },
+                    scope:       parseDestructuredPattern("{ }"),
+                    source:      { key: "#inject.key=\"host.dynamicInjectKey\"", scope: "" },
                     stackTrace:
                     [
                         ["<x-component>"],
@@ -441,7 +442,6 @@ export default class HTMLXElementParserSpec
                         ["...3 other(s) node(s)", "<span #inject.key=\"host.dynamicInjectKey\">"],
                     ],
                     type:  DescriptorType.Injection,
-                    value: parseDestructuredPattern("{ }"),
                 },
                 {
                     fragment:
@@ -483,7 +483,8 @@ export default class HTMLXElementParserSpec
                     },
                     key:         parseExpression("host.dynamicInjectKey"),
                     observables: { key: [["host", "dynamicInjectKey"]], value: [] },
-                    source:      { key: "#inject.key=\"host.dynamicInjectKey\"", value: "#inject.scope=\"{ title }\"" },
+                    scope:       parseDestructuredPattern("{ title }"),
+                    source:      { key: "#inject.key=\"host.dynamicInjectKey\"", scope: "#inject.scope=\"{ title }\"" },
                     stackTrace:
                     [
                         ["<x-component>"],
@@ -491,7 +492,6 @@ export default class HTMLXElementParserSpec
                         ["...4 other(s) node(s)", "<span #inject.scope=\"{ title }\" #inject.key=\"host.dynamicInjectKey\">"],
                     ],
                     type:  DescriptorType.Injection,
-                    value: parseDestructuredPattern("{ title }"),
                 },
             ],
             type: DescriptorType.Fragment,
@@ -667,7 +667,8 @@ export default class HTMLXElementParserSpec
                     },
                     key:         parseExpression("'default'"),
                     observables: { key: [], value: [] },
-                    source:      { key: "", value: "#placeholder" },
+                    scope:       parseExpression("{ }"),
+                    source:      { key: "", scope: "#placeholder" },
                     stackTrace:
                     [
                         ["<x-component>"],
@@ -675,7 +676,6 @@ export default class HTMLXElementParserSpec
                         ["<span #placeholder>"],
                     ],
                     type:  DescriptorType.Placeholder,
-                    value: parseExpression("{ }"),
                 },
                 {
                     fragment:
@@ -708,15 +708,15 @@ export default class HTMLXElementParserSpec
                     },
                     key:         parseExpression("'value'"),
                     observables: { key: [], value: [["host", "name"]] },
-                    source:      { key: "", value: "#placeholder:value=\"{ name: host.name }\"" },
+                    scope:       parseExpression("{ name: host.name }"),
+                    source:      { key: "", scope: "#placeholder:value=\"{ name: host.name }\"" },
                     stackTrace:
                     [
                         ["<x-component>"],
                         ["#shadow-root"],
                         ["...1 other(s) node(s)", "<span #placeholder:value=\"{ name: host.name }\">"],
                     ],
-                    type:        DescriptorType.Placeholder,
-                    value:       parseExpression("{ name: host.name }"),
+                    type: DescriptorType.Placeholder,
                 },
                 {
                     fragment:
@@ -749,15 +749,15 @@ export default class HTMLXElementParserSpec
                     },
                     key:         parseExpression("'default'"),
                     observables: { key: [], value: [["host", "name"]] },
-                    source:      { key: "", value: "#placeholder.scope=\"{ name: host.name }\"" },
+                    scope:       parseExpression("{ name: host.name }"),
+                    source:      { key: "", scope: "#placeholder.scope=\"{ name: host.name }\"" },
                     stackTrace:
                     [
                         ["<x-component>"],
                         ["#shadow-root"],
                         ["...2 other(s) node(s)", "<span #placeholder.scope=\"{ name: host.name }\">"],
                     ],
-                    type:        DescriptorType.Placeholder,
-                    value:       parseExpression("{ name: host.name }"),
+                    type: DescriptorType.Placeholder,
                 },
                 {
                     fragment:
@@ -781,7 +781,8 @@ export default class HTMLXElementParserSpec
                     },
                     key:         parseExpression("host.dynamicPlaceholderKey"),
                     observables: { key: [["host", "dynamicPlaceholderKey"]], value: [] },
-                    source:      { key: "#placeholder.key=\"host.dynamicPlaceholderKey\"", value: "" },
+                    scope:       parseExpression("{ }"),
+                    source:      { key: "#placeholder.key=\"host.dynamicPlaceholderKey\"", scope: "" },
                     stackTrace:
                     [
                         ["<x-component>"],
@@ -789,7 +790,6 @@ export default class HTMLXElementParserSpec
                         ["...3 other(s) node(s)", "<span #placeholder.key=\"host.dynamicPlaceholderKey\">"],
                     ],
                     type:  DescriptorType.Placeholder,
-                    value: parseExpression("{ }"),
                 },
                 {
                     fragment:
@@ -822,7 +822,8 @@ export default class HTMLXElementParserSpec
                     },
                     key:         parseExpression("host.dynamicPlaceholderKey"),
                     observables: { key: [["host", "dynamicPlaceholderKey"]], value: [["host", "name"]] },
-                    source:      { key: "#placeholder.key=\"host.dynamicPlaceholderKey\"", value: "#placeholder.scope=\"{ name: host.name }\"" },
+                    scope:       parseExpression("{ name: host.name }"),
+                    source:      { key: "#placeholder.key=\"host.dynamicPlaceholderKey\"", scope: "#placeholder.scope=\"{ name: host.name }\"" },
                     stackTrace:
                     [
                         ["<x-component>"],
@@ -830,7 +831,6 @@ export default class HTMLXElementParserSpec
                         ["...4 other(s) node(s)", "<span #placeholder.key=\"host.dynamicPlaceholderKey\" #placeholder.scope=\"{ name: host.name }\">"],
                     ],
                     type:  DescriptorType.Placeholder,
-                    value: parseExpression("{ name: host.name }"),
                 },
             ],
             type: DescriptorType.Fragment,
@@ -1043,6 +1043,134 @@ export default class HTMLXElementParserSpec
     }
 
     @shouldPass @test
+    public parseExtends(): void
+    {
+        const template =
+        [
+            "<div #extends=\"$metadata\"></div>",
+            "<div #extends.attributes=\"$metadata.attributes\"></div>",
+            "<div #extends.binds=\"$metadata.binds\"></div>",
+            "<div #extends.attributes=\"$metadata.attributes\" #extends.binds=\"$metadata.binds\" #extends.injections=\"$metadata.injections\" #extends.listeners=\"$metadata.listeners\"></div>",
+        ].join("");
+
+        const expected: Descriptor =
+        {
+            childs:
+            [
+                {
+                    metadata:
+                    {
+                        expression:  parseExpression("$metadata"),
+                        source:      "#extends=\"$metadata\"",
+                    },
+                    stackTrace:
+                    [
+                        ["<x-component>"],
+                        ["#shadow-root"],
+                        ["<div #extends=\"$metadata\">"],
+                    ],
+                    type: DescriptorType.Extends,
+                },
+                {
+                    attributes:
+                    {
+                        expression: parseExpression("$metadata.attributes"),
+                        source:     "#extends.attributes=\"$metadata.attributes\"",
+                    },
+                    binds:
+                    {
+                        expression: parseExpression("null"),
+                        source:     "",
+                    },
+                    injections:
+                    {
+                        expression: parseExpression("null"),
+                        source:     "",
+                    },
+                    listeners:
+                    {
+                        expression: parseExpression("null"),
+                        source:     "",
+                    },
+                    stackTrace:
+                    [
+                        ["<x-component>"],
+                        ["#shadow-root"],
+                        ["...1 other(s) node(s)", "<div #extends.attributes=\"$metadata.attributes\">"],
+                    ],
+                    type: DescriptorType.Extends,
+                },
+                {
+                    attributes:
+                    {
+                        expression: parseExpression("null"),
+                        source:     "",
+                    },
+                    binds:
+                    {
+                        expression: parseExpression("$metadata.binds"),
+                        source:     "#extends.binds=\"$metadata.binds\"",
+                    },
+                    injections:
+                    {
+                        expression: parseExpression("null"),
+                        source:     "",
+                    },
+                    listeners:
+                    {
+                        expression: parseExpression("null"),
+                        source:     "",
+                    },
+                    stackTrace:
+                    [
+                        ["<x-component>"],
+                        ["#shadow-root"],
+                        ["...2 other(s) node(s)", "<div #extends.binds=\"$metadata.binds\">"],
+                    ],
+                    type: DescriptorType.Extends,
+                },
+                {
+                    attributes:
+                    {
+                        expression:  parseExpression("$metadata.attributes"),
+                        source:      "#extends.attributes=\"$metadata.attributes\"",
+                    },
+                    binds:
+                    {
+                        expression:  parseExpression("$metadata.binds"),
+                        source:      "#extends.binds=\"$metadata.binds\"",
+                    },
+                    injections:
+                    {
+                        expression:  parseExpression("$metadata.injections"),
+                        source:      "#extends.injections=\"$metadata.injections\"",
+                    },
+                    listeners:
+                    {
+                        expression:  parseExpression("$metadata.listeners"),
+                        source:      "#extends.listeners=\"$metadata.listeners\"",
+                    },
+                    stackTrace:
+                    [
+                        ["<x-component>"],
+                        ["#shadow-root"],
+                        ["...3 other(s) node(s)", "<div #extends.attributes=\"$metadata.attributes\" #extends.binds=\"$metadata.binds\" #extends.injections=\"$metadata.injections\" #extends.listeners=\"$metadata.listeners\">"],
+                    ],
+                    type: DescriptorType.Extends,
+                },
+            ],
+            type:   DescriptorType.Fragment,
+        };
+
+        const actual = Parser.parse(window.document, "x-component", template);
+
+        const a = stringifyExpressions(actual);
+        const e = stringifyExpressions(expected);
+
+        chai.assert.deepEqual(a.childs, e.childs);
+    }
+
+    @shouldPass @test
     public parseStatic(): void
     {
         const template =
@@ -1230,15 +1358,15 @@ export default class HTMLXElementParserSpec
                                         },
                                         key:         parseExpression("'value'"),
                                         observables: { key: [], value: [] },
-                                        source:      { key: "", value: "#placeholder:value=\"source\"" },
+                                        scope:       parseExpression("source"),
+                                        source:      { key: "", scope: "#placeholder:value=\"source\"" },
                                         stackTrace:
                                         [
                                             ["<x-component>"],
                                             ["#shadow-root"],
                                             ["<span #if=\"true\" #placeholder:value=\"source\">"],
                                         ],
-                                        type:        DescriptorType.Placeholder,
-                                        value:       parseExpression("source"),
+                                        type: DescriptorType.Placeholder,
                                     },
                                 ],
                                 type: DescriptorType.Fragment,
@@ -1312,7 +1440,8 @@ export default class HTMLXElementParserSpec
                                 },
                                 key:         parseExpression("key"),
                                 observables: { key: [], value: [] },
-                                source:      { key: "#placeholder.key=\"key\"", value: "#placeholder.scope=\"source\"" },
+                                scope:       parseExpression("source"),
+                                source:      { key: "#placeholder.key=\"key\"", scope: "#placeholder.scope=\"source\"" },
                                 stackTrace:
                                 [
                                     ["<x-component>"],
@@ -1320,7 +1449,6 @@ export default class HTMLXElementParserSpec
                                     ["<span #for=\"const [key, value] of items\" #placeholder.key=\"key\" #placeholder.scope=\"source\">"],
                                 ],
                                 type:  DescriptorType.Placeholder,
-                                value: parseExpression("source"),
                             },
                         ],
                         type: DescriptorType.Fragment,
@@ -1399,7 +1527,8 @@ export default class HTMLXElementParserSpec
                                         },
                                         key:         parseExpression("'value'"),
                                         observables: { key: [], value: [] },
-                                        source:      { key: "", value: "#inject:value=\"source\"" },
+                                        scope:       parseDestructuredPattern("source"),
+                                        source:      { key: "", scope: "#inject:value=\"source\"" },
                                         stackTrace:
                                         [
                                             ["<x-component>"],
@@ -1407,7 +1536,6 @@ export default class HTMLXElementParserSpec
                                             ["<span #if=\"true\" #inject:value=\"source\">"],
                                         ],
                                         type:        DescriptorType.Injection,
-                                        value:       parseDestructuredPattern("source"),
                                     },
                                 ],
                                 type: DescriptorType.Fragment,
@@ -1481,7 +1609,8 @@ export default class HTMLXElementParserSpec
                                 },
                                 key:         parseExpression("'value'"),
                                 observables: { key: [], value: [] },
-                                source:      { key: "", value: "#inject:value=\"source\"" },
+                                scope:       parseDestructuredPattern("source"),
+                                source:      { key: "", scope: "#inject:value=\"source\"" },
                                 stackTrace:
                                 [
                                     ["<x-component>"],
@@ -1489,7 +1618,6 @@ export default class HTMLXElementParserSpec
                                     ["<span #for=\"const item of items\" #inject:value=\"source\">"],
                                 ],
                                 type:  DescriptorType.Injection,
-                                value: parseDestructuredPattern("source"),
                             },
                         ],
                         type: DescriptorType.Fragment,
@@ -1601,7 +1729,8 @@ export default class HTMLXElementParserSpec
                                                     },
                                                     key:         parseExpression("'value'"),
                                                     observables: { key: [], value: [] },
-                                                    source:      { key: "", value: "#placeholder:value=\"source\"" },
+                                                    scope:       parseExpression("source"),
+                                                    source:      { key: "", scope: "#placeholder:value=\"source\"" },
                                                     stackTrace:
                                                     [
                                                         ["<x-component>"],
@@ -1609,7 +1738,6 @@ export default class HTMLXElementParserSpec
                                                         ["<span class=\"foo\" #inject:value=\"source\" #if=\"true\" #placeholder:value=\"source\" #for=\"const item of items\">"],
                                                     ],
                                                     type:  DescriptorType.Placeholder,
-                                                    value: parseExpression("source"),
                                                 },
                                             ],
                                             type: DescriptorType.Fragment,
@@ -1631,7 +1759,8 @@ export default class HTMLXElementParserSpec
                     },
                     key:         parseExpression("'value'"),
                     observables: { key: [], value: [] },
-                    source:      { key: "", value: "#inject:value=\"source\"" },
+                    scope:       parseDestructuredPattern("source"),
+                    source:      { key: "", scope: "#inject:value=\"source\"" },
                     stackTrace:
                     [
                         ["<x-component>"],
@@ -1639,7 +1768,6 @@ export default class HTMLXElementParserSpec
                         ["<span class=\"foo\" #inject:value=\"source\" #if=\"true\" #placeholder:value=\"source\" #for=\"const item of items\">"],
                     ],
                     type:  DescriptorType.Injection,
-                    value: parseDestructuredPattern("source"),
                 },
             ],
             type: DescriptorType.Fragment,
@@ -1693,7 +1821,8 @@ export default class HTMLXElementParserSpec
                     },
                     key:         parseExpression("key"),
                     observables: { key: [], value: [] },
-                    source:      { key: "#placeholder.key=\"key\"", value: "#placeholder.scope=\"source\"" },
+                    scope:       parseExpression("source"),
+                    source:      { key: "#placeholder.key=\"key\"", scope: "#placeholder.scope=\"source\"" },
                     stackTrace:
                     [
                         ["<x-component>"],
@@ -1701,7 +1830,6 @@ export default class HTMLXElementParserSpec
                         ["<span #placeholder.key=\"key\" #placeholder.scope=\"source\">"],
                     ],
                     type:  DescriptorType.Placeholder,
-                    value: parseExpression("source"),
                 },
             ],
             type: DescriptorType.Fragment,
@@ -1760,22 +1888,23 @@ export default class HTMLXElementParserSpec
                                 },
                                 key:         parseExpression("'value'"),
                                 observables: { key: [], value: [] },
-                                source:      { key: "", value: "#inject:value=\"source\"" },
+                                scope:       parseDestructuredPattern("source"),
+                                source:      { key: "", scope: "#inject:value=\"source\"" },
                                 stackTrace:
                                 [
                                     ["<x-component>"],
                                     ["#shadow-root"],
                                     ["<span #placeholder:value=\"source\" #inject:value=\"source\">"],
                                 ],
-                                type:        DescriptorType.Injection,
-                                value:       parseDestructuredPattern("source"),
+                                type: DescriptorType.Injection,
                             },
                         ],
                         type:   DescriptorType.Fragment,
                     },
                     key:         parseExpression("'value'"),
                     observables: { key: [], value: [] },
-                    source:      { key: "", value: "#placeholder:value=\"source\"" },
+                    scope:       parseExpression("source"),
+                    source:      { key: "", scope: "#placeholder:value=\"source\"" },
                     stackTrace:
                     [
                         ["<x-component>"],
@@ -1783,7 +1912,6 @@ export default class HTMLXElementParserSpec
                         ["<span #placeholder:value=\"source\" #inject:value=\"source\">"],
                     ],
                     type:  DescriptorType.Placeholder,
-                    value: parseExpression("source"),
                 },
             ],
             type: DescriptorType.Fragment,
