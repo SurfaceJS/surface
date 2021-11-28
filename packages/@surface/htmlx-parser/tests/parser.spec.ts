@@ -146,7 +146,7 @@ export default class HTMLXElementParserSpec
                         },
                         {
                             context:    parseExpression("host"),
-                            key:        "click",
+                            name:       "click",
                             source:     "@click=\"host.handler\"",
                             stackTrace:
                             [
@@ -1043,14 +1043,12 @@ export default class HTMLXElementParserSpec
     }
 
     @shouldPass @test
-    public parseExtends(): void
+    public parseElementWithExtends(): void
     {
         const template =
         [
-            "<div #extends=\"$metadata\"></div>",
-            "<div #extends.attributes=\"$metadata.attributes\"></div>",
-            "<div #extends.binds=\"$metadata.binds\"></div>",
-            "<div #extends.attributes=\"$metadata.attributes\" #extends.binds=\"$metadata.binds\" #extends.injections=\"$metadata.injections\" #extends.listeners=\"$metadata.listeners\"></div>",
+            "<div #extends=\"host\"></div>",
+            "<div #extends.attributes=\"host.attributes\" #extends.binds=\"host.binds\" #extends.listeners=\"host.listeners\"></div>",
         ].join("");
 
         const expected: Descriptor =
@@ -1058,105 +1056,68 @@ export default class HTMLXElementParserSpec
             childs:
             [
                 {
-                    metadata:
-                    {
-                        expression:  parseExpression("$metadata"),
-                        source:      "#extends=\"$metadata\"",
-                    },
-                    stackTrace:
+                    attributes:
                     [
-                        ["<x-component>"],
-                        ["#shadow-root"],
-                        ["<div #extends=\"$metadata\">"],
+                        {
+                            expression: parseExpression("host"),
+                            selector:   "*",
+                            source:     "#extends=\"host\"",
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["<div #extends=\"host\">"],
+                            ],
+                            type: DescriptorType.Extends,
+                        },
                     ],
-                    type: DescriptorType.Extends,
+                    childs: [],
+                    tag:    "div",
+                    type:   DescriptorType.Element,
                 },
                 {
                     attributes:
-                    {
-                        expression: parseExpression("$metadata.attributes"),
-                        source:     "#extends.attributes=\"$metadata.attributes\"",
-                    },
-                    binds:
-                    {
-                        expression: parseExpression("null"),
-                        source:     "",
-                    },
-                    injections:
-                    {
-                        expression: parseExpression("null"),
-                        source:     "",
-                    },
-                    listeners:
-                    {
-                        expression: parseExpression("null"),
-                        source:     "",
-                    },
-                    stackTrace:
                     [
-                        ["<x-component>"],
-                        ["#shadow-root"],
-                        ["...1 other(s) node(s)", "<div #extends.attributes=\"$metadata.attributes\">"],
+                        {
+                            expression: parseExpression("host.attributes"),
+                            selector:   "attributes",
+                            source:     "#extends.attributes=\"host.attributes\"",
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["...1 other(s) node(s)", "<div #extends.attributes=\"host.attributes\" #extends.binds=\"host.binds\" #extends.listeners=\"host.listeners\">"],
+                            ],
+                            type: DescriptorType.Extends,
+                        },
+                        {
+                            expression: parseExpression("host.binds"),
+                            selector:   "binds",
+                            source:     "#extends.binds=\"host.binds\"",
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["...1 other(s) node(s)", "<div #extends.attributes=\"host.attributes\" #extends.binds=\"host.binds\" #extends.listeners=\"host.listeners\">"],
+                            ],
+                            type: DescriptorType.Extends,
+                        },
+                        {
+                            expression: parseExpression("host.listeners"),
+                            selector:   "listeners",
+                            source:     "#extends.listeners=\"host.listeners\"",
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["...1 other(s) node(s)", "<div #extends.attributes=\"host.attributes\" #extends.binds=\"host.binds\" #extends.listeners=\"host.listeners\">"],
+                            ],
+                            type: DescriptorType.Extends,
+                        },
                     ],
-                    type: DescriptorType.Extends,
-                },
-                {
-                    attributes:
-                    {
-                        expression: parseExpression("null"),
-                        source:     "",
-                    },
-                    binds:
-                    {
-                        expression: parseExpression("$metadata.binds"),
-                        source:     "#extends.binds=\"$metadata.binds\"",
-                    },
-                    injections:
-                    {
-                        expression: parseExpression("null"),
-                        source:     "",
-                    },
-                    listeners:
-                    {
-                        expression: parseExpression("null"),
-                        source:     "",
-                    },
-                    stackTrace:
-                    [
-                        ["<x-component>"],
-                        ["#shadow-root"],
-                        ["...2 other(s) node(s)", "<div #extends.binds=\"$metadata.binds\">"],
-                    ],
-                    type: DescriptorType.Extends,
-                },
-                {
-                    attributes:
-                    {
-                        expression:  parseExpression("$metadata.attributes"),
-                        source:      "#extends.attributes=\"$metadata.attributes\"",
-                    },
-                    binds:
-                    {
-                        expression:  parseExpression("$metadata.binds"),
-                        source:      "#extends.binds=\"$metadata.binds\"",
-                    },
-                    injections:
-                    {
-                        expression:  parseExpression("$metadata.injections"),
-                        source:      "#extends.injections=\"$metadata.injections\"",
-                    },
-                    listeners:
-                    {
-                        expression:  parseExpression("$metadata.listeners"),
-                        source:      "#extends.listeners=\"$metadata.listeners\"",
-                    },
-                    stackTrace:
-                    [
-                        ["<x-component>"],
-                        ["#shadow-root"],
-                        ["...3 other(s) node(s)", "<div #extends.attributes=\"$metadata.attributes\" #extends.binds=\"$metadata.binds\" #extends.injections=\"$metadata.injections\" #extends.listeners=\"$metadata.listeners\">"],
-                    ],
-                    type: DescriptorType.Extends,
+                    childs: [],
+                    tag:    "div",
+                    type:   DescriptorType.Element,
                 },
             ],
             type:   DescriptorType.Fragment,
@@ -1923,6 +1884,34 @@ export default class HTMLXElementParserSpec
         const e = stringifyExpressions(expected);
 
         chai.assert.deepEqual(a, e);
+    }
+
+    @shouldFail @test
+    public ErrorInvalidInjectProperty(): void
+    {
+        const template = "<div #inject.invalid='key'></div>";
+
+        const message = "Property 'invalid' does not exist on #inject directive";
+        const stack   = "<x-component>\n   #shadow-root\n      <div #inject.invalid=\"key\">";
+
+        const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
+        const expected = toRaw(new TemplateParseError(message, stack));
+
+        chai.assert.deepEqual(actual, expected);
+    }
+
+    @shouldFail @test
+    public ErrorInvalidExtendsProperty(): void
+    {
+        const template = "<div #extends.invalid='key'></div>";
+
+        const message = "Property 'invalid' does not exist on #extends directive";
+        const stack   = "<x-component>\n   #shadow-root\n      <div #extends.invalid=\"key\">";
+
+        const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
+        const expected = toRaw(new TemplateParseError(message, stack));
+
+        chai.assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test

@@ -14,11 +14,11 @@ import nativeEvents                                                             
 import ObserverVisitor                                                                          from "./observer-visitor.js";
 import { interpolation }                                                                        from "./patterns.js";
 import type Descriptor                                                                          from "./types/descriptor.js";
-import type
-{
+import type {
     AttributeBindDescritor,
     BranchDescriptor,
     ElementDescriptor,
+    ExtendsAttributeDescriptor,
     FragmentDescriptor,
     InjectionStatementDescriptor,
     PlaceholderStatementDescriptor,
@@ -38,11 +38,6 @@ enum DirectiveType
 {
     Else              = "#else",
     ElseIf            = "#else-if",
-    Extends           = "#extends",
-    ExtendsAttributes = "#extends.attributes",
-    ExtendsBinds      = "#extends.binds",
-    ExtendsInjections = "#extends.injections",
-    ExtendsListeners  = "#extends.listeners",
     For               = "#for",
     If                = "#if",
     Inject            = "#inject",
@@ -54,7 +49,7 @@ enum DirectiveType
 }
 
 const directiveTypes    = Object.values(DirectiveType);
-const directiveTypesSet = new Set(directiveTypes);
+const extendsProperties = new Set(["all", "attributes", "binds", "injections", "listeners"]);
 
 type DirectiveValue =
 {
@@ -78,22 +73,7 @@ type StatementDirective  =
     expression: string,
 };
 
-type ExtendsDirective  =
-{
-    name:     string,
-    metadata: DirectiveValue,
-    type:     DirectiveType.Extends,
-} |
-{
-    name:  string,
-    attributes: DirectiveValue,
-    binds:      DirectiveValue,
-    injections: DirectiveValue,
-    listeners:  DirectiveValue,
-    type:       DirectiveType.Extends,
-};
-
-type Directive = ExtendsDirective | KeyedDirective | StatementDirective;
+type Directive = KeyedDirective | StatementDirective;
 
 export default class Parser
 {
@@ -194,7 +174,7 @@ export default class Parser
 
                 for (const directive of KEYED_DIRECTIVES)
                 {
-                    if (attribute.name == directive || attribute.name == `${directive}.key` || attribute.name == `${directive}.scope` || attribute.name.startsWith(`${directive}:`))
+                    if (attribute.name == directive || attribute.name.startsWith(`${directive}`))
                     {
                         if (attribute.name == directive && (namedNodeMap[`${directive}.key`] || namedNodeMap[`${directive}.scope`]) || duplications.has(directive))
                         {
@@ -220,9 +200,7 @@ export default class Parser
 
                             if (!key)
                             {
-                                const message = `Directive ${directive} has no key.`;
-
-                                throwTemplateParseError(message, this.stackTrace);
+                                throwTemplateParseError(`Directive ${directive} has no key.`, this.stackTrace);
                             }
 
                             yield {
@@ -234,17 +212,26 @@ export default class Parser
                         }
                         else
                         {
-                            resolved.add(`${directive}.key`);
-                            resolved.add(`${directive}.scope`);
+                            const KEY   = "key";
+                            const SCOPE = "scope";
+                            const [, property] = attribute.name.split(".");
 
-                            const [key, scope] = attribute.name == `${directive}.key`
-                                ? [attribute.value, namedNodeMap[`${directive}.scope`]?.value]
-                                : [namedNodeMap[`${directive}.key`]?.value, attribute.value];
+                            if (property != KEY && property != SCOPE)
+                            {
+                                throwTemplateParseError(`Property '${property}' does not exist on ${directive} directive`, this.stackTrace);
+                            }
+
+                            resolved.add(`${directive}.${KEY}`);
+                            resolved.add(`${directive}.${SCOPE}`);
+
+                            const [key, scope] = attribute.name == `${directive}.${KEY}`
+                                ? [attribute.value, namedNodeMap[`${directive}.${SCOPE}`]?.value]
+                                : [namedNodeMap[`${directive}.${KEY}`]?.value, attribute.value];
 
                             yield {
-                                key:   { expression: key ?? "'default'", source: key ? `${directive}.key="${key}"` : "" },
+                                key:   { expression: key ?? "'default'", source: key ? `${directive}.${KEY}="${key}"` : "" },
                                 name:  directive,
-                                scope: { expression: scope ?? "", source: scope ? `${directive}.scope="${scope}"` : "" },
+                                scope: { expression: scope ?? "", source: scope ? `${directive}.${SCOPE}="${scope}"` : "" },
                                 type:  directive,
                             };
                         }
@@ -255,64 +242,12 @@ export default class Parser
 
                 if (!handled)
                 {
-                    if (attribute.name == DirectiveType.Extends || attribute.name.startsWith(DirectiveType.Extends))
-                    {
-                        resolved.add(DirectiveType.ExtendsAttributes);
-                        resolved.add(DirectiveType.ExtendsBinds);
-                        resolved.add(DirectiveType.ExtendsInjections);
-                        resolved.add(DirectiveType.ExtendsListeners);
-
-                        if (attribute.name == DirectiveType.Extends)
-                        {
-
-                            yield {
-                                metadata: { expression: attribute.value, source },
-                                name:       DirectiveType.Extends,
-                                type:       DirectiveType.Extends,
-                            };
-                        }
-                        else
-                        {
-                            const attributes = namedNodeMap[DirectiveType.ExtendsAttributes]?.value;
-                            const binds      = namedNodeMap[DirectiveType.ExtendsBinds]?.value;
-                            const injections = namedNodeMap[DirectiveType.ExtendsInjections]?.value;
-                            const listeners  = namedNodeMap[DirectiveType.ExtendsListeners]?.value;
-
-                            yield {
-                                attributes:
-                                {
-                                    expression: attributes ?? "null",
-                                    source:     attributes ? `${DirectiveType.ExtendsAttributes}="${attributes}"` : "",
-                                },
-                                binds:
-                                {
-                                    expression: binds ?? "null",
-                                    source:     binds ? `${DirectiveType.ExtendsBinds}="${binds}"` : "",
-                                },
-                                injections:
-                                {
-                                    expression: injections ?? "null",
-                                    source:     injections ? `${DirectiveType.ExtendsInjections}="${injections}"` : "",
-                                },
-                                listeners:
-                                {
-                                    expression: listeners ?? "null",
-                                    source:     listeners ? `${DirectiveType.ExtendsListeners}="${listeners}"` : "",
-                                },
-                                name: DirectiveType.Extends,
-                                type: DirectiveType.Extends,
-                            };
-                        }
-                    }
-                    else if (directiveTypesSet.has(attribute.name as DirectiveType))
-                    {
-                        yield {
-                            expression: attribute.value,
-                            name:       attribute.name,
-                            source,
-                            type:       attribute.name as DirectiveType.If | DirectiveType.Else | DirectiveType.ElseIf | DirectiveType.For,
-                        };
-                    }
+                    yield {
+                        expression: attribute.value,
+                        name:       attribute.name,
+                        source,
+                        type:       attribute.name as DirectiveType.If | DirectiveType.Else | DirectiveType.ElseIf | DirectiveType.For,
+                    };
                 }
             }
         }
@@ -396,8 +331,24 @@ export default class Parser
 
     private hasTemplateDirectives(element: Element): boolean
     {
-        return element.getAttributeNames()
-            .some(attribute => directiveTypes.some(directive => attribute == directive || attribute.startsWith(`${DirectiveType.Inject}:`) || attribute.startsWith(`${DirectiveType.Placeholder}:`)));
+        for (const attribute of element.getAttributeNames())
+        {
+            for (const directive of directiveTypes)
+            {
+                const isDirective = attribute == directive
+                    || attribute.startsWith(`${DirectiveType.Inject}.`)
+                    || attribute.startsWith(`${DirectiveType.Inject}:`)
+                    || attribute.startsWith(`${DirectiveType.Placeholder}.`)
+                    || attribute.startsWith(`${DirectiveType.Placeholder}:`);
+
+                if (isDirective)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private markAsDecomposed(element: Element & { [DECOMPOSED]?: boolean }): void
@@ -433,12 +384,12 @@ export default class Parser
         {
             const attribute = element.attributes[i];
 
-            const raw = this.attributeToString(attribute);
+            const source = this.attributeToString(attribute);
 
             if (attribute.name.startsWith("@"))
             {
                 const name              = attribute.name.replace(/^@/, "");
-                const unknownExpression = this.tryParseExpression(parseExpression, attribute.value, raw);
+                const unknownExpression = this.tryParseExpression(parseExpression, attribute.value, source);
 
                 const expression = TypeGuard.isMemberExpression(unknownExpression) || TypeGuard.isArrowFunctionExpression(unknownExpression)
                     ? unknownExpression
@@ -446,15 +397,28 @@ export default class Parser
 
                 const context = TypeGuard.isMemberExpression(expression) ? expression.object : new Literal(null);
 
-                yield { context, key: name, source: raw, stackTrace, type: DescriptorType.Event, value: expression };
+                yield { context, name, source, stackTrace, type: DescriptorType.Event, value: expression };
+            }
+            else if (attribute.name == "#extends" || attribute.name.startsWith("#extends."))
+            {
+                const [, selector = "*"] = attribute.name.split(".");
+
+                if (!typeGuard<ExtendsAttributeDescriptor["selector"]>(selector, extendsProperties.has(selector)))
+                {
+                    throwTemplateParseError(`Property '${selector}' does not exist on #extends directive`, this.stackTrace);
+                }
+
+                const expression = this.tryParseExpression(parseExpression, attribute.value || "undefined", source);
+
+                yield { expression, selector, source, stackTrace, type: DescriptorType.Extends };
             }
             else if (attribute.name.startsWith("#"))
             {
                 const name        = attribute.name.replace(/^#/, "");
-                const expression  = this.tryParseExpression(parseExpression, attribute.value || "undefined", raw);
+                const expression  = this.tryParseExpression(parseExpression, attribute.value || "undefined", source);
                 const observables = ObserverVisitor.observe(expression);
 
-                yield { key: name, observables, source: raw, stackTrace, type: DescriptorType.Directive, value: expression };
+                yield { key: name, observables, source, stackTrace, type: DescriptorType.Directive, value: expression };
             }
             else if (attribute.name.startsWith(":") || interpolation.test(attribute.value) && !(/^on\w/.test(attribute.name) && nativeEvents.has(attribute.name)))
             {
@@ -470,7 +434,7 @@ export default class Parser
                         ? DescriptorType.Twoway
                         : DescriptorType.Interpolation;
 
-                const expression = this.tryParseExpression(isInterpolation ? parseInterpolation : parseExpression, attribute.value, raw);
+                const expression = this.tryParseExpression(isInterpolation ? parseInterpolation : parseExpression, attribute.value, source);
 
                 if (isTwoWay && !this.validateMemberExpression(expression, true))
                 {
@@ -482,15 +446,15 @@ export default class Parser
                 if (type == DescriptorType.Interpolation)
                 {
                     yield { key: attribute.name, type: DescriptorType.Attribute, value: "" };
-                    yield { key: attribute.name, observables, source: raw, stackTrace, type, value: expression };
+                    yield { key: attribute.name, observables, source, stackTrace, type, value: expression };
                 }
                 else if (type == DescriptorType.Twoway)
                 {
-                    yield { left: key, right: observables[0], source: raw, stackTrace, type };
+                    yield { left: key, right: observables[0], source, stackTrace, type };
                 }
                 else
                 {
-                    yield { key, observables, source: raw, stackTrace, type, value: expression };
+                    yield { key, observables, source, stackTrace, type, value: expression };
                 }
             }
             else
@@ -626,82 +590,30 @@ export default class Parser
 
             return placeholderDirective;
         }
-        else if (directive.type == DirectiveType.Inject)
+
+        assert(directive.type == DirectiveType.Inject);
+
+        const destructured = /^\s*\{/.test(directive.scope.expression);
+
+        const keyExpression  = this.tryParseExpression(parseExpression, directive.key.expression, directive.key.source);
+        const pattern        = this.tryParseExpression(destructured ? parseDestructuredPattern : parseExpression, `${directive.scope.expression || "{ }"}`, directive.scope.source) as IPattern | Identifier;
+        const keyObservables = ObserverVisitor.observe(keyExpression);
+        const observables    = ObserverVisitor.observe(pattern);
+
+        const fragment = this.parseTemplate(template);
+
+        const injectionDescriptor: InjectionStatementDescriptor =
         {
-            const destructured = /^\s*\{/.test(directive.scope.expression);
-
-            const keyExpression  = this.tryParseExpression(parseExpression, directive.key.expression, directive.key.source);
-            const pattern        = this.tryParseExpression(destructured ? parseDestructuredPattern : parseExpression, `${directive.scope.expression || "{ }"}`, directive.scope.source) as IPattern | Identifier;
-            const keyObservables = ObserverVisitor.observe(keyExpression);
-            const observables    = ObserverVisitor.observe(pattern);
-
-            const fragment = this.parseTemplate(template);
-
-            const injectionDescriptor: InjectionStatementDescriptor =
-            {
-                fragment,
-                key:         keyExpression,
-                observables: { key: keyObservables, value: observables },
-                scope:       pattern,
-                source:      { key: directive.key.source, scope: directive.scope.source },
-                stackTrace,
-                type:        DescriptorType.Injection,
-            };
-
-            return injectionDescriptor;
-        }
-
-        assert(directive.type == DirectiveType.Extends);
-
-        if ("metadata" in directive)
-        {
-            const expression = this.tryParseExpression(parseExpression, directive.metadata.expression, directive.metadata.source);
-
-            return {
-                metadata:
-                {
-                    expression,
-                    source: directive.metadata.source,
-                },
-                stackTrace,
-                type: DescriptorType.Extends,
-            };
-        }
-
-        const attributesExpression = this.tryParseExpression(parseExpression, directive.attributes.expression, directive.attributes.source);
-        const bindsExpression      = this.tryParseExpression(parseExpression, directive.binds.expression, directive.binds.source);
-        const injectionsExpression = this.tryParseExpression(parseExpression, directive.injections.expression, directive.injections.source);
-        const listenersExpression  = this.tryParseExpression(parseExpression, directive.listeners.expression, directive.listeners.source);
-
-        // const attributesObservables = ObserverVisitor.observe(attributesExpression);
-        // const bindsObservables = ObserverVisitor.observe(bindsExpression);
-        // const injectionsObservables = ObserverVisitor.observe(injectionsExpression);
-        // const listenersObservables = ObserverVisitor.observe(listenersExpression);
-
-        return {
-            attributes:
-            {
-                expression:  attributesExpression,
-                source:      directive.attributes.source,
-            },
-            binds:
-            {
-                expression:  bindsExpression,
-                source:      directive.binds.source,
-            },
-            injections:
-            {
-                expression:  injectionsExpression,
-                source:      directive.injections.source,
-            },
-            listeners:
-            {
-                expression:  listenersExpression,
-                source:      directive.listeners.source,
-            },
+            fragment,
+            key:         keyExpression,
+            observables: { key: keyObservables, value: observables },
+            scope:       pattern,
+            source:      { key: directive.key.source, scope: directive.scope.source },
             stackTrace,
-            type: DescriptorType.Extends,
+            type:        DescriptorType.Injection,
         };
+
+        return injectionDescriptor;
     }
 
     private parseElement(element: Element, stackTrace: StackTrace): ElementDescriptor
@@ -774,14 +686,7 @@ export default class Parser
     {
         template.removeAttribute(directive.name);
 
-        if (directive.type == DirectiveType.Extends)
-        {
-            template.removeAttribute(DirectiveType.ExtendsAttributes);
-            template.removeAttribute(DirectiveType.ExtendsBinds);
-            template.removeAttribute(DirectiveType.ExtendsInjections);
-            template.removeAttribute(DirectiveType.ExtendsListeners);
-        }
-        else if (directive.type == DirectiveType.Inject || directive.type == DirectiveType.Placeholder)
+        if (directive.type == DirectiveType.Inject || directive.type == DirectiveType.Placeholder)
         {
             template.removeAttribute(`${directive.type}.key`);
             template.removeAttribute(`${directive.type}.scope`);

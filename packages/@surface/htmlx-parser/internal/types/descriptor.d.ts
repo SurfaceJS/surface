@@ -43,6 +43,7 @@ export type DirectiveAttributeDescritor =
 export type AttributeBindDescritor =
     | DirectiveAttributeDescritor
     | EventDescritor
+    | ExtendsAttributeDescriptor
     | OneWayAttributeDescritor
     | RawAttributeDescritor
     | TwoWayAttributeDescritor;
@@ -76,29 +77,20 @@ export type ElementDescriptor =
     type:       DescriptorType.Element,
 };
 
-type ExtendsStatementValue =
-{
-    source:     string,
-    expression: IExpression,
-};
+export type ExtendsSelector = "*" | "attributes" | "binds" | `binds.${"oneway" | "twoway"}` | "listeners";
 
-export type ExtendsStatementDescriptor =
+export type ExtendsAttributeDescriptor =
 {
-    metadata: ExtendsStatementValue,
-    type:     DescriptorType.Extends,
-} |
-{
-    attributes: ExtendsStatementValue,
-    binds:      ExtendsStatementValue,
-    injections: ExtendsStatementValue,
-    listeners:  ExtendsStatementValue,
+    expression: IExpression,
+    source:     string,
     stackTrace: StackTrace,
+    selector:   ExtendsSelector,
     type:       DescriptorType.Extends,
 };
 
 export type EventDescritor =
 {
-    key:        string,
+    name:        string,
     source:     string,
     stackTrace: StackTrace,
     type:       DescriptorType.Event,
@@ -170,7 +162,7 @@ export type TextInterpolationDescriptor =
 export type Descriptor =
     | ChoiceStatementDescriptor
     | CommentDescriptor
-    | ExtendsStatementDescriptor
+    | ExtendsAttributeDescriptor
     | ElementDescriptor
     | FragmentDescriptor
     | InjectionStatementDescriptor

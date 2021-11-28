@@ -5,6 +5,8 @@ import createCommentFactory                        from "./factories/create-comm
 import createDirectiveFactory                      from "./factories/create-directive-factory.js";
 import createElementFactory                        from "./factories/create-element-factory.js";
 import createEventFactory                          from "./factories/create-event-factory.js";
+import createExtendsAttributesFactory              from "./factories/create-extends-attributes-factory.js";
+import createExtendsFactory                        from "./factories/create-extends-factory.js";
 import createFragmentFactory                       from "./factories/create-fragment-factory.js";
 import createInjectionFactory                      from "./factories/create-injection-factory.js";
 import createInterpolationFactory                  from "./factories/create-interpolation-factory.js";
@@ -36,13 +38,25 @@ export default class Compiler
                     factories.push(createDirectiveFactory(bind.key, scope => bind.value.evaluate(scope), bind.observables, bind.source, bind.stackTrace));
                     break;
                 case DescriptorType.Event:
-                    factories.push(createEventFactory(bind.key, scope => bind.value.evaluate(scope), scope => bind.context?.evaluate(scope), bind.source, bind.stackTrace));
+                    factories.push(createEventFactory(bind.name, scope => bind.value.evaluate(scope), scope => bind.context?.evaluate(scope), bind.source, bind.stackTrace));
                     break;
                 case DescriptorType.Interpolation:
                     factories.push(createInterpolationFactory(bind.key, scope => bind.value.evaluate(scope), bind.observables, bind.source, bind.stackTrace));
                     break;
                 case DescriptorType.Oneway:
                     factories.push(createOnewayFactory(bind.key, scope => bind.value.evaluate(scope), bind.observables, bind.source, bind.stackTrace));
+                    break;
+                case DescriptorType.Extends:
+                    if (bind.selector == "*" || bind.selector == "attributes")
+                    {
+                        factories.push(createExtendsAttributesFactory(scope => bind.expression.evaluate(scope), bind.source, bind.stackTrace));
+                    }
+
+                    if (bind.selector != "attributes")
+                    {
+                        factories.push(createExtendsFactory(scope => bind.expression.evaluate(scope), bind.selector, bind.source, bind.stackTrace));
+                    }
+
                     break;
                 case DescriptorType.Twoway:
                 default:

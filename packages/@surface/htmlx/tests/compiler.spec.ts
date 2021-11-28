@@ -2,7 +2,7 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "@surface/dom-shim";
 
-import type { Delegate }                         from "@surface/core";
+import type { Constructor, Delegate }            from "@surface/core";
 import { AggregateError, Version, resolveError } from "@surface/core";
 import { shouldFail, shouldPass, suite, test }   from "@surface/test-suite";
 import chai                                      from "chai";
@@ -87,6 +87,31 @@ function createNode(): HTMLElement
     node.attachShadow({ mode: "open" });
 
     return node;
+}
+
+function defineComponent(tag: `${string}-${string}`, template: string = ""): Constructor<HTMLElement>
+{
+    const factory = Compiler.compile(tag, template);
+
+    class Component extends HTMLElement
+    {
+        public constructor()
+        {
+            super();
+
+            this.attachShadow({ mode: "open" });
+
+            const { activator, content } = factory.create();
+
+            this.shadowRoot!.appendChild(content);
+
+            activator(this.shadowRoot!, this, { host: this }, new Map());
+        }
+    }
+
+    customElements.define(tag, Component);
+
+    return Component;
 }
 
 type CompileOptions =
@@ -386,6 +411,188 @@ export default class CompilerSpec
     }
 
     @test @shouldPass
+    public async templateWithExtendsAttributesDirective(): Promise<void>
+    {
+        const host = createNode();
+
+        host.id = "host";
+
+        host.setAttribute("foo", "foo");
+        host.setAttribute("bar", "bar");
+
+        const shadowRoot = "<div #extends.attributes='host'>World</div>";
+
+        compile({ host, shadowRoot });
+
+        await scheduler.execution();
+
+        chai.assert.equal(host.shadowRoot!.firstElementChild?.getAttribute("foo"), "foo");
+        chai.assert.equal(host.shadowRoot!.firstElementChild?.getAttribute("bar"), "bar");
+
+        host.removeAttribute("foo");
+        host.setAttribute("baz", "baz");
+
+        await scheduler.execution();
+        await scheduler.execution(); // TODO: Investigate mutation observer event loop.
+
+        chai.assert.isFalse(host.shadowRoot!.firstElementChild?.hasAttribute("foo"));
+        chai.assert.equal(host.shadowRoot!.firstElementChild?.getAttribute("bar"), "bar");
+        chai.assert.equal(host.shadowRoot!.firstElementChild?.getAttribute("baz"), "baz");
+    }
+
+    @test @shouldPass
+    public async templateWithExtendsOnewayBindsDirective(): Promise<void>
+    {
+        const hash = crypto.randomUUID();
+
+        const ROOT_TAG  = `x-root-${hash}`  as const;
+        const HOST_TAG  = `x-host-${hash}`  as const;
+        const CHILD_TAG = `x-child-${hash}` as const;
+
+        defineComponent(CHILD_TAG);
+        defineComponent(HOST_TAG,  `<${CHILD_TAG} #extends.binds.oneway='host'></${CHILD_TAG}>`);
+        defineComponent(ROOT_TAG,  `<${HOST_TAG} :lang='host.lang'></${HOST_TAG}>`);
+
+        const root  = document.createElement(ROOT_TAG);
+        const host  = root.shadowRoot!.firstElementChild as HTMLElement;
+        const child = host.shadowRoot!.firstElementChild as HTMLElement;
+
+        chai.assert.equal(root.lang, "");
+        chai.assert.equal(host.lang, "");
+        chai.assert.equal(child.lang, "");
+
+        child.lang = "en-uk";
+
+        await scheduler.execution();
+
+        chai.assert.equal(root.lang, "");
+        chai.assert.equal(host.lang, "");
+        chai.assert.equal(child.lang, "en-uk");
+
+        host.lang = "en-us";
+
+        await scheduler.execution();
+
+        chai.assert.equal(root.lang, "");
+        chai.assert.equal(host.lang, "en-us");
+        chai.assert.equal(child.lang, "en-us");
+
+        root.lang = "pt-br";
+
+        await scheduler.execution();
+
+        chai.assert.equal(root.lang, "pt-br");
+        chai.assert.equal(host.lang, "pt-br");
+        chai.assert.equal(child.lang, "pt-br");
+    }
+
+    @test @shouldPass
+    public async templateWithExtendsTwowayBindsDirective(): Promise<void>
+    {
+        const hash = crypto.randomUUID();
+
+        const ROOT_TAG  = `x-root-${hash}`  as const;
+        const HOST_TAG  = `x-host-${hash}`  as const;
+        const CHILD_TAG = `x-child-${hash}` as const;
+
+        defineComponent(CHILD_TAG);
+        defineComponent(HOST_TAG, `<${CHILD_TAG} #extends.binds.twoway='host'></${CHILD_TAG}>`);
+        defineComponent(ROOT_TAG, `<${HOST_TAG} ::lang='host.lang'></${HOST_TAG}>`);
+
+        const root  = document.createElement(ROOT_TAG);
+        const host  = root.shadowRoot!.firstElementChild as HTMLElement;
+        const child = host.shadowRoot!.firstElementChild as HTMLElement;
+
+        chai.assert.equal(root.lang, "");
+        chai.assert.equal(host.lang, "");
+        chai.assert.equal(child.lang, "");
+
+        child.lang = "pt-br";
+
+        await scheduler.execution();
+
+        chai.assert.equal(root.lang, "pt-br");
+        chai.assert.equal(host.lang, "pt-br");
+        chai.assert.equal(child.lang, "pt-br");
+
+        host.lang = "en-us";
+
+        await scheduler.execution();
+
+        chai.assert.equal(root.lang, "en-us");
+        chai.assert.equal(host.lang, "en-us");
+        chai.assert.equal(child.lang, "en-us");
+
+        root.lang = "en-uk";
+
+        await scheduler.execution();
+
+        chai.assert.equal(root.lang, "en-uk");
+        chai.assert.equal(host.lang, "en-uk");
+        chai.assert.equal(child.lang, "en-uk");
+    }
+
+    @test @shouldPass
+    public templateWithExtendsListernersDirective(): void
+    {
+        const hash = crypto.randomUUID();
+
+        const ROOT_TAG  = `x-root-${hash}`  as const;
+        const HOST_TAG  = `x-host-${hash}`  as const;
+        const CHILD_TAG = `x-child-${hash}` as const;
+
+        defineComponent(CHILD_TAG);
+        defineComponent(HOST_TAG, `<${CHILD_TAG} #extends.listeners='host'></${CHILD_TAG}>`);
+        defineComponent(ROOT_TAG, `<${HOST_TAG} @click='e => host.title = e.target.nodeName'></${HOST_TAG}>`);
+
+        const root  = document.createElement(ROOT_TAG);
+        const host  = root.shadowRoot!.firstElementChild as HTMLElement;
+        const child = host.shadowRoot!.firstElementChild as HTMLElement;
+
+        host.dispatchEvent(new Event("click"));
+
+        chai.assert.equal(root.title, host.nodeName);
+
+        child.dispatchEvent(new Event("click"));
+
+        chai.assert.equal(root.title, child.nodeName);
+    }
+
+    @test @shouldPass
+    public async templateMetadata(): Promise<void>
+    {
+        const hash = crypto.randomUUID();
+
+        const ROOT_TAG  = `x-root-${hash}`  as const;
+        const HOST_TAG  = `x-host-${hash}`  as const;
+        const CHILD_TAG = `x-child-${hash}` as const;
+
+        defineComponent(CHILD_TAG, "<div #placeholder:one>Default One</div><div #placeholder:two>Default Two</div>");
+        defineComponent(HOST_TAG, `<${CHILD_TAG}><template #for="key of $metadata.injections" #inject.key="key" #placeholder.key="key"></template></${CHILD_TAG}>`);
+        defineComponent(ROOT_TAG, `<${HOST_TAG}><span #inject:one>Hello</span><span #inject:two>World!!!</span></${HOST_TAG}>`);
+
+        const root  = document.createElement(ROOT_TAG);
+        const host  = root.shadowRoot!.firstElementChild as HTMLElement;
+        const child = host.shadowRoot!.firstElementChild as HTMLElement;
+
+        await scheduler.execution();
+
+        const expected1 =
+        [
+            "#start",
+            "Hello",
+            "#end",
+            "#start",
+            "World!!!",
+            "#end",
+        ];
+
+        const actual1 = Array.from(child.shadowRoot!.childNodes).map(x => x.textContent);
+
+        chai.assert.deepEqual(actual1, expected1, "#1");
+    }
+
+    @test @shouldPass
     public async templateWithPlaceholderDirectiveWithDefault(): Promise<void>
     {
         const host = createNode();
@@ -481,45 +688,23 @@ export default class CompilerSpec
     @test @shouldPass
     public async templateWithInjectAndPlaceholderDirectiveFowarding(): Promise<void>
     {
-        const parentHost = createNode();
-        const host       = createNode() as HTMLElement & { item?: [string, number] };
+        const hash = crypto.randomUUID();
 
-        parentHost.id = "parentHost";
-        host.id       = "host";
+        const ROOT_TAG  = `x-root-${hash}`  as const;
+        const HOST_TAG  = `x-host-${hash}`  as const;
+        const CHILD_TAG = `x-child-${hash}` as const;
 
-        parentHost.shadowRoot!.appendChild(host);
+        defineComponent(CHILD_TAG, "<span #placeholder:item=\"{ title: 'fowarded' }\">Placeholder</span>");
+        defineComponent(HOST_TAG, `<${CHILD_TAG}><span #inject:item="scope" #placeholder:item="scope">Injected Placeholder</span></${CHILD_TAG}>`);
+        defineComponent(ROOT_TAG, `<${HOST_TAG}><span #inject:item="{ title }">Title: {title}</span></${HOST_TAG}>`);
 
-        const shadowRoot =
-        `
-            <template #placeholder:item="{ item: host.item }">
-                <span>Placeholder</span>
-            </template>
-        `;
-
-        const innerHTML =
-        `
-            <template #inject:item="scope">
-                <template #placeholder:fowarded-item="scope">
-                    <span>Injected Placeholder</span>
-                </template>
-            </template>
-        `;
-
-        const parentInnerHTML =
-        `
-            <template #inject:fowarded-item="{ item }">
-                <span>{item[0]}: {item[1]}</span>
-            </template>
-        `;
-
-        host.item = ["Value", 1];
-
-        compile({ host, innerHTML, parentHost, shadowRoot });
-        compile({ host: parentHost, innerHTML: parentInnerHTML });
+        const root  = document.createElement(ROOT_TAG);
+        const host  = root.shadowRoot!.firstElementChild as HTMLElement;
+        const child = host.shadowRoot!.firstElementChild as HTMLElement;
 
         await scheduler.execution();
 
-        chai.assert.equal(host.shadowRoot!.querySelector("span")!.textContent, "Value: 1");
+        chai.assert.equal(child.shadowRoot!.firstElementChild!.textContent, "Title: fowarded");
     }
 
     @test @shouldPass

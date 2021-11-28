@@ -26,6 +26,7 @@ const factoryMap: Record<Descriptor["type"], string> =
 const attributeFactoryMap: Record<Exclude<AttributeBindDescritor["type"], DescriptorType.Attribute>, string> =
 {
     [DescriptorType.Directive]:     "createDirectiveFactory",
+    [DescriptorType.Extends]:       "createExtendsFactory",
     [DescriptorType.Event]:         "createEventFactory",
     [DescriptorType.Interpolation]: "createInterpolationFactory",
     [DescriptorType.Oneway]:        "createOnewayFactory",
@@ -156,8 +157,14 @@ export default class SourceGenerator
                         this.writeLine(this.generateStackStrace ? `${JSON.stringify(descriptor.source)},` : "undefined,");
                         this.writeLine(this.generateStackStrace ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
                         break;
+                    case DescriptorType.Extends:
+                        this.writeLine(`${this.stringifyExpression(descriptor.expression)},`);
+                        this.writeLine(`"${descriptor.selector}",`);
+                        this.writeLine(this.generateStackStrace ? `${JSON.stringify(descriptor.source)},` : "undefined,");
+                        this.writeLine(this.generateStackStrace ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
+                        break;
                     case DescriptorType.Event:
-                        this.writeLine(`"${descriptor.key}",`);
+                        this.writeLine(`"${descriptor.name}",`);
                         this.writeLine(`${this.stringifyExpression(descriptor.value)},`);
                         this.writeLine(`${this.stringifyExpression(descriptor.context)},`);
                         this.writeLine(this.generateStackStrace ? `${JSON.stringify(descriptor.source)},` : "undefined,");
