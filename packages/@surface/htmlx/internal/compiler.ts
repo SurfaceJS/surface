@@ -4,15 +4,14 @@ import createChoiceFactory                         from "./factories/create-choi
 import createCommentFactory                        from "./factories/create-comment-factory.js";
 import createDirectiveFactory                      from "./factories/create-directive-factory.js";
 import createElementFactory                        from "./factories/create-element-factory.js";
-import createEventFactory                          from "./factories/create-event-factory.js";
-import createExtendsAttributesFactory              from "./factories/create-extends-attributes-factory.js";
-import createExtendsFactory                        from "./factories/create-extends-factory.js";
+import createEventListenerFactory                 from "./factories/create-event-listener-factory.js";
 import createFragmentFactory                       from "./factories/create-fragment-factory.js";
 import createInjectionFactory                      from "./factories/create-injection-factory.js";
 import createInterpolationFactory                  from "./factories/create-interpolation-factory.js";
 import createLoopFactory                           from "./factories/create-loop-factory.js";
 import createOnewayFactory                         from "./factories/create-oneway-factory.js";
 import createPlaceholderFactory                    from "./factories/create-placeholder-factory.js";
+import createSpreadFactory                         from "./factories/create-spread-factory.js";
 import createTextNodeFactory                       from "./factories/create-text-node-factory.js";
 import createTextNodeInterpolationFactory          from "./factories/create-text-node-interpolation-factory.js";
 import createTwowayFactory                         from "./factories/create-twoway-factory.js";
@@ -32,13 +31,13 @@ export default class Compiler
             switch (bind.type)
             {
                 case DescriptorType.Attribute:
-                    attributes.push([bind.key, bind.value]);
+                    attributes.push([bind.name, bind.value]);
                     break;
                 case DescriptorType.Directive:
                     factories.push(createDirectiveFactory(bind.key, scope => bind.value.evaluate(scope), bind.observables, bind.source, bind.stackTrace));
                     break;
-                case DescriptorType.Event:
-                    factories.push(createEventFactory(bind.name, scope => bind.value.evaluate(scope), scope => bind.context?.evaluate(scope), bind.source, bind.stackTrace));
+                case DescriptorType.EventListener:
+                    factories.push(createEventListenerFactory(bind.name, scope => bind.listener.evaluate(scope), scope => bind.context?.evaluate(scope), bind.source, bind.stackTrace));
                     break;
                 case DescriptorType.Interpolation:
                     factories.push(createInterpolationFactory(bind.key, scope => bind.value.evaluate(scope), bind.observables, bind.source, bind.stackTrace));
@@ -46,17 +45,8 @@ export default class Compiler
                 case DescriptorType.Oneway:
                     factories.push(createOnewayFactory(bind.key, scope => bind.value.evaluate(scope), bind.observables, bind.source, bind.stackTrace));
                     break;
-                case DescriptorType.Extends:
-                    if (bind.selector == "*" || bind.selector == "attributes")
-                    {
-                        factories.push(createExtendsAttributesFactory(scope => bind.expression.evaluate(scope), bind.source, bind.stackTrace));
-                    }
-
-                    if (bind.selector != "attributes")
-                    {
-                        factories.push(createExtendsFactory(scope => bind.expression.evaluate(scope), bind.selector, bind.source, bind.stackTrace));
-                    }
-
+                case DescriptorType.Spread:
+                    factories.push(createSpreadFactory(bind.flags, scope => bind.expression.evaluate(scope), bind.observables, bind.source, bind.stackTrace));
                     break;
                 case DescriptorType.Twoway:
                 default:
@@ -139,7 +129,7 @@ export default class Compiler
                 );
             case DescriptorType.Comment:
                 return createCommentFactory(descriptor.value);
-            case DescriptorType.Extends:
+            case DescriptorType.Spread:
                 return (() => []) as unknown as NodeFactory;
             case DescriptorType.Fragment:
             default:

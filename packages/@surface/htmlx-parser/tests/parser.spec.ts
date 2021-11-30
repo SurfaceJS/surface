@@ -10,6 +10,7 @@ import chai                                          from "chai";
 import DescriptorType                                from "../internal/descriptor-type.js";
 import TemplateParseError                            from "../internal/errors/template-parse-error.js";
 import { parseDestructuredPattern, parseExpression } from "../internal/expression-parsers.js";
+import MetadataFlags                                 from "../internal/flags/metadata-flags.js";
 import Parser                                        from "../internal/parser.js";
 import type Descriptor                               from "../internal/types/descriptor";
 
@@ -104,12 +105,12 @@ export default class HTMLXElementParserSpec
                     attributes:
                     [
                         {
-                            key:   "foo",
+                            name:   "foo",
                             type:  DescriptorType.Attribute,
                             value: "",
                         },
                         {
-                            key:   "bar",
+                            name:   "bar",
                             type:  DescriptorType.Attribute,
                             value: "baz",
                         },
@@ -127,7 +128,7 @@ export default class HTMLXElementParserSpec
                             value: parseExpression("undefined"),
                         },
                         {
-                            key:   "value",
+                            name:   "value",
                             type:  DescriptorType.Attribute,
                             value: "",
                         },
@@ -146,6 +147,7 @@ export default class HTMLXElementParserSpec
                         },
                         {
                             context:    parseExpression("host"),
+                            listener:   parseExpression("host.handler"),
                             name:       "click",
                             source:     "@click=\"host.handler\"",
                             stackTrace:
@@ -154,8 +156,7 @@ export default class HTMLXElementParserSpec
                                 ["#shadow-root"],
                                 ["<span foo bar=\"baz\" #show value=\"Hello {host.name}\" @click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"],
                             ],
-                            type:  DescriptorType.Event,
-                            value: parseExpression("host.handler"),
+                            type:  DescriptorType.EventListener,
                         },
                         {
                             left:       "valueA",
@@ -199,6 +200,78 @@ export default class HTMLXElementParserSpec
                             value: parseExpression("`Some ${'interpolation'} here`"),
                         },
                     ],
+                    tag:  "span",
+                    type: DescriptorType.Element,
+                },
+            ],
+            type: DescriptorType.Fragment,
+        };
+
+        const actual = Parser.parse(window.document, "x-component", template);
+
+        const a = stringifyExpressions(actual);
+        const e = stringifyExpressions(expected);
+
+        chai.assert.deepEqual(a, e);
+    }
+
+    @shouldPass @test
+    public parseElementWithListeners(): void
+    {
+        const template =
+        [
+            "<span @click=\"host.click++\" @hover=\"host.hoverHandler\" @change=\"e => host.changeHandler(e)\"></span>",
+        ].join("");
+
+        const expected: Descriptor =
+        {
+            childs:
+            [
+                {
+                    attributes:
+                    [
+                        {
+                            context:    parseExpression("null"),
+                            listener:   parseExpression("() => host.click++"),
+                            name:       "click",
+                            source:     "@click=\"host.click++\"",
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["<span @click=\"host.click++\" @hover=\"host.hoverHandler\" @change=\"e => host.changeHandler(e)\">"],
+                            ],
+                            type:  DescriptorType.EventListener,
+                        },
+                        {
+                            context:    parseExpression("host"),
+                            listener:   parseExpression("host.hoverHandler"),
+                            name:       "hover",
+                            source:     "@hover=\"host.hoverHandler\"",
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["<span @click=\"host.click++\" @hover=\"host.hoverHandler\" @change=\"e => host.changeHandler(e)\">"],
+                            ],
+                            type:  DescriptorType.EventListener,
+                        },
+                        {
+                            context:    parseExpression("null"),
+                            listener:   parseExpression("e => host.changeHandler(e)"),
+                            name:       "change",
+                            source:     "@change=\"e => host.changeHandler(e)\"",
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["<span @click=\"host.click++\" @hover=\"host.hoverHandler\" @change=\"e => host.changeHandler(e)\">"],
+                            ],
+                            type:  DescriptorType.EventListener,
+                        },
+                    ],
+                    childs:
+                    [],
                     tag:  "span",
                     type: DescriptorType.Element,
                 },
@@ -925,7 +998,7 @@ export default class HTMLXElementParserSpec
                                         childs:
                                         [
                                             {
-                                                attributes: [{ key: "onclick", type: DescriptorType.Attribute, value: "fn({ clicked })" }],
+                                                attributes: [{ name: "onclick", type: DescriptorType.Attribute, value: "fn({ clicked })" }],
                                                 childs:
                                                 [
                                                     {
@@ -1043,12 +1116,12 @@ export default class HTMLXElementParserSpec
     }
 
     @shouldPass @test
-    public parseElementWithExtends(): void
+    public parseElementWithSpread(): void
     {
         const template =
         [
-            "<div #extends=\"host\"></div>",
-            "<div #extends.attributes=\"host.attributes\" #extends.binds=\"host.binds\" #extends.listeners=\"host.listeners\"></div>",
+            "<div ...attributes|binds|listeners=\"host\"></div>",
+            "<div ...attributes=\"host\" ...binds=\"host\" ...listeners=\"host\"></div>",
         ].join("");
 
         const expected: Descriptor =
@@ -1059,16 +1132,17 @@ export default class HTMLXElementParserSpec
                     attributes:
                     [
                         {
-                            expression: parseExpression("host"),
-                            selector:   "*",
-                            source:     "#extends=\"host\"",
+                            expression:  parseExpression("host"),
+                            flags:       MetadataFlags.Attributes | MetadataFlags.Binds | MetadataFlags.Listeners,
+                            observables: [],
+                            source:      "...attributes|binds|listeners=\"host\"",
                             stackTrace:
                             [
                                 ["<x-component>"],
                                 ["#shadow-root"],
-                                ["<div #extends=\"host\">"],
+                                ["<div ...attributes|binds|listeners=\"host\">"],
                             ],
-                            type: DescriptorType.Extends,
+                            type: DescriptorType.Spread,
                         },
                     ],
                     childs: [],
@@ -1079,40 +1153,43 @@ export default class HTMLXElementParserSpec
                     attributes:
                     [
                         {
-                            expression: parseExpression("host.attributes"),
-                            selector:   "attributes",
-                            source:     "#extends.attributes=\"host.attributes\"",
+                            expression:  parseExpression("host"),
+                            flags:       MetadataFlags.Attributes,
+                            observables: [],
+                            source:      "...attributes=\"host\"",
                             stackTrace:
                             [
                                 ["<x-component>"],
                                 ["#shadow-root"],
-                                ["...1 other(s) node(s)", "<div #extends.attributes=\"host.attributes\" #extends.binds=\"host.binds\" #extends.listeners=\"host.listeners\">"],
+                                ["...1 other(s) node(s)", "<div ...attributes=\"host\" ...binds=\"host\" ...listeners=\"host\">"],
                             ],
-                            type: DescriptorType.Extends,
+                            type: DescriptorType.Spread,
                         },
                         {
-                            expression: parseExpression("host.binds"),
-                            selector:   "binds",
-                            source:     "#extends.binds=\"host.binds\"",
+                            expression:  parseExpression("host"),
+                            flags:       MetadataFlags.Binds,
+                            observables: [],
+                            source:      "...binds=\"host\"",
                             stackTrace:
                             [
                                 ["<x-component>"],
                                 ["#shadow-root"],
-                                ["...1 other(s) node(s)", "<div #extends.attributes=\"host.attributes\" #extends.binds=\"host.binds\" #extends.listeners=\"host.listeners\">"],
+                                ["...1 other(s) node(s)", "<div ...attributes=\"host\" ...binds=\"host\" ...listeners=\"host\">"],
                             ],
-                            type: DescriptorType.Extends,
+                            type: DescriptorType.Spread,
                         },
                         {
-                            expression: parseExpression("host.listeners"),
-                            selector:   "listeners",
-                            source:     "#extends.listeners=\"host.listeners\"",
+                            expression:  parseExpression("host"),
+                            flags:       MetadataFlags.Listeners,
+                            observables: [],
+                            source:      "...listeners=\"host\"",
                             stackTrace:
                             [
                                 ["<x-component>"],
                                 ["#shadow-root"],
-                                ["...1 other(s) node(s)", "<div #extends.attributes=\"host.attributes\" #extends.binds=\"host.binds\" #extends.listeners=\"host.listeners\">"],
+                                ["...1 other(s) node(s)", "<div ...attributes=\"host\" ...binds=\"host\" ...listeners=\"host\">"],
                             ],
-                            type: DescriptorType.Extends,
+                            type: DescriptorType.Spread,
                         },
                     ],
                     childs: [],
@@ -1138,6 +1215,7 @@ export default class HTMLXElementParserSpec
         [
             "<hr>",
             "<script>console.log({ window });</script>",
+            "<style rel=\"stylesheet\" href=\"./styles.css\"></style>",
             "<style>h1 { color: red }</style>",
             "<!--This is a comment-->",
         ].join("");
@@ -1163,6 +1241,16 @@ export default class HTMLXElementParserSpec
                     ],
                     tag:  "script",
                     type: DescriptorType.Element,
+                },
+                {
+                    attributes:
+                    [
+                        { name: "rel",  type: DescriptorType.Attribute, value: "stylesheet" },
+                        { name: "href", type: DescriptorType.Attribute, value: "./styles.css" },
+                    ],
+                    childs: [],
+                    tag:    "style",
+                    type:   DescriptorType.Element,
                 },
                 {
                     attributes: [],
@@ -1645,7 +1733,7 @@ export default class HTMLXElementParserSpec
                                                                             attributes:
                                                                             [
                                                                                 {
-                                                                                    key:   "class",
+                                                                                    name:   "class",
                                                                                     type:  DescriptorType.Attribute,
                                                                                     value: "foo",
                                                                                 },
@@ -1887,6 +1975,20 @@ export default class HTMLXElementParserSpec
     }
 
     @shouldFail @test
+    public ErrorInvalidDirectiveKey(): void
+    {
+        const template = "<div #inject:></div>";
+
+        const message = "Directive #inject has no key.";
+        const stack   = "<x-component>\n   #shadow-root\n      <div #inject:>";
+
+        const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
+        const expected = toRaw(new TemplateParseError(message, stack));
+
+        chai.assert.deepEqual(actual, expected);
+    }
+
+    @shouldFail @test
     public ErrorInvalidInjectProperty(): void
     {
         const template = "<div #inject.invalid='key'></div>";
@@ -1901,12 +2003,12 @@ export default class HTMLXElementParserSpec
     }
 
     @shouldFail @test
-    public ErrorInvalidExtendsProperty(): void
+    public ErrorInvalidSpreadProperty(): void
     {
-        const template = "<div #extends.invalid='key'></div>";
+        const template = "<div ...invalid='key'></div>";
 
-        const message = "Property 'invalid' does not exist on #extends directive";
-        const stack   = "<x-component>\n   #shadow-root\n      <div #extends.invalid=\"key\">";
+        const message = "Property 'invalid' not supported on spread directive.";
+        const stack   = "<x-component>\n   #shadow-root\n      <div ...invalid=\"key\">";
 
         const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));
@@ -1963,6 +2065,34 @@ export default class HTMLXElementParserSpec
 
         const message = "Multiples #inject directives on same element is not supported.";
         const stack   = "<x-component>\n   #shadow-root\n      <div #inject:a #inject:b>";
+
+        const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
+        const expected = toRaw(new TemplateParseError(message, stack));
+
+        chai.assert.deepEqual(actual, expected);
+    }
+
+    @shouldFail @test
+    public ErrorInvalidExtendsCombination1(): void
+    {
+        const template = "<div ...attributes|binds='host' ...attributes='host'></div>";
+
+        const message = "Property 'attributes' specified in ...attributes|binds=\"host\".";
+        const stack   = "<x-component>\n   #shadow-root\n      <div ...attributes|binds=\"host\" ...attributes=\"host\">";
+
+        const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
+        const expected = toRaw(new TemplateParseError(message, stack));
+
+        chai.assert.deepEqual(actual, expected);
+    }
+
+    @shouldFail @test
+    public ErrorInvalidExtendsCombination2(): void
+    {
+        const template = "<div ...attributes='host' ...attributes|binds='host'></div>";
+
+        const message = "Property 'attributes' specified in ...attributes=\"host\".";
+        const stack   = "<x-component>\n   #shadow-root\n      <div ...attributes=\"host\" ...attributes|binds=\"host\">";
 
         const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));

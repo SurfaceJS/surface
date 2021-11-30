@@ -43,6 +43,9 @@
 <span #placeholder.scope="{ name: host.name }" #placeholder.key="host.key">
     Default {name}
 </span>
+<span ...attributes|listeners="host"></span>
+<span ...attributes|binds|listeners="host"></span>
+<span ...attributes="target1" ...binds="target2" ...listeners="target3"></span>
 <table>
     <tr>
         <th>Id</th>

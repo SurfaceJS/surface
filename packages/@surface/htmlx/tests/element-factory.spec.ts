@@ -5,7 +5,7 @@ import { shouldPass, suite, test } from "@surface/test-suite";
 import chai                        from "chai";
 import createDirectiveFactory      from "../internal/factories/create-directive-factory.js";
 import createElementFactory        from "../internal/factories/create-element-factory.js";
-import createEventFactory          from "../internal/factories/create-event-factory.js";
+import createEventListernerFactory from "../internal/factories/create-event-listener-factory.js";
 import createInterpolationFactory  from "../internal/factories/create-interpolation-factory.js";
 import createOnewayFactory         from "../internal/factories/create-oneway-factory.js";
 import createTwowayFactory         from "../internal/factories/create-twoway-factory.js";
@@ -155,7 +155,7 @@ export default class ElementFactorySpec
         (
             "div",
             undefined,
-            [createEventFactory("click", ((scope: Scope) => scope.host.click) as Evaluator, ((scope: Scope) => scope.host.click) as Evaluator)],
+            [createEventListernerFactory("click", ((scope: Scope) => scope.host.click) as Evaluator, ((scope: Scope) => scope.host.click) as Evaluator)],
         )() as [Element, Activator];
 
         let clicked = 0;

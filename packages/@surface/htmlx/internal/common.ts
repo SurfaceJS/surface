@@ -1,13 +1,76 @@
-import type { Delegate, Subscription }                                         from "@surface/core";
+import type { Delegate, IDisposable, Subscription }                            from "@surface/core";
 import { getPropertyDescriptor, getValue, isReadonly, resolveError, setValue } from "@surface/core";
 import type { ObservablePath, StackTrace }                                     from "@surface/htmlx-parser";
 import TemplateEvaluationError                                                 from "./errors/template-evaluation-error.js";
 import TemplateObservationError                                                from "./errors/template-observation-error.js";
 import TemplateProcessError                                                    from "./errors/template-process-error.js";
+import Metadata from "./metadata.js";
 import AsyncObserver                                                           from "./reactivity/async-observer.js";
 import { scheduler }                                                           from "./singletons.js";
 import type DestructuredEvaluator                                              from "./types/destructured-evaluator.js";
 import type Evaluator                                                          from "./types/evaluator.js";
+
+export function onewaybind(element: HTMLElement, scope: object, key: string, evaluator: Evaluator, observables: ObservablePath[], source?: string, stackTrace?: StackTrace): IDisposable
+{
+    let listener: Delegate;
+
+    if (key == "class" || key == "style")
+    {
+        listener = key == "class"
+            ? () => element.setAttribute(key, classMap(tryEvaluate(scope, evaluator, source, stackTrace) as Record<string, boolean>))
+            : () => element.setAttribute(key, styleMap(tryEvaluate(scope, evaluator, source, stackTrace) as Record<string, boolean>));
+    }
+    else
+    {
+        checkProperty(element, key, source, stackTrace);
+
+        listener = () => void ((element as unknown as Record<string, unknown>)[key] = tryEvaluate(scope, evaluator, source, stackTrace));
+    }
+
+    const subscription = tryObserve(scope, observables, listener, true, source, stackTrace);
+
+    listener();
+
+    Metadata.from(element).context.binds.oneway.set(key, { evaluator, key, observables, scope });
+
+    return { dispose: () => (subscription.unsubscribe(), Metadata.from(element).context.binds.oneway.delete(key)) };
+}
+
+export function twowaybind(element: HTMLElement, scope: object, left: string, right: ObservablePath, source?: string, stackTrace?: StackTrace): IDisposable
+{
+    checkPath(scope, right, source, stackTrace);
+    checkProperty(element, left, source, stackTrace);
+
+    const subscription = tryBind(element, [left], scope as object, right, source, stackTrace);
+
+    Metadata.from(element).context.binds.twoway.set(left, { left, right, scope });
+
+    return { dispose: () => (subscription.unsubscribe(), Metadata.from(element).context.binds.twoway.delete(left)) };
+}
+
+export default function eventListener(element: HTMLElement, scope: object, type: string, listenerEvaluator: Evaluator, contextEvaluator: Evaluator, source?: string, stackTrace?: StackTrace): IDisposable
+{
+    const context  = tryEvaluate(scope, contextEvaluator, source, stackTrace) as object | undefined;
+    const listener = (tryEvaluate(scope, listenerEvaluator, source, stackTrace) as () => void).bind(context ?? element);
+
+    element.addEventListener(type, listener);
+
+    const metadata = Metadata.from(element);
+
+    metadata.listeners.set(type, listener);
+    metadata.context.listeners.set(type, { contextEvaluator, listenerEvaluator, scope, type });
+
+    return {
+        dispose: () =>
+        {
+            element.removeEventListener(type, listener);
+            const metadata = Metadata.from(element);
+
+            metadata.listeners.delete(type);
+            metadata.context.listeners.delete(type);
+        },
+    };
+}
 
 export function bind(left: object, leftPath: ObservablePath, right: object, rightPath: ObservablePath): Subscription
 {
@@ -111,7 +174,7 @@ export function throwTemplateObservationError(message: string, stackTrace: Stack
     throw new TemplateObservationError(message, buildStackTrace(stackTrace));
 }
 
-export function tryBind(left: object, leftPath: ObservablePath, right: object, rightPath: ObservablePath, source: string = "", stackTrace: StackTrace = []): Subscription
+export function tryBind(left: object, leftPath: ObservablePath, right: object, rightPath: ObservablePath, source?: string, stackTrace?: StackTrace): Subscription
 {
     try
     {
@@ -162,7 +225,7 @@ export function tryEvaluatePattern(scope: object, evaluator: DestructuredEvaluat
     }
 }
 
-export function tryObserve(target: object, observables: ObservablePath[], listener: Delegate<[unknown]>, lazy: boolean = false, source: string = "", stackTrace: StackTrace = []): Subscription
+export function tryObserve(target: object, observables: ObservablePath[], listener: Delegate<[unknown]>, lazy?: boolean, source?: string, stackTrace?: StackTrace): Subscription
 {
     try
     {

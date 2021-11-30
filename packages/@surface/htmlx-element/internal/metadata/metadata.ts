@@ -1,6 +1,6 @@
 import type { Activator } from "@surface/htmlx";
 
-export const METADATA = Symbol("htmlx:metadata");
+export const METADATA = Symbol("htmlx-element:metadata");
 
 export default class Metadata
 {

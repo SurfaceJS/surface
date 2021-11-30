@@ -420,10 +420,11 @@ export default class CompilerSpec
         host.setAttribute("foo", "foo");
         host.setAttribute("bar", "bar");
 
-        const shadowRoot = "<div #extends.attributes='host'>World</div>";
+        const shadowRoot = "<div ...attributes='host'>World</div>";
 
         compile({ host, shadowRoot });
 
+        await scheduler.execution();
         await scheduler.execution();
 
         chai.assert.equal(host.shadowRoot!.firstElementChild?.getAttribute("foo"), "foo");
@@ -450,12 +451,14 @@ export default class CompilerSpec
         const CHILD_TAG = `x-child-${hash}` as const;
 
         defineComponent(CHILD_TAG);
-        defineComponent(HOST_TAG,  `<${CHILD_TAG} #extends.binds.oneway='host'></${CHILD_TAG}>`);
+        defineComponent(HOST_TAG,  `<${CHILD_TAG} ...binds='host'></${CHILD_TAG}>`);
         defineComponent(ROOT_TAG,  `<${HOST_TAG} :lang='host.lang'></${HOST_TAG}>`);
 
         const root  = document.createElement(ROOT_TAG);
         const host  = root.shadowRoot!.firstElementChild as HTMLElement;
         const child = host.shadowRoot!.firstElementChild as HTMLElement;
+
+        await scheduler.execution();
 
         chai.assert.equal(root.lang, "");
         chai.assert.equal(host.lang, "");
@@ -475,7 +478,7 @@ export default class CompilerSpec
 
         chai.assert.equal(root.lang, "");
         chai.assert.equal(host.lang, "en-us");
-        chai.assert.equal(child.lang, "en-us");
+        chai.assert.equal(child.lang, "en-uk");
 
         root.lang = "pt-br";
 
@@ -496,12 +499,14 @@ export default class CompilerSpec
         const CHILD_TAG = `x-child-${hash}` as const;
 
         defineComponent(CHILD_TAG);
-        defineComponent(HOST_TAG, `<${CHILD_TAG} #extends.binds.twoway='host'></${CHILD_TAG}>`);
+        defineComponent(HOST_TAG, `<${CHILD_TAG} ...binds='host'></${CHILD_TAG}>`);
         defineComponent(ROOT_TAG, `<${HOST_TAG} ::lang='host.lang'></${HOST_TAG}>`);
 
         const root  = document.createElement(ROOT_TAG);
         const host  = root.shadowRoot!.firstElementChild as HTMLElement;
         const child = host.shadowRoot!.firstElementChild as HTMLElement;
+
+        await scheduler.execution();
 
         chai.assert.equal(root.lang, "");
         chai.assert.equal(host.lang, "");
@@ -533,7 +538,7 @@ export default class CompilerSpec
     }
 
     @test @shouldPass
-    public templateWithExtendsListernersDirective(): void
+    public async templateWithExtendsListernersDirective(): Promise<void>
     {
         const hash = crypto.randomUUID();
 
@@ -542,12 +547,14 @@ export default class CompilerSpec
         const CHILD_TAG = `x-child-${hash}` as const;
 
         defineComponent(CHILD_TAG);
-        defineComponent(HOST_TAG, `<${CHILD_TAG} #extends.listeners='host'></${CHILD_TAG}>`);
+        defineComponent(HOST_TAG, `<${CHILD_TAG} ...listeners='host'></${CHILD_TAG}>`);
         defineComponent(ROOT_TAG, `<${HOST_TAG} @click='e => host.title = e.target.nodeName'></${HOST_TAG}>`);
 
         const root  = document.createElement(ROOT_TAG);
         const host  = root.shadowRoot!.firstElementChild as HTMLElement;
         const child = host.shadowRoot!.firstElementChild as HTMLElement;
+
+        await scheduler.execution();
 
         host.dispatchEvent(new Event("click"));
 
@@ -558,39 +565,40 @@ export default class CompilerSpec
         chai.assert.equal(root.title, child.nodeName);
     }
 
-    @test @shouldPass
-    public async templateMetadata(): Promise<void>
-    {
-        const hash = crypto.randomUUID();
+    // TODO: Migrate to htmlx-element
+    // @test @shouldPass
+    // public async templateMetadata(): Promise<void>
+    // {
+    //     const hash = crypto.randomUUID();
 
-        const ROOT_TAG  = `x-root-${hash}`  as const;
-        const HOST_TAG  = `x-host-${hash}`  as const;
-        const CHILD_TAG = `x-child-${hash}` as const;
+    //     const ROOT_TAG  = `x-root-${hash}`  as const;
+    //     const HOST_TAG  = `x-host-${hash}`  as const;
+    //     const CHILD_TAG = `x-child-${hash}` as const;
 
-        defineComponent(CHILD_TAG, "<div #placeholder:one>Default One</div><div #placeholder:two>Default Two</div>");
-        defineComponent(HOST_TAG, `<${CHILD_TAG}><template #for="key of $metadata.injections" #inject.key="key" #placeholder.key="key"></template></${CHILD_TAG}>`);
-        defineComponent(ROOT_TAG, `<${HOST_TAG}><span #inject:one>Hello</span><span #inject:two>World!!!</span></${HOST_TAG}>`);
+    //     defineComponent(CHILD_TAG, "<div #placeholder:one>Default One</div><div #placeholder:two>Default Two</div>");
+    //     defineComponent(HOST_TAG, `<${CHILD_TAG}><template #for="key of $metadata.injections" #inject.key="key" #placeholder.key="key"></template></${CHILD_TAG}>`);
+    //     defineComponent(ROOT_TAG, `<${HOST_TAG}><span #inject:one>Hello</span><span #inject:two>World!!!</span></${HOST_TAG}>`);
 
-        const root  = document.createElement(ROOT_TAG);
-        const host  = root.shadowRoot!.firstElementChild as HTMLElement;
-        const child = host.shadowRoot!.firstElementChild as HTMLElement;
+    //     const root  = document.createElement(ROOT_TAG);
+    //     const host  = root.shadowRoot!.firstElementChild as HTMLElement;
+    //     const child = host.shadowRoot!.firstElementChild as HTMLElement;
 
-        await scheduler.execution();
+    //     await scheduler.execution();
 
-        const expected1 =
-        [
-            "#start",
-            "Hello",
-            "#end",
-            "#start",
-            "World!!!",
-            "#end",
-        ];
+    //     const expected1 =
+    //     [
+    //         "#start",
+    //         "Hello",
+    //         "#end",
+    //         "#start",
+    //         "World!!!",
+    //         "#end",
+    //     ];
 
-        const actual1 = Array.from(child.shadowRoot!.childNodes).map(x => x.textContent);
+    //     const actual1 = Array.from(child.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual1, expected1, "#1");
-    }
+    //     chai.assert.deepEqual(actual1, expected1, "#1");
+    // }
 
     @test @shouldPass
     public async templateWithPlaceholderDirectiveWithDefault(): Promise<void>

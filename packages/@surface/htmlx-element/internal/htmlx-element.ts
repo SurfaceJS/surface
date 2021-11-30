@@ -1,6 +1,9 @@
-import type { Constructor }                            from "@surface/core";
+/* eslint-disable import/named */
+import type { Constructor, Delegate }                  from "@surface/core";
 import { DisposableMetadata, HookableMetadata }        from "@surface/core";
 import type { DirectiveConstructor, DirectiveFactory } from "@surface/htmlx";
+import { Metadata as HTMLXMetada }                     from "@surface/htmlx";
+import Observer                                        from "@surface/observer";
 import type IHTMLXElement                              from "./interfaces/htmlx-element";
 import Metadata                                        from "./metadata/metadata.js";
 import StaticMetadata                                  from "./metadata/static-metadata.js";
@@ -10,7 +13,17 @@ const HTMLX_ELEMENT = Symbol("htmlx-element:instance");
 
 export default class HTMLXElement extends HTMLElement implements IHTMLXElement
 {
+
     public static readonly [HTMLX_ELEMENT]: boolean = true;
+    public get $injections(): string[]
+    {
+        return Array.from(HTMLXMetada.from(this).injections.keys());
+    }
+
+    public get $listeners(): Record<string, Delegate>
+    {
+        return Object.fromEntries(HTMLXMetada.from(this).listeners);
+    }
 
     public shadowRoot!: ShadowRoot;
 
@@ -24,6 +37,15 @@ export default class HTMLXElement extends HTMLElement implements IHTMLXElement
 
     private static applyMetadata(instance: HTMLElement & { shadowRoot: ShadowRoot }): void
     {
+        const htmlxMetadata      = HTMLXMetada.from(instance);
+        const disposableMetadata = DisposableMetadata.from(instance);
+
+        const injectionsSubscription = htmlxMetadata.injections.subscribe(() => Observer.notify(this, ["$injections"]));
+        const listenersSubscription  = htmlxMetadata.listeners.subscribe(() => Observer.notify(this, ["$listeners"]));
+
+        disposableMetadata.add({ dispose: () => injectionsSubscription.unsubscribe() });
+        disposableMetadata.add({ dispose: () => listenersSubscription.unsubscribe() });
+
         const staticMetadata = StaticMetadata.from(instance.constructor);
 
         instance.attachShadow(staticMetadata.shadowRootInit);

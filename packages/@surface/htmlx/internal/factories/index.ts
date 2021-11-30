@@ -2,7 +2,7 @@ export { default as createChoiceFactory }                from "./create-choice-f
 export { default as createCommentFactory }               from "./create-comment-factory.js";
 export { default as createDirectiveFactory }             from "./create-directive-factory.js";
 export { default as createElementFactory }               from "./create-element-factory.js";
-export { default as createEventFactory }                 from "./create-event-factory.js";
+export { default as createEventListenerFactory }         from "./create-event-listener-factory.js";
 export { default as createFragmentFactory }              from "./create-fragment-factory.js";
 export { default as createInjectionFactory }             from "./create-injection-factory.js";
 export { default as createInterpolationFactory }         from "./create-interpolation-factory.js";

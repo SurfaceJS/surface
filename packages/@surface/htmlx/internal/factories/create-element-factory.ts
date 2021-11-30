@@ -3,9 +3,9 @@ import type Activator        from "../types/activator";
 import type AttributeFactory from "../types/attribute-factory.js";
 import type NodeFactory      from "../types/node-factory";
 
-type Attributes = [key: string, value: string];
+type Attributes = [name: string, value: string];
 
-export default function createElementFactory(tag: string, attributes?: Attributes[], attributesFactories?: AttributeFactory[], childs?: NodeFactory[]): NodeFactory
+export default function createElementFactory(tag: string, attributes?: Attributes[], attributeFactories?: AttributeFactory[], childs?: NodeFactory[]): NodeFactory
 {
     return () =>
     {
@@ -46,9 +46,9 @@ export default function createElementFactory(tag: string, attributes?: Attribute
                 disposables.push(activator(element, host, scope, directives));
             }
 
-            if (attributesFactories)
+            if (attributeFactories)
             {
-                for (const factory of attributesFactories)
+                for (const factory of attributeFactories)
                 {
                     disposables.push(factory(element, scope, directives));
                 }

@@ -17,6 +17,7 @@ export type { default as NodeFactory }           from "./internal/types/node-fac
 
 export { default as Compiler }        from "./internal/compiler.js";
 export { default as Directive }       from "./internal/directives/directive.js";
+export { default as Metadata }        from "./internal/metadata.js";
 export { default as AsyncObserver }   from "./internal/reactivity/async-observer.js";
 export { scheduler, painting }        from "./internal/singletons.js";
 export { default as TemplateFactory } from "./internal/template-factory.js";

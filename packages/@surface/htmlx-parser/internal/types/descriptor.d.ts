@@ -1,12 +1,13 @@
 /* eslint-disable import/exports-last */
 import type { IExpression, IPattern } from "@surface/expression";
 import type DescriptorType            from "../descriptor-type.js";
+import type SpreadDirectiveFlag       from "../flags/spread-directive-flag.js";
 import type ObservablePath            from "./observable-path";
 import type StackTrace                from "./stack-trace";
 
 export type RawAttributeDescritor =
 {
-    key:   string,
+    name:  string,
     value: string,
     type:  DescriptorType.Attribute,
 };
@@ -43,9 +44,9 @@ export type DirectiveAttributeDescritor =
 export type AttributeBindDescritor =
     | DirectiveAttributeDescritor
     | EventDescritor
-    | ExtendsAttributeDescriptor
     | OneWayAttributeDescritor
     | RawAttributeDescritor
+    | SpreadAttributeDescriptor
     | TwoWayAttributeDescritor;
 
 export type BranchDescriptor =
@@ -77,25 +78,24 @@ export type ElementDescriptor =
     type:       DescriptorType.Element,
 };
 
-export type ExtendsSelector = "*" | "attributes" | "binds" | `binds.${"oneway" | "twoway"}` | "listeners";
-
-export type ExtendsAttributeDescriptor =
+export type SpreadAttributeDescriptor =
 {
-    expression: IExpression,
-    source:     string,
-    stackTrace: StackTrace,
-    selector:   ExtendsSelector,
-    type:       DescriptorType.Extends,
+    expression:  IExpression,
+    observables: ObservablePath[],
+    flags:       SpreadDirectiveFlag,
+    source:      string,
+    stackTrace:  StackTrace,
+    type:        DescriptorType.Spread,
 };
 
 export type EventDescritor =
 {
-    name:        string,
+    context:    IExpression,
+    listener:   IExpression,
+    name:       string,
     source:     string,
     stackTrace: StackTrace,
-    type:       DescriptorType.Event,
-    value:      IExpression,
-    context:    IExpression,
+    type:       DescriptorType.EventListener,
 };
 
 export type FragmentDescriptor =
@@ -162,7 +162,7 @@ export type TextInterpolationDescriptor =
 export type Descriptor =
     | ChoiceStatementDescriptor
     | CommentDescriptor
-    | ExtendsAttributeDescriptor
+    | SpreadAttributeDescriptor
     | ElementDescriptor
     | FragmentDescriptor
     | InjectionStatementDescriptor

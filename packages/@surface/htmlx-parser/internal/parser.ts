@@ -3,22 +3,25 @@
 /* eslint-disable max-statements */
 /* eslint-disable @typescript-eslint/prefer-for-of */
 /* eslint-disable @typescript-eslint/indent */
-import type { Indexer }                                                                         from "@surface/core";
-import { assert, contains, dashedToCamel, typeGuard }                                           from "@surface/core";
-import type { IExpression, IPattern, Identifier }                                               from "@surface/expression";
-import { ArrowFunctionExpression, Literal, SyntaxError, TypeGuard }                             from "@surface/expression";
-import { buildStackTrace, scapeBrackets, throwTemplateParseError }                              from "./common.js";
-import DescriptorType                                                                           from "./descriptor-type.js";
-import { parseDestructuredPattern, parseExpression, parseForLoopStatement, parseInterpolation } from "./expression-parsers.js";
-import nativeEvents                                                                             from "./native-events.js";
-import ObserverVisitor                                                                          from "./observer-visitor.js";
-import { interpolation }                                                                        from "./patterns.js";
-import type Descriptor                                                                          from "./types/descriptor.js";
+import type { Indexer }                                                                          from "@surface/core";
+import { assert, contains, dashedToCamel, typeGuard }                                            from "@surface/core";
+import type { IExpression, IPattern, Identifier }                                                from "@surface/expression";
+import { ArrowFunctionExpression, Literal, SyntaxError, TypeGuard }                              from "@surface/expression";
+import { buildStackTrace, scapeBrackets, throwTemplateParseError }                               from "./common.js";
+import DescriptorType                                                                            from "./descriptor-type.js";
+import DirectiveType                                                                             from "./enums/directive-type.js";
+import NodeType                                                                                  from "./enums/node-type.js";
+import SpreadProperties                                                                          from "./enums/spread-properties.js";
+import { parseDestructuredPattern, parseExpression, parseForLoopStatement, parseInterpolation }  from "./expression-parsers.js";
+import MetadataFlags                                                                             from "./flags/metadata-flags.js";
+import nativeEvents                                                                              from "./native-events.js";
+import ObserverVisitor                                                                           from "./observer-visitor.js";
+import { interpolation }                                                                         from "./patterns.js";
+import type Descriptor                                                                           from "./types/descriptor.js";
 import type {
     AttributeBindDescritor,
     BranchDescriptor,
     ElementDescriptor,
-    ExtendsAttributeDescriptor,
     FragmentDescriptor,
     InjectionStatementDescriptor,
     PlaceholderStatementDescriptor,
@@ -27,29 +30,8 @@ import type StackTrace from "./types/stack-trace";
 
 const DECOMPOSED = Symbol("htmlx-parser:decomposed");
 
-enum NodeType
-{
-    Element = 1,
-    Text    = 3,
-    Comment = 8,
-}
-
-enum DirectiveType
-{
-    Else              = "#else",
-    ElseIf            = "#else-if",
-    For               = "#for",
-    If                = "#if",
-    Inject            = "#inject",
-    InjectKey         = "#inject.key",
-    InjectScope       = "#inject.scope",
-    Placeholder       = "#placeholder",
-    PlaceholderKey    = "#placeholder.key",
-    PlaceholderScope  = "#placeholder.scope",
-}
-
-const directiveTypes    = Object.values(DirectiveType);
-const extendsProperties = new Set(["all", "attributes", "binds", "injections", "listeners"]);
+const directiveTypes = Object.values(DirectiveType);
+const spreadFlags    = new Set(Object.values(SpreadProperties) as string[]);
 
 type DirectiveValue =
 {
@@ -316,7 +298,7 @@ export default class Parser
             {
                 if (childNode.nodeType == NodeType.Comment)
                 {
-                    yield { type: DescriptorType.Comment, value: childNode.textContent ?? "" };
+                    yield { type: DescriptorType.Comment, value: childNode.textContent! };
                 }
 
                 nonElementsCount++;
@@ -380,6 +362,8 @@ export default class Parser
 
     private *parseAttributes(element: Element, stackTrace: StackTrace): Iterable<AttributeBindDescritor>
     {
+        const duplications = new Map<string, string>();
+
         for (let i = 0; i < element.attributes.length; i++)
         {
             const attribute = element.attributes[i];
@@ -397,20 +381,48 @@ export default class Parser
 
                 const context = TypeGuard.isMemberExpression(expression) ? expression.object : new Literal(null);
 
-                yield { context, name, source, stackTrace, type: DescriptorType.Event, value: expression };
+                yield { context, listener: expression, name, source, stackTrace, type: DescriptorType.EventListener };
             }
-            else if (attribute.name == "#extends" || attribute.name.startsWith("#extends."))
+            else if (attribute.name.startsWith("..."))
             {
-                const [, selector = "*"] = attribute.name.split(".");
+                const properties = new Set(attribute.name.substring(3).split("|"));
 
-                if (!typeGuard<ExtendsAttributeDescriptor["selector"]>(selector, extendsProperties.has(selector)))
+                for (const property of properties)
                 {
-                    throwTemplateParseError(`Property '${selector}' does not exist on #extends directive`, this.stackTrace);
+                    if (!spreadFlags.has(property))
+                    {
+                        throwTemplateParseError(`Property '${property}' not supported on spread directive.`, this.stackTrace);
+                    }
+
+                    if (duplications.has(property))
+                    {
+                        throwTemplateParseError(`Property '${property}' specified in ${duplications.get(property)}.`, this.stackTrace);
+                    }
+
+                    duplications.set(property, source);
                 }
 
-                const expression = this.tryParseExpression(parseExpression, attribute.value || "undefined", source);
+                let flags = MetadataFlags.None;
 
-                yield { expression, selector, source, stackTrace, type: DescriptorType.Extends };
+                if (properties.has(SpreadProperties.Attributes))
+                {
+                    flags |= MetadataFlags.Attributes;
+                }
+
+                if (properties.has(SpreadProperties.Binds))
+                {
+                    flags |= MetadataFlags.Binds;
+                }
+
+                if (properties.has(SpreadProperties.Listeners))
+                {
+                    flags |= MetadataFlags.Listeners;
+                }
+
+                const expression  = this.tryParseExpression(parseExpression, attribute.value || "undefined", source);
+                const observables = ObserverVisitor.observe(expression);
+
+                yield { expression, flags, observables, source, stackTrace, type: DescriptorType.Spread };
             }
             else if (attribute.name.startsWith("#"))
             {
@@ -445,7 +457,7 @@ export default class Parser
 
                 if (type == DescriptorType.Interpolation)
                 {
-                    yield { key: attribute.name, type: DescriptorType.Attribute, value: "" };
+                    yield { name: attribute.name, type: DescriptorType.Attribute, value: "" };
                     yield { key: attribute.name, observables, source, stackTrace, type, value: expression };
                 }
                 else if (type == DescriptorType.Twoway)
@@ -459,7 +471,7 @@ export default class Parser
             }
             else
             {
-                yield { key: attribute.name, type: DescriptorType.Attribute, value: attribute.value };
+                yield { name: attribute.name, type: DescriptorType.Attribute, value: attribute.value };
             }
         }
     }

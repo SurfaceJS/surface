@@ -23,5 +23,6 @@ export type
     TwoWayAttributeDescritor,
 } from "./internal/types/descriptor";
 
+export { default as MetadataFlags }  from "./internal/flags/metadata-flags.js";
 export { default as DescriptorType } from "./internal/descriptor-type.js";
 export { default as Parser }         from "./internal/parser.js";
