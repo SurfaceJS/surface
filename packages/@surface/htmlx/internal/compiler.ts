@@ -1,23 +1,28 @@
-import { DescriptorType, Parser }                  from "@surface/htmlx-parser";
+import { hasFlag }                                 from "@surface/core";
+import { DescriptorType, MetadataFlags, Parser }   from "@surface/htmlx-parser";
 import type { AttributeBindDescritor, Descriptor } from "@surface/htmlx-parser";
 import createChoiceFactory                         from "./factories/create-choice-factory.js";
 import createCommentFactory                        from "./factories/create-comment-factory.js";
 import createDirectiveFactory                      from "./factories/create-directive-factory.js";
 import createElementFactory                        from "./factories/create-element-factory.js";
-import createEventListenerFactory                 from "./factories/create-event-listener-factory.js";
+import createEventListenerFactory                  from "./factories/create-event-listener-factory.js";
 import createFragmentFactory                       from "./factories/create-fragment-factory.js";
 import createInjectionFactory                      from "./factories/create-injection-factory.js";
 import createInterpolationFactory                  from "./factories/create-interpolation-factory.js";
 import createLoopFactory                           from "./factories/create-loop-factory.js";
 import createOnewayFactory                         from "./factories/create-oneway-factory.js";
 import createPlaceholderFactory                    from "./factories/create-placeholder-factory.js";
+import createSpreadAttributesFactory               from "./factories/create-spread-attributes-factory.js";
+import createSpreadBindsFactory                    from "./factories/create-spread-binds-factory.js";
 import createSpreadFactory                         from "./factories/create-spread-factory.js";
+import createSpreadListenersFactory                from "./factories/create-spread-listeners.js";
 import createTextNodeFactory                       from "./factories/create-text-node-factory.js";
 import createTextNodeInterpolationFactory          from "./factories/create-text-node-interpolation-factory.js";
 import createTwowayFactory                         from "./factories/create-twoway-factory.js";
 import TemplateFactory                             from "./template-factory.js";
 import type AttributeFactory                       from "./types/attribute-factory.js";
 import type NodeFactory                            from "./types/node-factory.js";
+import type SpreadFactory                          from "./types/spread-factory.js";
 
 export default class Compiler
 {
@@ -46,7 +51,26 @@ export default class Compiler
                     factories.push(createOnewayFactory(bind.key, scope => bind.value.evaluate(scope), bind.observables, bind.source, bind.stackTrace));
                     break;
                 case DescriptorType.Spread:
-                    factories.push(createSpreadFactory(bind.flags, scope => bind.expression.evaluate(scope), bind.observables, bind.source, bind.stackTrace));
+                    {
+                        const spreadFactories: SpreadFactory[] = [];
+
+                        if (hasFlag(bind.flags, MetadataFlags.Attributes))
+                        {
+                            spreadFactories.push(createSpreadAttributesFactory);
+                        }
+
+                        if (hasFlag(bind.flags, MetadataFlags.Binds))
+                        {
+                            spreadFactories.push(createSpreadBindsFactory);
+                        }
+
+                        if (hasFlag(bind.flags, MetadataFlags.Listeners))
+                        {
+                            spreadFactories.push(createSpreadListenersFactory);
+                        }
+
+                        factories.push(createSpreadFactory(scope => bind.expression.evaluate(scope), bind.observables, spreadFactories, bind.source, bind.stackTrace));
+                    }
                     break;
                 case DescriptorType.Twoway:
                 default:

@@ -1,19 +1,18 @@
 /* eslint-disable @typescript-eslint/indent */
-import { CancellationTokenSource, hasFlag }                                                             from "@surface/core";
-import type { IDisposable, Subscription }                                                               from "@surface/core";
-import type { ObservablePath, StackTrace }                                                              from "@surface/htmlx-parser";
-import { MetadataFlags }                                                                                from "@surface/htmlx-parser";
-import eventListener, { onewaybind, throwTemplateEvaluationError, tryEvaluate, tryObserve, twowaybind } from "../common.js";
-import Metadata                                                                                         from "../metadata.js";
-import { scheduler }                                                                                    from "../singletons.js";
-import type Evaluator                                                                                   from "../types/evaluator.js";
+import { CancellationTokenSource }                               from "@surface/core";
+import type { IDisposable, Subscription }                        from "@surface/core";
+import type { ObservablePath, StackTrace }                       from "@surface/htmlx-parser";
+import { throwTemplateEvaluationError, tryEvaluate, tryObserve } from "../common.js";
+import { scheduler }                                             from "../singletons.js";
+import type Evaluator                                            from "../types/evaluator.js";
+import type SpreadFactory                                        from "../types/spread-factory.js";
 
 export type Context =
 {
     element:     HTMLElement,
     evaluator:   Evaluator,
     scope:       object,
-    flags:       MetadataFlags,
+    factories:   SpreadFactory[],
     observables: ObservablePath[],
     source?:     string,
     stackTrace?: StackTrace,
@@ -21,12 +20,12 @@ export type Context =
 
 export default class SpreadDirective implements IDisposable
 {
-    private readonly cancellationTokenSource:  CancellationTokenSource = new CancellationTokenSource();
-    private readonly disposables:              IDisposable[] = [];
-    private readonly subscription:             Subscription;
+    private readonly cancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
+    private readonly disposables:             IDisposable[] = [];
+    private readonly subscription:            Subscription;
 
     private disposed: boolean = false;
-    private target?: HTMLElement;
+    private source?: HTMLElement;
 
     public constructor(private readonly context: Context)
     {
@@ -39,14 +38,14 @@ export default class SpreadDirective implements IDisposable
 
     private readonly task = (): void =>
     {
-        const target = tryEvaluate(this.context.scope, this.context.evaluator, this.context.source, this.context.stackTrace);
+        const source = tryEvaluate(this.context.scope, this.context.evaluator, this.context.source, this.context.stackTrace);
 
-        if (this.target == target)
+        if (this.source == source)
         {
             return;
         }
 
-        if (!(target instanceof HTMLElement))
+        if (!(source instanceof HTMLElement))
         {
             const message = `Expression '${this.context.source}' don't results in a valid HTMLElement`;
 
@@ -58,71 +57,14 @@ export default class SpreadDirective implements IDisposable
             throw new Error(message);
         }
 
-        const metadata = Metadata.from(target);
-
         this.disposables.splice(0).forEach(x => x.dispose());
 
-        if (hasFlag(this.context.flags, MetadataFlags.Attributes))
+        for (const factory of this.context.factories)
         {
-            // eslint-disable-next-line @typescript-eslint/prefer-for-of
-            for (let index = 0; index < target.attributes.length; index++)
-            {
-                const attribute = target.attributes[index];
-
-                this.context.element.setAttribute(attribute.name, attribute.value);
-            }
-
-            const callback: MutationCallback = records =>
-            {
-                const action = (): void =>
-                {
-                    for (const record of records)
-                    {
-                        const value = target.getAttribute(record.attributeName!);
-
-                        if (value === null)
-                        {
-                            this.context.element.removeAttribute(record.attributeName!);
-                        }
-                        else
-                        {
-                            this.context.element.setAttribute(record.attributeName!, value);
-                        }
-                    }
-                };
-
-                void scheduler.enqueue(action, "high");
-            };
-
-            const observer = new MutationObserver(callback);
-
-            observer.observe(target, { attributes: true });
-
-            this.disposables.push({ dispose: () => observer.disconnect() });
+            this.disposables.push(factory(source, this.context.element));
         }
 
-        if (hasFlag(this.context.flags, MetadataFlags.Binds))
-        {
-            for (const entry of metadata.context.binds.oneway.values())
-            {
-                this.disposables.push(onewaybind(this.context.element, entry.scope, entry.key, entry.evaluator, entry.observables));
-            }
-
-            for (const entry of metadata.context.binds.twoway.values())
-            {
-                this.disposables.push(twowaybind(this.context.element, entry.scope, entry.left, entry.right));
-            }
-        }
-
-        if (hasFlag(this.context.flags, MetadataFlags.Listeners))
-        {
-            for (const entry of metadata.context.listeners.values())
-            {
-                this.disposables.push(eventListener(this.context.element, entry.scope, entry.type, entry.listenerEvaluator, entry.contextEvaluator));
-            }
-        }
-
-        this.target = target;
+        this.source = source;
     };
 
     public dispose(): void
@@ -130,8 +72,9 @@ export default class SpreadDirective implements IDisposable
         if (!this.disposed)
         {
             this.cancellationTokenSource.cancel();
-            this.subscription.unsubscribe();
             this.disposables.splice(0).forEach(x => x.dispose());
+            this.subscription.unsubscribe();
+
             this.disposed = true;
         }
     }

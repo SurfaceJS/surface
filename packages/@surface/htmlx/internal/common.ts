@@ -4,7 +4,7 @@ import type { ObservablePath, StackTrace }                                     f
 import TemplateEvaluationError                                                 from "./errors/template-evaluation-error.js";
 import TemplateObservationError                                                from "./errors/template-observation-error.js";
 import TemplateProcessError                                                    from "./errors/template-process-error.js";
-import Metadata from "./metadata.js";
+import Metadata                                                                from "./metadata.js";
 import AsyncObserver                                                           from "./reactivity/async-observer.js";
 import { scheduler }                                                           from "./singletons.js";
 import type DestructuredEvaluator                                              from "./types/destructured-evaluator.js";
