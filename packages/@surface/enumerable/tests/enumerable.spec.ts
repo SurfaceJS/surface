@@ -769,6 +769,18 @@ export default class EnumerableSpec
     }
 
     @test @shouldPass
+    public sum(): void
+    {
+        chai.assert.equal(Enumerable.from([1, 2, 3]).sum(), 6);
+    }
+
+    @test @shouldPass
+    public sumEmpty(): void
+    {
+        chai.assert.equal(Enumerable.from([]).sum(), 0);
+    }
+
+    @test @shouldPass
     public take(): void
     {
         chai.assert.deepEqual(Array.from(Enumerable.from([1, 2, 3]).take(2)), [1, 2]);
@@ -998,15 +1010,9 @@ export default class EnumerableSpec
         chai.assert.throw(() => Enumerable.from([1, 2, 3]).single(x => x > 3), Error, "no element satisfies the condition in predicate");
     }
 
-    @test @shouldPass
-    public sum(): void
+    @test @shouldFail
+    public sumNotNumber(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).sum(), 6);
-    }
-
-    @test @shouldPass
-    public sumEmpty(): void
-    {
-        chai.assert.equal(Enumerable.from([]).sum(), 0);
+        chai.assert.throws(() => Enumerable.from([""]).sum());
     }
 }

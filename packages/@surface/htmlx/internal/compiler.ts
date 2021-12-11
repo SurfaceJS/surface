@@ -153,8 +153,6 @@ export default class Compiler
                 );
             case DescriptorType.Comment:
                 return createCommentFactory(descriptor.value);
-            case DescriptorType.Spread:
-                return (() => []) as unknown as NodeFactory;
             case DescriptorType.Fragment:
             default:
                 return createFragmentFactory

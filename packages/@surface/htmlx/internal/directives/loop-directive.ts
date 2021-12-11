@@ -168,6 +168,8 @@ export default class LoopDirective implements IDisposable
 
     private readonly task = (): void =>
     {
+
+        /* c8 ignore next 4 */
         if (this.disposed)
         {
             return;

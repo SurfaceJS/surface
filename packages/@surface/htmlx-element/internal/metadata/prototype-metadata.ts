@@ -16,9 +16,4 @@ export default class PrototypeMetadata
 
         return Reflect.get(target, PROTOTYPE_METADATA) as PrototypeMetadata;
     }
-
-    public inherit(): PrototypeMetadata
-    {
-        return new PrototypeMetadata();
-    }
 }

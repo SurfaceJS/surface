@@ -2,7 +2,7 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "@surface/dom-shim";
 
-import type { Constructor, Delegate }            from "@surface/core";
+import type { Constructor, Delegate, IDisposable }            from "@surface/core";
 import { AggregateError, Version, resolveError } from "@surface/core";
 import { shouldFail, shouldPass, suite, test }   from "@surface/test-suite";
 import chai                                      from "chai";
@@ -93,8 +93,9 @@ function defineComponent(tag: `${string}-${string}`, template: string = ""): Con
 {
     const factory = Compiler.compile(tag, template);
 
-    class Component extends HTMLElement
+    class Component extends HTMLElement implements IDisposable
     {
+        private readonly disposable: IDisposable;
         public constructor()
         {
             super();
@@ -105,7 +106,12 @@ function defineComponent(tag: `${string}-${string}`, template: string = ""): Con
 
             this.shadowRoot!.appendChild(content);
 
-            activator(this.shadowRoot!, this, { host: this }, new Map());
+            this.disposable = activator(this.shadowRoot!, this, { host: this }, new Map());
+        }
+
+        public dispose(): void
+        {
+            this.disposable.dispose();
         }
     }
 
@@ -148,6 +154,18 @@ function compile(options: CompileOptions): void
 @suite
 export default class CompilerSpec
 {
+    @test @shouldPass
+    public elementWithComment(): void
+    {
+        const host = createNode();
+
+        const shadowRoot = "<!--This is A comment-->";
+
+        compile({ host, shadowRoot });
+
+        chai.assert.equal(host.shadowRoot!.firstChild!.textContent, "This is A comment");
+    }
+
     @test @shouldPass
     public elementWithAttributes(): void
     {
@@ -411,7 +429,7 @@ export default class CompilerSpec
     }
 
     @test @shouldPass
-    public async templateWithExtendsAttributesDirective(): Promise<void>
+    public async templateWithSpreadAttributesDirective(): Promise<void>
     {
         const host = createNode();
 
@@ -442,7 +460,7 @@ export default class CompilerSpec
     }
 
     @test @shouldPass
-    public async templateWithExtendsOnewayBindsDirective(): Promise<void>
+    public async templateWithSpreadOnewayBindsDirective(): Promise<void>
     {
         const hash = crypto.randomUUID();
 
@@ -490,7 +508,7 @@ export default class CompilerSpec
     }
 
     @test @shouldPass
-    public async templateWithExtendsTwowayBindsDirective(): Promise<void>
+    public async templateWithSpreadTwowayBindsDirective(): Promise<void>
     {
         const hash = crypto.randomUUID();
 
@@ -538,7 +556,7 @@ export default class CompilerSpec
     }
 
     @test @shouldPass
-    public async templateWithExtendsListernersDirective(): Promise<void>
+    public async templateWithSpreadListernersDirective(): Promise<void>
     {
         const hash = crypto.randomUUID();
 
@@ -1765,6 +1783,35 @@ export default class CompilerSpec
         chai.assert.deepEqual(actual2, expected2, "#2");
     }
 
+    @test @shouldPass
+    public async disposeTree(): Promise<void>
+    {
+        const hash = crypto.randomUUID();
+
+        const ROOT_TAG = `x-root-${hash}` as const;
+        const HOST_TAG = `x-host-${hash}` as const;
+
+        const rootTemplate =
+        [
+            `<${HOST_TAG} :lang="host.lang" ::title="host.title" foo="{host.lang}" @click="host.title = 'clicked'">`,
+            /**/"<span ...attributes='host' #inject #if='true' #for='i of [1, 2, 3]'>Index is {i}</span>",
+            `</${HOST_TAG}>`,
+        ].join("");
+
+        defineComponent(HOST_TAG, "<span #placeholder></span>");
+        defineComponent(ROOT_TAG, rootTemplate);
+
+        const root = document.createElement(ROOT_TAG) as HTMLElement & IDisposable;
+
+        await scheduler.execution();
+
+        root.dispose();
+
+        await scheduler.execution();
+
+        chai.assert.isOk(true);
+    }
+
     @test @shouldFail
     public evaluationErrorOneWayDataBinding(): void
     {
@@ -2194,6 +2241,23 @@ export default class CompilerSpec
 
         chai.assert.deepEqual(actual, expected);
     }
+
+    // @test @shouldFail // TODO: Investigate side effect crashes
+    // public async spreadTargetIsNotHtmlElement(): Promise<void>
+    // {
+    //     const host = createNode();
+
+    //     const shadowRoot = "<span ...attributes=\"{ }\"></span>";
+
+    //     const message = "Expression '...attributes=\"{ }\"' don't results in a valid HTMLElement";
+    //     const stack   = "<y-component>\n   #shadow-root\n      <span ...attributes=\"{ }\">";
+
+    //     const actual   = await tryActionAsync(() => compile({ host, shadowRoot }));
+
+    //     const expected = toRaw(new CustomStackError(message, stack));
+
+    //     chai.assert.deepEqual(actual, expected);
+    // }
 
     @shouldFail @test
     public unresgisteredDirective(): void

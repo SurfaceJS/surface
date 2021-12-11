@@ -162,7 +162,6 @@ export type TextInterpolationDescriptor =
 export type Descriptor =
     | ChoiceStatementDescriptor
     | CommentDescriptor
-    | SpreadAttributeDescriptor
     | ElementDescriptor
     | FragmentDescriptor
     | InjectionStatementDescriptor

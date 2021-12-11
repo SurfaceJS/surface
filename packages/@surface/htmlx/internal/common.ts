@@ -41,7 +41,7 @@ export function twowaybind(element: HTMLElement, scope: object, left: string, ri
     checkPath(scope, right, source, stackTrace);
     checkProperty(element, left, source, stackTrace);
 
-    const subscription = tryBind(element, [left], scope as object, right, source, stackTrace);
+    const subscription = bind(element, [left], scope, right);
 
     Metadata.from(element).context.binds.twoway.set(left, { left, right, scope });
 
@@ -96,7 +96,7 @@ export function checkPath(scope: object, path: ObservablePath, source?: string, 
     checkProperty(target, key, source, stackTrace);
 }
 
-export function checkProperty(target: object, key: string, source: string | undefined, stackTrace: StackTrace | undefined): void
+export function checkProperty(target: object, key: string, source?: string, stackTrace?: StackTrace): void
 {
     const descriptor = getPropertyDescriptor(target, key);
 
@@ -106,7 +106,12 @@ export function checkProperty(target: object, key: string, source: string | unde
             ? `Binding error in '${source}': Property "${key}" of ${target.constructor.name} is readonly`
             : `Binding error in '${source}': Property "${key}" does not exists on type ${target.constructor.name}`;
 
-        throw new TemplateProcessError(message, buildStackTrace(stackTrace ?? []));
+        if (source && stackTrace)
+        {
+            throw new TemplateProcessError(message, buildStackTrace(stackTrace));
+        } /* c8 ignore next 3 */
+
+        throw new Error(message);
     }
 }
 
@@ -147,16 +152,6 @@ export function observe(target: object, observables: ObservablePath[], listener:
     return { unsubscribe: () => subscriptions.splice(0).forEach(x => x.unsubscribe()) };
 }
 
-export function stringToCSSStyleSheet(source: string): CSSStyleSheet
-{
-    const sheet = new CSSStyleSheet() as CSSStyleSheet & { replaceSync: (source: string) => void };
-
-    sheet.replaceSync(source);
-    sheet.toString = () => source;
-
-    return sheet;
-}
-
 export function styleMap(rules: Record<string, boolean>): string
 {
     return Object.entries(rules)
@@ -174,23 +169,6 @@ export function throwTemplateObservationError(message: string, stackTrace: Stack
     throw new TemplateObservationError(message, buildStackTrace(stackTrace));
 }
 
-export function tryBind(left: object, leftPath: ObservablePath, right: object, rightPath: ObservablePath, source?: string, stackTrace?: StackTrace): Subscription
-{
-    try
-    {
-        return bind(left, leftPath, right, rightPath);
-    }
-    catch (error)
-    {
-        if (source && stackTrace)
-        {
-            throwTemplateObservationError(`Binding error in '${source}': ${resolveError(error).message}`, stackTrace);
-        }
-
-        throw error;
-    }
-}
-
 export function tryEvaluate(scope: object, evaluator: Evaluator, source?: string, stackTrace?: StackTrace): unknown
 {
     try
@@ -202,7 +180,7 @@ export function tryEvaluate(scope: object, evaluator: Evaluator, source?: string
         if (source && stackTrace)
         {
             throwTemplateEvaluationError(`Evaluation error in '${source}': ${resolveError(error).message}`, stackTrace);
-        }
+        } /* c8 ignore next 3 */
 
         throw error;
     }
@@ -219,7 +197,7 @@ export function tryEvaluatePattern(scope: object, evaluator: DestructuredEvaluat
         if (source && stackTrace)
         {
             throwTemplateEvaluationError(`Evaluation error in '${source}': ${resolveError(error).message}`, stackTrace);
-        }
+        } /* c8 ignore next 3 */
 
         throw error;
     }
@@ -236,7 +214,7 @@ export function tryObserve(target: object, observables: ObservablePath[], listen
         if (source && stackTrace)
         {
             throwTemplateObservationError(`Binding error in '${source}': ${resolveError(error).message}`, stackTrace);
-        }
+        } /* c8 ignore next 3 */
 
         throw error;
     }

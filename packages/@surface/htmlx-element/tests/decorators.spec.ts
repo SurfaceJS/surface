@@ -139,15 +139,10 @@ export default class DecoratorsSpec
             template:   "<div #custom>Template</div>",
         };
 
-        @element(`mock-${crypto.randomUUID()}` as `${string}-${string}`, options)
+        @element(`mock-${crypto.randomUUID()}`, options)
         class Mock extends HTMLXElement.as(HTMLDivElement)
-        {
-            public constructor()
-            {
-                super();
-            }
-        }
+        { }
 
-        chai.assert.doesNotThrow(() => new Mock());
+        chai.assert.doesNotThrow(() => new Mock().dispose());
     }
 }

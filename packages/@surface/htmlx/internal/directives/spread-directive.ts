@@ -40,6 +40,7 @@ export default class SpreadDirective implements IDisposable
     {
         const source = tryEvaluate(this.context.scope, this.context.evaluator, this.context.source, this.context.stackTrace);
 
+        /* c8 ignore next 4 */
         if (this.source == source)
         {
             return;
@@ -52,7 +53,7 @@ export default class SpreadDirective implements IDisposable
             if (this.context.source && this.context.stackTrace)
             {
                 throwTemplateEvaluationError(message, this.context.stackTrace);
-            }
+            }  /* c8 ignore next 3 */
 
             throw new Error(message);
         }

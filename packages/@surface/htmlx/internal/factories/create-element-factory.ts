@@ -22,16 +22,16 @@ export default function createElementFactory(tag: string, attributes?: Attribute
         const activators:  Activator[]   = [];
         const disposables: IDisposable[] = [];
 
+        if ("dispose" in element)
+        {
+            disposables.push(element as unknown as IDisposable);
+        }
+
         if (childs)
         {
             for (const childFactory of childs)
             {
                 const [childElement, activator] = childFactory();
-
-                if ("dispose" in childElement)
-                {
-                    disposables.push(childElement as unknown as IDisposable);
-                }
 
                 element.appendChild(childElement);
 
