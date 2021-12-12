@@ -45,7 +45,7 @@ export default class InjectDirective implements IDisposable
         this.keySubscription = tryObserve(context.scope, context.observables[0], listener, true, context.source?.key, context.stackTrace);
         this.subscription    = tryObserve(context.scope, context.observables[1], listener, true, context.source?.scope, context.stackTrace);
 
-        this.task();
+        listener();
     }
 
     private readonly task = (): void =>

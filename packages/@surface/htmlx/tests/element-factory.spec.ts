@@ -67,6 +67,8 @@ export default class ElementFactorySpec
 
         disposable.dispose();
 
+        await scheduler.execution();
+
         scope.host.value = "Bye Bye World!!!";
 
         await scheduler.execution();
@@ -99,6 +101,8 @@ export default class ElementFactorySpec
         chai.assert.equal(element.className, scope.host.value);
 
         disposable.dispose();
+
+        await scheduler.execution();
 
         scope.host.value = "my-class-not-changed";
 

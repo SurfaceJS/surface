@@ -9,6 +9,10 @@ export { default as createInterpolationFactory }         from "./create-interpol
 export { default as createLoopFactory }                  from "./create-loop-factory.js";
 export { default as createOnewayFactory }                from "./create-oneway-factory.js";
 export { default as createPlaceholderFactory }           from "./create-placeholder-factory.js";
+export { default as createSpreadAttributesFactory }      from "./create-spread-attributes-factory.js";
+export { default as createSpreadBindsFactory }           from "./create-spread-binds-factory.js";
+export { default as createSpreadFactory }                from "./create-spread-factory.js";
+export { default as createSpreadListenersFactory }       from "./create-spread-listeners.js";
 export { default as createTextNodeFactory }              from "./create-text-node-factory.js";
 export { default as createTextNodeInterpolationFactory } from "./create-text-node-interpolation-factory.js";
 export { default as createTwowayFactory }                from "./create-twoway-factory.js";

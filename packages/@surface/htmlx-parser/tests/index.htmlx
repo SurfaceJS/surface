@@ -53,7 +53,7 @@
         <th>Status</th>
     </tr>
     <tr #for="const item of host.items">
-        <th>{item.id}</th>
+        <th>{...item.id}</th>
         <th>{item.name}</th>
         <th>{item.status}</th>
     </tr>

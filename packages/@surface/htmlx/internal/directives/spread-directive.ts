@@ -40,15 +40,9 @@ export default class SpreadDirective implements IDisposable
     {
         const source = tryEvaluate(this.context.scope, this.context.evaluator, this.context.source, this.context.stackTrace);
 
-        /* c8 ignore next 4 */
-        if (this.source == source)
-        {
-            return;
-        }
-
         if (!(source instanceof HTMLElement))
         {
-            const message = `Expression '${this.context.source}' don't results in a valid HTMLElement`;
+            const message = `Expression '${this.context.source}' does not result in a valid HTMLElement.`;
 
             if (this.context.source && this.context.stackTrace)
             {
@@ -56,6 +50,12 @@ export default class SpreadDirective implements IDisposable
             }  /* c8 ignore next 3 */
 
             throw new Error(message);
+        }
+
+        /* c8 ignore next 4 */
+        if (this.source == source)
+        {
+            return;
         }
 
         this.disposables.splice(0).forEach(x => x.dispose());

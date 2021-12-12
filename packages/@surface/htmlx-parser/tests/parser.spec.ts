@@ -84,6 +84,14 @@ function toRaw(error: Error): RawError
     return { message: error.message };
 }
 
+// TODO: Test this
+// <template
+//         #inject.key="'items'"
+//         #inject.scope="scope"
+//         #placeholder:items="scope"
+//     >
+// </template>
+
 @suite
 export default class HTMLXElementParserSpec
 {

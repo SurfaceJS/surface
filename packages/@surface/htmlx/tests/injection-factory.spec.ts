@@ -7,7 +7,7 @@ import createFragmentFactory              from "../internal/factories/create-fra
 import createInjectionFactory             from "../internal/factories/create-injection-factory.js";
 import createPlaceholderFactory           from "../internal/factories/create-placeholder-factory.js";
 import createTextNodeInterpolationFactory from "../internal/factories/create-text-node-interpolation-factory.js";
-import { scheduler }                      from "../../htmlx/internal/singletons.js";
+import { scheduler }                      from "../internal/singletons.js";
 import type DestructuredEvaluator         from "../internal/types/destructured-evaluator.js";
 import type Evaluator                     from "../internal/types/evaluator.js";
 

@@ -2,7 +2,7 @@ import type { IDisposable }   from "@surface/core";
 import { DisposableMetadata } from "@surface/core";
 import type Observer          from "./observer.js";
 
-const METADATA = Symbol("reactive:metadata");
+const METADATA = Symbol("observer:metadata");
 
 export default class Metadata implements IDisposable
 {

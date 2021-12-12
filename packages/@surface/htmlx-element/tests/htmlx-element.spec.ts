@@ -1,5 +1,6 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "@surface/dom-shim";
+import { painting } from "@surface/htmlx";
 
 import { shouldPass, suite, test } from "@surface/test-suite";
 import chai                        from "chai";
@@ -56,15 +57,15 @@ export default class HTMLXElementSpec
     }
 
     @test @shouldPass
-    public getInjections(): void
+    public async getInjections(): Promise<void>
     {
         const HASH = crypto.randomUUID();
 
-        @element(`x-root-${HASH}`, { template: `<x-host-${HASH}><span #inject>Hello World!!!</span></x-host-${HASH}>` })
+        @element(`x-root-${HASH}`, { template: `<x-host-${HASH}><span #if="host.lang" #inject>Hello World!!!</span></x-host-${HASH}>` })
         class Root extends HTMLXElement
         { }
 
-        @element(`x-host-${HASH}`)
+        @element(`x-host-${HASH}`, { template: "<div class='injected' #for='injection of host.$injections'></div>" })
         class Host extends HTMLXElement
         { }
 
@@ -73,8 +74,16 @@ export default class HTMLXElementSpec
         const root = new Root();
         const host = root.shadowRoot.firstElementChild as HTMLXElement;
 
-        chai.assert.instanceOf(host.$injections, Array);
+        await painting();
+
+        chai.assert.equal(host.$injections.length, 0);
+
+        root.lang = "pt-br";
+
+        await painting();
+
         chai.assert.equal(host.$injections.length, 1);
         chai.assert.equal(host.$injections[0], "default");
+        chai.assert.equal(host.shadowRoot!.querySelectorAll(".injected").length, 1);
     }
 }

@@ -30,7 +30,7 @@ export default function createSpreadAttributesFactory(source: HTMLElement, targe
             }
         };
 
-        void scheduler.enqueue(action, "high");
+        void scheduler.enqueue(action, "normal");
     };
 
     const observer = new MutationObserver(callback);

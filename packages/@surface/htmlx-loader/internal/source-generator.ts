@@ -1,8 +1,8 @@
 /* eslint-disable max-lines-per-function */
-import { deepMerge }                                                                        from "@surface/core";
+import { deepMerge, hasFlag }                                                                        from "@surface/core";
 import type { IExpression, IPattern }                                                       from "@surface/expression";
 import { TypeGuard }                                                                        from "@surface/expression";
-import { DescriptorType, Parser }                                                           from "@surface/htmlx-parser";
+import { DescriptorType, MetadataFlags, Parser }                                                           from "@surface/htmlx-parser";
 import type { AttributeBindDescritor, BranchDescriptor, Descriptor, RawAttributeDescritor } from "@surface/htmlx-parser";
 import jsdom                                                                                from "jsdom";
 import { defaultAttributeHandlers }                                                         from "./attribute-handlers.js";
@@ -14,7 +14,6 @@ const factoryMap: Record<Descriptor["type"], string> =
     [DescriptorType.Choice]:            "createChoiceFactory",
     [DescriptorType.Comment]:           "createCommentFactory",
     [DescriptorType.Element]:           "createElementFactory",
-    [DescriptorType.Spread]:            "createSpreadFactory",
     [DescriptorType.Fragment]:          "createFragmentFactory",
     [DescriptorType.Injection]:         "createInjectionFactory",
     [DescriptorType.Loop]:              "createLoopFactory",
@@ -27,10 +26,17 @@ const attributeFactoryMap: Record<Exclude<AttributeBindDescritor["type"], Descri
 {
     [DescriptorType.Directive]:     "createDirectiveFactory",
     [DescriptorType.Spread]:        "createSpreadFactory",
-    [DescriptorType.EventListener]: "createEventListernerFactory",
+    [DescriptorType.EventListener]: "createEventListenerFactory",
     [DescriptorType.Interpolation]: "createInterpolationFactory",
     [DescriptorType.Oneway]:        "createOnewayFactory",
     [DescriptorType.Twoway]:        "createTwowayFactory",
+};
+
+const spreadFactories =
+{
+    Attributes: "createSpreadAttributesFactory",
+    Binds:      "createSpreadBindsFactory",
+    Listeners:  "createSpreadListenersFactory",
 };
 
 export default class SourceGenerator
@@ -159,7 +165,32 @@ export default class SourceGenerator
                         break;
                     case DescriptorType.Spread:
                         this.writeLine(`${this.stringifyExpression(descriptor.expression)},`);
-                        this.writeLine(`${descriptor.flags},`);
+                        this.writeLine(`${JSON.stringify(descriptor.observables)},`);
+
+                        this.writeLine("[");
+                        this.increaseIndent();
+
+                        if (hasFlag(descriptor.flags, MetadataFlags.Attributes))
+                        {
+                            this.writeLine("createSpreadAttributesFactory,");
+                            this.factories.add(spreadFactories.Attributes);
+                        }
+
+                        if (hasFlag(descriptor.flags, MetadataFlags.Binds))
+                        {
+                            this.writeLine("createSpreadBindsFactory,");
+                            this.factories.add(spreadFactories.Binds);
+                        }
+
+                        if (hasFlag(descriptor.flags, MetadataFlags.Listeners))
+                        {
+                            this.writeLine("createSpreadListenersFactory,");
+                            this.factories.add(spreadFactories.Listeners);
+                        }
+
+                        this.decreaseIndent();
+                        this.writeLine("],");
+
                         this.writeLine(this.generateStackStrace ? `${JSON.stringify(descriptor.source)},` : "undefined,");
                         this.writeLine(this.generateStackStrace ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
                         break;
@@ -357,8 +388,6 @@ export default class SourceGenerator
                 this.write(","),
                 this.writeLine(this.generateStackStrace ? `${JSON.stringify(descriptor.source)},` : "undefined,");
                 this.writeLine(this.generateStackStrace ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
-                break;
-            case DescriptorType.Spread:
                 break;
             case DescriptorType.Fragment:
             default:

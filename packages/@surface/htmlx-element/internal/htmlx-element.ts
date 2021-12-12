@@ -15,6 +15,7 @@ export default class HTMLXElement extends HTMLElement implements IHTMLXElement
 {
 
     public static readonly [HTMLX_ELEMENT]: boolean = true;
+
     public get $injections(): string[]
     {
         return Array.from(HTMLXMetada.from(this).injections.keys());
@@ -40,8 +41,8 @@ export default class HTMLXElement extends HTMLElement implements IHTMLXElement
         const htmlxMetadata      = HTMLXMetada.from(instance);
         const disposableMetadata = DisposableMetadata.from(instance);
 
-        const injectionsSubscription = htmlxMetadata.injections.subscribe(() => Observer.notify(this, ["$injections"]));
-        const listenersSubscription  = htmlxMetadata.listeners.subscribe(() => Observer.notify(this, ["$listeners"]));
+        const injectionsSubscription = htmlxMetadata.injections.subscribe(() => Observer.notifyAll(instance, "$injections"));
+        const listenersSubscription  = htmlxMetadata.listeners.subscribe(() => Observer.notifyAll(instance, "$listeners"));
 
         disposableMetadata.add({ dispose: () => injectionsSubscription.unsubscribe() });
         disposableMetadata.add({ dispose: () => listenersSubscription.unsubscribe() });

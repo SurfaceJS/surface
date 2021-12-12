@@ -233,6 +233,19 @@ export default class Observer<TValue = unknown>
             : metadata.observers.forEach(x => x.notify());
     }
 
+    public static notifyAll(root: object, path: string): void
+    {
+        const observers = Metadata.from(root).subjects.get(path)?.keys();
+
+        if (observers)
+        {
+            for (const observer of observers)
+            {
+                observer.notify();
+            }
+        }
+    }
+
     public subscribe(listerner: Delegate<[TValue]>): Subscription
     {
         this.listeners.add(listerner);

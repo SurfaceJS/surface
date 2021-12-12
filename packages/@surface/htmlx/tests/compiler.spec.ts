@@ -58,6 +58,8 @@ async function tryActionAsync(action: Delegate): Promise<RawError>
     {
         if (error instanceof AggregateError)
         {
+            await scheduler.enqueue(() => void 0, "high"); // Reset State
+
             return toRaw(error.errors[0]);
         }
 
@@ -712,7 +714,7 @@ export default class CompilerSpec
     }
 
     @test @shouldPass
-    public async templateWithInjectAndPlaceholderDirectiveFowarding(): Promise<void>
+    public async templateWithInjectAndPlaceholderDirectiveForwarding(): Promise<void>
     {
         const hash = crypto.randomUUID();
 
@@ -720,7 +722,7 @@ export default class CompilerSpec
         const HOST_TAG  = `x-host-${hash}`  as const;
         const CHILD_TAG = `x-child-${hash}` as const;
 
-        defineComponent(CHILD_TAG, "<span #placeholder:item=\"{ title: 'fowarded' }\">Placeholder</span>");
+        defineComponent(CHILD_TAG, "<span #placeholder:item=\"{ title: 'forwarded' }\">Placeholder</span>");
         defineComponent(HOST_TAG, `<${CHILD_TAG}><span #inject:item="scope" #placeholder:item="scope">Injected Placeholder</span></${CHILD_TAG}>`);
         defineComponent(ROOT_TAG, `<${HOST_TAG}><span #inject:item="{ title }">Title: {title}</span></${HOST_TAG}>`);
 
@@ -730,7 +732,7 @@ export default class CompilerSpec
 
         await scheduler.execution();
 
-        chai.assert.equal(child.shadowRoot!.firstElementChild!.textContent, "Title: fowarded");
+        chai.assert.equal(child.shadowRoot!.firstElementChild!.textContent, "Title: forwarded");
     }
 
     @test @shouldPass
@@ -2242,22 +2244,22 @@ export default class CompilerSpec
         chai.assert.deepEqual(actual, expected);
     }
 
-    // @test @shouldFail // TODO: Investigate side effect crashes
-    // public async spreadTargetIsNotHtmlElement(): Promise<void>
-    // {
-    //     const host = createNode();
+    @test @shouldFail // TODO: Investigate side effect crashes
+    public async spreadTargetIsNotHtmlElement(): Promise<void>
+    {
+        const host = createNode();
 
-    //     const shadowRoot = "<span ...attributes=\"{ }\"></span>";
+        const shadowRoot = "<span ...binds=\"{ }\"></span>";
 
-    //     const message = "Expression '...attributes=\"{ }\"' don't results in a valid HTMLElement";
-    //     const stack   = "<y-component>\n   #shadow-root\n      <span ...attributes=\"{ }\">";
+        const message = "Expression '...binds=\"{ }\"' don't results in a valid HTMLElement";
+        const stack   = "<y-component>\n   #shadow-root\n      <span ...binds=\"{ }\">";
 
-    //     const actual   = await tryActionAsync(() => compile({ host, shadowRoot }));
+        const actual = await tryActionAsync(() => compile({ host, shadowRoot }));
 
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     chai.assert.deepEqual(actual, expected);
-    // }
+        chai.assert.deepEqual(actual, expected);
+    }
 
     @shouldFail @test
     public unresgisteredDirective(): void

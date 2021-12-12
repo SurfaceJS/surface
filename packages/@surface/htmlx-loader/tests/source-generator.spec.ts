@@ -522,7 +522,7 @@ export default class SourceGeneratorSpec
             "{",
             "\tcreateFragmentFactory,",
             "\tcreateElementFactory,",
-            "\tcreateEventListernerFactory,",
+            "\tcreateEventListenerFactory,",
             "\tTemplateFactory,",
             "} from \"@surface/htmlx\";",
             "",
@@ -535,7 +535,7 @@ export default class SourceGeneratorSpec
             "\t\t\t\t\"span\",",
             "\t\t\t\tundefined,",
             "\t\t\t\t[",
-            "\t\t\t\t\tcreateEventListernerFactory",
+            "\t\t\t\t\tcreateEventListenerFactory",
             "\t\t\t\t\t(",
             "\t\t\t\t\t\t\"click\",",
             "\t\t\t\t\t\tscope => scope.host.handler,",
@@ -684,6 +684,57 @@ export default class SourceGeneratorSpec
         ].join("\n");
 
         const actual = SourceGenerator.generate("x-component", "<span ::value=\"host.value\"></span>", { }, true);
+
+        chai.assert.equal(actual, expected);
+    }
+
+    @test @shouldPass
+    public generateElementWithSpreadDirective(): void
+    {
+        const expected =
+        [
+            "import",
+            "{",
+            "\tcreateFragmentFactory,",
+            "\tcreateElementFactory,",
+            "\tcreateSpreadFactory,",
+            "\tcreateSpreadAttributesFactory,",
+            "\tcreateSpreadBindsFactory,",
+            "\tcreateSpreadListenersFactory,",
+            "\tTemplateFactory,",
+            "} from \"@surface/htmlx\";",
+            "",
+            "const factory =",
+            "\tcreateFragmentFactory",
+            "\t(",
+            "\t\t[",
+            "\t\t\tcreateElementFactory",
+            "\t\t\t(",
+            "\t\t\t\t\"span\",",
+            "\t\t\t\tundefined,",
+            "\t\t\t\t[",
+            "\t\t\t\t\tcreateSpreadFactory",
+            "\t\t\t\t\t(",
+            "\t\t\t\t\t\tscope => scope.host,",
+            "\t\t\t\t\t\t[],",
+            "\t\t\t\t\t\t[",
+            "\t\t\t\t\t\t\tcreateSpreadAttributesFactory,",
+            "\t\t\t\t\t\t\tcreateSpreadBindsFactory,",
+            "\t\t\t\t\t\t\tcreateSpreadListenersFactory,",
+            "\t\t\t\t\t\t],",
+            "\t\t\t\t\t\t\"...attributes|binds|listeners=\\\"host\\\"\",",
+            "\t\t\t\t\t\t[[\"<x-component>\"],[\"#shadow-root\"],[\"<span ...attributes|binds|listeners=\\\"host\\\">\"]],",
+            "\t\t\t\t\t),",
+            "\t\t\t\t],",
+            "\t\t\t\tundefined,",
+            "\t\t\t),",
+            "\t\t]",
+            "\t);",
+            "",
+            "export default new TemplateFactory(factory);",
+        ].join("\n");
+
+        const actual = SourceGenerator.generate("x-component", "<span ...attributes|binds|listeners=\"host\"></span>", { }, true);
 
         chai.assert.equal(actual, expected);
     }
