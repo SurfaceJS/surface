@@ -11,7 +11,7 @@ import type InjectionContext               from "../types/injection-context.js";
 import type NodeFactory                    from "../types/node-factory";
 import type Block                          from "./block.js";
 
-type Context =
+export type Context =
 {
     block:       Block,
     directives:  Map<string, DirectiveEntry>,

@@ -1,5 +1,5 @@
 import { hasFlag }                                 from "@surface/core";
-import { DescriptorType, MetadataFlags, Parser }   from "@surface/htmlx-parser";
+import { DescriptorType, Parser, SpreadFlags }     from "@surface/htmlx-parser";
 import type { AttributeBindDescritor, Descriptor } from "@surface/htmlx-parser";
 import createChoiceFactory                         from "./factories/create-choice-factory.js";
 import createCommentFactory                        from "./factories/create-comment-factory.js";
@@ -15,6 +15,7 @@ import createPlaceholderFactory                    from "./factories/create-plac
 import createSpreadAttributesFactory               from "./factories/create-spread-attributes-factory.js";
 import createSpreadBindsFactory                    from "./factories/create-spread-binds-factory.js";
 import createSpreadFactory                         from "./factories/create-spread-factory.js";
+import createSpreadInjectionsFactory               from "./factories/create-spread-injections.js";
 import createSpreadListenersFactory                from "./factories/create-spread-listeners.js";
 import createTextNodeFactory                       from "./factories/create-text-node-factory.js";
 import createTextNodeInterpolationFactory          from "./factories/create-text-node-interpolation-factory.js";
@@ -54,17 +55,22 @@ export default class Compiler
                     {
                         const spreadFactories: SpreadFactory[] = [];
 
-                        if (hasFlag(bind.flags, MetadataFlags.Attributes))
+                        if (hasFlag(bind.flags, SpreadFlags.Attributes))
                         {
                             spreadFactories.push(createSpreadAttributesFactory);
                         }
 
-                        if (hasFlag(bind.flags, MetadataFlags.Binds))
+                        if (hasFlag(bind.flags, SpreadFlags.Binds))
                         {
                             spreadFactories.push(createSpreadBindsFactory);
                         }
 
-                        if (hasFlag(bind.flags, MetadataFlags.Listeners))
+                        if (hasFlag(bind.flags, SpreadFlags.Injections))
+                        {
+                            spreadFactories.push(createSpreadInjectionsFactory);
+                        }
+
+                        if (hasFlag(bind.flags, SpreadFlags.Listeners))
                         {
                             spreadFactories.push(createSpreadListenersFactory);
                         }

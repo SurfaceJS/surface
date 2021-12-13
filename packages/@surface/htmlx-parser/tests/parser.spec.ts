@@ -10,7 +10,7 @@ import chai                                          from "chai";
 import DescriptorType                                from "../internal/descriptor-type.js";
 import TemplateParseError                            from "../internal/errors/template-parse-error.js";
 import { parseDestructuredPattern, parseExpression } from "../internal/expression-parsers.js";
-import MetadataFlags                                 from "../internal/flags/metadata-flags.js";
+import SpreadFlags                                   from "../internal/flags/spread-flags.js";
 import Parser                                        from "../internal/parser.js";
 import type Descriptor                               from "../internal/types/descriptor";
 
@@ -1128,8 +1128,8 @@ export default class HTMLXElementParserSpec
     {
         const template =
         [
-            "<div ...attributes|binds|listeners=\"host\"></div>",
-            "<div ...attributes=\"host\" ...binds=\"host\" ...listeners=\"host\"></div>",
+            "<div ...attributes|binds|injections|listeners=\"host\"></div>",
+            "<div ...attributes=\"host\" ...binds=\"host\" ...injections=\"host\" ...listeners=\"host\"></div>",
         ].join("");
 
         const expected: Descriptor =
@@ -1141,14 +1141,14 @@ export default class HTMLXElementParserSpec
                     [
                         {
                             expression:  parseExpression("host"),
-                            flags:       MetadataFlags.Attributes | MetadataFlags.Binds | MetadataFlags.Listeners,
+                            flags:       SpreadFlags.Attributes | SpreadFlags.Binds | SpreadFlags.Injections | SpreadFlags.Listeners,
                             observables: [],
-                            source:      "...attributes|binds|listeners=\"host\"",
+                            source:      "...attributes|binds|injections|listeners=\"host\"",
                             stackTrace:
                             [
                                 ["<x-component>"],
                                 ["#shadow-root"],
-                                ["<div ...attributes|binds|listeners=\"host\">"],
+                                ["<div ...attributes|binds|injections|listeners=\"host\">"],
                             ],
                             type: DescriptorType.Spread,
                         },
@@ -1162,40 +1162,53 @@ export default class HTMLXElementParserSpec
                     [
                         {
                             expression:  parseExpression("host"),
-                            flags:       MetadataFlags.Attributes,
+                            flags:       SpreadFlags.Attributes,
                             observables: [],
                             source:      "...attributes=\"host\"",
                             stackTrace:
                             [
                                 ["<x-component>"],
                                 ["#shadow-root"],
-                                ["...1 other(s) node(s)", "<div ...attributes=\"host\" ...binds=\"host\" ...listeners=\"host\">"],
+                                ["...1 other(s) node(s)", "<div ...attributes=\"host\" ...binds=\"host\" ...injections=\"host\" ...listeners=\"host\">"],
                             ],
                             type: DescriptorType.Spread,
                         },
                         {
                             expression:  parseExpression("host"),
-                            flags:       MetadataFlags.Binds,
+                            flags:       SpreadFlags.Binds,
                             observables: [],
                             source:      "...binds=\"host\"",
                             stackTrace:
                             [
                                 ["<x-component>"],
                                 ["#shadow-root"],
-                                ["...1 other(s) node(s)", "<div ...attributes=\"host\" ...binds=\"host\" ...listeners=\"host\">"],
+                                ["...1 other(s) node(s)", "<div ...attributes=\"host\" ...binds=\"host\" ...injections=\"host\" ...listeners=\"host\">"],
                             ],
                             type: DescriptorType.Spread,
                         },
                         {
                             expression:  parseExpression("host"),
-                            flags:       MetadataFlags.Listeners,
+                            flags:       SpreadFlags.Injections,
+                            observables: [],
+                            source:      "...injections=\"host\"",
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["...1 other(s) node(s)", "<div ...attributes=\"host\" ...binds=\"host\" ...injections=\"host\" ...listeners=\"host\">"],
+                            ],
+                            type: DescriptorType.Spread,
+                        },
+                        {
+                            expression:  parseExpression("host"),
+                            flags:       SpreadFlags.Listeners,
                             observables: [],
                             source:      "...listeners=\"host\"",
                             stackTrace:
                             [
                                 ["<x-component>"],
                                 ["#shadow-root"],
-                                ["...1 other(s) node(s)", "<div ...attributes=\"host\" ...binds=\"host\" ...listeners=\"host\">"],
+                                ["...1 other(s) node(s)", "<div ...attributes=\"host\" ...binds=\"host\" ...injections=\"host\" ...listeners=\"host\">"],
                             ],
                             type: DescriptorType.Spread,
                         },

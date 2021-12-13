@@ -13,7 +13,7 @@ import DirectiveType                                                            
 import NodeType                                                                                  from "./enums/node-type.js";
 import SpreadProperties                                                                          from "./enums/spread-properties.js";
 import { parseDestructuredPattern, parseExpression, parseForLoopStatement, parseInterpolation }  from "./expression-parsers.js";
-import MetadataFlags                                                                             from "./flags/metadata-flags.js";
+import SpreadFlags                                                                               from "./flags/spread-flags.js";
 import nativeEvents                                                                              from "./native-events.js";
 import ObserverVisitor                                                                           from "./observer-visitor.js";
 import { interpolation }                                                                         from "./patterns.js";
@@ -402,21 +402,26 @@ export default class Parser
                     duplications.set(property, source);
                 }
 
-                let flags = MetadataFlags.None;
+                let flags = SpreadFlags.None;
 
                 if (properties.has(SpreadProperties.Attributes))
                 {
-                    flags |= MetadataFlags.Attributes;
+                    flags |= SpreadFlags.Attributes;
                 }
 
                 if (properties.has(SpreadProperties.Binds))
                 {
-                    flags |= MetadataFlags.Binds;
+                    flags |= SpreadFlags.Binds;
+                }
+
+                if (properties.has(SpreadProperties.Injections))
+                {
+                    flags |= SpreadFlags.Injections;
                 }
 
                 if (properties.has(SpreadProperties.Listeners))
                 {
-                    flags |= MetadataFlags.Listeners;
+                    flags |= SpreadFlags.Listeners;
                 }
 
                 const expression  = this.tryParseExpression(parseExpression, attribute.value || "undefined", source);
@@ -709,7 +714,7 @@ export default class Parser
     {
         if (content.firstChild && content.firstChild != content.firstElementChild)
         {
-            while (content.firstChild.nodeType == NodeType.Text && content.firstChild.textContent!.trim() == "")
+            while (content.firstChild.nodeType == NodeType.Text && content.firstChild.textContent?.trim() == "")
             {
                 content.firstChild.remove();
             }
@@ -717,7 +722,7 @@ export default class Parser
 
         if (content.lastChild && content.lastChild != content.lastElementChild)
         {
-            while (content.lastChild.nodeType == NodeType.Text && content.lastChild.textContent!.trim() == "")
+            while (content.lastChild.nodeType == NodeType.Text && content.lastChild.textContent?.trim() == "")
             {
                 content.lastChild.remove();
             }

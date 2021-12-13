@@ -1,8 +1,8 @@
 /* eslint-disable max-lines-per-function */
-import { deepMerge, hasFlag }                                                                        from "@surface/core";
+import { deepMerge, hasFlag }                                                               from "@surface/core";
 import type { IExpression, IPattern }                                                       from "@surface/expression";
 import { TypeGuard }                                                                        from "@surface/expression";
-import { DescriptorType, MetadataFlags, Parser }                                                           from "@surface/htmlx-parser";
+import { DescriptorType, Parser, SpreadFlags }                                              from "@surface/htmlx-parser";
 import type { AttributeBindDescritor, BranchDescriptor, Descriptor, RawAttributeDescritor } from "@surface/htmlx-parser";
 import jsdom                                                                                from "jsdom";
 import { defaultAttributeHandlers }                                                         from "./attribute-handlers.js";
@@ -170,19 +170,19 @@ export default class SourceGenerator
                         this.writeLine("[");
                         this.increaseIndent();
 
-                        if (hasFlag(descriptor.flags, MetadataFlags.Attributes))
+                        if (hasFlag(descriptor.flags, SpreadFlags.Attributes))
                         {
                             this.writeLine("createSpreadAttributesFactory,");
                             this.factories.add(spreadFactories.Attributes);
                         }
 
-                        if (hasFlag(descriptor.flags, MetadataFlags.Binds))
+                        if (hasFlag(descriptor.flags, SpreadFlags.Binds))
                         {
                             this.writeLine("createSpreadBindsFactory,");
                             this.factories.add(spreadFactories.Binds);
                         }
 
-                        if (hasFlag(descriptor.flags, MetadataFlags.Listeners))
+                        if (hasFlag(descriptor.flags, SpreadFlags.Listeners))
                         {
                             this.writeLine("createSpreadListenersFactory,");
                             this.factories.add(spreadFactories.Listeners);

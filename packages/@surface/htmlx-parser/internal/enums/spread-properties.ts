@@ -3,7 +3,8 @@ enum SpreadProperties
 {
     Attributes = "attributes",
     Binds      = "binds",
-    Listeners  = "listeners"
+    Injections = "injections",
+    Listeners  = "listeners",
 }
 
 export default SpreadProperties;
