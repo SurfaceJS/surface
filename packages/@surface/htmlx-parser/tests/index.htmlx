@@ -44,8 +44,8 @@
     Default {name}
 </span>
 <span ...attributes|listeners="host"></span>
-<span ...attributes|binds|listeners="host"></span>
-<span ...attributes="target1" ...binds="target2" ...listeners="target3"></span>
+<span ...attributes|binds|injections|listeners="host"></span>
+<span ...attributes="target1" ...binds="target2" ...injections="target3" ...listeners="target4"></span>
 <table>
     <tr>
         <th>Id</th>

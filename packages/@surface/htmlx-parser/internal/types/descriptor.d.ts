@@ -104,10 +104,10 @@ export type FragmentDescriptor =
     type:   DescriptorType.Fragment,
 };
 
-export type KeyValueObservable =
+export type KeyScopeObservable =
 {
     key:   ObservablePath[],
-    value: ObservablePath[],
+    scope: ObservablePath[],
 };
 
 export type InjectionStatementDescriptor =
@@ -116,7 +116,7 @@ export type InjectionStatementDescriptor =
     key:         IExpression,
     type:        DescriptorType.Injection,
     scope:       IPattern,
-    observables: KeyValueObservable,
+    observables: KeyScopeObservable,
     source:      { key: string, scope: string },
     stackTrace:  StackTrace,
 };
@@ -139,7 +139,7 @@ export type PlaceholderStatementDescriptor =
     key:         IExpression,
     type:        DescriptorType.Placeholder,
     scope:       IExpression,
-    observables: KeyValueObservable,
+    observables: KeyScopeObservable,
     source:      { key: string, scope: string },
     stackTrace:  StackTrace,
 };

@@ -36,8 +36,9 @@ const spreadFactories =
 {
     Attributes: "createSpreadAttributesFactory",
     Binds:      "createSpreadBindsFactory",
+    Injections: "createSpreadInjectionsFactory",
     Listeners:  "createSpreadListenersFactory",
-};
+} as const;
 
 export default class SourceGenerator
 {
@@ -172,19 +173,25 @@ export default class SourceGenerator
 
                         if (hasFlag(descriptor.flags, SpreadFlags.Attributes))
                         {
-                            this.writeLine("createSpreadAttributesFactory,");
+                            this.writeLine(`${spreadFactories.Attributes},`);
                             this.factories.add(spreadFactories.Attributes);
                         }
 
                         if (hasFlag(descriptor.flags, SpreadFlags.Binds))
                         {
-                            this.writeLine("createSpreadBindsFactory,");
+                            this.writeLine(`${spreadFactories.Binds},`);
                             this.factories.add(spreadFactories.Binds);
+                        }
+
+                        if (hasFlag(descriptor.flags, SpreadFlags.Injections))
+                        {
+                            this.writeLine(`${spreadFactories.Injections},`);
+                            this.factories.add(spreadFactories.Injections);
                         }
 
                         if (hasFlag(descriptor.flags, SpreadFlags.Listeners))
                         {
-                            this.writeLine("createSpreadListenersFactory,");
+                            this.writeLine(`${spreadFactories.Listeners},`);
                             this.factories.add(spreadFactories.Listeners);
                         }
 
@@ -374,7 +381,7 @@ export default class SourceGenerator
             case DescriptorType.Placeholder:
                 this.writeLine(`${this.stringifyExpression(descriptor.key)},`);
                 this.writeLine(`${this.stringifyExpression(descriptor.scope)},`);
-                this.writeLine(`${JSON.stringify([descriptor.observables.key, descriptor.observables.value])},`);
+                this.writeLine(`${JSON.stringify([descriptor.observables.key, descriptor.observables.scope])},`);
                 this.writeDescriptor(descriptor.fragment);
                 this.write(","),
                 this.writeLine(this.generateStackStrace ? `${JSON.stringify(descriptor.source)},` : "undefined,");

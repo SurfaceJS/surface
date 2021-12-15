@@ -598,7 +598,7 @@ export default class Parser
             {
                 fragment,
                 key:         keyExpression,
-                observables: { key: keyObservables, value: observables },
+                observables: { key: keyObservables, scope: observables },
                 scope:       expression,
                 source:      { key: directive.key.source, scope: directive.scope.source },
                 stackTrace,
@@ -623,7 +623,7 @@ export default class Parser
         {
             fragment,
             key:         keyExpression,
-            observables: { key: keyObservables, value: observables },
+            observables: { key: keyObservables, scope: observables },
             scope:       pattern,
             source:      { key: directive.key.source, scope: directive.scope.source },
             stackTrace,
@@ -712,17 +712,17 @@ export default class Parser
 
     private trimContent(content: DocumentFragment): void
     {
-        if (content.firstChild && content.firstChild != content.firstElementChild)
+        if (content.firstChild != content.firstElementChild)
         {
-            while (content.firstChild.nodeType == NodeType.Text && content.firstChild.textContent?.trim() == "")
+            while (content.firstChild?.nodeType == NodeType.Text && content.firstChild.textContent!.trim() == "")
             {
                 content.firstChild.remove();
             }
         }
 
-        if (content.lastChild && content.lastChild != content.lastElementChild)
+        if (content.lastChild != content.lastElementChild)
         {
-            while (content.lastChild.nodeType == NodeType.Text && content.lastChild.textContent?.trim() == "")
+            while (content.lastChild?.nodeType == NodeType.Text && content.lastChild.textContent!.trim() == "")
             {
                 content.lastChild.remove();
             }

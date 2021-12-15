@@ -142,7 +142,7 @@ export default class Compiler
                 (
                     scope => descriptor.key.evaluate(scope),
                     scope => descriptor.scope.evaluate(scope),
-                    [descriptor.observables.key, descriptor.observables.value],
+                    [descriptor.observables.key, descriptor.observables.scope],
                     Compiler.compileDescriptor(descriptor.fragment),
                     descriptor.source,
                     descriptor.stackTrace,
@@ -152,7 +152,7 @@ export default class Compiler
                 (
                     scope => descriptor.key.evaluate(scope),
                     (scope, value) => descriptor.scope.evaluate(scope, value),
-                    [descriptor.observables.key, descriptor.observables.value],
+                    [descriptor.observables.key, descriptor.observables.scope],
                     Compiler.compileDescriptor(descriptor.fragment),
                     descriptor.source,
                     descriptor.stackTrace,

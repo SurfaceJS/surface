@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 // import { writeFileSync }           from "fs";
 import { shouldPass, suite, test } from "@surface/test-suite";
 import chai                        from "chai";
@@ -700,6 +701,7 @@ export default class SourceGeneratorSpec
             "\tcreateSpreadFactory,",
             "\tcreateSpreadAttributesFactory,",
             "\tcreateSpreadBindsFactory,",
+            "\tcreateSpreadInjectionsFactory,",
             "\tcreateSpreadListenersFactory,",
             "\tTemplateFactory,",
             "} from \"@surface/htmlx\";",
@@ -720,10 +722,11 @@ export default class SourceGeneratorSpec
             "\t\t\t\t\t\t[",
             "\t\t\t\t\t\t\tcreateSpreadAttributesFactory,",
             "\t\t\t\t\t\t\tcreateSpreadBindsFactory,",
+            "\t\t\t\t\t\t\tcreateSpreadInjectionsFactory,",
             "\t\t\t\t\t\t\tcreateSpreadListenersFactory,",
             "\t\t\t\t\t\t],",
-            "\t\t\t\t\t\t\"...attributes|binds|listeners=\\\"host\\\"\",",
-            "\t\t\t\t\t\t[[\"<x-component>\"],[\"#shadow-root\"],[\"<span ...attributes|binds|listeners=\\\"host\\\">\"]],",
+            "\t\t\t\t\t\t\"...attributes|binds|injections|listeners=\\\"host\\\"\",",
+            "\t\t\t\t\t\t[[\"<x-component>\"],[\"#shadow-root\"],[\"<span ...attributes|binds|injections|listeners=\\\"host\\\">\"]],",
             "\t\t\t\t\t),",
             "\t\t\t\t],",
             "\t\t\t\tundefined,",
@@ -734,7 +737,7 @@ export default class SourceGeneratorSpec
             "export default new TemplateFactory(factory);",
         ].join("\n");
 
-        const actual = SourceGenerator.generate("x-component", "<span ...attributes|binds|listeners=\"host\"></span>", { }, true);
+        const actual = SourceGenerator.generate("x-component", "<span ...attributes|binds|injections|listeners=\"host\"></span>", { }, true);
 
         chai.assert.equal(actual, expected);
     }

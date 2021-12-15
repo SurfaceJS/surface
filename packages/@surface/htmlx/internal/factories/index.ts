@@ -12,6 +12,7 @@ export { default as createPlaceholderFactory }           from "./create-placehol
 export { default as createSpreadAttributesFactory }      from "./create-spread-attributes-factory.js";
 export { default as createSpreadBindsFactory }           from "./create-spread-binds-factory.js";
 export { default as createSpreadFactory }                from "./create-spread-factory.js";
+export { default as createSpreadInjectionsFactory }      from "./create-spread-injections.js";
 export { default as createSpreadListenersFactory }       from "./create-spread-listeners.js";
 export { default as createTextNodeFactory }              from "./create-text-node-factory.js";
 export { default as createTextNodeInterpolationFactory } from "./create-text-node-interpolation-factory.js";

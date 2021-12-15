@@ -84,26 +84,90 @@ function toRaw(error: Error): RawError
     return { message: error.message };
 }
 
-// TODO: Test this
-// <template
-//         #inject.key="'items'"
-//         #inject.scope="scope"
-//         #placeholder:items="scope"
-//     >
-// </template>
-
 @suite
 export default class HTMLXElementParserSpec
 {
     @shouldPass @test
-    public parseElement(): void
+    public parseElements(): void
     {
         const template =
         [
             " ",
-            "<span foo bar=\"baz\" #show value=\"Hello {host.name}\" @click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">Some {'interpolation'} here</span>",
+            "<span></span>",
+            "<span>",
+            "</span>",
+            "<span",
+            ">",
+            "</span>",
+            "<span",
+            ">",
+            "",
+            "</span>",
+            "<span>",
+            "\t<span>",
+            "\t</span>",
+            "</span>",
             " ",
-        ].join("");
+        ].join("\n");
+
+        const expected: Descriptor =
+        {
+            childs:
+            [
+                {
+                    attributes: [],
+                    childs:     [],
+                    tag:        "span",
+                    type:       DescriptorType.Element,
+                },
+                {
+                    attributes: [],
+                    childs:     [],
+                    tag:        "span",
+                    type:       DescriptorType.Element,
+                },
+                {
+                    attributes: [],
+                    childs:     [],
+                    tag:        "span",
+                    type:       DescriptorType.Element,
+                },
+                {
+                    attributes: [],
+                    childs:     [],
+                    tag:        "span",
+                    type:       DescriptorType.Element,
+                },
+                {
+                    attributes: [],
+                    childs:
+                    [
+                        {
+                            attributes: [],
+                            childs:     [],
+                            tag:        "span",
+                            type:       DescriptorType.Element,
+                        },
+                    ],
+                    tag:  "span",
+                    type: DescriptorType.Element,
+                },
+            ],
+            type: DescriptorType.Fragment,
+        };
+
+        const actual = Parser.parse(window.document, "x-component", template);
+
+        const a = stringifyExpressions(actual);
+        const e = stringifyExpressions(expected);
+
+        chai.assert.deepEqual(a, e);
+    }
+
+    @shouldPass @test
+    public parseElementWithBinds(): void
+    {
+        const template = "<span foo bar=\"baz\" #show value=\"Hello {host.name}\" @click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">Some {'interpolation'} here</span>";
 
         const expected: Descriptor =
         {
@@ -229,7 +293,7 @@ export default class HTMLXElementParserSpec
         const template =
         [
             "<span @click=\"host.click++\" @hover=\"host.hoverHandler\" @change=\"e => host.changeHandler(e)\"></span>",
-        ].join("");
+        ].join("\n");
 
         const expected: Descriptor =
         {
@@ -337,6 +401,49 @@ export default class HTMLXElementParserSpec
     }
 
     @shouldPass @test
+    public parseEmptyDirectives(): void
+    {
+        const template =
+        [
+            "<template #inject>",
+            "</template>",
+        ].join("\n");
+
+        const expected: Descriptor =
+        {
+            childs:
+            [
+                {
+                    fragment:
+                    {
+                        childs: [],
+                        type:   DescriptorType.Fragment,
+                    },
+                    key:         parseExpression("'default'"),
+                    observables: { key: [], scope: [] },
+                    scope:       parseDestructuredPattern("{ }"),
+                    source:      { key: "", scope: "#inject" },
+                    stackTrace:
+                    [
+                        ["<x-component>"],
+                        ["#shadow-root"],
+                        ["<template #inject>"],
+                    ],
+                    type: DescriptorType.Injection,
+                },
+            ],
+            type: DescriptorType.Fragment,
+        };
+
+        const actual = Parser.parse(window.document, "x-component", template);
+
+        const a = stringifyExpressions(actual);
+        const e = stringifyExpressions(expected);
+
+        chai.assert.deepEqual(a.childs, e.childs);
+    }
+
+    @shouldPass @test
     public parseInjection(): void
     {
         const template =
@@ -373,7 +480,7 @@ export default class HTMLXElementParserSpec
                         type: DescriptorType.Fragment,
                     },
                     key:          parseExpression("'default'"),
-                    observables:  { key: [], value: [] },
+                    observables:  { key: [], scope: [] },
                     scope:       parseDestructuredPattern("{}"),
                     source:       { key: "", scope: "#inject" },
                     stackTrace:
@@ -423,7 +530,7 @@ export default class HTMLXElementParserSpec
                         type: DescriptorType.Fragment,
                     },
                     key:         parseExpression("'title'"),
-                    observables: { key: [], value: [] },
+                    observables: { key: [], scope: [] },
                     scope:       parseDestructuredPattern("{ title }"),
                     source:      { key: "", scope: "#inject:title=\"{ title }\"" },
                     stackTrace:
@@ -473,7 +580,7 @@ export default class HTMLXElementParserSpec
                         type: DescriptorType.Fragment,
                     },
                     key:         parseExpression("'default'"),
-                    observables: { key: [], value: [] },
+                    observables: { key: [], scope: [] },
                     scope:       parseDestructuredPattern("{ title }"),
                     source:      { key: "", scope: "#inject.scope=\"{ title }\"" },
                     stackTrace:
@@ -513,7 +620,7 @@ export default class HTMLXElementParserSpec
                         type: DescriptorType.Fragment,
                     },
                     key:         parseExpression("host.dynamicInjectKey"),
-                    observables: { key: [["host", "dynamicInjectKey"]], value: [] },
+                    observables: { key: [["host", "dynamicInjectKey"]], scope: [] },
                     scope:       parseDestructuredPattern("{ }"),
                     source:      { key: "#inject.key=\"host.dynamicInjectKey\"", scope: "" },
                     stackTrace:
@@ -563,7 +670,7 @@ export default class HTMLXElementParserSpec
                         type: DescriptorType.Fragment,
                     },
                     key:         parseExpression("host.dynamicInjectKey"),
-                    observables: { key: [["host", "dynamicInjectKey"]], value: [] },
+                    observables: { key: [["host", "dynamicInjectKey"]], scope: [] },
                     scope:       parseDestructuredPattern("{ title }"),
                     source:      { key: "#inject.key=\"host.dynamicInjectKey\"", scope: "#inject.scope=\"{ title }\"" },
                     stackTrace:
@@ -747,7 +854,7 @@ export default class HTMLXElementParserSpec
                         type:   DescriptorType.Fragment,
                     },
                     key:         parseExpression("'default'"),
-                    observables: { key: [], value: [] },
+                    observables: { key: [], scope: [] },
                     scope:       parseExpression("{ }"),
                     source:      { key: "", scope: "#placeholder" },
                     stackTrace:
@@ -788,7 +895,7 @@ export default class HTMLXElementParserSpec
                         type:   DescriptorType.Fragment,
                     },
                     key:         parseExpression("'value'"),
-                    observables: { key: [], value: [["host", "name"]] },
+                    observables: { key: [], scope: [["host", "name"]] },
                     scope:       parseExpression("{ name: host.name }"),
                     source:      { key: "", scope: "#placeholder:value=\"{ name: host.name }\"" },
                     stackTrace:
@@ -829,7 +936,7 @@ export default class HTMLXElementParserSpec
                         type:   DescriptorType.Fragment,
                     },
                     key:         parseExpression("'default'"),
-                    observables: { key: [], value: [["host", "name"]] },
+                    observables: { key: [], scope: [["host", "name"]] },
                     scope:       parseExpression("{ name: host.name }"),
                     source:      { key: "", scope: "#placeholder.scope=\"{ name: host.name }\"" },
                     stackTrace:
@@ -861,7 +968,7 @@ export default class HTMLXElementParserSpec
                         type:   DescriptorType.Fragment,
                     },
                     key:         parseExpression("host.dynamicPlaceholderKey"),
-                    observables: { key: [["host", "dynamicPlaceholderKey"]], value: [] },
+                    observables: { key: [["host", "dynamicPlaceholderKey"]], scope: [] },
                     scope:       parseExpression("{ }"),
                     source:      { key: "#placeholder.key=\"host.dynamicPlaceholderKey\"", scope: "" },
                     stackTrace:
@@ -902,7 +1009,7 @@ export default class HTMLXElementParserSpec
                         type: DescriptorType.Fragment,
                     },
                     key:         parseExpression("host.dynamicPlaceholderKey"),
-                    observables: { key: [["host", "dynamicPlaceholderKey"]], value: [["host", "name"]] },
+                    observables: { key: [["host", "dynamicPlaceholderKey"]], scope: [["host", "name"]] },
                     scope:       parseExpression("{ name: host.name }"),
                     source:      { key: "#placeholder.key=\"host.dynamicPlaceholderKey\"", scope: "#placeholder.scope=\"{ name: host.name }\"" },
                     stackTrace:
@@ -1427,7 +1534,7 @@ export default class HTMLXElementParserSpec
                                             type:   DescriptorType.Fragment,
                                         },
                                         key:         parseExpression("'value'"),
-                                        observables: { key: [], value: [] },
+                                        observables: { key: [], scope: [] },
                                         scope:       parseExpression("source"),
                                         source:      { key: "", scope: "#placeholder:value=\"source\"" },
                                         stackTrace:
@@ -1509,7 +1616,7 @@ export default class HTMLXElementParserSpec
                                     type: DescriptorType.Fragment,
                                 },
                                 key:         parseExpression("key"),
-                                observables: { key: [], value: [] },
+                                observables: { key: [], scope: [] },
                                 scope:       parseExpression("source"),
                                 source:      { key: "#placeholder.key=\"key\"", scope: "#placeholder.scope=\"source\"" },
                                 stackTrace:
@@ -1596,7 +1703,7 @@ export default class HTMLXElementParserSpec
                                             type:   DescriptorType.Fragment,
                                         },
                                         key:         parseExpression("'value'"),
-                                        observables: { key: [], value: [] },
+                                        observables: { key: [], scope: [] },
                                         scope:       parseDestructuredPattern("source"),
                                         source:      { key: "", scope: "#inject:value=\"source\"" },
                                         stackTrace:
@@ -1678,7 +1785,7 @@ export default class HTMLXElementParserSpec
                                     type:   DescriptorType.Fragment,
                                 },
                                 key:         parseExpression("'value'"),
-                                observables: { key: [], value: [] },
+                                observables: { key: [], scope: [] },
                                 scope:       parseDestructuredPattern("source"),
                                 source:      { key: "", scope: "#inject:value=\"source\"" },
                                 stackTrace:
@@ -1798,7 +1905,7 @@ export default class HTMLXElementParserSpec
                                                         type: DescriptorType.Fragment,
                                                     },
                                                     key:         parseExpression("'value'"),
-                                                    observables: { key: [], value: [] },
+                                                    observables: { key: [], scope: [] },
                                                     scope:       parseExpression("source"),
                                                     source:      { key: "", scope: "#placeholder:value=\"source\"" },
                                                     stackTrace:
@@ -1828,7 +1935,7 @@ export default class HTMLXElementParserSpec
                         type: DescriptorType.Fragment,
                     },
                     key:         parseExpression("'value'"),
-                    observables: { key: [], value: [] },
+                    observables: { key: [], scope: [] },
                     scope:       parseDestructuredPattern("source"),
                     source:      { key: "", scope: "#inject:value=\"source\"" },
                     stackTrace:
@@ -1890,7 +1997,7 @@ export default class HTMLXElementParserSpec
                         type:   DescriptorType.Fragment,
                     },
                     key:         parseExpression("key"),
-                    observables: { key: [], value: [] },
+                    observables: { key: [], scope: [] },
                     scope:       parseExpression("source"),
                     source:      { key: "#placeholder.key=\"key\"", scope: "#placeholder.scope=\"source\"" },
                     stackTrace:
@@ -1957,7 +2064,7 @@ export default class HTMLXElementParserSpec
                                     type: DescriptorType.Fragment,
                                 },
                                 key:         parseExpression("'value'"),
-                                observables: { key: [], value: [] },
+                                observables: { key: [], scope: [] },
                                 scope:       parseDestructuredPattern("source"),
                                 source:      { key: "", scope: "#inject:value=\"source\"" },
                                 stackTrace:
@@ -1972,7 +2079,7 @@ export default class HTMLXElementParserSpec
                         type:   DescriptorType.Fragment,
                     },
                     key:         parseExpression("'value'"),
-                    observables: { key: [], value: [] },
+                    observables: { key: [], scope: [] },
                     scope:       parseExpression("source"),
                     source:      { key: "", scope: "#placeholder:value=\"source\"" },
                     stackTrace:

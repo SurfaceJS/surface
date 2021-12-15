@@ -13,7 +13,7 @@ export type
     EventDescritor,
     FragmentDescriptor,
     InjectionStatementDescriptor,
-    KeyValueObservable,
+    KeyScopeObservable,
     LoopStatementDescriptor,
     OneWayAttributeDescritor,
     PlaceholderStatementDescriptor,
