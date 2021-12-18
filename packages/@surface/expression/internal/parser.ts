@@ -658,13 +658,6 @@ export default class Parser
 
                 const body = this.inheritGrammar(this.assignmentExpression, true);
 
-                // const duplicated = hasDuplicated(parameters, lookaheads);
-
-                // if (duplicated.result)
-                // {
-                //     throw this.syntaxError(duplicated.token, Messages.duplicateParameterNameNotAllowedInThisContext);
-                // }
-
                 return new ArrowFunctionExpression(parameters, body);
 
             }
