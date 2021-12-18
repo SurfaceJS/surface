@@ -15,9 +15,11 @@
     * [Loop](#loop)
     * [Placeholder and Injection](#placeholder-and-injection)
         * [Dynamic keys](#dynamic-keys)
+    * [Component Wrapping](#component-wrapping)
     * [Styling injections](#styling-injections)
     * [Awaiting painting](#awaiting-painting)
     * [Custom Directives](#custom-directives)
+* [Considerations](#considerations)
 
 # Introduction
 [Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components) are a set of web platform APIs that allow you to create new custom, reusable, encapsulated HTML tags to use in web pages and web apps. Custom components and widgets build on the Web Component standards, will work across modern browsers, and can be used with any JavaScript library or framework that works with HTML.
@@ -33,7 +35,7 @@ Note that it is not recommended to use the runtime compiler for more serious wor
 import type { IDisposable } from "@surface/core";
 import { Compiler }         from "@surface/htmlx";
 
-const template = Compiler.compile("my-element", "<span>Hello {name}!!!</span>")
+const templateFactory = Compiler.compile("my-element", "<span>Hello {name}!!!</span>")
 
 class MyComponent extends HTMLElement implements IDisposable
 {
@@ -41,9 +43,11 @@ class MyComponent extends HTMLElement implements IDisposable
 
     public constructor()
     {
+        super();
+
         this.attachShadow({ mode: "open" });
 
-        const { content, activator } = template.create();
+        const { content, activator } = templateFactory.create();
 
         this.shadowRoot!.appendChild(content);
 
@@ -344,6 +348,155 @@ my-element::part(header)
 </my-element>
 ```
 
+### Component Wrapping
+
+Sometimes we need to take some third party component and apply some defaults to allow code reuse.
+
+```html
+<!--third-party-element-->
+    <span #placeholder:title="{ title: host.title }">{host.title}</span>
+    <span #placeholder:content="{ content: host.content }">{host.content}</span>
+<!--third-party-element/-->
+```
+
+This can be archived by wrapping the component and propagating host bindings to it.
+
+```html
+<!--my-extended-element-->
+    <third-party-element dark="host.darkAttribute" :title="host.title" :content="host.content" @click="host.dispatchEventClick">
+        <span #inject:title="scope" #placeholder:title="scope">Default: {scope.title}</span>
+        <span #inject:content="scope" #placeholder:content="scope">Default: {scope.content}</span>
+    </third-party-element>
+<!--my-extended-element/-->
+```
+
+That's fine for small components, but it can be a lot of work for large ones.
+
+Fortunately, this can also be archived using the `spread` directive, which allows us to spread directives from any source to the target element.
+
+```html
+<!--my-extended-element-->
+    <my-element ...attributes|binds|injections|listeners="host"></my-element>
+    <!--or-->
+    <my-element
+        ...attributes="host.element1"
+        ...binds="host.element2"
+        ...injections="host.element3"
+        ...listeners="host.element4"
+    ></my-element>
+<!--my-extended-element/-->
+```
+
+### Awaiting painting
+Sometimes you may need to access some interface element that can be dynamically rendered as some data changes.
+
+```ts
+import { Compiler, painting } from "@surface/htmlx";
+
+const template =
+`
+    <table>
+        <tr #for="item of host.items">
+            <td>{item.name}</td>
+        </tr>
+    </table>
+`;
+
+const templateFactory = Compiler.compile("my-element", template)
+
+class MyComponent extends HTMLElement
+{
+    public items: string[] = [];
+
+    public constructor()
+    {
+        super();
+
+        this.attachShadow({ mode: "open" });
+
+        const { content, activator } = templateFactory.create();
+
+        this.shadowRoot!.appendChild(content);
+
+        // Activate providing the root element, host element, scope object and custom directives map.
+        this.disposable = activator(this.shadowRoot, this, { host: this }, new Map());
+    }
+
+    public dispose(): void
+    {
+
+        // Disposes template bindings
+        this.disposable.dispose();
+    }
+
+    public changeData(): void
+    {
+        this.items = ["One", "Two", "Three"];
+
+        const table = this.shadowRoot.querySelector("table");
+
+        console.log(table.rows.length) // expected 3, but logged 0;
+    }
+}
+```
+
+When the data changes, all associated ui updated is scheduled and executed asynchronously.
+Therefore, it is necessary to wait for the execution of all updates before accessing the element.
+
+This can be done awaiting the promise returned by the `painting` function.
+
+```ts
+import { Compiler, painting } from "@surface/htmlx";
+
+const template =
+`
+    <table>
+        <tr #for="item of host.items">
+            <td>{item.name}</td>
+        </tr>
+    </table>
+`;
+
+const templateFactory = Compiler.compile("my-element", template)
+
+class MyComponent extends HTMLElement
+{
+    public items: string[] = [];
+
+    public constructor()
+    {
+        super();
+
+        this.attachShadow({ mode: "open" });
+
+        const { content, activator } = templateFactory.create();
+
+        this.shadowRoot!.appendChild(content);
+
+        // Activate providing the root element, host element, scope object and custom directives map.
+        this.disposable = activator(this.shadowRoot, this, { host: this }, new Map());
+    }
+
+    public dispose(): void
+    {
+
+        // Disposes template bindings
+        this.disposable.dispose();
+    }
+
+    public async changeData(): Promise<void>
+    {
+        this.items = ["One", "Two", "Three"];
+
+        await painting();
+
+        const table = this.shadowRoot.querySelector("table");
+
+        console.log(table.rows.length) // logged 3;
+    }
+}
+```
+
 ### Custom Directives
 Custom directives enables behaviors without a need to dive into the elements internals.
 It requires extending the `Directive` class and registering using `HTMLXElement.registerDirective` on global scope or element scope through `@element` decorator.
@@ -385,7 +538,7 @@ const template =
     </span>
 `;
 
-const template = Compiler.compile("my-element", "<span>Hello {name}!!!</span>")
+const templateFactory = Compiler.compile("my-element", template)
 
 class MyComponent extends HTMLElement implements IDisposable
 {
@@ -393,9 +546,11 @@ class MyComponent extends HTMLElement implements IDisposable
 
     public constructor()
     {
+        super();
+
         this.attachShadow({ mode: "open" });
 
-        const { content, activator } = template.create();
+        const { content, activator } = templateFactory.create();
 
         this.shadowRoot!.appendChild(content);
 
@@ -411,3 +566,7 @@ class MyComponent extends HTMLElement implements IDisposable
     }
 }
 ```
+
+# Considerations
+
+Although most features can be used in any pattern. Directives like `placeholder` and `injection` rely heavily on the relationship between `shadow dom` and `light dom`.

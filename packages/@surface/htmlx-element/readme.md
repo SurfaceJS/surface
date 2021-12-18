@@ -16,6 +16,7 @@
     * [Loop](#loop)
     * [Placeholder and Injection](#placeholder-and-injection)
         * [Dynamic keys](#dynamic-keys)
+    * [Component Wrapping](#component-wrapping)
     * [Styling injections](#styling-injections)
     * [Awaiting painting](#awaiting-painting)
     * [Custom Directives](#custom-directives)
@@ -394,6 +395,45 @@ my-element::part(header)
 </my-element>
 ```
 
+### Component Wrapping
+
+Sometimes we need to take some third party component and apply some defaults to allow code reuse.
+
+```html
+<!--third-party-element-->
+    <span #placeholder:title="{ title: host.title }">{host.title}</span>
+    <span #placeholder:content="{ content: host.content }">{host.content}</span>
+<!--third-party-element/-->
+```
+
+This can be archived by wrapping the component and propagating host bindings to it.
+
+```html
+<!--my-extended-element-->
+    <third-party-element dark="host.darkAttribute" :title="host.title" :content="host.content" @click="host.dispatchEventClick">
+        <span #inject:title="scope" #placeholder:title="scope">Default: {scope.title}</span>
+        <span #inject:content="scope" #placeholder:content="scope">Default: {scope.content}</span>
+    </third-party-element>
+<!--my-extended-element/-->
+```
+
+That's fine for small components, but it can be a lot of work for large ones.
+
+Fortunately, this can also be archived using the `spread` directive, which allows us to spread directives from any source to the target element.
+
+```html
+<!--my-extended-element-->
+    <my-element ...attributes|binds|injections|listeners="host"></my-element>
+    <!--or-->
+    <my-element
+        ...attributes="host.element1"
+        ...binds="host.element2"
+        ...injections="host.element3"
+        ...listeners="host.element4"
+    ></my-element>
+<!--my-extended-element/-->
+```
+
 ### Awaiting painting
 Sometimes you may need to access some interface element that can be dynamically rendered as some data changes.
 
@@ -428,7 +468,7 @@ class MyComponent extends HTMLXElement
 When the data changes, all associated ui updated is scheduled and executed asynchronously.
 Therefore, it is necessary to wait for the execution of all updates before accessing the element.
 
-This can be done awaiting the promise returned by the `painting` method.
+This can be done awaiting the promise returned by the `painting` function.
 
 ```ts
 import { painting }             from "@surface/htmlx";
