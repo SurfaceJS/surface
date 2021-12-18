@@ -123,6 +123,6 @@ export default class HashcodeSpec
     @test @shouldPass
     public getHashFromDerivedObject(): void
     {
-        chai.assert.equal(Hashcode.encode(new Date()), 2026361858);
+        chai.assert.equal(Hashcode.encode(new Date()), 1995606179);
     }
 }
