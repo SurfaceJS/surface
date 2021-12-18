@@ -93,8 +93,6 @@ export default class Commands
 
     public static async publish(_: string, options: CliPublishOptions): Promise<void>
     {
-        console.log(options.dry);
-
         const publishignore = (await readFileAsync(path.join(DIRNAME, "../.publishignore"))).toString();
 
         const exclude = new Set(publishignore.split("\n").map(x => x.trim()));

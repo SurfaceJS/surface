@@ -507,7 +507,7 @@ export function setValue(value: unknown, root: object, ...path: string[]): void
     }
 }
 
-export function *enumerateKeys(target: object): IterableIterator<PropertyKey>
+export function *enumerateKeys(target: object, includeSymbols: boolean = false): IterableIterator<PropertyKey>
 {
     const set = new Set<PropertyKey>();
 
@@ -517,11 +517,14 @@ export function *enumerateKeys(target: object): IterableIterator<PropertyKey>
     {
         for (const key of Reflect.ownKeys(prototype))
         {
-            if (!set.has(key))
+            if (typeof key != "symbol" || includeSymbols)
             {
-                set.add(key);
+                if (!set.has(key))
+                {
+                    set.add(key);
 
-                yield key;
+                    yield key;
+                }
             }
         }
     } while ((prototype = Reflect.getPrototypeOf(prototype)) && prototype.constructor != Object);
