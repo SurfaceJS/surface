@@ -56,7 +56,7 @@
 
                 @for $index from 1 to 9
                 {
-                    $value: 1 - ((10 / 8 * 0.1) * $index);
+                    $value: 1 - ((calc(10 / 8) * 0.1) * $index);
 
                     &:nth-child(#{$index})
                     {
