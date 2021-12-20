@@ -1,4 +1,4 @@
-import type { Delegate, IDisposable, Subscription }                            from "@surface/core";
+import type { Delegate, IDisposable, KeysOfType, Subscription }                            from "@surface/core";
 import { getPropertyDescriptor, getValue, isReadonly, resolveError, setValue } from "@surface/core";
 import type { ObservablePath, StackTrace }                                     from "@surface/htmlx-parser";
 import TemplateEvaluationError                                                 from "./errors/template-evaluation-error.js";
@@ -17,8 +17,8 @@ export function onewaybind(element: HTMLElement, scope: object, key: string, eva
     if (key == "class" || key == "style")
     {
         listener = key == "class"
-            ? () => element.setAttribute(key, classMap(tryEvaluate(scope, evaluator, source, stackTrace) as Record<string, boolean>))
-            : () => element.setAttribute(key, styleMap(tryEvaluate(scope, evaluator, source, stackTrace) as Record<string, boolean>));
+            ? () => classMap(element, tryEvaluate(scope, evaluator, source, stackTrace) as Record<string, boolean>)
+            : () => styleMap(element, tryEvaluate(scope, evaluator, source, stackTrace) as Record<string, string>);
     }
     else
     {
@@ -115,12 +115,12 @@ export function checkProperty(target: object, key: string, source?: string, stac
     }
 }
 
-export function classMap(classes: Record<string, boolean>): string
+export function classMap(element: HTMLElement, classes: Record<string, boolean>): void
 {
-    return Object.entries(classes)
-        .filter(x => x[1])
-        .map(x => x[0])
-        .join(" ");
+    for (const [key, value] of Object.entries(classes))
+    {
+        value ? element.classList.add(key) : element.classList.remove(key);
+    }
 }
 
 export function *enumerateRange(start: ChildNode, end: ChildNode): Iterable<ChildNode>
@@ -152,11 +152,17 @@ export function observe(target: object, observables: ObservablePath[], listener:
     return { unsubscribe: () => subscriptions.splice(0).forEach(x => x.unsubscribe()) };
 }
 
-export function styleMap(rules: Record<string, boolean>): string
+export function styleMap(element: HTMLElement, rules: Record<string, string>): void
 {
-    return Object.entries(rules)
-        .map(([key, value]) => `${key}: ${value}`)
-        .join("; ");
+    type StringKeys = KeysOfType<CSSStyleDeclaration, string>;
+
+    for (const [key, value] of Object.entries(rules) as [StringKeys, string][])
+    {
+        if (key in element.style)
+        {
+            element.style[key] = value;
+        }
+    }
 }
 
 export function throwTemplateEvaluationError(message: string, stackTrace: StackTrace): never
