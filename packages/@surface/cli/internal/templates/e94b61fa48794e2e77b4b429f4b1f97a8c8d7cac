@@ -1,18 +1,16 @@
 {
     "author": "author",
     "dependencies": {
-        "@surface/builder": "1.0.0-dev.202112181910",
-        "@surface/htmlx-element": "1.0.0-dev.202112181910",
-        "@surface/web-router": "1.0.0-dev.202112181910",
+        "@surface/builder": "1.0.0-dev.202112202132",
+        "@surface/htmlx-element": "1.0.0-dev.202112202132",
         "tslib": "^2.3.1"
     },
     "devDependencies": {
         "@typescript-eslint/eslint-plugin": "^5.7.0",
         "@typescript-eslint/parser": "^5.7.0",
-        "eslint": "8.5.0",
+        "eslint": "^8.5.0",
         "eslint-plugin-import": "^2.25.3",
-        "typescript": "^4.5.4",
-        "sass": "^1.45.0"
+        "typescript": "^4.5.4"
     },
     "name": "app",
     "scripts": {

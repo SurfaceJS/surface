@@ -109,7 +109,8 @@ export default class Commands
             }
             else
             {
-                const timestamp = new Date().toISOString()
+                // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+                const timestamp = options.timestamp || new Date().toISOString()
                     .replace(/[-T:]/g, "")
                     .substring(0, 12);
 

@@ -1,12 +1,12 @@
 {
     "author": "author",
     "dependencies": {
-        "@surface/builder": "1.0.0-dev.202112181910",
-        "@surface/core": "0.1.0-dev.202112181910",
-        "@surface/dependency-injection": "1.0.0-dev.202112181910",
-        "@surface/enumerable": "1.0.0-dev.202112181910",
-        "@surface/htmlx-element": "1.0.0-dev.202112181910",
-        "@surface/web-router": "1.0.0-dev.202112181910",
+        "@surface/builder": "1.0.0-dev.202112202132",
+        "@surface/core": "0.1.0-dev.202112202132",
+        "@surface/dependency-injection": "1.0.0-dev.202112202132",
+        "@surface/enumerable": "1.0.0-dev.202112202132",
+        "@surface/htmlx-element": "1.0.0-dev.202112202132",
+        "@surface/web-router": "1.0.0-dev.202112202132",
         "material-design-icons-iconfont": "^6.1.1",
         "tslib": "^2.3.1"
     },
