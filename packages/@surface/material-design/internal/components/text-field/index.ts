@@ -1,10 +1,10 @@
-import { assert, mix }                                               from "@surface/core";
-import CustomElement, { attribute, computed, element, event, query } from "@surface/custom-element";
-import colorable                                                     from "../../mixins/colorable/index.js";
-import lineRippleable                                                from "../../mixins/line-rippleable/index.js";
-import themeable                                                     from "../../mixins/themeable/index.js";
-import template                                                      from "./index.html";
-import style                                                         from "./index.scss";
+import { assert, mix }                                              from "@surface/core";
+import HTMLXElement, { attribute, computed, element, event, query } from "@surface/htmlx-element";
+import colorable                                                    from "../../mixins/colorable/index.js";
+import lineRippleable                                               from "../../mixins/line-rippleable/index.js";
+import themeable                                                    from "../../mixins/themeable/index.js";
+import template                                                     from "./index.htmlx";
+import style                                                        from "./index.scss";
 
 declare global
 {
@@ -16,7 +16,7 @@ declare global
 }
 
 @element("smd-text-field", { style, template })
-export default class TextField extends mix(CustomElement, [colorable, lineRippleable, themeable])
+export default class TextField extends mix(HTMLXElement, [colorable, lineRippleable, themeable])
 {
     private _selectionEnd:   number = 0;
     private _selectionStart: number = 0;
@@ -153,7 +153,7 @@ export default class TextField extends mix(CustomElement, [colorable, lineRipple
     @event("keyup")
     protected handleCaret(): void
     {
-        const selection = super.shadowRoot.getSelection();
+        const selection = window.getSelection();
 
         assert(selection);
 
@@ -170,7 +170,7 @@ export default class TextField extends mix(CustomElement, [colorable, lineRipple
     {
         if (this.input.firstChild)
         {
-            const selection = super.shadowRoot.getSelection();
+            const selection = window.getSelection();
 
             assert(selection);
 

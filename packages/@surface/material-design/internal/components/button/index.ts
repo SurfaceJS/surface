@@ -1,12 +1,12 @@
-import { mix }                                                from "@surface/core";
-import CustomElement, { attribute, computed, element, query } from "@surface/custom-element";
-import colorable                                              from "../../mixins/colorable/index.js";
-import disableable                                            from "../../mixins/disableable/index.js";
-import elevatable                                             from "../../mixins/elevatable/index.js";
-import rippleable                                             from "../../mixins/rippleable/index.js";
-import themeable                                              from "../../mixins/themeable/index.js";
-import template                                               from "./index.html";
-import style                                                  from "./index.scss";
+import { mix }                                               from "@surface/core";
+import HTMLXElement, { attribute, computed, element, query } from "@surface/htmlx-element";
+import colorable                                             from "../../mixins/colorable/index.js";
+import disableable                                           from "../../mixins/disableable/index.js";
+import elevatable                                            from "../../mixins/elevatable/index.js";
+import rippleable                                            from "../../mixins/rippleable/index.js";
+import themeable                                             from "../../mixins/themeable/index.js";
+import template                                              from "./index.htmlx";
+import style                                                 from "./index.scss";
 
 declare global
 {
@@ -25,7 +25,7 @@ export type Size = ""
 | "x-large";
 
 @element("smd-button", { style, template })
-export default class Button extends mix(CustomElement, [colorable, disableable, elevatable, rippleable, themeable])
+export default class Button extends mix(HTMLXElement, [colorable, disableable, elevatable, rippleable, themeable])
 {
     @query("#root")
     public colorable!: HTMLElement;

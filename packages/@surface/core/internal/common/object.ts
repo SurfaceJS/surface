@@ -219,7 +219,7 @@ export function deepMerge<TSources extends object[]>(sources: TSources, flags: D
                         {
                             const leftItem = elements[index as keyof unknown[]];
 
-                            elements[index as keyof unknown[]] = leftItem instanceof Object && rightItem instanceof Object
+                            elements[index as keyof unknown[]] = typeof leftItem == "object" && typeof rightValue == "object"
                                 ? deepMerge([leftItem, rightItem], flags)
                                 : rightItem;
                         }
@@ -234,9 +234,9 @@ export function deepMerge<TSources extends object[]>(sources: TSources, flags: D
                     resultDescriptor = { ...descriptor, value };
                 }
             }
-            else if (hasFlags(flags, DeepMergeFlags.IgnoreUndefined) && rightValue instanceof Object && !Array.isArray(rightValue))
+            else if (hasFlags(flags, DeepMergeFlags.IgnoreUndefined) && typeof rightValue == "object" && !Array.isArray(rightValue))
             {
-                const value = deepMerge([rightValue], flags);
+                const value = deepMerge([rightValue as object], flags);
 
                 resultDescriptor = { ...descriptor, value };
             }
@@ -268,6 +268,32 @@ export function freeze(target: Indexer): Indexer
 export function isEsm(module: unknown): module is object
 {
     return typeof module == "object" && module !== null && (!!Reflect.get(module, "__esModule") || Reflect.get(module as Object, Symbol.toStringTag) == "Module");
+}
+
+export function isReadonly(descriptor: PropertyDescriptor): boolean;
+export function isReadonly(target: object, key: string): boolean;
+export function isReadonly(...args: [PropertyDescriptor] | [object, string]): boolean
+{
+    const descriptor = args.length == 1 ? args[0] : getPropertyDescriptor(args[0], args[1]);
+
+    return descriptor?.get ? !descriptor.set : !(descriptor?.writable ?? false);
+}
+
+export function getPropertyDescriptor(target: object, key: string | symbol): PropertyDescriptor | null
+{
+    let prototype: object | null = target;
+
+    do
+    {
+        const descriptor = Object.getOwnPropertyDescriptor(prototype, key);
+
+        if (descriptor)
+        {
+            return descriptor;
+        }
+    } while (prototype = Reflect.getPrototypeOf(prototype));
+
+    return null;
 }
 
 export function getValue<T extends object, P extends ArrayPathOf<T, P>>(target: T, ...path: P): ArrayPathOfValue<T, P>;
@@ -459,6 +485,11 @@ export function proxyFrom(...instances: Indexer[]): Indexer
     return new Proxy(instances[0], handler);
 }
 
+export function resolveError(error: unknown): Error
+{
+    return error instanceof Error ? error : new Error(String(error));
+}
+
 export function setValue<T extends object, P extends ArrayPathOf<T, P>>(value: ArrayPathOfValue<T, P>, root: T, ...path: P): void;
 export function setValue(value: unknown, root: object, ...path: string[]): void
 {
@@ -484,7 +515,7 @@ export function *enumerateKeys(target: object): IterableIterator<PropertyKey>
 
     do
     {
-        for (const key of Reflect.ownKeys(prototype))
+        for (const key of Object.keys(prototype))
         {
             if (!set.has(key))
             {

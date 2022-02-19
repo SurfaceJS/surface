@@ -1,9 +1,9 @@
 // eslint-disable-next-line import/no-unassigned-import
-import "./root.scss?global";
+import "./root.scss?style";
 
-import CustomElement, { element } from "@surface/custom-element";
-import template                   from "./index.html";
-import style                      from "./index.scss";
+import HTMLXElement, { element } from "@surface/htmlx-element";
+import template                  from "./index.htmlx";
+import style                     from "./index.scss";
 
 declare global
 {
@@ -15,5 +15,5 @@ declare global
 }
 
 @element("smd-app", { style, template })
-export default class App extends CustomElement
+export default class App extends HTMLXElement
 { }

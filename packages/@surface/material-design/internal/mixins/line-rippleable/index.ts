@@ -1,6 +1,6 @@
 import type { Constructor } from "@surface/core";
-import type CustomElement   from "@surface/custom-element";
-import { event, styles }    from "@surface/custom-element";
+import type HTMLXElement   from "@surface/htmlx-element";
+import { event, styles }    from "@surface/htmlx-element";
 import style                from "./index.scss";
 
 const ANIMATION_ENTER = "animation-enter";
@@ -9,7 +9,7 @@ const ANIMATION_OUT   = "animation-out";
 const RIPPLE          = "ripple";
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-function lineRippleable<T extends Constructor<CustomElement & { noRipple: boolean, readonly rippleable: HTMLElement }>>(superClass: T): ILineRippleable & T
+function lineRippleable<T extends Constructor<HTMLXElement & { noRipple: boolean, readonly rippleable: HTMLElement }>>(superClass: T): ILineRippleable & T
 {
     @styles(style)
     class LineRippleable extends superClass implements ILineRippleable

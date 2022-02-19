@@ -2,12 +2,11 @@ import type { IDisposable }   from "@surface/core";
 import { DisposableMetadata } from "@surface/core";
 import type Observer          from "./observer.js";
 
-const METADATA = Symbol("reactive:metadata");
+const METADATA = Symbol("observer:metadata");
 
 export default class Metadata implements IDisposable
 {
     public computed:        Map<string, string[][]>              = new Map();
-    public disposables:     IDisposable[]                        = [];
     public isReactiveArray: boolean                              = false;
     public observers:       Map<string, Observer>                = new Map();
     public subjects:        Map<string, Map<Observer, string[]>> = new Map();
@@ -28,8 +27,7 @@ export default class Metadata implements IDisposable
 
     public dispose(): void
     {
-        this.disposables.splice(0).forEach(x => x.dispose());
-
+        this.observers.forEach(x => x.dispose());
         this.observers.clear();
         this.subjects.clear();
     }

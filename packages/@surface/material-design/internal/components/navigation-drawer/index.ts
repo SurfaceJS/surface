@@ -1,6 +1,6 @@
-import CustomElement, { element } from "@surface/custom-element";
-import template                   from "./index.html";
-import style                      from "./index.scss";
+import HTMLXElement, { element } from "@surface/htmlx-element";
+import template                  from "./index.htmlx";
+import style                     from "./index.scss";
 
 declare global
 {
@@ -12,5 +12,5 @@ declare global
 }
 
 @element("smd-navigation-drawer", { style, template })
-export default class NavigationDrawer extends CustomElement
+export default class NavigationDrawer extends HTMLXElement
 { }

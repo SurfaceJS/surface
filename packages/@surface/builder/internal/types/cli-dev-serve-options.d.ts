@@ -1,22 +1,11 @@
 type CliDevServerOptions =
 {
-    devserverCompress?:              boolean,
-    devserverContentBase?:           boolean | number | string[],
-    devserverContentBasePublicPath?: string | string[],
-    devserverHost?:                  string,
-    devserverHot?:                   boolean,
-    devserverHotOnly?:               boolean,
-    devserverIndex?:                 string,
-    devserverLazy?:                  boolean,
-    devserverLiveReload?:            boolean,
-    devserverOpen?:                  string | boolean,
-    devserverOpenPage?:              string[],
-    devserverPort?:                  number,
-    devserverPublic?:                string,
-    devserverQuiet?:                 boolean,
-    devserverUseLocalIp?:            boolean,
-    devserverWatchContentBase?:      boolean,
-    devserverWriteToDisk?:           boolean,
+    devserverCompress?:   boolean,
+    devserverHost?:       "local-ip" | "local-ipv4" | "local-ipv6" | string | undefined,
+    devserverHot?:        "only" | boolean | undefined,
+    devserverLiveReload?: boolean,
+    devserverOpen?:       boolean | string | string[],
+    devserverPort?:       "auto" | number | undefined,
 };
 
 export default CliDevServerOptions;

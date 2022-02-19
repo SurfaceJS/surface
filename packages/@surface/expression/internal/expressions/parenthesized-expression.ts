@@ -1,6 +1,5 @@
-import type IExpression              from "../interfaces/expression";
-import type IParenthesizedExpression from "../interfaces/parenthesized-expression";
-import NodeType                      from "../node-type.js";
+import type IExpression from "../interfaces/expression";
+import NodeType         from "../node-type.js";
 
 export default class ParenthesizedExpression implements IExpression
 {
@@ -26,7 +25,7 @@ export default class ParenthesizedExpression implements IExpression
         this._argument = argument;
     }
 
-    public clone(): IParenthesizedExpression
+    public clone(): ParenthesizedExpression
     {
         return new ParenthesizedExpression(this.argument.clone());
     }

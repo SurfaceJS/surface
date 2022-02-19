@@ -154,7 +154,7 @@ export type ExtractFromUnion<T, U>                                           = {
 export type FieldsOf<T>                                                      = { [K in keyof T]: T[K] };
 export type IgnoreKeysOfType<T extends object, U>                            = { [K in keyof T]: T[K] extends U ? never : K }[keyof T];
 export type IgnoreOfType<T extends object, U>                                = { [K in IgnoreKeysOfType<T, U>]: T[K] };
-export type Indexer<T = unknown>                                             = object & Record<string | number, T | undefined>;
+export type Indexer<T = unknown>                                             = object & Record<string | number | symbol, T | undefined>;
 export type IndexesOf<T extends any[]>                                       = ValuesOf<{ [K in keyof T]: K }>;
 export type Intersect<T extends any[]>                                       = UnionToIntersection<T[number]>;
 export type KeysOfType<T extends object, U>                                  = { [K in keyof T]: T[K] extends U ? K : never }[keyof T];

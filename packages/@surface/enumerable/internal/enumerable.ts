@@ -5,6 +5,7 @@ import Comparer          from "./comparer.js";
 import EnumerableSorter  from "./enumerable-sorter.js";
 import HashSet           from "./hash-set.js";
 import type IComparer    from "./interfaces/comparer";
+import type IGroup       from "./interfaces/group.js";
 import type ILookup      from "./interfaces/lookup";
 import Lookup            from "./lookup.js";
 
@@ -117,7 +118,7 @@ abstract class Enumerable<TSource> implements Iterable<TSource>
      * Computes the average of a sequence of numeric values.
      * @param selector A transform function to apply to each element.
      */
-    public average(selector?: Delegate<[TSource], number>): number | void
+    public average(selector?: Delegate<[TSource], number>): number
     {
         if (selector)
         {
@@ -323,7 +324,7 @@ abstract class Enumerable<TSource> implements Iterable<TSource>
      * @param resultSelector  A function to create a result value from each group.
      * @param comparer        An IComparer<T> to hash and compare keys.
      */
-    public groupBy<TKey, TElement, TResult>(keySelector: Delegate<[TSource], TKey>, elementSelector: Delegate<[TSource], TElement> = x => x as Object as TElement, resultSelector: Delegate<[TKey, Iterable<TElement>], TResult> = (key, elements) => ({ elements, key }) as Object as TResult, comparer: IComparer<TKey> = new Comparer()): Enumerable<TResult>
+    public groupBy<TKey, TElement = TSource, TResult = IGroup<TKey, TElement>>(keySelector: Delegate<[source: TSource], TKey>, elementSelector: Delegate<[source: TSource], TElement> = x => x as Object as TElement, resultSelector: Delegate<[key: TKey, elements: Iterable<TElement>], TResult> = (key, elements) => ({ elements, key }) as Object as TResult, comparer: IComparer<TKey> = new Comparer()): Enumerable<TResult>
     {
         return new GroupByIterator(this, keySelector, elementSelector, resultSelector, comparer);
     }
@@ -654,6 +655,32 @@ abstract class Enumerable<TSource> implements Iterable<TSource>
     public skipWhile(predicate: Delegate<[TSource, number], boolean>): Enumerable<TSource>
     {
         return new SkipWhileIterator(this, predicate);
+    }
+
+    /**
+     * Computes the sum of a sequence of numeric values.
+     * @param selector A transform function to apply to each element.
+     */
+    public sum(selector?: Delegate<[source: TSource], number>): number
+    {
+        if (selector)
+        {
+            return this.select(selector).sum();
+        }
+
+        let current = 0;
+
+        for (const element of this)
+        {
+            if (!(typeof element == "number"))
+            {
+                throw new TypeError("element is not a number");
+            }
+
+            current += element;
+        }
+
+        return current;
     }
 
     /**

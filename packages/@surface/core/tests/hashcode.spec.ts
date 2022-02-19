@@ -9,61 +9,62 @@ export default class HashcodeSpec
     @test @shouldPass
     public getHashFromUndefined(): void
     {
-        chai.expect(Hashcode.encode(undefined)).to.equal(1109352783);
+        chai.assert.equal(Hashcode.encode(undefined), 1109352783);
     }
 
     @test @shouldPass
     public getHashFromNull(): void
     {
-        chai.expect(Hashcode.encode(null)).to.equal(2144090744);
+        chai.assert.equal(Hashcode.encode(null), 2144090744);
     }
 
     @test @shouldPass
     public getHashFromBoolean(): void
     {
-        chai.expect(Hashcode.encode(true)).to.equal(2143914609);
+        chai.assert.equal(Hashcode.encode(true), 2143914609);
     }
 
     @test @shouldPass
     public getHashFromNumber(): void
     {
-        chai.expect(Hashcode.encode(0)).to.equal(2147483599);
+        chai.assert.equal(Hashcode.encode(0), 2147483599);
     }
 
     @test @shouldPass
     public getHashFromString(): void
     {
-        chai.expect(Hashcode.encode("string")).to.equal(608266288);
+        chai.assert.equal(Hashcode.encode("string"), 608266288);
     }
 
     @test @shouldPass
     public getHashFromFunction(): void
     {
-        chai.expect(Hashcode.encode(() => null)).to.equal(1055845656);
+        chai.assert.equal(Hashcode.encode(() => null), 1055845656);
     }
 
     @test @shouldPass
     public getHashFromSymbol(): void
     {
-        chai.expect(Hashcode.encode(Symbol("dummy"))).to.equal(1927057904);
+        chai.assert.equal(Hashcode.encode(Symbol("dummy")), 1927057904);
     }
 
     @test @shouldPass
     public getHashFromArray(): void
     {
-        chai.expect(Hashcode.encode([1, 2, 3])).to.equal(1544030469);
+        chai.assert.equal(Hashcode.encode([1, 2, 3]), 1544030469);
     }
 
     @test @shouldPass
     public getHashFromObject(): void
     {
-        chai.expect(Hashcode.encode({ bar: 2, foo: 1 })).to.equal(2069065848);
+        chai.assert.equal(Hashcode.encode({ bar: 2, foo: 1 }), 2069065848);
+        chai.assert.equal(Hashcode.encode({ bar: 2, foo: 1, [Symbol("hidden")]: "ignore-me" }), 2069065848);
     }
 
     @test @shouldPass
     public getHashFromWithNestedObject(): void
     {
-        chai.expect(Hashcode.encode({ bar: { baz: 2 }, foo: 1 })).to.equal(1596877544);
+        chai.assert.equal(Hashcode.encode({ bar: { baz: 2 }, foo: 1 }), 1596877544);
     }
 
     @test @shouldPass
@@ -72,7 +73,7 @@ export default class HashcodeSpec
         const foo = { a: 1 };
         const bar = { foo1: foo, foo2: foo };
 
-        chai.expect(Hashcode.encode(bar)).to.equal(454832418);
+        chai.assert.equal(Hashcode.encode(bar), 454832418);
     }
 
     @test @shouldPass
@@ -94,7 +95,7 @@ export default class HashcodeSpec
         baz.bar = bar;
         baz.baz = baz;
 
-        chai.expect(Hashcode.encode(foo)).to.equal(1338613384);
+        chai.assert.equal(Hashcode.encode(foo), 1338613384);
     }
 
     @test @shouldPass
@@ -116,12 +117,12 @@ export default class HashcodeSpec
         baz[1] = bar;
         baz[2] = baz;
 
-        chai.expect(Hashcode.encode(foo)).to.equal(1934370474);
+        chai.assert.equal(Hashcode.encode(foo), 1934370474);
     }
 
     @test @shouldPass
     public getHashFromDerivedObject(): void
     {
-        chai.expect(Hashcode.encode(new Date())).to.equal(327259064);
+        chai.assert.equal(Hashcode.encode(new Date()), 1995606179);
     }
 }

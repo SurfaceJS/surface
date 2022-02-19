@@ -1,20 +1,21 @@
+/* eslint-disable max-statements */
 /* eslint-disable max-lines-per-function */
 import { URL }                                        from "url";
 import { DeepMergeFlags, deepMerge }                  from "@surface/core";
-import { CleanWebpackPlugin }                         from "clean-webpack-plugin";
 import CopyPlugin                                     from "copy-webpack-plugin";
 import EslintWebpackPlugin                            from "eslint-webpack-plugin";
 import type { Options as EslintWebpackPluginOptions } from "eslint-webpack-plugin";
 import ForkTsCheckerWebpackPlugin                     from "fork-ts-checker-webpack-plugin";
-import type { ForkTsCheckerWebpackPluginOptions }     from "fork-ts-checker-webpack-plugin/lib/ForkTsCheckerWebpackPluginOptions.js";
+import type { ForkTsCheckerWebpackPluginOptions }     from "fork-ts-checker-webpack-plugin/lib/plugin-options";
 import HtmlWebpackPlugin                              from "html-webpack-plugin";
 import TerserWebpackPlugin                            from "terser-webpack-plugin";
 import webpack                                        from "webpack";
-import { BundleAnalyzerPlugin }                       from "webpack-bundle-analyzer";
+import webpackBundleAnalyzer                          from "webpack-bundle-analyzer";
 import WorkboxPlugin                                  from "workbox-webpack-plugin";
 import loaders                                        from "./loaders.js";
 import OverrideResolvePlugin                          from "./plugins/override-resolver-plugin.js";
 import PreferTsResolverPlugin                         from "./plugins/prefer-ts-resolver-plugin.js";
+import WebManifestPlugin                              from "./plugins/web-manifest-plugin.js";
 import type Configuration                             from "./types/configuration";
 import type Project                                   from "./types/project";
 
@@ -74,6 +75,7 @@ const PROJECT_DEFAULTS: Project =
             },
         },
     },
+    filename:   "js/[name]/[fullhash].js",
     mode:       "development",
     publicPath: "/",
     target:     "web",
@@ -134,6 +136,7 @@ export default async function createConfigurations(type: "analyze" | "build" | "
         };
 
         plugins.push(new ForkTsCheckerWebpackPlugin(forkTsCheckerWebpackPluginOptions));
+        plugins.push(new WebManifestPlugin({ publicPath: project.publicPath }));
 
         const tersePlugin = new TerserWebpackPlugin
         ({
@@ -145,11 +148,6 @@ export default async function createConfigurations(type: "analyze" | "build" | "
                 mangle:   true,
             },
         });
-
-        if (configuration.clean)
-        {
-            plugins.push(new CleanWebpackPlugin());
-        }
 
         if (project.includeFiles)
         {
@@ -184,9 +182,12 @@ export default async function createConfigurations(type: "analyze" | "build" | "
 
         if (isTargetingBrowser)
         {
-            const htmlWebpackPluginOptions: HtmlWebpackPlugin.Options = typeof project.index == "string"
-                ? { template: project.index }
-                : { title: "Surface App", ...project.index };
+            const htmlWebpackPluginOptions: HtmlWebpackPlugin.Options =
+            {
+                publicPath:    project.publicPath,
+                scriptLoading: "module",
+                ...typeof project.index == "string" ? { template: project.index } : project.index,
+            };
 
             plugins.push(new HtmlWebpackPlugin(htmlWebpackPluginOptions));
         }
@@ -194,7 +195,7 @@ export default async function createConfigurations(type: "analyze" | "build" | "
         switch (type)
         {
             case "analyze":
-                plugins.push(new BundleAnalyzerPlugin({ reportFilename: `${name}.html`, ...project.analyzer }));
+                plugins.push(new webpackBundleAnalyzer.BundleAnalyzerPlugin({ reportFilename: `${name}.html`, ...project.analyzer }));
                 break;
             case "serve":
                 if (name == main && isTargetingBrowser)
@@ -207,8 +208,6 @@ export default async function createConfigurations(type: "analyze" | "build" | "
                     url.pathname = project.publicPath!;
 
                     project.entry = configureDevServerEntry(project.entry, url);
-
-                    plugins.push(new webpack.HotModuleReplacementPlugin());
                 }
                 break;
             default:
@@ -216,6 +215,8 @@ export default async function createConfigurations(type: "analyze" | "build" | "
         }
 
         const isProduction = project.mode == "production";
+
+        const useAotHtmlx = typeof project.htmlx == "object" && project.htmlx.mode == "aot" || project.htmlx == "aot";
 
         const webpackConfiguration: webpack.Configuration =
         {
@@ -229,22 +230,46 @@ export default async function createConfigurations(type: "analyze" | "build" | "
                 rules:
                 [
                     {
-                        test: /(manifest\.webmanifest|browserconfig\.xml)$/,
-                        use:
-                        [
-                            loaders.file,
-                            loaders.appManifest,
-                        ],
+                        generator:
+                        {
+                            filename:   "[name].[contenthash][ext][query]",
+                            publicPath: project.publicPath,
+                        },
+                        test: /\.webmanifest$/,
+                        type: "asset/resource",
                     },
                     {
-                        test: /\.(png|jpe?g|svg|ttf|woff2?|eot)$/,
-                        use:  loaders.fileAssets,
+                        generator:
+                        {
+                            filename:   "images/[contenthash][ext][query]",
+                            publicPath: project.publicPath,
+                        },
+                        test: /\.(a?png|avif|bmp|cur|gif|ico|jfif|jpe?g|pjp(eg)?|svg|tiff?|webp)$/,
+                        type: "asset/resource",
+                    },
+                    {
+                        generator:
+                        {
+                            filename:   "fonts/[contenthash][ext][query]",
+                            publicPath: project.publicPath,
+                        },
+                        test: /\.(ttf|woff2?|eot|otf)$/,
+                        type: "asset/resource",
+                    },
+                    {
+                        generator:
+                        {
+                            filename:   "fonts/[contenthash][ext][query]",
+                            publicPath: project.publicPath,
+                        },
+                        test: /\.txt$/,
+                        type: "asset/source",
                     },
                     {
                         oneOf:
                         [
                             {
-                                resourceQuery: /global/,
+                                resourceQuery: /style/,
                                 use:
                                 [
                                     loaders.style,
@@ -254,20 +279,15 @@ export default async function createConfigurations(type: "analyze" | "build" | "
                                 ],
                             },
                             {
-                                resourceQuery: /raw/,
-                                use:
-                                [
-                                    loaders.toString,
-                                    loaders.css,
-                                    loaders.resolveUrl,
-                                    loaders.sass,
-                                ],
-                            },
-                            {
+                                generator:
+                                {
+                                    filename:   "css/[contenthash].css",
+                                    publicPath: project.publicPath,
+                                },
                                 resourceQuery: /file/,
+                                type:          "asset/resource",
                                 use:
                                 [
-                                    loaders.fileAssetsCss,
                                     loaders.extract,
                                     loaders.css,
                                     loaders.resolveUrl,
@@ -284,11 +304,24 @@ export default async function createConfigurations(type: "analyze" | "build" | "
                                 ],
                             },
                         ],
-                        test:  /\.s?css$/,
+                        test: /\.s?css$/,
                     },
                     {
                         test: /\.html$/,
                         use:  loaders.html,
+                    },
+                    {
+                        test: /\.htmlx$/,
+                        use:
+                        [
+                            {
+                                loader:  "@surface/htmlx-loader",
+                                options:
+                                {
+                                    handlers: typeof project.htmlx == "object" ? project.htmlx.attributeHandlers : [],
+                                },
+                            },
+                        ],
                     },
                     {
                         test: /\.ts$/,
@@ -304,6 +337,7 @@ export default async function createConfigurations(type: "analyze" | "build" | "
             optimization: { minimizer: [tersePlugin],  ...buildConfiguration?.optimization },
             output:
             {
+                clean:      configuration.clean,
                 filename:   project.filename,
                 path:       project.output,
                 pathinfo:   !isProduction,
@@ -313,6 +347,10 @@ export default async function createConfigurations(type: "analyze" | "build" | "
             plugins,
             resolve:
             {
+                alias:
+                {
+                    "@surface/htmlx-element": useAotHtmlx ? "@surface/htmlx-element/aot" : "@surface/htmlx-element",
+                },
                 extensions:     [".ts", ".js", ".json", ".wasm"],
                 plugins:        resolvePlugins,
                 preferRelative: true,

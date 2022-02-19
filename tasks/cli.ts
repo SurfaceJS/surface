@@ -1,8 +1,8 @@
-import commander                  from "commander";
+import { Command }                from "commander";
 import Commands                   from "./internal/commands.js";
 import { parsePattern, toString } from "./internal/common.js";
 
-const program = new commander.Command();
+const program = new Command();
 
 program.version("1.0.0");
 
@@ -13,8 +13,9 @@ program
 program
     .command("publish <registry>")
     .requiredOption("--token     <n>", "NPM token", toString)
-    .option("--config    <n>", "Configuration", parsePattern(/^nightly|release$/))
-    .option("--debug     [n]", "Debug mode", x => x === "" || x == "true")
+    .option("--mode       <n>", "Configuration mode", parsePattern(/^nightly|release$/))
+    .option("--dry        [n]", "Dry mode", x =>  x === "" || x == "true")
+    .option("--timestamp  [n]", "Timestamp")
     .action(Commands.publish);
 
-program.parse(process.argv);
+program.parse();

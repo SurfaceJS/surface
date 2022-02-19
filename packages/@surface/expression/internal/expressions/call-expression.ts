@@ -1,22 +1,22 @@
 import { format, hasValue } from "@surface/core";
-import type ICallExpression from "../interfaces/call-expression";
+import { getThisArg }       from "../common.js";
+import type SpreadElement   from "../elements/spread-element.js";
 import type IChainElement   from "../interfaces/chain-element.js";
-import type IExpression     from "../interfaces/expression";
-import type ISpreadElement  from "../interfaces/spread-element";
+import type IExpression     from "../interfaces/expression.js";
 import Messages             from "../messages.js";
 import NodeType             from "../node-type.js";
 import TypeGuard            from "../type-guard.js";
 
 export default class CallExpression implements IExpression, IChainElement
 {
-    private _arguments: (IExpression | ISpreadElement)[];
-    public get arguments(): (IExpression | ISpreadElement)[]
+    private _arguments: (IExpression | SpreadElement)[];
+    public get arguments(): (IExpression | SpreadElement)[]
     {
         return this._arguments;
     }
 
     /* c8 ignore next 4 */
-    public set arguments(value: (IExpression | ISpreadElement)[])
+    public set arguments(value: (IExpression | SpreadElement)[])
     {
         this._arguments = value;
     }
@@ -50,21 +50,21 @@ export default class CallExpression implements IExpression, IChainElement
         return NodeType.CallExpression;
     }
 
-    public constructor(callee: IExpression, $arguments: (IExpression | ISpreadElement)[], optional?: boolean)
+    public constructor(callee: IExpression, $arguments: (IExpression | SpreadElement)[] = [], optional: boolean = false)
     {
         this._arguments = $arguments;
         this._callee    = callee;
-        this._optional  = !!optional;
+        this._optional  = optional;
     }
 
-    public clone(): ICallExpression
+    public clone(): CallExpression
     {
         return new CallExpression(this.callee.clone(), this.arguments.map(x => x.clone()), this.optional);
     }
 
     public evaluate(scope: object): unknown
     {
-        const fn = this.callee.evaluate(scope);
+        const [thisArg, fn] = getThisArg(this.callee, scope);
 
         if (this.optional && !hasValue(fn))
         {
@@ -94,7 +94,7 @@ export default class CallExpression implements IExpression, IChainElement
             }
         }
 
-        return fn(...$arguments);
+        return fn.apply(thisArg, $arguments);
     }
 
     public toString(): string

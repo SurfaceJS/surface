@@ -1575,7 +1575,7 @@ export const invalidExpressions: InvalidParseExpectedSpec[] =
         raw:   "(a, a) => a",
     },
     {
-        error: new SyntaxError(Messages.duplicateParameterNameNotAllowedInThisContext, 1, 1, 2),
+        error: new SyntaxError(Messages.duplicateParameterNameNotAllowedInThisContext, 1, 8, 9),
         raw:   "(...[a, a]) => a",
     },
     {

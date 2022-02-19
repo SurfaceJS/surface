@@ -1,6 +1,5 @@
 import type { Indexer }         from "@surface/core";
 import type IExpression         from "../interfaces/expression";
-import type ILogicalExpression  from "../interfaces/logical-expression";
 import NodeType                 from "../node-type.js";
 import type { LogicalOperator } from "../types/operators";
 
@@ -66,7 +65,7 @@ export default class LogicalExpression implements IExpression
         this.operation = binaryFunctions[this.operator];
     }
 
-    public clone(): ILogicalExpression
+    public clone(): LogicalExpression
     {
         return new LogicalExpression(this.left.clone(), this.right.clone(), this.operator);
     }

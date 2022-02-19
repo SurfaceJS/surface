@@ -5,6 +5,9 @@
         "outDir":  ".",
         "rootDir": ".",
         "types":   ["node"],
+        "paths": {
+            "webpack": ["./node_modules/webpack"]
+        }
     },
     "files":
     [
@@ -20,6 +23,7 @@
     "references":
     [
         { "path": "../core" },
+        { "path": "../htmlx-loader" },
         { "path": "../io" },
         { "path": "../mock" },
         { "path": "../test-suite" },

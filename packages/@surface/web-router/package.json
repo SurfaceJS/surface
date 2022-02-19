@@ -5,21 +5,20 @@
     },
     "dependencies": {
         "@surface/core": "file:../core",
-        "@surface/custom-element": "file:../custom-element",
+        "@surface/htmlx": "file:../htmlx",
         "@surface/dependency-injection": "file:../dependency-injection",
         "@surface/observer": "file:../observer",
         "@surface/router": "file:../router",
-        "tslib": "2.3.0"
+        "tslib": "2.3.1"
     },
-    "description": "Web Router compatible with @surface/custom-element.",
+    "description": "Web Router compatible with @surface/htmlx.",
     "devDependencies": {
+        "@surface/dom-shim": "file:../dom-shim",
         "@surface/test-suite": "file:../test-suite",
-        "@types/chai": "^4.2.21",
-        "@types/chai-as-promised": "^7.1.4",
-        "@types/jsdom": "^16.2.13",
-        "chai": "^4.3.4",
-        "chai-as-promised": "^7.1.1",
-        "jsdom": "^16.6.0"
+        "@types/chai": "~4.3.0",
+        "@types/chai-as-promised": "~7.1.5",
+        "chai": "~4.3.6",
+        "chai-as-promised": "~7.1.1"
     },
     "homepage": "https://github.com/SurfaceJS/surface#readme",
     "keywords": [

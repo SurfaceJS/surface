@@ -1,9 +1,10 @@
 import fs                 from "fs";
 import { pathToFileURL }  from "url";
 import util               from "util";
-import { booleanPattern } from "./patterns.js";
 
 const readFileAsync = util.promisify(fs.readFile);
+
+const booleanPattern = /^true|false$/;
 
 export function normalizeUrlPath(path: string): string
 {
@@ -60,6 +61,55 @@ export function toArray(value: string = ""): string[]
 export function toBoolean(value: string = ""): boolean
 {
     return booleanPattern.test(value) ? value.toLowerCase() == "true" : false;
+}
+
+export function toBooleanOrEnum(...values: string[]): (value: string) => boolean | string
+{
+    return (value = "") =>
+    {
+        if (booleanPattern.test(value))
+        {
+            return value.toLowerCase() == "true";
+        }
+        else if (values.some(x => x == value))
+        {
+            return value;
+        }
+
+        throw new Error(`Expected a boolean or ${values.join(", ")}.`);
+    };
+}
+
+export function toNumberOrEnum(...values: string[]): (value: string) => number | string
+{
+    return (value = "") =>
+    {
+        const numberValue = Number(value);
+
+        if (!Number.isNaN(numberValue))
+        {
+            return numberValue;
+        }
+        else if (values.some(x => x == value))
+        {
+            return value;
+        }
+
+        throw new Error(`Expected a number or ${values.join(", ")}.`);
+    };
+}
+
+export function toEnum(...values: string[]): (value: string) => string
+{
+    return (value = "") =>
+    {
+        if (values.some(x => x == value))
+        {
+            return value;
+        }
+
+        throw new Error(`Expected a boolean or ${values.join(", ")}.`);
+    };
 }
 
 export function toNumberOrBooleanOrStringArray(value: string = ""): boolean | string[] | number

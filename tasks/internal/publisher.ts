@@ -1,96 +1,41 @@
-import fs                                            from "fs";
-import path                                          from "path";
-import type { Stream }                               from "stream";
-import { promisify }                                 from "util";
-import chalk                                         from "chalk";
-import glob                                          from "glob";
-import type { Credential, IPackage, IPublishParams } from "npm-registry-client";
-import type { ICreateOptions }                       from "tar";
-import { create }                                    from "tar";
-import { log, paths }                                from "./common.js";
-import Status                                        from "./enums/status.js";
-import NpmRepository                                 from "./npm-repository.js";
-// import Version                                       from "./version.js";
-
-const globAsync     = promisify(glob);
-const readdirAsync  = promisify(fs.readdir);
-const readFileAsync = promisify(fs.readFile);
-
-type Access = IPublishParams["access"];
-
-const DEFAULT_IGNORES = [".npmignore", "package-lock.json", "**/*.orig", "**/package.json.backup"];
+import path                from "path";
+import { Version }         from "@surface/core";
+import chalk               from "chalk";
+import pack                from "libnpmpack";
+import type { Manifest }   from "pacote";
+import { log, paths }      from "./common.js";
+import Status              from "./enums/status.js";
+import type NpmRepository  from "./npm-repository.js";
 
 export default class Publisher
 {
-    private readonly access:     Access;
-    private readonly auth:       Credential;
-    private readonly debug:      boolean;
-    private readonly lookup:     Map<string, IPackage>;
-    private readonly published:  Set<IPackage> = new Set();
-    private readonly repository: NpmRepository = new NpmRepository();
+    private readonly dry:        boolean;
+    private readonly lookup:     Map<string, Manifest>;
+    private readonly published:  Set<Manifest> = new Set();
+    private readonly repository: NpmRepository;
 
-    public constructor(lookup: Map<string, IPackage>, repository: NpmRepository, auth: Credential, access: Access = "public", debug: boolean = false)
+    public constructor(repository: NpmRepository, lookup: Map<string, Manifest>, dry: boolean = false)
     {
         this.lookup     = lookup;
         this.repository = repository;
-        this.auth       = auth;
-        this.access     = access;
-        this.debug      = debug;
-    }
-
-    private async collectFiles(folderpath: string): Promise<string[]>
-    {
-        const npmignorePath = path.join(folderpath, ".npmignore");
-
-        if (fs.existsSync(npmignorePath))
-        {
-            const options: glob.IOptions = { cwd: folderpath, nodir: true, root: folderpath };
-
-            const promises = DEFAULT_IGNORES.concat((await readFileAsync(npmignorePath)).toString().split("\n"))
-                .map(async x => globAsync(x.trim(), options));
-
-            const patterns = (await Promise.all(promises))
-                .filter(x => x.length > 0)
-                .flat()
-                .filter(x => !x.startsWith("node_modules"));
-
-            const exclude = new Set(patterns);
-
-            return (await globAsync("**/**", options))
-                .filter(x => !x.startsWith("node_modules") && !exclude.has(x));
-        }
-
-        return (await readdirAsync(folderpath))
-            .map(x => path.join(folderpath, x));
-    }
-
-    private async createBody(packageName: string): Promise<Stream>
-    {
-        const folderpath = path.join(paths.packages.root, packageName);
-        const files      = (await this.collectFiles(folderpath)).map(x => x.replace("@", "./@"));
-
-        log(`Collected files:\n    ${chalk.bold.blue(packageName)}\n${files.map(x => `        |--/${x}`).join("\n")}`);
-
-        const options: ICreateOptions = { cwd: folderpath.replace("@", "./@"), gzip: true, prefix: "package" };
-
-        return await create(options, files);
+        this.dry        = dry;
     }
 
     public async publish(modules?: string[]): Promise<void>
     {
         const packages = modules ? modules.map(x => this.lookup.get(x)!) : this.lookup.values();
 
-        for (const $package of packages)
+        for (const manifest of packages)
         {
-            if (await this.repository.getStatus($package) == Status.InRegistry)
+            if (await this.repository.getStatus(manifest) == Status.InRegistry)
             {
-                log(`${chalk.bold.blue($package.name)} is updated`);
+                log(`${chalk.bold.blue(manifest.name)} is updated`);
             }
-            else if (!this.published.has($package))
+            else if (!this.published.has(manifest))
             {
-                if ($package.dependencies)
+                if (manifest.dependencies)
                 {
-                    const dependencies = Object.keys($package.dependencies)
+                    const dependencies = Object.keys(manifest.dependencies)
                         .filter(x => x.startsWith("@surface/"));
 
                     if (dependencies.length > 0)
@@ -99,31 +44,25 @@ export default class Publisher
                     }
                 }
 
-                const body = await this.createBody($package.name);
+                const folderpath = path.join(paths.packages.root, manifest.name);
 
-                log(`Publishing ${$package.name}`);
+                const buffer = await pack(folderpath);
 
-                if (!this.debug)
+                log(`Publishing ${manifest.name}`);
+
+                if (!this.dry)
                 {
-                    await this.repository.publish(encodeURIComponent($package.name), { access: this.access, auth: this.auth, body, metadata: $package });
+                    const version = Version.parse(manifest.version);
+                    const tag = version.prerelease
+                        ? version.prerelease.type == "dev"
+                            ? "next"
+                            : version.prerelease.type
+                        : "latest";
+
+                    await this.repository.publish(manifest, buffer, tag);
                 }
 
-                // Automation Token dont support disttag yet: https://github.com/npm/roadmap/issues/29
-                // const version = Version.parse($package.version);
-
-                // // if (version.prerelease)
-                // // {
-                // //     const tag = version.prerelease.type == "dev" ? "next" : version.prerelease.type;
-
-                // //     log(`Adding tag ${tag}`);
-
-                // //     if (!this.debug)
-                // //     {
-                // //         await this.repository.addTag(encodeURIComponent($package.name), { auth: this.auth, distTag: tag, package: $package.name, version: $package.version });
-                // //     }
-                // // }
-
-                this.published.add($package);
+                this.published.add(manifest);
             }
         }
     }

@@ -1,0 +1,26 @@
+{
+    "author": "author",
+    "dependencies": {
+        "@surface/builder": "1.0.0-dev.202202192004",
+        "@surface/htmlx-element": "1.0.0-dev.202202192004",
+        "@surface/web-router": "1.0.0-dev.202202192004",
+        "tslib": "^2.3.1"
+    },
+    "devDependencies": {
+        "@typescript-eslint/eslint-plugin": "^5.7.0",
+        "@typescript-eslint/parser": "^5.7.0",
+        "eslint": "8.5.0",
+        "eslint-plugin-import": "^2.25.3",
+        "typescript": "^4.5.4",
+        "sass": "^1.45.0"
+    },
+    "name": "app",
+    "scripts": {
+        "build": "surface-builder build --mode=production",
+        "start": "surface-builder serve --devserver-hot --devserver-open",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "sideEffects": true,
+    "type": "module",
+    "version": "0.0.0"
+}

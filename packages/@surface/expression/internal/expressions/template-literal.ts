@@ -1,12 +1,11 @@
-import type IExpression      from "../interfaces/expression";
-import type ITemplateElement from "../interfaces/template-element";
-import type ITemplateLiteral from "../interfaces/template-literal";
-import NodeType              from "../node-type.js";
+import type TemplateElement from "../elements/template-element.js";
+import type IExpression     from "../interfaces/expression";
+import NodeType             from "../node-type.js";
 
 export default class TemplateLiteral implements IExpression
 {
     private _expressions: IExpression[];
-    private _quasis:      ITemplateElement[];
+    private _quasis:      TemplateElement[];
 
     public get expressions(): IExpression[]
     {
@@ -19,13 +18,13 @@ export default class TemplateLiteral implements IExpression
         this._expressions = value;
     }
 
-    public get quasis(): ITemplateElement[]
+    public get quasis(): TemplateElement[]
     {
         return this._quasis;
     }
 
     /* c8 ignore next 4 */
-    public set quasis(value: ITemplateElement[])
+    public set quasis(value: TemplateElement[])
     {
         this._quasis = value;
     }
@@ -35,13 +34,13 @@ export default class TemplateLiteral implements IExpression
         return NodeType.TemplateLiteral;
     }
 
-    public constructor(quasis: ITemplateElement[], expressions: IExpression[])
+    public constructor(quasis: TemplateElement[], expressions: IExpression[])
     {
         this._expressions = expressions;
         this._quasis      = quasis;
     }
 
-    public clone(): ITemplateLiteral
+    public clone(): TemplateLiteral
     {
         return new TemplateLiteral(this.quasis.map(x => x.clone()), this.expressions.map(x => x.clone()));
     }
@@ -52,7 +51,7 @@ export default class TemplateLiteral implements IExpression
 
         for (let i = 0; i < this.expressions.length; i++)
         {
-            result = `${this.quasis[i].cooked}${this.expressions[i].evaluate(scope)}`;
+            result += `${this.quasis[i].cooked}${this.expressions[i].evaluate(scope)}`;
         }
 
         return result + this.quasis[this.quasis.length - 1].cooked;
@@ -64,7 +63,7 @@ export default class TemplateLiteral implements IExpression
 
         for (let i = 0; i < this.expressions.length; i++)
         {
-            result = `${this.quasis[i].raw}\$\{${this.expressions[i]}\}`;
+            result += `${this.quasis[i].raw}\$\{${this.expressions[i]}\}`;
         }
 
         return `\`${result + this.quasis[this.quasis.length - 1].raw}\``;

@@ -1,9 +1,8 @@
-import type { Indexer }        from "@surface/core";
-import type IArrayPattern      from "../interfaces/array-pattern";
-import type IPattern           from "../interfaces/pattern";
-import NodeType                from "../node-type.js";
-import { PATTERN }             from "../symbols.js";
-import TypeGuard               from "../type-guard.js";
+import type { Indexer } from "@surface/core";
+import type IPattern    from "../interfaces/pattern";
+import NodeType         from "../node-type.js";
+import { PATTERN }      from "../symbols.js";
+import TypeGuard        from "../type-guard.js";
 
 export default class ArrayPattern implements IPattern
 {
@@ -32,7 +31,7 @@ export default class ArrayPattern implements IPattern
         this._elements = elements;
     }
 
-    public clone(): IArrayPattern
+    public clone(): ArrayPattern
     {
         return new ArrayPattern(this.elements.map(x => x?.clone() ?? null));
     }

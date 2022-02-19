@@ -19,10 +19,7 @@
     [
         { "path": "../collection" },
         { "path": "../core" },
-        { "path": "../custom-element" },
-        { "path": "../expression" },
-        { "path": "../observer" },
-        { "path": "../reflection" },
+        { "path": "../htmlx-element" },
         { "path": "../test-suite" },
     ]
 }

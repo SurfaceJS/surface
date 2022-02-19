@@ -2,30 +2,13 @@ import os from "os";
 
 const loaders =
 {
-    appManifest: { loader: "app-manifest-loader", options: { esModule: false } },
-    css:         { loader: "css-loader", options: { esModule: false, sourceMap: true } },
-    extract:     { loader: "extract-loader" },
-    file:
-    {
-        loader:  "file-loader",
-        options: { esModule: false, name: "[hash].[ext]" },
-    },
-    fileAssets:
-    {
-        loader:  "file-loader",
-        options: { esModule: false, name: "[hash].[ext]", outputPath: "assets" },
-    },
-    fileAssetsCss:
-    {
-        loader:  "file-loader",
-        options: { esModule: false, name: "[hash].css", outputPath: "assets" },
-    },
+    css:     { loader: "css-loader", options: { sourceMap: true } },
+    extract: { loader: "extract-loader" },
     html:
     {
         loader:  "html-loader",
         options:
         {
-            esModule: false,
             minimize: true,
             sources:  true,
         },
@@ -35,10 +18,11 @@ const loaders =
         loader:  "resolve-url-loader",
         options:
         {
-            removeCR: true,
+            removeCR:  true,
+            sourceMap: true,
         },
     },
-    sass:   { loader: "sass-loader" },
+    sass:   { loader: "sass-loader", options: { sourceMap: true } },
     style:  { loader: "style-loader" },
     thread:
     {
@@ -48,7 +32,7 @@ const loaders =
             workers: os.cpus().length - 1,
         },
     },
-    toString: { loader: "to-string-loader" },
+    toString: { loader: "to-string-loader", options: { sourceMap: true } },
     ts:
     {
         loader:  "ts-loader",

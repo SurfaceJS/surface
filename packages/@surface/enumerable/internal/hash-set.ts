@@ -128,7 +128,7 @@ export default class HashSet<TElement> implements Iterable<TElement>
                 if (lastIndex < 0)
                 {
                     this.buckets[hash % this.buckets.length] = this.slots[index].next + 1;
-                }
+                } /* c8 ignore next 4 */
                 else
                 {
                     this.slots[lastIndex].next = this.slots[index].next;
@@ -139,7 +139,7 @@ export default class HashSet<TElement> implements Iterable<TElement>
                 this.freeList = index;
 
                 return true;
-            }
+            } /* c8 ignore next 3 */
 
             lastIndex = index;
         }

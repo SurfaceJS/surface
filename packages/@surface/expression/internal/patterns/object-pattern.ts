@@ -1,26 +1,25 @@
-import type { Indexer }         from "@surface/core";
-import type IAssignmentProperty from "../interfaces/assignment-property";
-import type IIdentifier         from "../interfaces/identifier.js";
-import type IObjectPattern      from "../interfaces/object-pattern";
-import type IPattern            from "../interfaces/pattern";
-import type IRestElement        from "../interfaces/rest-element";
-import NodeType                 from "../node-type.js";
-import { PATTERN }              from "../symbols.js";
-import TypeGuard                from "../type-guard.js";
+import type { Indexer }        from "@surface/core";
+import type AssignmentProperty from "../elements/assignment-property";
+import type Identifier         from "../expressions/identifier.js";
+import type IPattern           from "../interfaces/pattern.js";
+import NodeType                from "../node-type.js";
+import { PATTERN }             from "../symbols.js";
+import TypeGuard               from "../type-guard.js";
+import type RestElement        from "./rest-element.js";
 
 export default class ObjectPattern implements IPattern
 {
-    private _properties: (IAssignmentProperty | IRestElement)[];
+    private _properties: (AssignmentProperty | RestElement)[];
 
     public [PATTERN]: void;
 
-    public get properties(): (IAssignmentProperty | IRestElement)[]
+    public get properties(): (AssignmentProperty | RestElement)[]
     {
         return this._properties;
     }
 
     /* c8 ignore next 4 */
-    public set properties(value: (IAssignmentProperty | IRestElement)[])
+    public set properties(value: (AssignmentProperty | RestElement)[])
     {
         this._properties = value;
     }
@@ -30,12 +29,12 @@ export default class ObjectPattern implements IPattern
         return NodeType.ObjectPattern;
     }
 
-    public constructor(properties: (IAssignmentProperty | IRestElement)[])
+    public constructor(properties: (AssignmentProperty | RestElement)[])
     {
         this._properties = properties;
     }
 
-    public clone(): IObjectPattern
+    public clone(): ObjectPattern
     {
         return new ObjectPattern(this.properties.map(x => x.clone()));
     }
@@ -60,7 +59,7 @@ export default class ObjectPattern implements IPattern
                     return property.value.evaluate(scope, value[key] as unknown[]);
                 }
 
-                const alias      = `${TypeGuard.isAssignmentPattern(property.value) ? (property.value.left as IIdentifier).name : (property.value as IIdentifier).name}`;
+                const alias      = `${TypeGuard.isAssignmentPattern(property.value) ? (property.value.left as Identifier).name : (property.value as Identifier).name}`;
                 const aliasOrKey = property.shorthand ? alias : key;
 
                 currentScope[alias] = TypeGuard.isAssignmentPattern(property.value)
@@ -85,6 +84,6 @@ export default class ObjectPattern implements IPattern
 
     public toString(): string
     {
-        return `{ ${this.properties.map(x => x.toString()).join(", ")} }`;
+        return this.properties.length > 0 ? `{ ${this.properties.map(x => x.toString()).join(", ")} }` : "{ }";
     }
 }

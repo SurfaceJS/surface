@@ -1,6 +1,5 @@
-import type IConditionalExpression from "../interfaces/conditional-expression";
-import type IExpression            from "../interfaces/expression";
-import NodeType                    from "../node-type.js";
+import type IExpression from "../interfaces/expression";
+import NodeType         from "../node-type.js";
 
 export default class ConditionalExpression implements IExpression
 {
@@ -52,7 +51,7 @@ export default class ConditionalExpression implements IExpression
         this._alternate  = alternate;
     }
 
-    public clone(): IConditionalExpression
+    public clone(): ConditionalExpression
     {
         return new ConditionalExpression(this.test.clone(), this.alternate.clone(), this.consequent.clone());
     }

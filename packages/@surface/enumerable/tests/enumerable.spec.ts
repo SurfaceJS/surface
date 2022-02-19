@@ -300,7 +300,7 @@ export default class EnumerableSpec
     }
 
     @test @shouldPass
-    public groupByWithSelector(): void
+    public groupByWithElementSelector(): void
     {
         const data =
         [
@@ -318,7 +318,33 @@ export default class EnumerableSpec
             { elements: [5],    key: "c" },
         ];
 
-        chai.assert.deepEqual(Array.from(Enumerable.from(data).groupBy(x => x.key, x => x.value)), expected);
+        const actual = Array.from(Enumerable.from(data).groupBy(x => x.key, x => x.value));
+
+        chai.assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldPass
+    public groupByWithResultSelector(): void
+    {
+        const data =
+        [
+            { id: 1, key: "a", value: 1 },
+            { id: 2, key: "a", value: 2 },
+            { id: 3, key: "b", value: 3 },
+            { id: 4, key: "b", value: 4 },
+            { id: 5, key: "c", value: 5 },
+        ];
+
+        const expected =
+        [
+            { key: "a", value: 3 },
+            { key: "b", value: 7 },
+            { key: "c", value: 5 },
+        ];
+
+        const actual = Array.from(Enumerable.from(data).groupBy(x => x.key, x => x, (key, element) => ({ key, value: Enumerable.from(element).sum(x => x.value) })));
+
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -743,6 +769,18 @@ export default class EnumerableSpec
     }
 
     @test @shouldPass
+    public sum(): void
+    {
+        chai.assert.equal(Enumerable.from([1, 2, 3]).sum(), 6);
+    }
+
+    @test @shouldPass
+    public sumEmpty(): void
+    {
+        chai.assert.equal(Enumerable.from([]).sum(), 0);
+    }
+
+    @test @shouldPass
     public take(): void
     {
         chai.assert.deepEqual(Array.from(Enumerable.from([1, 2, 3]).take(2)), [1, 2]);
@@ -970,5 +1008,11 @@ export default class EnumerableSpec
     public singleWithPredicateError(): void
     {
         chai.assert.throw(() => Enumerable.from([1, 2, 3]).single(x => x > 3), Error, "no element satisfies the condition in predicate");
+    }
+
+    @test @shouldFail
+    public sumNotNumber(): void
+    {
+        chai.assert.throws(() => Enumerable.from([""]).sum());
     }
 }

@@ -1,6 +1,5 @@
 import type IExpression from "../interfaces/expression";
 import type INode       from "../interfaces/node";
-import type IProperty   from "../interfaces/property";
 import NodeType         from "../node-type.js";
 import TypeGuard        from "../type-guard.js";
 
@@ -59,15 +58,15 @@ export default class Property implements INode
         return NodeType.Property;
     }
 
-    public constructor(key: IExpression, value: IExpression, computed: boolean, shorthand: boolean)
+    public constructor(key: IExpression, value: IExpression, computed: boolean = false, shorthand: boolean = false)
     {
-        this._key        = key;
-        this._value      = value;
-        this._computed   = computed;
-        this._shorthand  = shorthand;
+        this._key       = key;
+        this._value     = value;
+        this._computed  = computed;
+        this._shorthand = shorthand;
     }
 
-    public clone(): IProperty
+    public clone(): Property
     {
         return new Property(this.key.clone(), this.value.clone(), this.computed, this.shorthand);
     }

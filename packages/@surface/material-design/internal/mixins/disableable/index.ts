@@ -1,10 +1,10 @@
 import type { Constructor }  from "@surface/core";
-import type CustomElement    from "@surface/custom-element";
-import { attribute, styles } from "@surface/custom-element";
+import type HTMLXElement     from "@surface/htmlx-element";
+import { attribute, styles } from "@surface/htmlx-element";
 import style                 from "./index.scss";
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-const disableable = <T extends Constructor<CustomElement>>(superClass: T): Constructor<IDisableable> & T =>
+const disableable = <T extends Constructor<HTMLXElement>>(superClass: T): Constructor<IDisableable> & T =>
 {
     @styles(style)
     class Disableable extends superClass implements IDisableable

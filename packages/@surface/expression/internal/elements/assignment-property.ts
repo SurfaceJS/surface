@@ -1,9 +1,8 @@
-import type IAssignmentProperty from "../interfaces/assignment-property";
-import type IExpression         from "../interfaces/expression";
-import type INode               from "../interfaces/node";
-import type IPattern            from "../interfaces/pattern";
-import NodeType                 from "../node-type.js";
-import TypeGuard                from "../type-guard.js";
+import type IExpression from "../interfaces/expression";
+import type INode       from "../interfaces/node";
+import type IPattern    from "../interfaces/pattern";
+import NodeType         from "../node-type.js";
+import TypeGuard        from "../type-guard.js";
 
 export default class AssignmentProperty implements INode
 {
@@ -60,7 +59,7 @@ export default class AssignmentProperty implements INode
         return NodeType.AssignmentProperty;
     }
 
-    public constructor(key: IExpression, value: IPattern, computed: boolean, shorthand: boolean)
+    public constructor(key: IExpression, value: IPattern, computed: boolean = false, shorthand: boolean = false)
     {
         this._key        = key;
         this._value      = value;
@@ -68,7 +67,7 @@ export default class AssignmentProperty implements INode
         this._shorthand  = shorthand;
     }
 
-    public clone(): IAssignmentProperty
+    public clone(): AssignmentProperty
     {
         return new AssignmentProperty(this.key.clone(), this.value.clone(), this.computed, this.shorthand);
     }

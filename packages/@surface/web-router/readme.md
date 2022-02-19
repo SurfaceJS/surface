@@ -26,20 +26,20 @@ Features support for synchronous and asynchronous routes, url templates and nati
 
 ## Basic setup
 ```ts
-import CustomElement               from "@surface/custom-element";
+import HTMLXElement               from "@surface/htmlx-element";
 import type { RouteConfiguration } from "@surface/web-router";
 import WebRouter                   from "@surface/web-router";
 
 // <router-outlet> determines where the content will be outputed.
 @element("app-root", { template: "<router-outlet></router-outlet>" })
-class App extends CustomElement
+class App extends HTMLXElement
 { }
 
 document.body.appendChild(new App());
 
 // Component used as view.
 @element("home-view")
-class HomeView extends CustomElement
+class HomeView extends HTMLXElement
 { }
 
 // The router will start looking for the outlet at the shadow root of the app-root component.
@@ -62,19 +62,19 @@ By default, the router lookups by `<router-outlet>` element where it outputs the
 This can overrided at configuration level passing the `selector` option.
 
 ```ts
-import CustomElement               from "@surface/custom-element";
+import HTMLXElement               from "@surface/htmlx-element";
 import type { RouteConfiguration } from "@surface/web-router";
 import WebRouter                   from "@surface/web-router";
 
 @element("app-root", { template: "<div class='outlet'></div>" })
-class App extends CustomElement
+class App extends HTMLXElement
 { }
 
 document.body.appendChild(new App());
 
 // Component used as view.
 @element("home-view")
-class HomeView extends CustomElement
+class HomeView extends HTMLXElement
 { }
 
 // The router will start looking for the outlet at the shadow root of the app-root component.
@@ -385,13 +385,13 @@ await router.replace("/company/2");
 
 
 ```ts
-import CustomElement               from "@surface/custom-element";
+import HTMLXElement               from "@surface/htmlx-element";
 import Container, { inject }       from "@surface/dependency-injection";
 import type { RouteConfiguration } from "@surface/web-router";
 import WebRouter                   from "@surface/web-router";
 
 @element("home-view")
-class HomeView extends CustomElement
+class HomeView extends HTMLXElement
 {
     @inject(MyOtherService)
     private readonly otherService!: MyOtherService;
@@ -419,14 +419,14 @@ void import("./app")
 **@surface/web-router** provides a custom directive that allows you to create router links directly in html and accepts the same arguments that `router.push(...)`.
 
 ```ts
-import CustomElement                      from "@surface/custom-element";
+import HTMLXElement                      from "@surface/htmlx-element";
 import WebRouter, { RouterLinkDirective } from "@surface/web-router";
 import routes                             from "./routes";
 
 const router = new WebRouter({ root: "app-root", routes });
 
 // Register directive
-CustomElement.registerDirective("router-link", context => new RouterLinkDirective(router, context));
+HTMLXElement.registerDirective("router-link", context => new RouterLinkDirective(router, context));
 
 void import("./app").then(() => void router.pushCurrentLocation());
 ```

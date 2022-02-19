@@ -1,7 +1,6 @@
 import type { Indexer } from "@surface/core";
 import { format }       from "@surface/core";
 import type IExpression from "../interfaces/expression";
-import type IIdentifier from "../interfaces/identifier";
 import type IPattern    from "../interfaces/pattern";
 import Messages         from "../messages.js";
 import NodeType         from "../node-type.js";
@@ -34,7 +33,7 @@ export default class Identifier implements IExpression, IPattern
         this._name = name;
     }
 
-    public clone(): IIdentifier
+    public clone(): Identifier
     {
         return new Identifier(this.name);
     }

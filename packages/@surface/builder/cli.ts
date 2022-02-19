@@ -18,4 +18,4 @@ program.command("analyze [options]", "Analyze bundle size.", createCommandOption
 program.command("build   [options]", "Build project.",       createCommandOptions("build")).alias("b");
 program.command("serve   [options]", "Starts dev server.",   createCommandOptions("serve")).alias("s");
 
-program.parse(process.argv);
+program.parse();

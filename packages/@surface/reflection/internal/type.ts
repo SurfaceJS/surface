@@ -188,8 +188,8 @@ export default class Type
 
     public getMember(key: string | symbol): MemberInfo | null
     {
-        let prototype = this.instance;
-        let type      = this as Type;
+        let prototype: object | null = this.instance;
+        let type:      Type          = this;
 
         do
         {
@@ -199,7 +199,7 @@ export default class Type
             {
                 return this.getMemberType({ declaringType: type, descriptor, isOwn: this.isOwn(key, prototype), isStatic: false, key });
             }
-        } while (((prototype as object | null) = Reflect.getPrototypeOf(prototype)) && (type = Type.from(prototype)));
+        } while ((prototype = Reflect.getPrototypeOf(prototype)) && (type = Type.from(prototype)));
 
         return null;
     }

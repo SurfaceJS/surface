@@ -3,8 +3,8 @@ import fs                  from "fs";
 import path                from "path";
 import { fileURLToPath }   from "url";
 import { promisify }       from "util";
+import { resolveError }    from "@surface/core";
 import chalk               from "chalk";
-import type { Credential } from "npm-registry-client";
 import
 {
     backupFile,
@@ -86,15 +86,13 @@ export default class Commands
         const spec   = `${path.relative(process.cwd(), path.join(file.dir, file.name))}.js`;
         const target = file.name.replace(".spec", "");
 
-        const command = `${c8} --text-exclude --include=**/@surface/**/${target}.js --include=**/@surface/**/${target}.ts --exclude=**/tests --extension=.js --extension=.ts --reporter=text ${mocha} --loader=@surface/mock-loader --ui=tdd ${spec}`;
+        const command = `${c8} --text-exclude --include=**/@surface/**/${target}.js --include=**/@surface/**/${target}.ts --exclude=**/tests --exclude=**/node_modules --extension=.js --extension=.ts --reporter=text ${mocha} --loader=@surface/mock-loader --ui=tdd ${spec}`;
 
         await execute(`cover ${chalk.bold.blue(filepath)} tests`, command);
     }
 
-    public static async publish(registry: string, options: CliPublishOptions): Promise<void>
+    public static async publish(_: string, options: CliPublishOptions): Promise<void>
     {
-        console.log(options.target);
-
         const publishignore = (await readFileAsync(path.join(DIRNAME, "../.publishignore"))).toString();
 
         const exclude = new Set(publishignore.split("\n").map(x => x.trim()));
@@ -105,30 +103,29 @@ export default class Commands
 
         try
         {
-            if (options.config == "release")
+            if (options.mode == "release")
             {
                 await Commands.sync(StrategyType.Default);
             }
             else
             {
-                const timestamp = new Date().toISOString()
+                // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+                const timestamp = options.timestamp || new Date().toISOString()
                     .replace(/[-T:]/g, "")
                     .substring(0, 12);
 
                 await Commands.sync(StrategyType.ForceVersion, `*.*.*-dev.${timestamp}` as SemanticVersion);
             }
 
-            const auth = { alwaysAuth: true, token: options.token } as Credential;
-
             const packages = Array.from(lookup.keys()).filter(x => !exclude.has(x));
 
-            const repository = new NpmRepository(registry, false);
+            const repository = new NpmRepository(options.token);
 
-            await new Publisher(lookup, repository, auth, "public", options.debug).publish(packages);
+            await new Publisher(repository, lookup, options.dry).publish(packages);
         }
         catch (error)
         {
-            log(error.message);
+            log(resolveError(error).message);
         }
 
         await Commands.restore();

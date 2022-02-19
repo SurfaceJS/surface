@@ -5,6 +5,7 @@ import os                                                          from "os";
 import path                                                        from "path";
 import { fileURLToPath }                                           from "url";
 import util                                                        from "util";
+import { assert }                                                  from "@surface/core";
 import { createPathAsync }                                         from "@surface/io";
 import inquirer, { QuestionCollection }                            from "inquirer";
 
@@ -82,6 +83,8 @@ export default class Tasks
         }
         catch (error)
         {
+            assert(error instanceof Error);
+
             console.error(error.message);
         }
     }

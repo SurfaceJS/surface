@@ -1,12 +1,15 @@
-import { batchTest, shouldFail, shouldPass, suite, test }   from "@surface/test-suite";
-import chai                                                 from "chai";
-import ParenthesizedExpression                              from "../internal/expressions/parenthesized-expression.js";
-import Parser                                               from "../internal/parser.js";
-import SyntaxError                                          from "../internal/syntax-error.js";
-import TypeGuard                                            from "../internal/type-guard.js";
+/* eslint-disable no-new-func */
+/* eslint-disable @typescript-eslint/no-implied-eval */
+import { assert }                                               from "@surface/core";
+import { batchTest, shouldFail, shouldPass, skip, suite, test } from "@surface/test-suite";
+import chai                                                     from "chai";
+import ParenthesizedExpression                                  from "../internal/expressions/parenthesized-expression.js";
+import Parser                                                   from "../internal/parser.js";
+import SyntaxError                                              from "../internal/syntax-error.js";
+import TypeGuard                                                from "../internal/type-guard.js";
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
-import type { InvalidParseExpectedSpec, ParseExpectedSpec } from "./parser-expectations.js";
-import { invalidExpressions, validExpressions }             from "./parser-expectations.js";
+import type { InvalidParseExpectedSpec, ParseExpectedSpec }     from "./parser-expectations.js";
+import { invalidExpressions, validExpressions }                 from "./parser-expectations.js";
 
 type RawSyntaxError = Pick<SyntaxError, "message" | "lineNumber" | "index" | "column"> | Pick<ReferenceError, "message">;
 
@@ -28,19 +31,16 @@ function toRaw(error: SyntaxError | ReferenceError): RawSyntaxError
 @suite
 export default class ParserSpec
 {
-    @test @shouldPass
+    @skip @test @shouldPass
     public benchmark(): void
     {
-
-        // eslint-disable-next-line capitalized-comments
-        /*
-        const nativeContext = { x: { elements: [] }, index: 0 };
-        const proxyContext  = { x: { elements: [] }, index: 0 };
+        const nativeContext = { index: 0, x: { elements: [] } };
+        const proxyContext  = { index: 0, x: { elements: [] } };
 
         const raw = "x.elements.push({ id: index, row: index % 2 == 0 ? 'even' : 'odd' })";
 
         const native = Function(`with(this) { ${raw} }`).bind(nativeContext);
-        const proxy  = Parser.parse(raw, proxyContext);
+        const proxy  = Parser.parse(raw);
 
         const nativeStart = Date.now();
 
@@ -57,14 +57,13 @@ export default class ParserSpec
         for (let index = 0; index < 1_000_000; index++)
         {
             proxyContext.index = index;
-            proxy.evaluate();
+            proxy.evaluate(proxyContext);
         }
 
         const proxyTime  = Date.now() - proxyStart;
-        const difference = ((proxyTime - nativeTime) / proxyTime) * 100;
+        const difference = (proxyTime - nativeTime) / proxyTime * 100;
 
-        chai.expect(difference).to.lessThan(20);
-        */
+        chai.assert.isBelow(difference, 20);
     }
 
     @shouldPass
@@ -118,6 +117,8 @@ export default class ParserSpec
         }
         catch (error)
         {
+            assert(error instanceof Error);
+
             chai.assert.deepEqual(toRaw(error), toRaw(invalidParseExpectedSpec.error));
         }
     }

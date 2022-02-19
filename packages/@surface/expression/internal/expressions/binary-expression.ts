@@ -1,5 +1,4 @@
 import type { Indexer }        from "@surface/core";
-import type IBinaryExpression  from "../interfaces/binary-expression";
 import type IExpression        from "../interfaces/expression";
 import NodeType                from "../node-type.js";
 import type { BinaryOperator } from "../types/operators";
@@ -85,7 +84,7 @@ export default class BinaryExpression implements IExpression
         this.operation = binaryFunctions[this.operator];
     }
 
-    public clone(): IBinaryExpression
+    public clone(): BinaryExpression
     {
         return new BinaryExpression(this.left.clone(), this.right.clone(), this.operator);
     }

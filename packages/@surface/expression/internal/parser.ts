@@ -1,45 +1,45 @@
 /* eslint-disable max-lines */
+/* eslint-disable complexity */
+/* eslint-disable max-statements */
 
-import { format }           from "@surface/core";
-import { hasDuplicated }           from "./common.js";
-import AssignmentProperty          from "./elements/assignment-property.js";
-import Property                    from "./elements/property.js";
-import SpreadElement               from "./elements/spread-element.js";
-import TemplateElement             from "./elements/template-element.js";
-import ArrayExpression             from "./expressions/array-expression.js";
-import ArrowFunctionExpression     from "./expressions/arrow-function-expression.js";
-import AssignmentExpression        from "./expressions/assignment-expression.js";
-import BinaryExpression            from "./expressions/binary-expression.js";
-import CallExpression              from "./expressions/call-expression.js";
-import ChainExpression             from "./expressions/chain-expression.js";
-import ConditionalExpression       from "./expressions/conditional-expression.js";
-import Identifier                  from "./expressions/identifier.js";
-import Literal                     from "./expressions/literal.js";
-import LogicalExpression           from "./expressions/logical-expression.js";
-import MemberExpression            from "./expressions/member-expression.js";
-import NewExpression               from "./expressions/new-expression.js";
-import ObjectExpression            from "./expressions/object-expression.js";
-import ParenthesizedExpression     from "./expressions/parenthesized-expression.js";
-import SequenceExpression          from "./expressions/sequence-expression.js";
-import TaggedTemplateExpression    from "./expressions/tagged-template-expression.js";
-import TemplateLiteral             from "./expressions/template-literal.js";
-import ThisExpression              from "./expressions/this-expression.js";
-import UnaryExpression             from "./expressions/unary-expression.js";
-import UpdateExpression            from "./expressions/update-expression.js";
-import type IExpression            from "./interfaces/expression.js";
-import type INode                  from "./interfaces/node.js";
-import type IPattern               from "./interfaces/pattern.js";
-import type ITemplateLiteral       from "./interfaces/template-literal.js";
-import Messages                    from "./messages.js";
-import NodeType                    from "./node-type.js";
-import ArrayPattern                from "./patterns/array-pattern.js";
-import AssignmentPattern           from "./patterns/assignment-pattern.js";
-import ObjectPattern               from "./patterns/object-pattern.js";
-import RestElement                 from "./patterns/rest-element.js";
-import Scanner                     from "./scanner.js";
-import SyntaxError                 from "./syntax-error.js";
-import TokenType                   from "./token-type.js";
-import TypeGuard                   from "./type-guard.js";
+import { format }               from "@surface/core";
+import AssignmentProperty       from "./elements/assignment-property.js";
+import Property                 from "./elements/property.js";
+import SpreadElement            from "./elements/spread-element.js";
+import TemplateElement          from "./elements/template-element.js";
+import ArrayExpression          from "./expressions/array-expression.js";
+import ArrowFunctionExpression  from "./expressions/arrow-function-expression.js";
+import AssignmentExpression     from "./expressions/assignment-expression.js";
+import BinaryExpression         from "./expressions/binary-expression.js";
+import CallExpression           from "./expressions/call-expression.js";
+import ChainExpression          from "./expressions/chain-expression.js";
+import ConditionalExpression    from "./expressions/conditional-expression.js";
+import Identifier               from "./expressions/identifier.js";
+import Literal                  from "./expressions/literal.js";
+import LogicalExpression        from "./expressions/logical-expression.js";
+import MemberExpression         from "./expressions/member-expression.js";
+import NewExpression            from "./expressions/new-expression.js";
+import ObjectExpression         from "./expressions/object-expression.js";
+import ParenthesizedExpression  from "./expressions/parenthesized-expression.js";
+import SequenceExpression       from "./expressions/sequence-expression.js";
+import TaggedTemplateExpression from "./expressions/tagged-template-expression.js";
+import TemplateLiteral          from "./expressions/template-literal.js";
+import ThisExpression           from "./expressions/this-expression.js";
+import UnaryExpression          from "./expressions/unary-expression.js";
+import UpdateExpression         from "./expressions/update-expression.js";
+import type IExpression         from "./interfaces/expression.js";
+import type INode               from "./interfaces/node.js";
+import type IPattern            from "./interfaces/pattern.js";
+import Messages                 from "./messages.js";
+import NodeType                 from "./node-type.js";
+import ArrayPattern             from "./patterns/array-pattern.js";
+import AssignmentPattern        from "./patterns/assignment-pattern.js";
+import ObjectPattern            from "./patterns/object-pattern.js";
+import RestElement              from "./patterns/rest-element.js";
+import Scanner                  from "./scanner.js";
+import SyntaxError              from "./syntax-error.js";
+import TokenType                from "./token-type.js";
+import TypeGuard                from "./type-guard.js";
 import type
 {
     AssignmentOperator,
@@ -50,6 +50,8 @@ import type
     UpdateOperator,
 } from "./types/operators";
 import type Token from "./types/token";
+
+type DupeCheck = (identifier: Identifier, token: Token) => Identifier;
 
 export default class Parser
 {
@@ -68,6 +70,23 @@ export default class Parser
     public static parse(source: string): IExpression
     {
         return new Parser(source).parseExpression();
+    }
+
+    private createDupeChecker(): DupeCheck
+    {
+        const identifiers = new Set<string>();
+
+        return (identifier, token) =>
+        {
+            if (identifiers.has(identifier.name))
+            {
+                throw this.syntaxError(token, Messages.duplicateParameterNameNotAllowedInThisContext);
+            }
+
+            identifiers.add(identifier.name);
+
+            return identifier;
+        };
     }
 
     private arguments(): (IExpression | SpreadElement)[]
@@ -107,6 +126,7 @@ export default class Parser
     private arrayPattern(): ArrayPattern
     {
         const elements: (IPattern | null)[] = [];
+        const checker = this.createDupeChecker();
 
         this.expect("[");
 
@@ -141,7 +161,7 @@ export default class Parser
             }
             else
             {
-                elements.push(this.reinterpretPattern(this.inheritGrammar(this.assignmentExpression), lookahead));
+                elements.push(this.reinterpret(this.inheritGrammar(this.assignmentExpression), lookahead, checker));
             }
 
             if (!this.match("]"))
@@ -202,10 +222,9 @@ export default class Parser
 
         if (this.match("=>"))
         {
-
             this.expect("=>");
 
-            return new ArrowFunctionExpression([this.reinterpretPattern(left, lookahead)], this.inheritGrammar(this.assignmentExpression, true));
+            return new ArrowFunctionExpression([this.reinterpret(left, lookahead, this.createDupeChecker())], this.inheritGrammar(this.assignmentExpression, true));
         }
 
         const isAssignment = this.match("=")
@@ -449,7 +468,7 @@ export default class Parser
             throw this.syntaxError(lookahead, Messages.invalidDestructuringAssignmentTarget);
         }
 
-        return this.reinterpretPattern(expression, lookahead);
+        return this.reinterpret(expression, lookahead, this.createDupeChecker());
     }
 
     private expect(value: string): void
@@ -569,24 +588,24 @@ export default class Parser
         else
         {
             const expressions: INode[] = [];
-            const lookaheads:  Token[] = [];
+            const tokens:  Token[] = [];
 
             if (this.match("..."))
             {
-                lookaheads.push(this.lookahead);
+                tokens.push(this.lookahead);
 
                 expressions.push(this.inheritGrammar(this.restElement));
 
                 if (!this.match(")"))
                 {
-                    throw this.syntaxError(lookaheads[0], Messages.restParameterMustBeLastFormalParameter);
+                    throw this.syntaxError(tokens[0], Messages.restParameterMustBeLastFormalParameter);
                 }
 
                 this.expect(")");
             }
             else
             {
-                lookaheads.push(this.lookahead);
+                tokens.push(this.lookahead);
 
                 expressions.push(this.inheritGrammar(this.assignmentExpression));
 
@@ -599,7 +618,7 @@ export default class Parser
                         {
                             this.expect(",");
 
-                            lookaheads.push(this.lookahead);
+                            tokens.push(this.lookahead);
 
                             if (this.match("..."))
                             {
@@ -607,7 +626,7 @@ export default class Parser
 
                                 if (!this.match(")"))
                                 {
-                                    throw this.syntaxError(lookaheads[lookaheads.length - 1], Messages.restParameterMustBeLastFormalParameter);
+                                    throw this.syntaxError(tokens[tokens.length - 1], Messages.restParameterMustBeLastFormalParameter);
                                 }
 
                                 break;
@@ -631,18 +650,13 @@ export default class Parser
             {
                 this.invalidInitialization = null;
 
-                const parameters = expressions.map((x, i) => this.reinterpretPattern(x, lookaheads[i]));
+                const checker = this.createDupeChecker();
+
+                const parameters = expressions.map((x, i) => this.reinterpret(x, tokens[i], checker));
 
                 this.expect("=>");
 
                 const body = this.inheritGrammar(this.assignmentExpression, true);
-
-                const duplicated = hasDuplicated(parameters, lookaheads);
-
-                if (duplicated.result)
-                {
-                    throw this.syntaxError(duplicated.token, Messages.duplicateParameterNameNotAllowedInThisContext);
-                }
 
                 return new ArrowFunctionExpression(parameters, body);
 
@@ -737,6 +751,7 @@ export default class Parser
     private objectPattern(): ObjectPattern
     {
         const entries: (AssignmentProperty | RestElement)[] = [];
+        const checker = this.createDupeChecker();
 
         this.expect("{");
 
@@ -766,7 +781,7 @@ export default class Parser
             {
                 const lookahead = this.lookahead;
 
-                entries.push(this.reinterpretPattern(this.inheritGrammar(this.objectPropertyExpression), lookahead));
+                entries.push(this.reinterpret(this.inheritGrammar(this.objectPropertyExpression), lookahead, checker));
             }
 
             if (!this.match("}"))
@@ -1016,137 +1031,167 @@ export default class Parser
         throw this.unexpectedTokenError(this.lookahead);
     }
 
-    private reinterpretPattern(expression: ArrayExpression,          lookahead: Token): ArrayPattern;
-    private reinterpretPattern(expression: AssignmentExpression,     lookahead: Token): AssignmentPattern;
-    private reinterpretPattern(expression: ObjectExpression,         lookahead: Token): ObjectPattern;
-    private reinterpretPattern(expression: Property,                 lookahead: Token): AssignmentProperty;
-    private reinterpretPattern(expression: SpreadElement,            lookahead: Token): RestElement;
-    private reinterpretPattern(expression: Property | SpreadElement, lookahead: Token): AssignmentProperty | RestElement;
-    private reinterpretPattern(expression: INode,                    lookahead: Token): IPattern;
-    private reinterpretPattern(node:       INode,                    lookahead: Token): INode
+    private reinterpret(expression: ArrayExpression,          token: Token, dupecheck: DupeCheck): ArrayPattern;
+    private reinterpret(expression: AssignmentExpression,     token: Token, dupecheck: DupeCheck): AssignmentPattern;
+    private reinterpret(expression: ObjectExpression,         token: Token, dupecheck: DupeCheck): ObjectPattern;
+    private reinterpret(expression: Property,                 token: Token, dupecheck: DupeCheck): AssignmentProperty;
+    private reinterpret(expression: SpreadElement,            token: Token, dupecheck: DupeCheck): RestElement;
+    private reinterpret(expression: Property | SpreadElement, token: Token, dupecheck: DupeCheck): AssignmentProperty | RestElement;
+    private reinterpret(expression: INode,                    token: Token, dupecheck: DupeCheck): IPattern;
+    private reinterpret(node:       INode,                    token: Token, dupecheck: DupeCheck): INode
     {
         switch (node.type)
         {
             case NodeType.Identifier:
+            {
+                return dupecheck(node as Identifier, token);
+            }
             case NodeType.ObjectPattern:
             case NodeType.RestElement:
                 return node;
             case NodeType.AssignmentExpression:
             {
-                const expression = node as AssignmentExpression;
-
-                if (expression.operator != "=")
-                {
-                    throw this.syntaxError(lookahead, Messages.invalidDestructuringAssignmentTarget);
-                }
-
-                if (TypeGuard.isIdentifier(expression.left))
-                {
-                    return new AssignmentPattern(expression.left, expression.right);
-                }
-
-                throw this.syntaxError(lookahead, Messages.illegalPropertyInDeclarationContext);
+                return this.reinterpretAssignmentExpression(node as AssignmentExpression, token, dupecheck);
             }
             case NodeType.Property:
             {
-                const { key, value, computed, shorthand } = node as Property;
-
-                if (shorthand)
-                {
-                    if (TypeGuard.isIdentifier(value))
-                    {
-                        return new AssignmentProperty(new Identifier(value.name), new Identifier(value.name), computed, shorthand);
-                    }
-                    else if (TypeGuard.isAssignmentExpression(value))
-                    {
-                        return new AssignmentProperty(key, this.reinterpretPattern(value, lookahead), computed, shorthand);
-                    }
-                }
-                else if (TypeGuard.isArrayExpression(value) || TypeGuard.isAssignmentExpression(value) || TypeGuard.isIdentifier(value) || TypeGuard.isObjectExpression(value))
-                {
-                    return new AssignmentProperty(key, TypeGuard.isIdentifier(value) ? new Identifier(value.name) : this.reinterpretPattern(value, lookahead), computed, shorthand);
-                }
-                else if (TypeGuard.isMemberExpression(value))
-                {
-                    throw this.syntaxError(lookahead, Messages.illegalPropertyInDeclarationContext);
-                }
-
-                throw this.syntaxError(lookahead, Messages.invalidDestructuringAssignmentTarget);
+                return this.reinterpretProperty(node as Property, token, dupecheck);
             }
             case NodeType.ArrayExpression:
             {
-                const expression = node as ArrayExpression;
-
-                const elements: (IPattern | null)[] = [];
-
-                let index = 0;
-                for (const element of expression.elements)
-                {
-                    if (element)
-                    {
-                        if (element.type == NodeType.Literal)
-                        {
-                            throw this.syntaxError(lookahead, Messages.invalidDestructuringAssignmentTarget);
-                        }
-                        else if (element.type == NodeType.MemberExpression)
-                        {
-                            throw this.syntaxError(lookahead, Messages.illegalPropertyInDeclarationContext);
-                        }
-                        else if (element.type == NodeType.SpreadElement && index < expression.elements.length - 1)
-                        {
-                            throw this.syntaxError(lookahead, Messages.restParameterMustBeLastFormalParameter);
-                        }
-
-                        elements.push(this.reinterpretPattern(element, lookahead));
-                    }
-                    else
-                    {
-                        elements.push(null);
-                    }
-
-                    index++;
-                }
-
-                return new ArrayPattern(elements);
+                return this.reinterpretArrayExpression(node as ArrayExpression, token, dupecheck);
             }
             case NodeType.ObjectExpression:
             {
-                const expression = node as ObjectExpression;
-
-                const entries: (AssignmentProperty | RestElement)[] = [];
-
-                let index = 0;
-
-                for (const property of expression.properties)
-                {
-                    if (property.type == NodeType.SpreadElement && index < expression.properties.length - 1)
-                    {
-                        throw this.syntaxError(lookahead, Messages.restParameterMustBeLastFormalParameter);
-                    }
-
-                    entries.push(this.reinterpretPattern(property, lookahead));
-
-                    index++;
-                }
-
-                return new ObjectPattern(entries);
+                return this.reinterpretObjectExpression(node as ObjectExpression, token, dupecheck);
             }
             case NodeType.SpreadElement:
             {
-                const expression = node as SpreadElement;
-
-                if (expression.argument.type == NodeType.AssignmentExpression)
-                {
-                    throw this.syntaxError(lookahead, Messages.invalidDestructuringAssignmentTarget);
-                }
-
-                return new RestElement(this.reinterpretPattern(expression.argument, lookahead));
+                return this.reinterpretSpreadElement(node as SpreadElement, token, dupecheck);
             } /* c8 ignore next 2 */
             default:
                 break;
         } /* c8 ignore next 3 */
 
-        throw this.unexpectedTokenError(lookahead);
+        throw this.unexpectedTokenError(token);
+    }
+
+    private reinterpretAssignmentExpression(expression: AssignmentExpression, token: Token, dupecheck: DupeCheck): AssignmentPattern
+    {
+        if (expression.operator != "=")
+        {
+            throw this.syntaxError(token, Messages.invalidDestructuringAssignmentTarget);
+        }
+
+        if (TypeGuard.isIdentifier(expression.left))
+        {
+            return new AssignmentPattern(dupecheck(expression.left, token), expression.right);
+        }
+
+        throw this.syntaxError(token, Messages.illegalPropertyInDeclarationContext);
+    }
+
+    private reinterpretArrayExpression(expression: ArrayExpression, token: Token, dupecheck: DupeCheck): ArrayPattern
+    {
+        const elements: (IPattern | null)[] = [];
+
+        let index = 0;
+        for (const element of expression.elements)
+        {
+            if (element)
+            {
+                if (element.type == NodeType.Literal)
+                {
+                    throw this.syntaxError(token, Messages.invalidDestructuringAssignmentTarget);
+                }
+                else if (element.type == NodeType.MemberExpression)
+                {
+                    throw this.syntaxError(token, Messages.illegalPropertyInDeclarationContext);
+                }
+                else if (element.type == NodeType.SpreadElement && index < expression.elements.length - 1)
+                {
+                    throw this.syntaxError(token, Messages.restParameterMustBeLastFormalParameter);
+                }
+
+                elements.push(this.reinterpret(element, token, dupecheck));
+            }
+
+            else
+            {
+                elements.push(null);
+            }
+
+            index++;
+        }
+
+        return new ArrayPattern(elements);
+    }
+
+    private reinterpretObjectExpression(expression: ObjectExpression, token: Token, dupecheck: DupeCheck): ObjectPattern
+    {
+        const entries: (AssignmentProperty | RestElement)[] = [];
+
+        let index = 0;
+
+        for (const property of expression.properties)
+        {
+            if (property.type == NodeType.SpreadElement && index < expression.properties.length - 1)
+            {
+                throw this.syntaxError(token, Messages.restParameterMustBeLastFormalParameter);
+            }
+
+            entries.push(this.reinterpret(property, token, dupecheck));
+
+            index++;
+        }
+
+        return new ObjectPattern(entries);
+    }
+
+    private reinterpretProperty(property: Property, token: Token, dupecheck: DupeCheck): AssignmentProperty
+    {
+        const { key, value, computed, shorthand } = property as Property;
+
+        if (shorthand)
+        {
+            if (TypeGuard.isIdentifier(value))
+            {
+                const identifier = dupecheck(value, token);
+
+                return new AssignmentProperty(identifier.clone(), identifier.clone(), computed, shorthand);
+            }
+            else if (TypeGuard.isAssignmentExpression(value))
+            {
+                return new AssignmentProperty(key, this.reinterpretAssignmentExpression(value, token, dupecheck), computed, shorthand);
+            }
+        }
+        else if (TypeGuard.isArrayExpression(value) || TypeGuard.isAssignmentExpression(value) || TypeGuard.isIdentifier(value) || TypeGuard.isObjectExpression(value))
+        {
+            if (TypeGuard.isIdentifier(value))
+            {
+                return new AssignmentProperty(key, dupecheck(value, token).clone(), computed, shorthand);
+            }
+
+            return new AssignmentProperty(key, this.reinterpret(value, token, dupecheck) as IPattern, computed, shorthand);
+        }
+        else if (TypeGuard.isMemberExpression(value))
+        {
+            throw this.syntaxError(token, Messages.illegalPropertyInDeclarationContext);
+        }
+
+        throw this.syntaxError(token, Messages.invalidDestructuringAssignmentTarget);
+    }
+
+    private reinterpretSpreadElement(node: SpreadElement, token: Token, dupecheck: DupeCheck): RestElement
+    {
+        const expression = node as SpreadElement;
+
+        if (expression.argument.type == NodeType.AssignmentExpression)
+        {
+            throw this.syntaxError(token, Messages.invalidDestructuringAssignmentTarget);
+        }
+
+        return new RestElement(this.reinterpret(expression.argument, token, dupecheck));
     }
 
     private regexExpression(): IExpression
@@ -1195,7 +1240,7 @@ export default class Parser
         return this.inheritGrammar(this.updateExpression);
     }
 
-    private templateLiteralExpression(): ITemplateLiteral
+    private templateLiteralExpression(): TemplateLiteral
     {
         const quasis:      TemplateElement[] = [];
         const expressions: IExpression[]     = [];

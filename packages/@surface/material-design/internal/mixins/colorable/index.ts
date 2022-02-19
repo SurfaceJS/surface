@@ -1,11 +1,11 @@
 import type { Constructor } from "@surface/core";
-import type CustomElement   from "@surface/custom-element";
-import { attribute }        from "@surface/custom-element";
+import type HTMLXElement   from "@surface/htmlx-element";
+import { attribute }        from "@surface/htmlx-element";
 
 const CSS_COLORS_PATTERN = /^(#[a-f0-9]{6}|((rgba?|hsla?)\([^)]*)\))$/i;
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-const colorable = <T extends Constructor<CustomElement & { colorable?: HTMLElement }>>(superClass: T): Constructor<IColorable> & T =>
+const colorable = <T extends Constructor<HTMLXElement & { colorable?: HTMLElement }>>(superClass: T): Constructor<IColorable> & T =>
 {
     class Colorable extends superClass implements IColorable
     {

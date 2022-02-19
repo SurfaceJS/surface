@@ -1,21 +1,20 @@
-import type { Indexer }       from "@surface/core";
-import type IExpression       from "../interfaces/expression";
-import type IObjectExpression from "../interfaces/object-expression";
-import type IProperty         from "../interfaces/property";
-import type ISpreadElement    from "../interfaces/spread-element";
-import NodeType               from "../node-type.js";
-import TypeGuard              from "../type-guard.js";
+import type { Indexer }   from "@surface/core";
+import type Property      from "../elements/property.js";
+import type SpreadElement from "../elements/spread-element.js";
+import type IExpression   from "../interfaces/expression";
+import NodeType           from "../node-type.js";
+import TypeGuard          from "../type-guard.js";
 
 export default class ObjectExpression implements IExpression
 {
-    private _properties: (IProperty | ISpreadElement)[];
-    public get properties(): (IProperty | ISpreadElement)[]
+    private _properties: (Property | SpreadElement)[];
+    public get properties(): (Property | SpreadElement)[]
     {
         return this._properties;
     }
 
     /* c8 ignore next 4 */
-    public set properties(value: (IProperty | ISpreadElement)[])
+    public set properties(value: (Property | SpreadElement)[])
     {
         this._properties = value;
     }
@@ -25,12 +24,12 @@ export default class ObjectExpression implements IExpression
         return NodeType.ObjectExpression;
     }
 
-    public constructor(properties: (IProperty | ISpreadElement)[])
+    public constructor(properties: (Property | SpreadElement)[] = [])
     {
         this._properties = properties;
     }
 
-    public clone(): IObjectExpression
+    public clone(): ObjectExpression
     {
         return new ObjectExpression(this.properties.map(x => x.clone()));
     }

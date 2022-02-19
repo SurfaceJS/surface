@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/indent */
 import type { Delegate }    from "@surface/core";
 import webpack              from "webpack";
@@ -10,7 +9,7 @@ import type Configuration   from "./types/configuration.js";
 
 export default class Builder
 {
-    private static createHandler(resolve: Delegate, reject: Delegate<[Error]>, logging?: webpack.Configuration["stats"]): (err?: Error, result?: webpack.MultiStats) => unknown
+    private static createHandler(resolve: Delegate, reject: Delegate<[Error]>, logging?: webpack.Configuration["stats"]): (err?: Error | null, result?: webpack.MultiStats) => unknown
     {
         return (error, stats) => error ? reject(error) : (log(stats?.toString(logging)), resolve());
     }
@@ -55,18 +54,15 @@ export default class Builder
         const devServerConfiguration: WebpackDevServer.Configuration =
         {
             historyApiFallback: true,
-            stats:              configuration.logging,
             ...configuration.devServer,
         };
 
-        const server = new WebpackDevServer(webpackCompiler, devServerConfiguration);
+        // Todo: Remove cast when webpack-dev-server updates their webpack version
+        const server = new WebpackDevServer(devServerConfiguration, webpackCompiler);
 
-        const handlerAsync = (resolve: Delegate, reject: Delegate<[Error]>) =>
-            (error?: Error) => error ? reject(error) : resolve();
+        await server.start();
 
-        await new Promise<void>((resolve, reject) => server.listen(configuration.devServer?.port ?? 8080, configuration.devServer?.host ?? "localhost", handlerAsync(resolve, reject)));
-
-        return { close: async () => Promise.resolve(server.close()) };
+        return { close: async () => server.stop() };
     }
 
     public static async watch(configuration: Configuration): Promise<CompilerSignal>

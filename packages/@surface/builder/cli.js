@@ -10,5 +10,5 @@ const program = new Command();
 program.command("analyze [options]", "Analyze bundle size.", createCommandOptions("analyze")).alias("a");
 program.command("build   [options]", "Build project.", createCommandOptions("build")).alias("b");
 program.command("serve   [options]", "Starts dev server.", createCommandOptions("serve")).alias("s");
-program.parse(process.argv);
+program.parse();
 //# sourceMappingURL=cli.js.map

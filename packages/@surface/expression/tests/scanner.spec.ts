@@ -4,6 +4,7 @@ import Messages                                           from "../internal/mess
 import Scanner                                            from "../internal/scanner.js";
 import SyntaxError                                        from "../internal/syntax-error.js";
 import TokenType                                          from "../internal/token-type.js";
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import type { ExpectedInvalidToken, ExpectedValidToken }  from "./scanner-expectations.js";
 import { invalidTokens, validTokens }                     from "./scanner-expectations.js";
 

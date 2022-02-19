@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-unassigned-import
-import "./fixtures/dom.js";
+import "@surface/dom-shim";
 
 import type { IConstraint, ITransformer }      from "@surface/router";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";

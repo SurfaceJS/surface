@@ -1,10 +1,9 @@
-import type { Indexer }              from "@surface/core";
-import { proxyFrom }                 from "@surface/core";
-import type IArrowFunctionExpression from "../interfaces/arrow-function-expression";
-import type IExpression              from "../interfaces/expression";
-import type IPattern                 from "../interfaces/pattern";
-import NodeType                      from "../node-type.js";
-import TypeGuard                     from "../type-guard.js";
+import type { Indexer } from "@surface/core";
+import { proxyFrom }    from "@surface/core";
+import type IExpression from "../interfaces/expression";
+import type IPattern    from "../interfaces/pattern";
+import NodeType         from "../node-type.js";
+import TypeGuard        from "../type-guard.js";
 
 export default class ArrowFunctionExpression implements IExpression
 {
@@ -66,7 +65,7 @@ export default class ArrowFunctionExpression implements IExpression
         return currentScope;
     }
 
-    public clone(): IArrowFunctionExpression
+    public clone(): ArrowFunctionExpression
     {
         return new ArrowFunctionExpression(this.parameters.map(x => x.clone()), this.body.clone());
     }

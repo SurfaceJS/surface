@@ -1,19 +1,18 @@
-import type IArrayExpression from "../interfaces/array-expression";
-import type IExpression      from "../interfaces/expression";
-import type ISpreadElement   from "../interfaces/spread-element";
-import NodeType              from "../node-type.js";
-import TypeGuard             from "../type-guard.js";
+import type SpreadElement from "../elements/spread-element.js";
+import type IExpression   from "../interfaces/expression";
+import NodeType           from "../node-type.js";
+import TypeGuard          from "../type-guard.js";
 
 export default class ArrayExpression implements IExpression
 {
-    private _elements: (IExpression | ISpreadElement | null)[];
-    public get elements(): (IExpression | ISpreadElement | null)[]
+    private _elements: (IExpression | SpreadElement | null)[];
+    public get elements(): (IExpression | SpreadElement | null)[]
     {
         return this._elements;
     }
 
     /* c8 ignore next 4 */
-    public set elements(value: (IExpression | ISpreadElement | null)[])
+    public set elements(value: (IExpression | SpreadElement | null)[])
     {
         this._elements = value;
     }
@@ -23,12 +22,12 @@ export default class ArrayExpression implements IExpression
         return NodeType.ArrayExpression;
     }
 
-    public constructor(elements: (IExpression | ISpreadElement | null)[])
+    public constructor(elements: (IExpression | SpreadElement | null)[])
     {
         this._elements = elements;
     }
 
-    public clone(): IArrayExpression
+    public clone(): ArrayExpression
     {
         return new ArrayExpression(this.elements.map(x => x?.clone() ?? null));
     }
