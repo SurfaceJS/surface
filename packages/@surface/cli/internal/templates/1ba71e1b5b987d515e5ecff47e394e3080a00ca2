@@ -1,9 +1,9 @@
 {
     "author": "author",
     "dependencies": {
-        "@surface/builder": "1.0.0-dev.202112202132",
-        "@surface/htmlx-element": "1.0.0-dev.202112202132",
-        "@surface/web-router": "1.0.0-dev.202112202132",
+        "@surface/builder": "1.0.0-dev.202202192004",
+        "@surface/htmlx-element": "1.0.0-dev.202202192004",
+        "@surface/web-router": "1.0.0-dev.202202192004",
         "tslib": "^2.3.1"
     },
     "devDependencies": {
