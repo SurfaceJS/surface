@@ -1,10 +1,10 @@
 /* eslint-disable max-len */
-import commander                                                               from "commander";
+import { Command }                                                             from "commander";
 import { toArray, toBoolean, toBooleanOrEnum, toBooleanOrStringArray, toEnum } from "../internal/common.js";
 
-export default function createProgram(): commander.Command
+export default function createProgram(): Command
 {
-    return new commander.Command()
+    return new Command()
         .storeOptionsAsProperties(false)
         .option("--clean                          [n]", "Enables clean builds. Note that clean builds can lead to unexpected results for projects with same output.", toBoolean)
         .option("--config                         <n>", "Path to configuration file.")

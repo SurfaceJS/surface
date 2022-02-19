@@ -8,16 +8,16 @@
         "@surface/expression": "file:../expression",
         "@surface/htmlx-parser": "file:../htmlx-parser",
         "@surface/observer": "file:../observer",
-        "tslib": "^2.3.1"
+        "tslib": "~2.3.1"
     },
     "description": "Provides support of directives and data binding on templates.",
     "devDependencies": {
         "@surface/dom-shim": "file:../dom-shim",
         "@surface/test-suite": "file:../test-suite",
-        "@types/chai": "^4.2.22",
-        "@types/chai-as-promised": "^7.1.4",
-        "chai": "^4.3.4",
-        "chai-as-promised": "^7.1.1"
+        "@types/chai": "~4.3.0",
+        "@types/chai-as-promised": "~7.1.5",
+        "chai": "~4.3.6",
+        "chai-as-promised": "~7.1.1"
     },
     "homepage": "https://github.com/SurfaceJS/surface#readme",
     "keywords": [

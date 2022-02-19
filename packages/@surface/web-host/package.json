@@ -9,14 +9,14 @@
         "@surface/enumerable": "file:../enumerable",
         "@surface/reflection": "file:../reflection",
         "@surface/router": "file:../router",
-        "@types/node": "^16.11.6",
-        "tslib": "^2.3.1"
+        "@types/node": "~17.0.18",
+        "tslib": "~2.3.1"
     },
     "description": "Simple web host for @surface projects.",
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
-        "@types/chai": "^4.2.22",
-        "chai": "^4.3.4"
+        "@types/chai": "~4.3.0",
+        "chai": "~4.3.6"
     },
     "homepage": "https://github.com/SurfaceJS/surface#readme",
     "keywords": [

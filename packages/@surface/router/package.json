@@ -5,13 +5,13 @@
     },
     "dependencies": {
         "@surface/core": "file:../core",
-        "tslib": "^2.3.1"
+        "tslib": "~2.3.1"
     },
     "description": "Generic router for extension purposes.",
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
-        "@types/chai": "^4.2.22",
-        "chai": "^4.3.4"
+        "@types/chai": "~4.3.0",
+        "chai": "~4.3.6"
     },
     "homepage": "https://github.com/SurfaceJS/surface#readme",
     "keywords": [

@@ -1,10 +1,10 @@
-import type { Delegate, Indexer, Subscription }                                from "@surface/core";
+import type { Delegate, IDisposable, Indexer, Subscription }                   from "@surface/core";
 import { getPropertyDescriptor, getValue, hasValue, isReadonly, privatesFrom } from "@surface/core";
 import Metadata                                                                from "./metadata.js";
 
 const ARRAY_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"] as const;
 
-export default class Observer<TValue = unknown>
+export default class Observer<TValue = unknown> implements IDisposable
 {
     protected readonly path:      string[];
     protected readonly root:      object;
@@ -198,11 +198,11 @@ export default class Observer<TValue = unknown>
         }
     }
 
-    public static compute(root: object, key: string, dependencies: string[][]): Observer
+    public static compute(target: object, key: string, dependencies: string[][]): Observer
     {
-        this.makeComputed(root, key, dependencies);
+        this.makeComputed(target, key, dependencies);
 
-        return this.observe(root, [key]);
+        return this.observe(target, [key]);
     }
 
     public static observe(root: object, path: string[]): Observer
@@ -218,7 +218,6 @@ export default class Observer<TValue = unknown>
             this.observePath(root, path, observer = new Observer(root, path));
 
             metadata.observers.set(key, observer);
-            metadata.disposables.push({ dispose: () => this.unobservePath(root, path, observer!) });
         }
 
         return observer;
@@ -233,9 +232,9 @@ export default class Observer<TValue = unknown>
             : metadata.observers.forEach(x => x.notify());
     }
 
-    public static notifyAll(root: object, path: string): void
+    public static notifyAll(target: object, key: string): void
     {
-        const observers = Metadata.from(root).subjects.get(path)?.keys();
+        const observers = Metadata.from(target).subjects.get(key)?.keys();
 
         if (observers)
         {
@@ -244,6 +243,11 @@ export default class Observer<TValue = unknown>
                 observer.notify();
             }
         }
+    }
+
+    public dispose(): void
+    {
+        Observer.unobservePath(this.root, this.path, this as Observer);
     }
 
     public subscribe(listerner: Delegate<[TValue]>): Subscription

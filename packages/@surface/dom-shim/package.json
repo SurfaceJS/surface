@@ -4,7 +4,7 @@
         "url": "https://github.com/SurfaceJS/surface/issues"
     },
     "dependencies": {
-        "jsdom": "^18.0.0"
+        "jsdom": "~19.0.0"
     },
     "description": "Creates shim for browser tests running on node.",
     "homepage": "https://github.com/SurfaceJS/surface#readme",

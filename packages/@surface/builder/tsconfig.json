@@ -5,6 +5,9 @@
         "outDir":  ".",
         "rootDir": ".",
         "types":   ["node"],
+        "paths": {
+            "webpack": ["./node_modules/webpack"]
+        }
     },
     "files":
     [

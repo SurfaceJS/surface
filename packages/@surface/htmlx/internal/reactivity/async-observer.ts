@@ -76,7 +76,6 @@ export default class AsyncObserver extends Observer
                 this.observePath(root, path, observer = new AsyncObserver(root, path, scheduler));
 
                 metadata.observers.set(key, observer);
-                metadata.disposables.push({ dispose: () => this.unobservePath(root, path, observer!) });
             }
 
             return observer;
