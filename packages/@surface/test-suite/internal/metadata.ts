@@ -6,7 +6,7 @@ export default class Metadata
 {
     public after:       boolean = false;
     public afterEach:   boolean = false;
-    public batch?:      { expectation: Delegate<[unknown], string>, source: unknown[] };
+    public batch?:      { source: unknown[], expectation: Delegate<[unknown], string>, skip: Delegate<[unknown], boolean> };
     public before:      boolean = false;
     public beforeEach:  boolean = false;
     public category:    string = "";

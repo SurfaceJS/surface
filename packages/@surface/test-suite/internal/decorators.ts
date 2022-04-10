@@ -60,13 +60,21 @@ export function afterEach(...args: [string] | [object, string | symbol]): Method
     decorator(target as TestObject, key, camelToText(key.toString()));
 }
 
-export function batchTest<T = unknown>(source: T[], expectation: Delegate<[T], string>): MethodDecorator
+export function batchTest<T = unknown>(source: T[], expectation?: Delegate<[T], string>, skip?: Delegate<[T], boolean>): MethodDecorator;
+export function batchTest<T = unknown>(source: T[], expectation?: Delegate<[unknown], string>, skip?: Delegate<[unknown], boolean>): MethodDecorator
 {
     return (target: object, key: string | symbol) =>
     {
         const metadata = Metadata.from((target as TestObject)[key as string]);
 
-        metadata.batch = { expectation: expectation as Delegate<[unknown], string>, source };
+        const fallback = camelToText(String(key));
+
+        metadata.batch =
+        {
+            expectation: expectation ?? (() => fallback),
+            skip:        skip ?? (() => false),
+            source,
+        };
     };
 }
 
@@ -226,11 +234,13 @@ export function suite(targetOrDescription: Function | string): ClassDecorator | 
             if (metadata.batch)
             {
                 const batch = metadata.batch;
+
+                let index = 0;
                 for (const data of batch.source)
                 {
                     const categoryName = metadata.category;
                     const getMethod    = metadata.skip ? () => noop : (context: object) => () => method.call(context, data);
-                    const expectation = (metadata.skip ? "(Skipped) " : "") + batch.expectation(data);
+                    const expectation = (metadata.skip || batch.skip?.(data) ? "(Skipped) " : "") + (batch.expectation?.(data) ?? `Test: ${index}`);
 
                     if (categoryName)
                     {
@@ -241,6 +251,8 @@ export function suite(targetOrDescription: Function | string): ClassDecorator | 
                     {
                         tests.push({ expectation, getMethod });
                     }
+
+                    index++;
                 }
             }
         }
