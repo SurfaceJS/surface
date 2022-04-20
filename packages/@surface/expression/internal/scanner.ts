@@ -223,7 +223,7 @@ export default class Scanner
 
             if (codePoint == BLACKSLASH)
             {
-                id = id.substr(0, id.length - 1);
+                id = id.substring(0, id.length - 1);
 
                 if (this.source.charCodeAt(this.index) != CHAR_LOWERCASE_U)
                 {
