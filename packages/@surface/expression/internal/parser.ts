@@ -911,7 +911,9 @@ export default class Parser
     private nextToken(): Token
     {
         const token = this.lookahead;
+
         this.lookahead = this.scanner.nextToken();
+
         return token;
     }
 

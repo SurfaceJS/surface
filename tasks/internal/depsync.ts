@@ -115,62 +115,43 @@ export default class Depsync
         return strategies.every(x => (this.strategy & x) == x);
     }
 
-    private async updateDependents(manifest: Manifest): Promise<void>
+    private async updateDependents(manifest: Manifest, dependencyType?: "dependencies" | "devDependencies" | "peerDependencies"): Promise<void>
     {
-        if (this.hasStrategies(StrategyType.OnlyStable) && Version.parse(manifest.version).prerelease)
+        if (dependencyType)
         {
-            return;
-        }
+            const dependentPackages = Array.from(this.lookup.values())
+                .filter(x => !!x[dependencyType]?.[manifest.name] && x[dependencyType]?.[manifest.name] != manifest.version);
 
-        const dependentPackages = Array.from(this.lookup.values())
-            .filter(x => !!x.dependencies?.[manifest.name] && x.dependencies?.[manifest.name] != manifest.version);
-
-        for (const dependent of dependentPackages)
-        {
-            const version = dependent.dependencies![manifest.name];
-
-            dependent.dependencies![manifest.name] = manifest.version;
-
-            // c8 ignore if
-            if (!this.silent)
+            for (const dependent of dependentPackages)
             {
-                console.log(`${chalk.bold.gray("[UPDATE]:")} ${blue(manifest.name)} dependency in ${blue(dependent.name)} - ${darkGreen(version)} >> ${green(manifest.version)}`);
-            }
+                const version = dependent[dependencyType]![manifest.name];
 
-            if (!this.updated.has(dependent))
-            {
-                if (await this.repository.getStatus(dependent) == Status.InRegistry)
+                dependent[dependencyType]![manifest.name] = `~${manifest.version}`;
+
+                // c8 ignore if
+                if (!this.silent)
                 {
-                    this.update(dependent);
+                    console.log(`${chalk.bold.gray("[UPDATE]:")} ${blue(manifest.name)} ${dependencyType} in ${blue(dependent.name)} - ${darkGreen(version)} >> ${green(manifest.version)}`);
                 }
 
-                this.updated.add(dependent);
+                if (!this.updated.has(dependent))
+                {
+                    if (await this.repository.getStatus(dependent) == Status.InRegistry)
+                    {
+                        this.update(dependent);
+                    }
 
-                await this.updateDependents(dependent);
+                    this.updated.add(dependent);
+
+                    await this.updateDependents(dependent);
+                }
             }
         }
-
-        const devDependentPackages = Array.from(this.lookup.values())
-            .filter(x => !!x.devDependencies?.[manifest.name] && x.devDependencies?.[manifest.name] != manifest.version);
-
-        for (const devDependent of devDependentPackages)
+        else if (!(this.hasStrategies(StrategyType.OnlyStable) && Version.parse(manifest.version).prerelease))
         {
-            const version = devDependent.devDependencies![manifest.name];
-
-            devDependent.devDependencies![manifest.name] = manifest.version;
-
-            // c8 ignore if
-            if (!this.silent)
-            {
-                console.log(`${chalk.bold.gray("[UPDATE]:")} ${blue(manifest.name)} dev dependency in ${blue(devDependent.name)} - ${darkGreen(version)} >> ${green(manifest.version)}`);
-            }
-
-            if (!this.updated.has(devDependent))
-            {
-                this.updated.add(devDependent);
-
-                await this.updateDependents(devDependent);
-            }
+            await this.updateDependents(manifest, "dependencies");
+            await this.updateDependents(manifest, "devDependencies");
+            await this.updateDependents(manifest, "peerDependencies");
         }
     }
 

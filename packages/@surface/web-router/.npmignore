@@ -1,5 +1,6 @@
 **/**/!(*.d).ts
 **/*.js.map
+*.backup
+*.tsbuildinfo
 tests/**
 tsconfig.json
-tsconfig.tsbuildinfo

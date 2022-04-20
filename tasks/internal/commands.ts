@@ -1,10 +1,10 @@
 /* eslint-disable max-len */
-import fs                  from "fs";
-import path                from "path";
-import { fileURLToPath }   from "url";
-import { promisify }       from "util";
-import { resolveError }    from "@surface/core";
-import chalk               from "chalk";
+import { readFile, writeFile } from "fs/promises";
+import path                    from "path";
+import { fileURLToPath }       from "url";
+import { resolveError }        from "@surface/core";
+import chalk                   from "chalk";
+import JSON5                   from "json5";
 import
 {
     backupFile,
@@ -21,15 +21,40 @@ import Publisher              from "./publisher.js";
 import type CliPublishOptions from "./types/cli-publish-options.js";
 import type SemanticVersion   from "./types/semantic-version";
 
-const readFileAsync  = promisify(fs.readFile);
-const writeFileAsync = promisify(fs.writeFile);
+const DIRNAME       = path.dirname(fileURLToPath(import.meta.url));
+const TSC           = path.resolve(DIRNAME, "../../node_modules/.bin/tsc");
+const TSCONFIG_PATH = path.resolve(DIRNAME, "../../tsconfig.json");
 
-const DIRNAME  = path.dirname(fileURLToPath(import.meta.url));
-const TSC      = path.resolve(DIRNAME, "../../node_modules/.bin/tsc");
-const TSCONFIG = path.resolve(DIRNAME, "../../tsconfig.json");
+type TsConfig =
+{
+    compilerOptions:
+    {
+        sourceMap: boolean,
+    },
+};
 
 export default class Commands
 {
+    private static async disableReleaseBuild(): Promise<void>
+    {
+        await restoreBackup(TSCONFIG_PATH);
+
+        log("Release build disabled...");
+    }
+
+    private static async enableReleaseBuild(): Promise<void>
+    {
+        await backupFile(TSCONFIG_PATH);
+
+        const tsconfig = JSON5.parse((await readFile(TSCONFIG_PATH)).toString()) as TsConfig;
+
+        tsconfig.compilerOptions.sourceMap = false;
+
+        await writeFile(TSCONFIG_PATH, JSON.stringify(tsconfig, null, 4));
+
+        log("Release build enabled...");
+    }
+
     private static async sync(strategy: StrategyType, version?: SemanticVersion): Promise<void>
     {
         const syncedPackages = await Depsync.sync(lookup, { strategy, version });
@@ -38,7 +63,7 @@ export default class Commands
         {
             const filepath = path.join(paths.packages.root, $package.name, "package.json");
 
-            await writeFileAsync(filepath, JSON.stringify($package, null, 4));
+            await writeFile(filepath, JSON.stringify($package, null, 4));
 
             log(`Updated ${$package.name} ${chalk.gray(filepath)}`);
         }
@@ -64,14 +89,18 @@ export default class Commands
 
     public static async build(): Promise<void>
     {
-        await execute("Building...", `${TSC} --build "${TSCONFIG}"`);
+        await this.enableReleaseBuild();
+
+        await execute("Building...", `${TSC} --build "${TSCONFIG_PATH}"`);
+
+        await this.disableReleaseBuild();
 
         log(chalk.bold.green("Building modules done!"));
     }
 
     public static async clean(): Promise<void>
     {
-        await execute("Cleaning...", `${TSC} --build "${TSCONFIG}" --clean`);
+        await execute("Cleaning...", `${TSC} --build "${TSCONFIG_PATH}" --clean`);
 
         log(chalk.bold.green("Cleaning done!"));
     }
@@ -93,7 +122,7 @@ export default class Commands
 
     public static async publish(_: string, options: CliPublishOptions): Promise<void>
     {
-        const publishignore = (await readFileAsync(path.join(DIRNAME, "../.publishignore"))).toString();
+        const publishignore = (await readFile(path.join(DIRNAME, "../.publishignore"))).toString();
 
         const exclude = new Set(publishignore.split("\n").map(x => x.trim()));
 
