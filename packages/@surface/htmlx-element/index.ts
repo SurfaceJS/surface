@@ -13,5 +13,6 @@ export { default as event }     from "./internal/decorators/event.js";
 export { default as listener }  from "./internal/decorators/listener.js";
 export { query, queryAll }      from "./internal/decorators/query.js";
 export { default as styles }    from "./internal/decorators/styles.js";
+export { painting }             from "@surface/htmlx";
 
 export default HTMLXElement;
