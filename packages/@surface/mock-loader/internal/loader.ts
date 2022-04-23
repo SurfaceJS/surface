@@ -3,11 +3,11 @@ import path                                  from "path";
 import { URL, fileURLToPath, pathToFileURL } from "url";
 import getMocksMaps                          from "./get-mocks-maps.js";
 
-type GetFormatResult   = { format: string };
-type GetFormatContext  = { format: string };
+type GetFormatResult  = { format: string };
+type GetFormatContext = { format: string };
 type GetSourceContext = { format: string };
 type GetSourceResult  = { source: string };
-type ResolveContext   = { condition: string[], parentURL?: string };
+type ResolveContext   = { conditions: string[], parentURL?: string };
 type ResolveResult    = { url: string };
 type LoadContext      = { format: string };
 type LoadResult       = { format: string, source: string };
@@ -82,7 +82,7 @@ export async function resolve(specifier: string, context: ResolveContext, defaul
 
     if (!protocolPattern.test(specifier))
     {
-        const proxyContext   = { condition: context.condition, parentURL: parentProxyFiles.get(context.parentURL!) ?? context.parentURL };
+        const proxyContext   = { conditions: context.conditions, parentURL: parentProxyFiles.get(context.parentURL!) ?? context.parentURL };
         const isRelativePath = relativePathPattern.test(specifier);
 
         if (isRelativePath)
