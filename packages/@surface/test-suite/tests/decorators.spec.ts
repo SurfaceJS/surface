@@ -150,10 +150,16 @@ export default class DecoratorsSpec
         @suite
         class DecorateClassWithSuiteAndTestWithBatchSpec
         {
-            @batchTest([1, 2, 3], (x: number) => `expected value is ${x}`)
+            @batchTest([1, 2, 3])
             public batchTest(value: number): void
             {
                 chai.assert.equal(value, current++);
+            }
+
+            @batchTest([1, 2, 3], (x: number) => `expected value is ${x}`)
+            public batchTestWithMessage(): void
+            {
+                // Noop
             }
 
             @category("batch category") @batchTest([1, 2, 3], (x: number) => `expected value is ${x}`)
@@ -167,11 +173,17 @@ export default class DecoratorsSpec
             {
                 // Noop
             }
+
+            @batchTest([1, 2, 3], (x: number) => `expected value is ${x}`, x => x == 2)
+            public batchSkipCondition(): void
+            {
+                // Noop
+            }
         }
 
         chai.assert.isNotEmpty(Metadata.from(DecorateClassWithSuiteAndTestWithBatchSpec.prototype.batchTest).batch);
         chai.assert.deepEqual(Metadata.from(DecorateClassWithSuiteAndTestWithBatchSpec.prototype.batchTest).batch!.source, [1, 2, 3]);
-        chai.assert.deepEqual(Metadata.from(DecorateClassWithSuiteAndTestWithBatchSpec.prototype.batchTest).batch!.expectation.toString(), ((x: number) => `expected value is ${x}`).toString());
+        chai.assert.deepEqual(Metadata.from(DecorateClassWithSuiteAndTestWithBatchSpec.prototype.batchTestWithMessage).batch!.expectation.toString(), ((x: number) => `expected value is ${x}`).toString());
     }
 
     @test @shouldPass

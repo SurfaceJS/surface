@@ -60,8 +60,8 @@ export function afterEach(...args: [string] | [object, string | symbol]): Method
     decorator(target as TestObject, key, camelToText(key.toString()));
 }
 
-export function batchTest<T = unknown>(source: T[], expectation?: Delegate<[T], string>, skip?: Delegate<[T], boolean>): MethodDecorator;
-export function batchTest<T = unknown>(source: T[], expectation?: Delegate<[unknown], string>, skip?: Delegate<[unknown], boolean>): MethodDecorator
+export function batchTest<T = unknown>(source: T[], expectation?: Delegate<[data: T, index: number], string>, skip?: Delegate<[data: T, index: number], boolean>): MethodDecorator;
+export function batchTest<T = unknown>(source: T[], expectation?: Delegate<[data: unknown, index: number], string>, skip?: Delegate<[data: unknown, index: number], boolean>): MethodDecorator
 {
     return (target: object, key: string | symbol) =>
     {
@@ -71,7 +71,7 @@ export function batchTest<T = unknown>(source: T[], expectation?: Delegate<[unkn
 
         metadata.batch =
         {
-            expectation: expectation ?? (() => fallback),
+            expectation: expectation ?? ((_, index) => `${fallback}: ${index}`),
             skip:        skip ?? (() => false),
             source,
         };
@@ -240,7 +240,7 @@ export function suite(targetOrDescription: Function | string): ClassDecorator | 
                 {
                     const categoryName = metadata.category;
                     const getMethod    = metadata.skip ? () => noop : (context: object) => () => method.call(context, data);
-                    const expectation = (metadata.skip || batch.skip?.(data) ? "(Skipped) " : "") + (batch.expectation?.(data) ?? `Test: ${index}`);
+                    const expectation = (metadata.skip || batch.skip(data, index) ? "(Skipped) " : "") + batch.expectation(data, index);
 
                     if (categoryName)
                     {
