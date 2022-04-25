@@ -1,4 +1,5 @@
 /* eslint-disable lines-around-comment */
+import os                                    from "os";
 import { readFile }                          from "fs/promises";
 import path                                  from "path";
 import { URL, fileURLToPath, pathToFileURL } from "url";
@@ -13,10 +14,11 @@ type ResolveResult    = { url: string };
 type LoadContext      = { format: string };
 type LoadResult       = { format: string, source: string };
 
-const MOCK     = "mock";
-const PROXY    = "proxy";
-const TARGET   = "target";
-const MOCK_SET = new Set<string | null>(["", PROXY]);
+const IS_WINDOWS = os.platform() == "win32";
+const MOCK       = "mock";
+const PROXY      = "proxy";
+const TARGET     = "target";
+const MOCK_SET   = new Set<string | null>(["", PROXY]);
 
 const protocolPattern     = /^\w+?:/;
 const relativePathPattern = /^\.?\.\//;
@@ -116,6 +118,15 @@ export async function resolve(specifier: string, context: ResolveContext, defaul
 
             parentProxyFiles.set(resolved, context.parentURL);
         }
+
+        /* c8 ignore start */
+        if (IS_WINDOWS)
+        {
+            const root = path.parse(resolved.replace("file:///", "")).root;
+
+            resolved = resolved.replace(root, root.toUpperCase());
+        }
+        /* c8 ignore end */
 
         url.searchParams.delete(MOCK);
 
