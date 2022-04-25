@@ -4,11 +4,23 @@ import { pathToFileURL } from "url";
 
 type Configuration = { modules: string[] };
 
-export default function getMocksMaps(): Set<string>
+export function getExports(module: object): string[]
 {
-    const dirname = process.cwd();
+    const moduleExports: string[] = [];
 
-    const configurationPath = path.join(dirname, "mock-loader.config.json");
+    for (const key of Object.keys(module))
+    {
+        moduleExports.push(key == "default" ? "export default proxy.default;" : `export const ${key} = proxy.${key};`);
+    }
+
+    return moduleExports;
+}
+
+export function getMocksMaps(): Set<string>
+{
+    const DIRNAME = process.cwd();
+
+    const configurationPath = path.join(DIRNAME, "mock-loader.config.json");
 
     const configuration = fs.existsSync(configurationPath) ? JSON.parse(fs.readFileSync(configurationPath).toString()) as Configuration : { modules: [] };
 
@@ -18,7 +30,7 @@ export default function getMocksMaps(): Set<string>
     {
         if (module.startsWith("."))
         {
-            const modulePath = path.resolve(dirname, module);
+            const modulePath = path.resolve(DIRNAME, module);
 
             const root = path.parse(modulePath).root;
 

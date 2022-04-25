@@ -1,2 +1,3 @@
-declare module "*?mock-load=proxy";
-declare module "*?mock-load=target";
+declare module "*?mock";
+declare module "*?mock=proxy";
+declare module "*?mock=target";

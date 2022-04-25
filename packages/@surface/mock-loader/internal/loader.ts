@@ -1,7 +1,8 @@
+/* eslint-disable lines-around-comment */
 import { readFile }                          from "fs/promises";
 import path                                  from "path";
 import { URL, fileURLToPath, pathToFileURL } from "url";
-import getMocksMaps                          from "./get-mocks-maps.js";
+import { getExports, getMocksMaps }          from "./common.js";
 
 type GetFormatResult  = { format: string };
 type GetFormatContext = { format: string };
@@ -12,49 +13,41 @@ type ResolveResult    = { url: string };
 type LoadContext      = { format: string };
 type LoadResult       = { format: string, source: string };
 
-const MOCK_LOAD = "mock-load";
-const PROXY     = "proxy";
-const TARGET    = "target";
+const MOCK     = "mock";
+const PROXY    = "proxy";
+const TARGET   = "target";
+const MOCK_SET = new Set<string | null>(["", PROXY]);
 
 const protocolPattern     = /^\w+?:/;
 const relativePathPattern = /^\.?\.\//;
+const paramsPattern       = /\?.*$/;
 const proxyMap            = getMocksMaps();
-const dirname             = path.dirname(fileURLToPath(import.meta.url));
-const proxyNode           = `${pathToFileURL(path.join(dirname, PROXY)).toString()}/`;
+const DIRNAME             = path.dirname(fileURLToPath(import.meta.url)) as ".";
+const PROXY_PATH          = `${pathToFileURL(path.join(DIRNAME, PROXY)).toString()}/` as `${typeof DIRNAME}/${typeof PROXY}`;
 const proxyFiles          = new Map<string, string>();
 const parentProxyFiles    = new Map<string, string | undefined>();
 
-function getExports(module: object): string[]
-{
-    const moduleExports: string[] = [];
-
-    for (const key of Object.keys(module))
-    {
-        moduleExports.push(key == "default" ? "export default proxy.default;" : `export const ${key} = proxy.${key};`);
-    }
-
-    return moduleExports;
-}
-
 function internalGetFormat(specifier: string): GetFormatResult | null
 {
-    if (specifier.startsWith(proxyNode) || new URL(specifier).searchParams.get(MOCK_LOAD) == PROXY)
+    /* c8 ignore start */
+    if (specifier.startsWith(PROXY_PATH) || MOCK_SET.has(new URL(specifier).searchParams.get(MOCK)))
     {
         return { format: "module" };
-    } /* c8 ignore next 4 */
+    }
     else if (specifier.startsWith("file:") && !path.parse(fileURLToPath(specifier)).ext)
     {
         return { format: "commonjs" };
     }
 
     return null;
+    /* c8 ignore stop */
 }
 
 async function internalGetSource(url: URL): Promise<GetSourceResult | null>
 {
-    if (url.searchParams.get(MOCK_LOAD) == PROXY)
+    if (MOCK_SET.has(url.searchParams.get(MOCK)))
     {
-        url.searchParams.set(MOCK_LOAD, TARGET);
+        url.searchParams.set(MOCK, TARGET);
 
         const targetSpecifier = url.href;
 
@@ -91,18 +84,13 @@ export async function resolve(specifier: string, context: ResolveContext, defaul
         }
         else
         {
-            const proxyHint  = `?${MOCK_LOAD}=${PROXY}`;
-            const targetHint = `?${MOCK_LOAD}=${TARGET}`;
+            const searchParams = paramsPattern.exec(specifier)?.[0] ?? "";
 
-            const searchParams = specifier.includes(proxyHint)
-                ? proxyHint
-                : specifier.includes(targetHint)
-                    ? targetHint
-                    : "";
-
-            resolved = (await defaultResolve(specifier.replace(proxyHint, "").replace(targetHint, ""), proxyContext)).url + searchParams;
+            resolved = (await defaultResolve(specifier.replace(paramsPattern, ""), proxyContext)).url + searchParams;
         }
     }
+
+    // console.log(`- resolve: ${parentProxyFiles.get(context.parentURL!) ?? context.parentURL} --> ${specifier} -> ${resolved}`);
 
     const proxyFile = proxyFiles.get(resolved);
 
@@ -113,39 +101,40 @@ export async function resolve(specifier: string, context: ResolveContext, defaul
 
     const url = new URL(resolved);
 
-    if (proxyMap.has(specifier) || proxyMap.has(resolved))
+    if (proxyMap.has(resolved) || specifier != resolved && proxyMap.has(specifier))
     {
-        url.searchParams.set(MOCK_LOAD, PROXY);
+        url.searchParams.set(MOCK, PROXY);
 
         resolved = url.href;
     }
 
-    if (url.searchParams.get(MOCK_LOAD) == PROXY)
+    if (MOCK_SET.has(url.searchParams.get(MOCK)))
     {
         if (url.protocol == "node:")
         {
-            resolved = url.href.replace(/^node(js)?:/, proxyNode);
+            resolved = url.href.replace(/^node(js)?:/, PROXY_PATH);
 
             parentProxyFiles.set(resolved, context.parentURL);
         }
 
-        url.searchParams.delete(MOCK_LOAD);
+        url.searchParams.delete(MOCK);
 
         proxyFiles.set(url.href, resolved);
 
         return { url: resolved };
     }
 
-    url.searchParams.delete(MOCK_LOAD);
+    url.searchParams.delete(MOCK);
 
-    if (url.href.startsWith(proxyNode))
+    if (url.href.startsWith(PROXY_PATH))
     {
-        return { url: url.href.replace(proxyNode, "node:") };
+        return { url: url.href.replace(PROXY_PATH, "node:") };
     }
 
     return { url: url.href };
 }
 
+/* c8 ignore next 6 */
 export async function getSource(specifier: string, context: GetSourceContext, defaultGetSource: (specifier: string, context: GetSourceContext) => Promise<GetSourceResult>): Promise<GetSourceResult>
 {
     const url = new URL(specifier);
@@ -153,6 +142,7 @@ export async function getSource(specifier: string, context: GetSourceContext, de
     return await internalGetSource(url) ?? defaultGetSource(url.href, context);
 }
 
+/* c8 ignore next 4 */
 export async function getFormat(specifier: string, context: GetFormatContext, defaultGetFormat: (specifier: string, context: GetFormatContext) => Promise<GetFormatResult>): Promise<GetFormatResult>
 {
     return internalGetFormat(specifier) ?? defaultGetFormat(specifier, context);
@@ -160,6 +150,8 @@ export async function getFormat(specifier: string, context: GetFormatContext, de
 
 export async function load(specifier: string, context: LoadContext, defaultLoad: (specifier: string, context: LoadContext) => Promise<LoadResult>): Promise<LoadResult>
 {
+    // console.log(`- load: ${specifier}`);
+
     const source = (await internalGetSource(new URL(specifier)))?.source;
 
     if (source)
@@ -167,12 +159,14 @@ export async function load(specifier: string, context: LoadContext, defaultLoad:
         return { format: "module", source };
     }
 
+    /* c8 ignore start */
     const format = internalGetFormat(specifier)?.format;
 
     if (format)
     {
         return { format, source: String(await readFile(new URL(specifier))) };
     }
+    /* c8 ignore stop */
 
     return defaultLoad(specifier, context);
 }
