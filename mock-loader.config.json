@@ -2,6 +2,7 @@
     "modules":
     [
         "fs",
+        "util",
         "@surface/io",
         "webpack",
         "webpack-dev-server",

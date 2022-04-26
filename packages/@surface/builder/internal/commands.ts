@@ -67,7 +67,12 @@ export default class Commands
         const cwd        = process.cwd();
         const config     = path.resolve(cwd, options.config ?? ".");
         const configPath = isDirectory(config)
-            ? lookupFile([path.join(config, "surface.builder.js"), path.join(config, "surface.builder.json")])
+            ? lookupFile
+            ([
+                path.join(config, "surface.builder.js"),
+                path.join(config, "surface.builder.mjs"),
+                path.join(config, "surface.builder.json"),
+            ])
             : config;
 
         Commands.resolvePaths(cwd, cliProject);

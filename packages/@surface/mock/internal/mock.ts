@@ -186,8 +186,8 @@ export default class Mock<T extends object | Function>
         this.mode = "strict";
     }
 
-    public new(...args: ConstructorParameters<Cast<T, Newable>>): IReturnsInstanceSetup<Cast<T, Newable>>
-    public new<TOverload extends ConstructorOverload<Cast<T, Newable>, ParameterOverloads<Cast<T, Callable>>>>(...args: ConstructorParameters<TOverload>): IReturnsInstanceSetup<Cast<TOverload, Newable>>
+    public new(...args: ConstructorParameters<Cast<T, Newable>>): IReturnsInstanceSetup<Cast<T, Newable>>;
+    public new<TOverload extends ConstructorOverload<Cast<T, Newable>, ParameterOverloads<Cast<T, Callable>>>>(...args: ConstructorParameters<TOverload>): IReturnsInstanceSetup<Cast<TOverload, Newable>>;
     public new<TArgs extends ConstructorParameterOverloads<Cast<T, Newable>>>(...args: TArgs): IReturnsInstanceSetup<ConstructorOverload<Cast<T, Newable>, TArgs>>
     {
         const setup = this.setup(NEW);
@@ -201,8 +201,8 @@ export default class Mock<T extends object | Function>
         this.setups.clear();
     }
 
-    public setup<K extends keyof T>(key: K): ICallSetup<Cast<T[K], Callable>>
-    public setup(key: PropertyKey): ICallSetup
+    public setup<K extends keyof T>(key: K): ICallSetup<Cast<T[K], Callable>>;
+    public setup(key: PropertyKey): ICallSetup;
     public setup(key: PropertyKey = CALL): ICallSetup
     {
         let setup = this.setups.get(key);
@@ -215,8 +215,8 @@ export default class Mock<T extends object | Function>
         return setup as object as ICallSetup;
     }
 
-    public setupGet<K extends keyof T>(key: K): IGetSetup<T[K]>
-    public setupGet(key: PropertyKey): IGetSetup
+    public setupGet<K extends keyof T>(key: K): IGetSetup<T[K]>;
+    public setupGet(key: PropertyKey): IGetSetup;
     public setupGet(key: PropertyKey): IGetSetup
     {
         let setup = this.setups.get(key);

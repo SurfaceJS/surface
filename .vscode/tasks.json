@@ -1,11 +1,21 @@
 {
     "inputs": [
         {
+            "default": "true",
+            "description": "Dry mode",
+            "id": "dry",
+            "options": [
+                "true",
+                "false"
+            ],
+            "type": "pickString"
+        },
+        {
             "default": "",
             "description": "Timestamp used by nightly build",
             "id": "timestamp",
             "type": "promptString"
-        }
+        },
     ],
     "tasks": [
         {
@@ -78,17 +88,8 @@
             "type": "shell"
         },
         {
-            "command": "npm run task:publish -- https://registry.npmjs.org --token=${env:NPM_AUTH_TOKEN} --config=nightly --timestamp=${input:timestamp} --debug",
+            "command": "node ${workspaceFolder}/tasks/cli publish https://registry.npmjs.org --token=${env:NPM_AUTH_TOKEN} --mode=nightly --dry=${input:dry} --timestamp=${input:timestamp}",
             "label": "publish-nightly",
-            "presentation": {
-                "reveal": "always"
-            },
-            "problemMatcher": [],
-            "type": "shell"
-        },
-        {
-            "command": "npm run task:publish -- https://registry.npmjs.org --token=${env:NPM_AUTH_TOKEN} --config=release --debug",
-            "label": "publish-release",
             "presentation": {
                 "reveal": "always"
             },
