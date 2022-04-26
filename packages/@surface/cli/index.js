@@ -7,4 +7,3 @@ new Command()
     .description("Creates a new project based on selected template.")
     .action(Tasks.new)
     .parse();
-//# sourceMappingURL=index.js.map

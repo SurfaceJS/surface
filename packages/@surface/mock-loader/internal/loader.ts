@@ -1,9 +1,8 @@
 /* eslint-disable lines-around-comment */
-import os                                    from "os";
-import { readFile }                          from "fs/promises";
-import path                                  from "path";
-import { URL, fileURLToPath, pathToFileURL } from "url";
-import { getExports, getMocksMaps }          from "./common.js";
+import { readFile }                             from "fs/promises";
+import path                                     from "path";
+import { URL, fileURLToPath, pathToFileURL }    from "url";
+import { IS_WINDOWS, getExports, getMocksMaps } from "./common.js";
 
 type GetFormatResult  = { format: string };
 type GetFormatContext = { format: string };
@@ -14,7 +13,6 @@ type ResolveResult    = { url: string };
 type LoadContext      = { format: string };
 type LoadResult       = { format: string, source: string };
 
-const IS_WINDOWS = os.platform() == "win32";
 const MOCK       = "mock";
 const PROXY      = "proxy";
 const TARGET     = "target";
@@ -28,6 +26,7 @@ const DIRNAME             = path.dirname(fileURLToPath(import.meta.url)) as ".";
 const PROXY_PATH          = `${pathToFileURL(path.join(DIRNAME, PROXY)).toString()}/` as `${typeof DIRNAME}/${typeof PROXY}`;
 const proxyFiles          = new Map<string, string>();
 const parentProxyFiles    = new Map<string, string | undefined>();
+const cache               = new Map<string, string>();
 
 function internalGetFormat(specifier: string): GetFormatResult | null
 {
@@ -94,6 +93,24 @@ export async function resolve(specifier: string, context: ResolveContext, defaul
 
     // console.log(`- resolve: ${parentProxyFiles.get(context.parentURL!) ?? context.parentURL} --> ${specifier} -> ${resolved}`);
 
+    /* c8 ignore start */
+    if (IS_WINDOWS)
+    {
+        const key = resolved.toLowerCase();
+
+        const entry = cache.get(key);
+
+        if (!entry)
+        {
+            cache.set(key, resolved);
+        }
+        else
+        {
+            resolved = entry;
+        }
+    }
+    /* c8 ignore end */
+
     const proxyFile = proxyFiles.get(resolved);
 
     if (proxyFile)
@@ -119,15 +136,6 @@ export async function resolve(specifier: string, context: ResolveContext, defaul
             parentProxyFiles.set(resolved, context.parentURL);
         }
 
-        /* c8 ignore start */
-        if (IS_WINDOWS)
-        {
-            const root = path.parse(resolved.replace("file:///", "")).root;
-
-            resolved = resolved.replace(root, root.toUpperCase());
-        }
-        /* c8 ignore end */
-
         url.searchParams.delete(MOCK);
 
         proxyFiles.set(url.href, resolved);
@@ -145,19 +153,21 @@ export async function resolve(specifier: string, context: ResolveContext, defaul
     return { url: url.href };
 }
 
-/* c8 ignore next 6 */
+/* c8 ignore start */
 export async function getSource(specifier: string, context: GetSourceContext, defaultGetSource: (specifier: string, context: GetSourceContext) => Promise<GetSourceResult>): Promise<GetSourceResult>
 {
     const url = new URL(specifier);
 
     return await internalGetSource(url) ?? defaultGetSource(url.href, context);
 }
+/* c8 ignore stop */
 
-/* c8 ignore next 4 */
+/* c8 ignore start */
 export async function getFormat(specifier: string, context: GetFormatContext, defaultGetFormat: (specifier: string, context: GetFormatContext) => Promise<GetFormatResult>): Promise<GetFormatResult>
 {
     return internalGetFormat(specifier) ?? defaultGetFormat(specifier, context);
 }
+/* c8 ignore stop */
 
 export async function load(specifier: string, context: LoadContext, defaultLoad: (specifier: string, context: LoadContext) => Promise<LoadResult>): Promise<LoadResult>
 {

@@ -32,7 +32,8 @@
         "reinstall": "npm run clean && npm i",
         "task:build": "node ./tasks/cli build",
         "task:clean": "node ./tasks/cli clean",
-        "task:publish": "node ./tasks/cli publish",
+        "publish-nightly": "node ./tasks/cli publish https://registry.npmjs.org --mode=nightly",
+        "publish-release": "node ./tasks/cli publish https://registry.npmjs.org --mode=release",
         "test": "mocha --loader=@surface/mock-loader --require=./tasks/polyfill.js **/packages/@surface/*/tests/**/*.spec.js"
     },
     "type": "module",

@@ -1,8 +1,12 @@
+/* eslint-disable lines-around-comment */
 import fs                from "fs";
+import os                from "os";
 import path              from "path";
 import { pathToFileURL } from "url";
 
 type Configuration = { modules: string[] };
+
+export const IS_WINDOWS = os.platform() == "win32";
 
 export function getExports(module: object): string[]
 {
@@ -32,10 +36,19 @@ export function getMocksMaps(): Set<string>
         {
             const modulePath = path.resolve(DIRNAME, module);
 
-            const root = path.parse(modulePath).root;
+            /* c8 ignore start */
+            if (IS_WINDOWS)
+            {
+                const root = path.parse(modulePath).root;
 
-            paths.add(pathToFileURL(modulePath.replace(root, root.toUpperCase())).href);
-            paths.add(pathToFileURL(modulePath.replace(root, root.toLowerCase())).href);
+                paths.add(pathToFileURL(modulePath.replace(root, root.toUpperCase())).href);
+                paths.add(pathToFileURL(modulePath.replace(root, root.toLowerCase())).href);
+            }
+            else
+            {
+                paths.add(pathToFileURL(modulePath).href);
+            }
+            /* c8 ignore stop */
         }
         else
         {
