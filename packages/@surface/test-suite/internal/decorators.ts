@@ -235,12 +235,14 @@ export function suite(targetOrDescription: Function | string): ClassDecorator | 
             {
                 const batch = metadata.batch;
 
-                let index = 0;
+                let index = 1;
+
                 for (const data of batch.source)
                 {
+                    const skip         = metadata.skip || batch.skip(data, index);
                     const categoryName = metadata.category;
-                    const getMethod    = metadata.skip ? () => noop : (context: object) => () => method.call(context, data);
-                    const expectation = (metadata.skip || batch.skip(data, index) ? "(Skipped) " : "") + batch.expectation(data, index);
+                    const getMethod    = skip ? () => noop : (context: object) => () => method.call(context, data);
+                    const expectation  = (skip ? "(Skipped) " : "") + batch.expectation(data, index);
 
                     if (categoryName)
                     {
