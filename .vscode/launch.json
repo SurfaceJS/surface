@@ -109,9 +109,9 @@
             "skipFiles":
             [
                 "${workspaceFolder}/node_modules/**/*.js",
-                "<node_internals>/**/*.js"
+                "<node_internals>/**"
             ],
-            "type": "node"
+            "type": "pwa-node"
         },
     ],
     "version": "0.2.0"

@@ -1,8 +1,6 @@
-import type { Callable, Delegate } from "@surface/core";
-import type IGetSetup              from "./get-setup";
+import type { Callable }      from "@surface/core";
+import type IGetSetup         from "./get-setup.js";
+import type IReturnsSetupSync from "./returns-setup-sync.js";
 
-export default interface IReturnsSetup<TMethod extends Callable = Callable> extends IGetSetup<ReturnType<TMethod>>
-{
-    callback(action: (...args: Parameters<TMethod>) => void): this;
-    returnsFactory(factory: Delegate<Parameters<TMethod>, ReturnType<Callable>>): void;
-}
+export default interface IReturnsSetup<TMethod extends Callable = Callable> extends IReturnsSetupSync<TMethod>, IGetSetup<ReturnType<TMethod>>
+{ }

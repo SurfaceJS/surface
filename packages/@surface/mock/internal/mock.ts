@@ -13,8 +13,8 @@ import type ICallSetup            from "./interfaces/call-setup";
 import type IExecutable           from "./interfaces/executable";
 import type IGetSetup             from "./interfaces/get-setup";
 import type IReturnsInstanceSetup from "./interfaces/returns-instance-setup";
-import type IReturnsSetup         from "./interfaces/returns-setup";
 import ReturnSetup                from "./return-setup.js";
+import type ResolveSetup          from "./types/resolve-setup.js";
 
 const CALL          = Symbol("mock:call");
 const MOCK_INSTANCE = Symbol("mock:instance");
@@ -167,13 +167,13 @@ export default class Mock<T extends object | Function>
                         : target.toString();
     }
 
-    public call(...args: Parameters<Cast<T, Callable>>): IReturnsSetup<Cast<T, Callable>>;
-    public call<TOverload extends Overload<Cast<T, Callable>, ParameterOverloads<Cast<T, Callable>>>>(...args: Parameters<TOverload>): IReturnsSetup<TOverload>;
-    public call<TArgs extends ParameterOverloads<Cast<T, Callable>>>(...args: TArgs): IReturnsSetup<Overload<Cast<T, Callable>, TArgs>>
+    public call(...args: Parameters<Cast<T, Callable>>): ResolveSetup<Cast<T, Callable>>;
+    public call<TOverload extends Overload<Cast<T, Callable>, ParameterOverloads<Cast<T, Callable>>>>(...args: Parameters<TOverload>): ResolveSetup<TOverload>;
+    public call<TArgs extends ParameterOverloads<Cast<T, Callable>>>(...args: TArgs): ResolveSetup<Overload<Cast<T, Callable>, TArgs>>
     {
         const setup = this.setup(CALL);
 
-        return setup.call(...args) as object as IReturnsSetup<Overload<Cast<T, Callable>, TArgs>>;
+        return setup.call(...args) as object as ResolveSetup<Overload<Cast<T, Callable>, TArgs>>;
     }
 
     public clear(): void

@@ -2,11 +2,11 @@
     "modules":
     [
         "fs",
+        "fs/promises",
         "util",
         "@surface/io",
         "webpack",
         "webpack-dev-server",
-        "./packages/@surface/io/internal/fs.js",
         "./packages/@surface/builder/internal/builder.js",
         "./packages/@surface/builder/internal/common.js",
         "./packages/@surface/builder/internal/create-configurations.js",

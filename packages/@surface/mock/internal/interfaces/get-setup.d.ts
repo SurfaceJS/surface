@@ -1,6 +1,7 @@
+import type IGetSetupSync from "./get-setup-sync.js";
 
-export default interface IGetSetup<TResult = unknown>
+export default interface IGetSetup<TResult = unknown> extends IGetSetupSync<TResult>
 {
-    returns(value: TResult): void;
-    throws(error: Error | string): void;
+    resolve(value: Awaited<TResult>): void;
+    reject(reason?: unknown): void;
 }

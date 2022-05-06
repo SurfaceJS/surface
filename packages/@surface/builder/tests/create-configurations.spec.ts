@@ -1,31 +1,14 @@
-import { lookup }                                         from "@surface/io";
-import Mock, { It }                                       from "@surface/mock";
-import { afterEach, beforeEach, shouldPass, suite, test } from "@surface/test-suite";
-import chai                                               from "chai";
-import chaiAsPromised                                     from "chai-as-promised";
-import createConfigurations                               from "../internal/create-configurations.js";
-import type Configuration                                 from "../internal/types/configuration";
+import { shouldPass, suite, test } from "@surface/test-suite";
+import chai                        from "chai";
+import chaiAsPromised              from "chai-as-promised";
+import createConfigurations        from "../internal/create-configurations.js";
+import type Configuration          from "../internal/types/configuration";
 
 chai.use(chaiAsPromised);
-
-const lookupMock = Mock.of(lookup)!;
 
 @suite
 export default class CreateConfigurationsSpec
 {
-    @beforeEach
-    public beforeEach(): void
-    {
-        lookupMock.lock();
-        lookupMock.call(It.any(), It.any()).returns("node_modules");
-    }
-
-    @afterEach
-    public afterEach(): void
-    {
-        lookupMock.release();
-    }
-
     @test @shouldPass
     public async createAnalyzerConfiguration(): Promise<void>
     {
@@ -88,15 +71,15 @@ export default class CreateConfigurationsSpec
             },
         };
 
-        void chai.assert.isNotEmpty(await createConfigurations("build", configuration));
+        await chai.assert.isFulfilled(createConfigurations("build", configuration));
     }
 
     @test @shouldPass
     public async createDevServerConfiguration(): Promise<void>
     {
-        void chai.assert.isNotEmpty(await createConfigurations("serve", { }));
-        void chai.assert.isNotEmpty(await createConfigurations("serve", { projects: { default: { entry: "." } } }));
-        void chai.assert.isNotEmpty(await createConfigurations("serve", { projects: { default: { entry: ["."] } } }));
-        void chai.assert.isNotEmpty(await createConfigurations("serve", { projects: { default: { entry: { index: "." } } } }));
+        await chai.assert.isFulfilled(createConfigurations("serve", { }));
+        await chai.assert.isFulfilled(createConfigurations("serve", { projects: { default: { entry: "." } } }));
+        await chai.assert.isFulfilled(createConfigurations("serve", { projects: { default: { entry: ["."] } } }));
+        await chai.assert.isFulfilled(createConfigurations("serve", { projects: { default: { entry: { index: "." } } } }));
     }
 }

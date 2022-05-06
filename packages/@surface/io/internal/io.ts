@@ -1,90 +1,57 @@
-import type { Stats } from "fs";
-import path           from "path";
-import
-{
-    existsSync,
-    lstatAsync,
-    lstatSync,
-    mkdirAsync,
-    mkdirSync,
-    readdirAsync,
-    readdirSync,
-    readlinkAsync,
-    readlinkSync,
-    rmdirAsync,
-    rmdirSync,
-    statSync,
-    unlinkAsync,
-    unlinkSync,
-} from "./fs.js";
-import parsePatternPath from "./parse-pattern-path.js";
+import { existsSync, lstatSync, mkdirSync, readdirSync, readlinkSync, rmdirSync, statSync, unlinkSync } from "fs";
+import { lstat, mkdir, readdir, readlink, rmdir, stat, unlink }                                         from "fs/promises";
+import { dirname, isAbsolute, join, resolve }                                                           from "path";
+import type { Callable }                                                                                from "@surface/core";
+import parsePatternPath                                                                                 from "./parse-pattern-path.js";
 
-function getStats(filepath: string): Stats | null
-{
-    try
-    {
-        return statSync(filepath);
-    }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    catch (e: any)
-    {
-        if (e && (e.code == "ENOENT" || e.code == "ENOTDIR"))
-        {
-            return null;
-        }
+type ErrorCode = Error & { code: string };
 
-        throw e;
+function errorHandler(error: ErrorCode): null
+{
+    if (error.code == "ENOENT" || error.code == "ENOTDIR")
+    {
+        return null;
     }
+
+    throw error;
 }
 
-function getLstats(filepath: string): Stats | null
+function handler<T extends Callable>(action: Callable): ReturnType<T> | null
 {
     try
     {
-        return lstatSync(filepath);
-    }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    catch (e: any)
-    {
-        if (e && (e.code == "ENOENT" || e.code == "ENOTDIR"))
-        {
-            return null;
-        }
+        const result = action();
 
-        throw e;
+        return result instanceof Promise ? result.catch(errorHandler) : result;
+    }
+    catch (error)
+    {
+        return errorHandler(error as ErrorCode);
     }
 }
 
 /**
- * Create a path.
- * @param path A path to create. If a URL is provided, it must use the `file:` protocol.
- * @param mode A file mode.
+ * Looks from bottom to up for the target file/directory.
+ * @param startPath Path to start resolution. If a URL is provided, it must use the `file:` protocol.
+ * @param target Target file/directory.
  */
-export function createPath(path: string, mode?: number): void;
-export function createPath(targetPath: string, mode: number = 0o777): void
+export function bottomUp(startPath: string, target: string): string | null
 {
-    if (existsSync(targetPath))
+    const path = join(startPath, target);
+
+    if (existsSync(path))
     {
-        const resolvedPath = lstatSync(targetPath).isSymbolicLink() ? readlinkSync(targetPath) : targetPath;
-
-        if (!lstatSync(resolvedPath).isDirectory())
-        {
-            throw new Error(`${resolvedPath} exist and isn't an directory`);
-        }
-
-        return;
+        return path;
     }
 
-    const parent = path.dirname(targetPath);
+    const parent = dirname(startPath);
 
-    if (!existsSync(parent))
+    if (parent != startPath)
     {
-        createPath(parent, mode);
-
-        mkdirSync(targetPath, mode);
+        return bottomUp(parent, target);
     }
 
-    mkdirSync(targetPath, mode);
+    return null;
 }
 
 /**
@@ -92,14 +59,13 @@ export function createPath(targetPath: string, mode: number = 0o777): void
  * @param path A path to create. If a URL is provided, it must use the `file:` protocol.
  * @param mode A file mode.
  */
-export async function createPathAsync(path: string, mode?: number): Promise<void>;
-export async function createPathAsync(targetPath: string, mode: number = 0o777): Promise<void>
+export async function createPath(path: string, mode: number = 0o777): Promise<void>
 {
-    if (existsSync(targetPath))
+    if (existsSync(path))
     {
-        const resolvedPath = (await lstatAsync(targetPath)).isSymbolicLink() ? await readlinkAsync(targetPath) : targetPath;
+        const resolvedPath = await isSymbolicLink(path) ? await readlink(path) : path;
 
-        if (!(await lstatAsync(resolvedPath)).isDirectory())
+        if (!await isDirectory(path))
         {
             throw new Error(`${resolvedPath} exist and isn't an directory`);
         }
@@ -107,14 +73,45 @@ export async function createPathAsync(targetPath: string, mode: number = 0o777):
         return;
     }
 
-    const parent = path.dirname(targetPath);
+    const parent = dirname(path);
 
     if (!existsSync(parent))
     {
-        await createPathAsync(parent, mode);
+        await createPath(parent, mode);
     }
 
-    return mkdirAsync(targetPath, mode);
+    return mkdir(path, mode);
+}
+
+/**
+ * Create a path.
+ * @param path A path to create. If a URL is provided, it must use the `file:` protocol.
+ * @param mode A file mode.
+ */
+export function createPathSync(path: string, mode?: number): void
+{
+    if (existsSync(path))
+    {
+        const resolvedPath = isSymbolicLinkSync(path) ? readlinkSync(path) : path;
+
+        if (!isDirectorySync(resolvedPath))
+        {
+            throw new Error(`${resolvedPath} exist and isn't an directory`);
+        }
+
+        return;
+    }
+
+    const parent = dirname(path);
+
+    if (!existsSync(parent))
+    {
+        createPathSync(parent, mode);
+
+        mkdirSync(path, mode);
+    }
+
+    mkdirSync(path, mode);
 }
 
 /**
@@ -127,13 +124,23 @@ export function createPathMatcher(...patterns: string[]): RegExp
 }
 
 /**
+ * Asynchronous Verifies if a path is a directory.
+ * @param path Path to verify. If a URL is provided, it must use the `file:` protocol.
+ */
+export async function isDirectory(path: string): Promise<boolean>
+{
+    const stats = await handler(async () => stat(path));
+
+    return !!stats && stats.isDirectory();
+}
+
+/**
  * Verifies if a path is a directory.
  * @param path Path to verify. If a URL is provided, it must use the `file:` protocol.
  */
-export function isDirectory(path: string): boolean;
-export function isDirectory(filePath: string): boolean
+export function isDirectorySync(path: string): boolean
 {
-    const stats = getStats(filePath);
+    const stats = handler(() => statSync(path));
 
     return !!stats && stats.isDirectory();
 }
@@ -142,10 +149,20 @@ export function isDirectory(filePath: string): boolean
  * Verifies if a path is a file.
  * @param path Path to verify. If a URL is provided, it must use the `file:` protocol.
  */
-export function isFile(path: string): boolean;
-export function isFile(filePath: string): boolean
+export async function isFile(path: string): Promise<boolean>
 {
-    const stats = getStats(filePath);
+    const stats = await handler(async () => stat(path));
+
+    return !!stats && (stats.isFile() || stats.isFIFO());
+}
+
+/**
+ * Verifies if a path is a file.
+ * @param path Path to verify. If a URL is provided, it must use the `file:` protocol.
+ */
+export function isFileSync(path: string): boolean
+{
+    const stats = handler(() => statSync(path));
 
     return !!stats && (stats.isFile() || stats.isFIFO());
 }
@@ -154,55 +171,36 @@ export function isFile(filePath: string): boolean
  * Verifies if a path is a symbolic link.
  * @param path Path to verify. If a URL is provided, it must use the `file:` protocol.
  */
-export function isSymbolicLink(path: string): boolean;
-export function isSymbolicLink(filePath: string): boolean
+export async function isSymbolicLink(path: string): Promise<boolean>
 {
-    const stats = getLstats(filePath);
+    const stats = await handler(async () => lstat(path));
 
     return !!stats && stats.isSymbolicLink();
 }
 
 /**
- * Look up for target file/directory.
- * @param startPath Path to start resolution. If a URL is provided, it must use the `file:` protocol.
- * @param target    Target file/directory.
+ * Verifies if a path is a symbolic link.
+ * @param path Path to verify. If a URL is provided, it must use the `file:` protocol.
  */
-export function lookup(startPath: string, target: string): string | null
+export function isSymbolicLinkSync(path: string): boolean
 {
-    const slices = startPath.split(path.sep);
+    const stats = handler(() => lstatSync(path));
 
-    while (slices.length > 0)
-    {
-        const filepath = path.join(slices.join(path.sep), target);
-
-        if (existsSync(filepath))
-        {
-            return filepath;
-        }
-
-        slices.pop();
-    }
-
-    return null;
+    return !!stats && stats.isSymbolicLink();
 }
 
 /**
- * Resolve file location
- * @param lookup  Filenames to resolve.
+ * Asynchronous resolve and returns the path of the first resolved file and null otherwise.
+ * @param files  Files to look.
  * @param context Context used to resolve.
  */
-export function lookupFile(lookup: string[], context: string = process.cwd()): string | null
+export async function lookup(files: string[], context: string = process.cwd()): Promise<string | null>
 {
-    for (const filepath of lookup)
+    for (const path of files)
     {
-        if (path.isAbsolute(filepath) && existsSync(filepath) && lstatSync(filepath).isFile())
-        {
-            return filepath;
-        }
+        const resolved = isAbsolute(path) ? path : resolve(context, path);
 
-        const resolved = path.resolve(context, filepath);
-
-        if (existsSync(resolved) && lstatSync(resolved).isFile())
+        if (await isFile(resolved))
         {
             return resolved;
         }
@@ -212,22 +210,17 @@ export function lookupFile(lookup: string[], context: string = process.cwd()): s
 }
 
 /**
- * Asynchronously resolve file location
- * @param lookup  Relative or absolute path to folder or file.
- * @param context Cotext used to resolve.
+ * Resolve and returns the path of the first resolved file and null otherwise.
+ * @param files  Files to look.
+ * @param context Context used to resolve.
  */
-export async function lookupFileAsync(lookup: string[], context: string = process.cwd()): Promise<string | null>
+export function lookupSync(files: string[], context: string = process.cwd()): string | null
 {
-    for (const filepath of lookup)
+    for (const path of files)
     {
-        if (path.isAbsolute(filepath) && existsSync(filepath) && (await lstatAsync(filepath)).isFile())
-        {
-            return filepath;
-        }
+        const resolved = isAbsolute(path) ? path : resolve(context, path);
 
-        const resolved = path.resolve(context, filepath);
-
-        if (existsSync(resolved) && (await lstatAsync(resolved)).isFile())
+        if (isFileSync(resolved))
         {
             return resolved;
         }
@@ -241,36 +234,33 @@ export async function lookupFileAsync(lookup: string[], context: string = proces
  * @param path Path to test.
  * @param patterns Patterns to which the path must match.
  */
-export function matchPath(path: string, ...patterns: [string, ...string[]]): boolean;
-export function matchPath(targetPath: string, ...patterns: [string, ...string[]]): boolean
+export function matchPath(path: string, ...patterns: [string, ...string[]]): boolean
 {
-    return createPathMatcher(...patterns).test(targetPath);
+    return createPathMatcher(...patterns).test(path);
 }
 
 /**
  * Deletes recursively delete a path and unlink symbolic links
  * @param path Path to delete. If a URL is provided, it must use the `file:` protocol.
  */
-
-export function removePath(path: string): boolean;
-export function removePath(targetPath: string): boolean
+export function removePathSync(path: string): boolean
 {
-    if (existsSync(targetPath))
+    if (existsSync(path))
     {
-        const lstat = lstatSync(targetPath);
+        const lstat = lstatSync(path);
 
         if (lstat.isSymbolicLink() || lstat.isFile())
         {
-            unlinkSync(targetPath);
+            unlinkSync(path);
         }
         else
         {
-            for (const fileOrDirectory of readdirSync(targetPath))
+            for (const fileOrDirectory of readdirSync(path))
             {
-                removePath(path.join(targetPath, fileOrDirectory));
+                removePathSync(join(path, fileOrDirectory));
             }
 
-            rmdirSync(targetPath);
+            rmdirSync(path);
         }
 
         return true;
@@ -283,25 +273,24 @@ export function removePath(targetPath: string): boolean
  * Asynchronously delete a path recursively and unlink symbolic links
  * @param path Path to delete. If a URL is provided, it must use the `file:` protocol.
  */
-export async function removePathAsync(path: string): Promise<boolean>;
-export async function removePathAsync(targetPath: string): Promise<boolean>
+export async function removePath(path: string): Promise<boolean>
 {
-    if (existsSync(targetPath))
+    if (existsSync(path))
     {
-        const lstat = await lstatAsync(targetPath);
+        const stat = await lstat(path);
 
-        if (lstat.isSymbolicLink() || lstat.isFile())
+        if (stat.isSymbolicLink() || stat.isFile())
         {
-            await unlinkAsync(targetPath);
+            await unlink(path);
         }
         else
         {
-            for (const fileOrDirectory of await readdirAsync(targetPath))
+            for (const fileOrDirectory of await readdir(path))
             {
-                await removePathAsync(path.join(targetPath, fileOrDirectory));
+                await removePath(join(path, fileOrDirectory));
             }
 
-            await rmdirAsync(targetPath);
+            await rmdir(path);
         }
 
         return true;

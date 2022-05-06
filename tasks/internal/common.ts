@@ -7,7 +7,7 @@ import path                                             from "path";
 import { fileURLToPath }                                from "url";
 import { promisify }                                    from "util";
 import { resolveError }                                 from "@surface/core";
-import { createPathAsync, removePathAsync }             from "@surface/io";
+import { createPath, removePath }             from "@surface/io";
 import chalk                                            from "chalk";
 import type { Manifest }                                from "pacote";
 
@@ -136,4 +136,4 @@ export const parsePattern = (pattern: RegExp) =>
 export const toArray  = (source: string): string[] => source.split(",");
 export const toString = (source: string): string => source;
 
-export { createPathAsync, removePathAsync };
+export { createPath as createPathAsync, removePath as removePathAsync };

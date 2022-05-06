@@ -1,6 +1,6 @@
 import path                                 from "path";
 import { DeepMergeFlags, deepMerge, isEsm } from "@surface/core";
-import { isDirectory, lookupFile }          from "@surface/io";
+import { isDirectory, lookup }              from "@surface/io";
 import Builder                              from "./builder.js";
 import { loadModule }                       from "./common.js";
 import type BuildConfiguration              from "./types/build-configuration.js";
@@ -66,8 +66,8 @@ export default class Commands
 
         const cwd        = process.cwd();
         const config     = path.resolve(cwd, options.config ?? ".");
-        const configPath = isDirectory(config)
-            ? lookupFile
+        const configPath = await isDirectory(config)
+            ? await lookup
             ([
                 path.join(config, "surface.builder.js"),
                 path.join(config, "surface.builder.mjs"),

@@ -6,11 +6,11 @@ import path                                                        from "path";
 import { fileURLToPath }                                           from "url";
 import util                                                        from "util";
 import { assert }                                                  from "@surface/core";
-import { createPathAsync }                                         from "@surface/io";
+import { createPath }                                              from "@surface/io";
 import inquirer, { QuestionCollection }                            from "inquirer";
 
 type TemplateIndex = typeof import("./templates/index.json");
-type Package = { author: string, name: string };
+type Package       = { author: string, name: string };
 
 const copyFileAsync  = util.promisify(copyFile);
 const readFileAsync  = util.promisify(readFile);
@@ -42,7 +42,7 @@ export default class Tasks
 
             if (!existsSync(folder))
             {
-                await createPathAsync(folder);
+                await createPath(folder);
             }
 
             await copyFileAsync(source, target);

@@ -1,6 +1,6 @@
 /* eslint-disable max-lines-per-function */
 import path                                   from "path";
-import { isDirectory, lookupFile }            from "@surface/io";
+import { isDirectory, lookup }                from "@surface/io";
 import Mock, { It }                           from "@surface/mock";
 import { afterEach, beforeEach, suite, test } from "@surface/test-suite";
 import chai                                   from "chai";
@@ -33,7 +33,7 @@ const TSCONFIG_JSON                  = path.join(CWD, "tsconfig.json");
 const WWW                            = path.join(CWD, "www");
 
 const isDirectoryMock  = Mock.of(isDirectory);
-const lookupFileMock   = Mock.of(lookupFile);
+const lookupMock       = Mock.of(lookup);
 const compilerCtorMock = Mock.of(Builder);
 const loadModuleMock   = Mock.of(loadModule);
 
@@ -138,22 +138,22 @@ export default class CommandsSpec
     public beforeEach(): void
     {
         isDirectoryMock.lock();
-        lookupFileMock.lock();
+        lookupMock.lock();
         loadModuleMock.lock();
 
-        lookupFileMock.call
+        lookupMock.call
         ([
             PROJECT_ESLINTRC_JS,
             PROJECT_ESLINTRC_JSON,
             PROJECT_ESLINTRC_YML,
             PROJECT_ESLINTRC_YAML,
-        ]).returns(PROJECT_ESLINTRC_JS);
+        ]).resolve(PROJECT_ESLINTRC_JS);
 
-        isDirectoryMock.call(CWD).returns(true);
+        isDirectoryMock.call(CWD).resolve(true);
 
-        loadModuleMock.call(PROJECT_EMPTY_JSON).returns(Promise.resolve({ }));
-        loadModuleMock.call(PROJECT_SURFACE_BUILDER_JS).returns(Promise.resolve({ __esModule: true, default: CONFIGURATION_JS }));
-        loadModuleMock.call(PROJECT_SURFACE_BUILDER_JSON).returns(Promise.resolve(CONFIGURATION_JSON));
+        loadModuleMock.call(PROJECT_EMPTY_JSON).resolve({ });
+        loadModuleMock.call(PROJECT_SURFACE_BUILDER_JS).resolve({ __esModule: true, default: CONFIGURATION_JS });
+        loadModuleMock.call(PROJECT_SURFACE_BUILDER_JSON).resolve(CONFIGURATION_JSON);
         loadModuleMock.call(It.any());
     }
 
@@ -163,7 +163,7 @@ export default class CommandsSpec
         isDirectoryMock.release();
         compilerCtorMock.release();
         loadModuleMock.release();
-        lookupFileMock.release();
+        lookupMock.release();
     }
 
     @test
@@ -177,7 +177,7 @@ export default class CommandsSpec
             .setup("analyze")
             .call(It.any())
             .callback(x => actual = x)
-            .returns(Promise.resolve());
+            .resolve();
 
         await Commands.analyze({ }),
 

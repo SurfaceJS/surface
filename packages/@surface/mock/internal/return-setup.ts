@@ -7,6 +7,6 @@ export default class ReturnSetup<TMethod extends Callable, TResult> extends Base
 {
     public execute(): TResult | null
     {
-        return this.setup.get();
+        return this.setup.get() as TResult | null;
     }
 }

@@ -209,7 +209,6 @@
         "@typescript-eslint/promise-function-async":         "warn",
         "@typescript-eslint/quotes":                         "warn",
         "@typescript-eslint/require-array-sort-compare":     "warn",
-        "@typescript-eslint/require-await":                  "warn",
         "@typescript-eslint/return-await":                   "warn",
         "@typescript-eslint/semi":                           "warn",
         "@typescript-eslint/switch-exhaustiveness-check":    "warn",

@@ -14,3 +14,4 @@ program
     .option("--timestamp     [n]", "Timestamp")
     .action(Commands.publish);
 program.parse();
+//# sourceMappingURL=cli.js.map
