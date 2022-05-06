@@ -1,5 +1,5 @@
-import inject   from "../../internal/decorators/inject.js";
-import type Bar from "./bar.js";
+import inject from "../../internal/decorators/inject.js";
+import Bar    from "./bar.js";
 
 export default class Foo
 {

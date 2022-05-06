@@ -2,6 +2,7 @@
 /* eslint-disable max-lines-per-function */
 import { URL }                                        from "url";
 import { DeepMergeFlags, deepMerge }                  from "@surface/core";
+// eslint-disable-next-line import/default
 import CopyPlugin                                     from "copy-webpack-plugin";
 import EslintWebpackPlugin                            from "eslint-webpack-plugin";
 import type { Options as EslintWebpackPluginOptions } from "eslint-webpack-plugin";

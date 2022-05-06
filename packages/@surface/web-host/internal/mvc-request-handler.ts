@@ -70,7 +70,7 @@ export default class MvcRequestHandler extends RequestHandler
             },
         );
 
-        return await new Promise(resolve => httpContext.request.on("end", () => resolve(body.length > 0 ? JSON.parse(body) : null)));
+        return new Promise(resolve => httpContext.request.on("end", () => resolve(body.length > 0 ? JSON.parse(body) : null)));
     }
 
     public async handle(httpContext: HttpContext): Promise<boolean>

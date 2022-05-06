@@ -1,1 +1,3 @@
-node_modules
+*.d.ts
+!**/interfaces/**/*.d.ts
+!**/@?types/**/*.d.ts

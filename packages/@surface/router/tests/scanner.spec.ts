@@ -1,9 +1,8 @@
-import { batchTest, suite }             from "@surface/test-suite";
-import chai                             from "chai";
-import TokenType                        from "../internal/enums/token-type.js";
-import Scanner                          from "../internal/scanner.js";
-import type { ScannerValidExpectation } from "./scanner-expectations.js";
-import { scannerValidExpectations }     from "./scanner-expectations.js";
+import { batchTest, suite }                                       from "@surface/test-suite";
+import chai                                                       from "chai";
+import TokenType                                                  from "../internal/enums/token-type.js";
+import Scanner                                                    from "../internal/scanner.js";
+import { type ScannerValidExpectation, scannerValidExpectations } from "./scanner-expectations.js";
 
 @suite
 export default class RouteSpec

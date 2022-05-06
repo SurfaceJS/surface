@@ -32,7 +32,7 @@
         "clean-build": "tsc --build --clean && tsc --build",
         "cover": "c8 --check-coverage npm test",
         "cover-summary": "c8 --reporter=text-summary --check-coverage npm run test-summary",
-        "lint": "eslint . --cache",
+        "lint": "eslint . --cache --ext .ts",
         "postinstall": "npm run build",
         "prepare": "husky install .husky",
         "publish-nightly": "node ./tasks/cli publish https://registry.npmjs.org --mode=nightly",

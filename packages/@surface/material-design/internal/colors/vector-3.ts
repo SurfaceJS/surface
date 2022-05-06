@@ -19,8 +19,8 @@ export default class Vector3
         return this.x ** 2 + this.y ** 2 + this.z ** 2;
     }
 
-    public constructor()
-    public constructor(x: number, y: number, z: number)
+    public constructor();
+    public constructor(x: number, y: number, z: number);
     public constructor(x?: number, y?: number, z?: number)
     {
         this.x = x ?? 0;

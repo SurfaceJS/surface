@@ -1,6 +1,6 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-# npm run lint # Very slow
+npm run lint
 npm run clean-build
 npm run cover-summary

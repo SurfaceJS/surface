@@ -154,8 +154,8 @@ export default class Scheduler
         }
     }
 
-    public async enqueue<T>(task: () => T, priority: "high" | "normal" | "low"): Promise<T>
-    public async enqueue<T>(task: () => T, priority: "high" | "normal" | "low", cancellationToken: CancellationToken): Promise<T | undefined>
+    public async enqueue<T>(task: () => T, priority: "high" | "normal" | "low"): Promise<T>;
+    public async enqueue<T>(task: () => T, priority: "high" | "normal" | "low", cancellationToken: CancellationToken): Promise<T | undefined>;
     public async enqueue(task: Delegate, priority: "high" | "normal" | "low", cancellationToken?: CancellationToken): Promise<unknown>
     {
         if (!this.running)

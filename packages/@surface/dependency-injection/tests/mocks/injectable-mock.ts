@@ -1,8 +1,8 @@
-import inject   from "../../internal/decorators/inject.js";
-import type Bar from "./bar.js";
-import type Baz from "./baz.js";
-import type Foo from "./foo.js";
-import type Qux from "./qux.js";
+import inject from "../../internal/decorators/inject.js";
+import Bar    from "./bar.js";
+import Baz    from "./baz.js";
+import Foo    from "./foo.js";
+import Qux    from "./qux.js";
 
 export default class InjectableMock
 {

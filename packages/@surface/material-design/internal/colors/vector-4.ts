@@ -20,8 +20,8 @@ export default class Vector4
         return this.x ** 2 + this.y ** 2 + this.z ** 2 + this.w ** 2;
     }
 
-    public constructor()
-    public constructor(x: number, y: number, z: number, w: number)
+    public constructor();
+    public constructor(x: number, y: number, z: number, w: number);
     public constructor(x?: number, y?: number, z?: number, w?: number)
     {
         this.x = x ?? 0;

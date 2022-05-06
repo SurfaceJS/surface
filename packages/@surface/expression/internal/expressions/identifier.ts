@@ -10,7 +10,7 @@ export default class Identifier implements IExpression, IPattern
 {
     private _name: string;
 
-    public [PATTERN]: void;
+    public [PATTERN]: void = undefined;
 
     public get name(): string
     {
@@ -38,8 +38,8 @@ export default class Identifier implements IExpression, IPattern
         return new Identifier(this.name);
     }
 
-    public evaluate(scope: object): unknown
-    public evaluate(scope: object, value: unknown): object
+    public evaluate(scope: object): unknown;
+    public evaluate(scope: object, value: unknown): object;
     public evaluate(scope: object, value?: unknown): unknown
     {
         if (arguments.length == 2)

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/promise-function-async */
 /* eslint-disable object-shorthand */
@@ -94,7 +95,6 @@ if (!Object.fromEntries)
 
 if (!Promise.prototype.finally)
 {
-
     Object.defineProperty
     (
         Promise.prototype,
@@ -105,7 +105,7 @@ if (!Promise.prototype.finally)
             {
                 finally: async function <T>(this: Promise<T>, onfinally?: (() => void) | undefined | null): Promise<void>
                 {
-                    return await this.then(onfinally, onfinally);
+                    return this.then(onfinally, onfinally);
                 },
             }.finally,
             writable: true,
