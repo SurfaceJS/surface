@@ -105,7 +105,7 @@ if (!Promise.prototype.finally)
             {
                 finally: async function <T>(this: Promise<T>, onfinally?: (() => void) | undefined | null): Promise<void>
                 {
-                    return this.then(onfinally, onfinally);
+                    return await this.then(onfinally, onfinally);
                 },
             }.finally,
             writable: true,
