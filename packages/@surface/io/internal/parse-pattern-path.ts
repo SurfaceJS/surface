@@ -10,7 +10,7 @@ export default function parsePatternPath(pattern: string): RegExp
         {
             case "/":
             case "\\":
-                expression += "(\\/|\\\\)";
+                expression += "(?:\\/|\\\\)";
                 break;
             case ".":
                 expression += `\\${character}`;
@@ -35,13 +35,13 @@ export default function parsePatternPath(pattern: string): RegExp
 
                     if (isGlobstar)
                     {
-                        expression += "(.*)(\\/|\\\\)?";
+                        expression += ".*(?:\\/|\\\\)?";
                         index++;
                     }
 
                     else
                     {
-                        expression += "([^\\/\\\\]*)";
+                        expression += "[^\\/\\\\]*";
                     }
                 }
                 break;

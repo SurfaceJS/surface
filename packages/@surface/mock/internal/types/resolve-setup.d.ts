@@ -1,3 +1,4 @@
+import { Callable, Newable }  from "@surface/core";
 import type IReturnsSetupSync from "../interfaces/returns-setup-sync.js";
 import type IReturnsSetup     from "../interfaces/returns-setup.js";
 

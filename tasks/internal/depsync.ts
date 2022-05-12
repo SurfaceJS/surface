@@ -1,4 +1,3 @@
-import type { PrereleaseTypes } from "@surface/core";
 import { Version }              from "@surface/core";
 import chalk                    from "chalk";
 import type { Manifest }        from "pacote";
@@ -55,24 +54,22 @@ export default class Depsync
     {
         type RawVersion = [string, string, string, string?, string?];
 
-        const [templateMajor, templateMinor, templateRevision, templatePreReleaseType, templatePreReleaseVersion] = template.split("-").map(x => x.split("."))
+        const [templateMajor, templateMinor, templateRevision] = template.split("-").map(x => x.split("."))
             .flat() as RawVersion;
 
-        const [sourceMajor, sourceMinor, sourceRevision, sourcePreReleaseType, sourcePreReleaseVersion] = source.split("-").map(x => x.split("."))
+        const [sourceMajor, sourceMinor, sourceRevision] = source.split("-").map(x => x.split("."))
             .flat() as RawVersion;
 
-        const major             = Number(this.applyPlaceholder(templateMajor, sourceMajor));
-        const minor             = Number(this.applyPlaceholder(templateMinor, sourceMinor));
-        const revision          = Number(this.applyPlaceholder(templateRevision, sourceRevision));
-        const preReleaseType    = this.applyPlaceholder(templatePreReleaseType, sourcePreReleaseType) as PrereleaseTypes | undefined;
-        const preReleaseVersion = this.applyPlaceholder(templatePreReleaseVersion, sourcePreReleaseVersion);
+        const major    = Number(this.applyPlaceholder(templateMajor, sourceMajor));
+        const minor    = Number(this.applyPlaceholder(templateMinor, sourceMinor));
+        const revision = Number(this.applyPlaceholder(templateRevision, sourceRevision));
 
         const version = new Version(major, minor, revision);
 
-        if (preReleaseType && preReleaseVersion)
-        {
-            version.prerelease = { type: preReleaseType, version: Number(preReleaseVersion) };
-        }
+        // if (preReleaseType && preReleaseVersion)
+        // {
+        //     // version.prerelease = { type: preReleaseType, version: Number(preReleaseVersion) };
+        // }
 
         return version;
     }
@@ -159,14 +156,14 @@ export default class Depsync
     {
         const version = Version.parse(manifest.version);
 
-        if (version.prerelease)
-        {
-            version.prerelease.version++;
-        }
-        else
-        {
-            version.revision++;
-        }
+        // if (version.prerelease)
+        // {
+        //     version.prerelease.version++;
+        // }
+        // else
+        // {
+        version.patch++;
+        // }
 
         const actual = manifest.version;
 

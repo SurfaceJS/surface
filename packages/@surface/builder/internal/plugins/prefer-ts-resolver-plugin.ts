@@ -14,7 +14,7 @@ export default class PreferTsResolverPlugin implements ResolverPluginInstance
     {
         const cwd = process.cwd();
 
-        this.patterns = patterns ? createPathMatcher(...patterns.map(x => path.isAbsolute(x) ? x : path.resolve(cwd, x))) : null;
+        this.patterns = patterns ? createPathMatcher(...patterns.map(x => path.resolve(cwd, x))) : null;
     }
 
     public apply(resolver: Resolver): void

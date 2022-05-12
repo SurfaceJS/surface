@@ -2,18 +2,18 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "@surface/dom-shim";
 
-import type { Constructor, Delegate, IDisposable }            from "@surface/core";
-import { AggregateError, Version, resolveError } from "@surface/core";
-import { shouldFail, shouldPass, suite, test }   from "@surface/test-suite";
-import chai                                      from "chai";
-import Compiler                                  from "../internal/compiler.js";
-import LoopDirective                             from "../internal/directives/loop-directive.js";
-import CustomStackError                          from "../internal/errors/custom-stack-error.js";
-import TemplateEvaluationError                   from "../internal/errors/template-evaluation-error.js";
-import { scheduler }                             from "../internal/singletons.js";
-import type DirectiveEntry                       from "../internal/types/directive-entry";
-import customDirectiveFactory                    from "./fixtures/custom-directive-factory.js";
-import CustomDirective                           from "./fixtures/custom-directive.js";
+import type { Constructor, Delegate, IDisposable } from "@surface/core";
+import { AggregateError, Version, resolveError }   from "@surface/core";
+import { shouldFail, shouldPass, suite, test }     from "@surface/test-suite";
+import chai                                        from "chai";
+import Compiler                                    from "../internal/compiler.js";
+import LoopDirective                               from "../internal/directives/loop-directive.js";
+import CustomStackError                            from "../internal/errors/custom-stack-error.js";
+import TemplateEvaluationError                     from "../internal/errors/template-evaluation-error.js";
+import { scheduler }                               from "../internal/singletons.js";
+import type DirectiveEntry                         from "../internal/types/directive-entry";
+import customDirectiveFactory                      from "./fixtures/custom-directive-factory.js";
+import CustomDirective                             from "./fixtures/custom-directive.js";
 
 const customDirectivesRegistry = new Map<string, DirectiveEntry>();
 

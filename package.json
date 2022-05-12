@@ -27,6 +27,7 @@
         "url": "git+https://github.com/SurfaceJS/surface.git"
     },
     "scripts": {
+        "version:pre": "npm version pre --preid=next --workspaces",
         "build": "tsc --build",
         "clean": "tsc --build --clean",
         "clean-build": "tsc --build --clean && tsc --build",

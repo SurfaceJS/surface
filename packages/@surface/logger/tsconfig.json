@@ -4,7 +4,6 @@
     {
         "outDir":  ".",
         "rootDir": ".",
-        "types":   ["node"],
     },
     "files":
     [
@@ -18,7 +17,5 @@
     "references":
     [
         { "path": "../core" },
-        { "path": "../io" },
-        { "path": "../test-suite" },
     ]
 }

@@ -6,6 +6,8 @@ import parsePatternPath                                                         
 
 type ErrorCode = Error & { code: string };
 
+const GLOB_STAR = /^\*\*(\/|\\)?/;
+
 function errorHandler(error: ErrorCode): null
 {
     if (error.code == "ENOENT" || error.code == "ENOTDIR")
@@ -28,6 +30,84 @@ function handler<T extends Callable>(action: Callable): ReturnType<T> | null
     {
         return errorHandler(error as ErrorCode);
     }
+}
+
+async function *internalEnumeratePaths(include: RegExp, exclude: RegExp | null, context: string): AsyncGenerator<string>
+{
+    for (const entry of await readdir(context))
+    {
+        const path = join(context, entry);
+
+        if (await isDirectory(path))
+        {
+            for await (const file of internalEnumeratePaths(include, exclude, path))
+            {
+                yield file;
+            }
+        }
+        else if (!exclude?.test(path) && include.test(path))
+        {
+            yield path;
+        }
+    }
+}
+
+function *internalEnumeratePathsSync(include: RegExp, exclude: RegExp | null, context: string): Generator<string>
+{
+    for (const entry of readdirSync(context))
+    {
+        const path = join(context, entry);
+
+        if (isDirectorySync(path))
+        {
+            for (const file of internalEnumeratePathsSync(include, exclude, path))
+            {
+                yield file;
+            }
+        }
+        else if (!exclude?.test(path) && include.test(path))
+        {
+            yield path;
+        }
+    }
+}
+
+function breakPattern(patterns: string | RegExp | (string | RegExp)[], cwd: string): [include: RegExp, exclude: RegExp | null]
+{
+    const $include: RegExp[] = [];
+    const $exclude: RegExp[] = [];
+
+    for (const pattern of Array.isArray(patterns) ? patterns : [patterns])
+    {
+        if (typeof pattern == "string")
+        {
+            let resolved = pattern;
+
+            let excluded = false;
+
+            if (resolved.startsWith("!"))
+            {
+                resolved = resolved.replace(/^\!/, "");
+
+                excluded = true;
+            }
+
+            resolved = GLOB_STAR.test(resolved) ? resolved : resolve(cwd, resolved);
+
+            const regex = parsePatternPath(resolved);
+
+            excluded ? $exclude.push(regex) : $include.push(regex);
+        }
+        else
+        {
+            $include.push(pattern);
+        }
+    }
+
+    return [
+        new RegExp($include.map(x => `(${x.source})`).join("|")),
+        $exclude.length > 0 ? new RegExp($exclude.map(x => `(${x.source})`).join("|")) : null,
+    ];
 }
 
 /**
@@ -120,7 +200,27 @@ export function createPathSync(path: string, mode?: number): void
  */
 export function createPathMatcher(...patterns: string[]): RegExp
 {
-    return new RegExp(patterns.map(x => `(${parsePatternPath(x).source})`).join("|"));
+    return new RegExp(patterns.map(x => `(?:${parsePatternPath(x).source})`).join("|"));
+}
+
+/**
+ * Asynchronous enumerate paths using given patterns.
+ * @param patterns Patterns to match. Strings prefixed with "!" will be negated.
+ * @param cwd      Working dir.
+ */
+export function enumeratePaths(patterns: string | RegExp | (string | RegExp)[], cwd: string = process.cwd()): AsyncGenerator<string>
+{
+    return internalEnumeratePaths(...breakPattern(patterns, cwd), cwd);
+}
+
+/**
+ * enumerate paths using given patterns.
+ * @param patterns Patterns to match. Strings prefixed with "!" will be negated.
+ * @param cwd      Working dir.
+ */
+export function enumeratePathsSync(patterns: string | RegExp | (string | RegExp)[], cwd: string = process.cwd()): Generator<string>
+{
+    return internalEnumeratePathsSync(...breakPattern(patterns, cwd), cwd);
 }
 
 /**
@@ -190,8 +290,35 @@ export function isSymbolicLinkSync(path: string): boolean
 }
 
 /**
+ * Asynchronous list paths using given patterns.
+ * @param patterns Patterns to match. Strings prefixed with "!" will be negated.
+ * @param cwd      Working dir.
+ */
+export async function listPaths(patterns: string | RegExp | (string | RegExp)[], cwd: string = process.cwd()): Promise<string[]>
+{
+    const paths: string[] = [];
+
+    for await (const path of enumeratePaths(patterns, cwd))
+    {
+        paths.push(path);
+    }
+
+    return paths;
+}
+
+/**
+ * List paths using given patterns.
+ * @param patterns Patterns to match. Strings prefixed with "!" will be negated.
+ * @param cwd      Working dir.
+ */
+export function listPathsSync(patterns: string | RegExp | (string | RegExp)[], cwd: string = process.cwd()): string[]
+{
+    return Array.from(enumeratePathsSync(patterns, cwd));
+}
+
+/**
  * Asynchronous resolve and returns the path of the first resolved file and null otherwise.
- * @param files  Files to look.
+ * @param files   Files to look.
  * @param context Context used to resolve.
  */
 export async function lookup(files: string[], context: string = process.cwd()): Promise<string | null>
@@ -231,12 +358,15 @@ export function lookupSync(files: string[], context: string = process.cwd()): st
 
 /**
  * Returns true if the path matches one of the provided patterns.
- * @param path Path to test.
+ * @param path     Path to test.
  * @param patterns Patterns to which the path must match.
+ * @param cwd      Working dir.
  */
-export function matchPath(path: string, ...patterns: [string, ...string[]]): boolean
+export function matchesPath(path: string, patterns: [string, ...string[]], cwd: string = process.cwd()): boolean
 {
-    return createPathMatcher(...patterns).test(path);
+    const [include, exclude] = breakPattern(patterns, cwd);
+
+    return !exclude?.test(path) && include.test(path);
 }
 
 /**

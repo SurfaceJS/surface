@@ -4,12 +4,15 @@
         "fs",
         "fs/promises",
         "util",
-        "@surface/io",
+        "pacote",
         "webpack",
         "webpack-dev-server",
+        "@surface/io",
+        "@surface/logger",
         "./packages/@surface/builder/internal/builder.js",
+        "./packages/@surface/builder/internal/commands.js",
         "./packages/@surface/builder/internal/common.js",
         "./packages/@surface/builder/internal/create-configurations.js",
-        "./packages/@surface/builder/internal/commands.js"
+        "./packages/@surface/core/internal/logger.js"
     ]
 }

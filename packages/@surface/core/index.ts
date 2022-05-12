@@ -41,8 +41,6 @@ export type { default as CancellationToken } from "./internal/types/cancellation
 export type { default as MergeRules }        from "./internal/types/merge-rules";
 export type { default as Subscription }      from "./internal/types/subscription";
 
-export { default as Version }                 from "./internal/version.js";
-export type { Prerelease, PrereleaseTypes }   from "./internal/version.js";
 export { default as CancellationTokenSource } from "./internal/cancellation-token-source.js";
 export { default as AggregateError }          from "./internal/errors/aggregate-error.js";
 export { default as ArgumentOutOfRangeError } from "./internal/errors/argument-out-of-range-error.js";
@@ -53,6 +51,7 @@ export { default as Hookable }                from "./internal/hookable.js";
 export { default as Lazy }                    from "./internal/lazy.js";
 export { default as DisposableMetadata }      from "./internal/metadata/disposable-metadata.js";
 export { default as HookableMetadata }        from "./internal/metadata/hookable-metadata.js";
+export { default as Version }                 from "./internal/version.js";
 
 export * from "./internal/common/array.js";
 export * from "./internal/common/generic.js";

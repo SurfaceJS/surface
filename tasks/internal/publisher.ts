@@ -54,9 +54,7 @@ export default class Publisher
                 {
                     const version = Version.parse(manifest.version);
                     const tag = version.prerelease
-                        ? version.prerelease.type == "dev"
-                            ? "next"
-                            : version.prerelease.type
+                        ? "next"
                         : "latest";
 
                     await this.repository.publish(manifest, buffer, tag);

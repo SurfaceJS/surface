@@ -16,6 +16,20 @@ export function assertGet<T>(value: T | null | undefined, message?: string): T
     return value;
 }
 
+export function compare<T extends string | number>(left: T, right: T): number
+{
+    if (left > right)
+    {
+        return 1;
+    }
+    else if (left < right)
+    {
+        return -1;
+    }
+
+    return 0;
+}
+
 export function hasFlag<T extends number>(value: T, flag: T): boolean
 {
     return (value & flag) == flag;

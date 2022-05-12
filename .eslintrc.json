@@ -504,8 +504,6 @@
                 "ignoreDeclarationSort": true
             }
         ],
-        "sort-keys":              "warn",
-        "sort-vars":              "warn",
         "space-before-blocks":    "warn",
         "space-in-parens":        "warn",
         "space-infix-ops":        "warn",
