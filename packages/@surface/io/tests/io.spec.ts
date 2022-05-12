@@ -38,14 +38,17 @@ import
 {
     bottomUp,
     createPath,
+    createPathMatcher,
     createPathSync,
     isDirectory,
     isDirectorySync,
     isFile,
     isFileSync,
+    listPaths,
+    listPathsSync,
     lookup,
     lookupSync,
-    matchPath,
+    matchesPath,
     removePath,
     removePathSync,
 } from "../internal/io.js";
@@ -131,6 +134,15 @@ export default class IoSpec
     }
 
     @test @shouldPass
+    public async createPathMatcher(): Promise<void>
+    {
+        const actual   = createPathMatcher("foo", "bar/baz");
+        const expected = /(?:^foo$)|(?:^bar(?:\/|\\)baz$)/;
+
+        chai.assert.equal(actual.source, expected.source);
+    }
+
+    @test @shouldPass
     public async createPath(): Promise<void>
     {
         const PATH_TO        = path.join(PATH, "to");
@@ -168,6 +180,76 @@ export default class IoSpec
         statSyncMock.call(PATH_TO_CREATE).returns({ isDirectory: () => true } as Stats);
 
         chai.assert.doesNotThrow(() => createPathSync(PATH_TO_CREATE));
+    }
+
+    @test @shouldPass
+    public async enumeratePaths(): Promise<void>
+    {
+        const INCLUDE             = "include";
+        const EXCLUDE             = "exclude";
+        const FILE_A              = "file.a";
+        const FILE_B              = "file.b";
+        const PATH_INCLUDE        = path.join(PATH, INCLUDE) as `~/${typeof INCLUDE}`;
+        const PATH_EXCLUDE        = path.join(PATH, EXCLUDE) as `~/${typeof INCLUDE}`;
+        const PATH_INCLUDE_FILE_A = path.join(PATH_INCLUDE, FILE_A) as `${typeof PATH_INCLUDE}/${typeof FILE_A}`;
+        const PATH_INCLUDE_FILE_B = path.join(PATH_INCLUDE, FILE_B) as `${typeof PATH_INCLUDE}/${typeof FILE_B}`;
+        const PATH_EXCLUDE_FILE_A = path.join(PATH_EXCLUDE, FILE_A) as `${typeof PATH_EXCLUDE}/${typeof FILE_A}`;
+        const PATH_EXCLUDE_FILE_B = path.join(PATH_EXCLUDE, FILE_B) as `${typeof PATH_EXCLUDE}/${typeof FILE_B}`;
+
+        readdirMock.call(PATH).resolve([INCLUDE, EXCLUDE]);
+        readdirMock.call(PATH_INCLUDE).resolve([FILE_A, FILE_B]);
+        readdirMock.call(PATH_EXCLUDE).resolve([FILE_A, FILE_B]);
+
+        statMock.call(PATH_INCLUDE).resolve({ isDirectory: () => true } as Stats);
+        statMock.call(PATH_EXCLUDE).resolve({ isDirectory: () => true } as Stats);
+
+        const patterns = ["**", "!exclude/**"];
+
+        const expected1: string[] = [PATH_INCLUDE_FILE_A, PATH_INCLUDE_FILE_B, PATH_EXCLUDE_FILE_A, PATH_EXCLUDE_FILE_B];
+        const expected2: string[] = [PATH_INCLUDE_FILE_A, PATH_INCLUDE_FILE_B];
+
+        const actual1 = await listPaths(patterns[0]);
+        const actual2 = await listPaths(/.*/);
+        const actual3 = await listPaths(patterns);
+
+        chai.assert.deepEqual(actual1, expected1, "#1");
+        chai.assert.deepEqual(actual2, expected1, "#2");
+        chai.assert.deepEqual(actual3, expected2, "#3");
+    }
+
+    @test @shouldPass
+    public async listPathsSync(): Promise<void>
+    {
+        const INCLUDE             = "include";
+        const EXCLUDE             = "exclude";
+        const FILE_A              = "file.a";
+        const FILE_B              = "file.b";
+        const PATH_INCLUDE        = path.join(PATH, INCLUDE) as `~/${typeof INCLUDE}`;
+        const PATH_EXCLUDE        = path.join(PATH, EXCLUDE) as `~/${typeof INCLUDE}`;
+        const PATH_INCLUDE_FILE_A = path.join(PATH_INCLUDE, FILE_A) as `${typeof PATH_INCLUDE}/${typeof FILE_A}`;
+        const PATH_INCLUDE_FILE_B = path.join(PATH_INCLUDE, FILE_B) as `${typeof PATH_INCLUDE}/${typeof FILE_B}`;
+        const PATH_EXCLUDE_FILE_A = path.join(PATH_EXCLUDE, FILE_A) as `${typeof PATH_EXCLUDE}/${typeof FILE_A}`;
+        const PATH_EXCLUDE_FILE_B = path.join(PATH_EXCLUDE, FILE_B) as `${typeof PATH_EXCLUDE}/${typeof FILE_B}`;
+
+        readdirSyncMock.call(PATH).returns([INCLUDE, EXCLUDE]);
+        readdirSyncMock.call(PATH_INCLUDE).returns([FILE_A, FILE_B]);
+        readdirSyncMock.call(PATH_EXCLUDE).returns([FILE_A, FILE_B]);
+
+        statSyncMock.call(PATH_INCLUDE).returns({ isDirectory: () => true } as Stats);
+        statSyncMock.call(PATH_EXCLUDE).returns({ isDirectory: () => true } as Stats);
+
+        const patterns = ["**", "!exclude/**"];
+
+        const expected1: string[] = [PATH_INCLUDE_FILE_A, PATH_INCLUDE_FILE_B, PATH_EXCLUDE_FILE_A, PATH_EXCLUDE_FILE_B];
+        const expected2: string[] = [PATH_INCLUDE_FILE_A, PATH_INCLUDE_FILE_B];
+
+        const actual1 = listPathsSync(patterns[0]);
+        const actual2 = listPathsSync(/.*/);
+        const actual3 = listPathsSync(patterns);
+
+        chai.assert.deepEqual(actual1, expected1, "#1");
+        chai.assert.deepEqual(actual2, expected1, "#2");
+        chai.assert.deepEqual(actual3, expected2, "#3");
     }
 
     @test @shouldPass
@@ -327,9 +409,9 @@ export default class IoSpec
     }
 
     @test @shouldPass
-    public matchPath(): void
+    public matchesPath(): void
     {
-        chai.assert.isTrue(matchPath(PATH, "**"));
+        chai.assert.isTrue(matchesPath(PATH, ["**", "!*"]));
     }
 
     @test @shouldPass
