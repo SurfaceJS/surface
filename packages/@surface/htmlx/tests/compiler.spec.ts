@@ -3,9 +3,10 @@
 import "@surface/dom-shim";
 
 import type { Constructor, Delegate, IDisposable } from "@surface/core";
-import { AggregateError, Version, resolveError }   from "@surface/core";
+import { AggregateError, resolveError }            from "@surface/core";
 import { shouldFail, shouldPass, suite, test }     from "@surface/test-suite";
 import chai                                        from "chai";
+import semver                                      from "semver";
 import Compiler                                    from "../internal/compiler.js";
 import LoopDirective                               from "../internal/directives/loop-directive.js";
 import CustomStackError                            from "../internal/errors/custom-stack-error.js";
@@ -1832,7 +1833,7 @@ export default class CompilerSpec
 
         const shadowRoot = "<span @click=\"host.deep.fn\"></span>";
 
-        const message = Version.compare(Version.parse(process.version), new Version(16, 0, 0)) == 1
+        const message = semver.gte(process.version, "16.0.0")
             ? "Evaluation error in '@click=\"host.deep.fn\"': Cannot read properties of undefined (reading 'fn')"
             : "Evaluation error in '@click=\"host.deep.fn\"': Cannot read property 'fn' of undefined";
 

@@ -1,8 +1,8 @@
 import path                from "path";
-import { Version }         from "@surface/core";
 import chalk               from "chalk";
 import pack                from "libnpmpack";
 import type { Manifest }   from "pacote";
+import semver              from "semver";
 import { log, paths }      from "./common.js";
 import Status              from "./enums/status.js";
 import type NpmRepository  from "./npm-repository.js";
@@ -52,8 +52,7 @@ export default class Publisher
 
                 if (!this.dry)
                 {
-                    const version = Version.parse(manifest.version);
-                    const tag = version.prerelease
+                    const tag = semver.prerelease(manifest.version)
                         ? "next"
                         : "latest";
 

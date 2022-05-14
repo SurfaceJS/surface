@@ -1,7 +1,7 @@
-import { Version }       from "@surface/core";
 import libnpmpublish     from "libnpmpublish";
 import type { Manifest } from "pacote";
 import pacote            from "pacote";
+import semver            from "semver";
 import { log }           from "./common.js";
 import Status            from "./enums/status.js";
 
@@ -45,7 +45,7 @@ export default class NpmRepository
 
         if (latest)
         {
-            if (Version.compare(Version.parse(manifest.version), Version.parse(latest.version)) == 1)
+            if (semver.gt(manifest.version, latest.version))
             {
                 return Status.Updated;
             }

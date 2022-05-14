@@ -1,6 +1,6 @@
-import { Version }              from "@surface/core";
 import chalk                    from "chalk";
 import type { Manifest }        from "pacote";
+import semver                   from "semver";
 import Status                   from "./enums/status.js";
 import StrategyType             from "./enums/strategy-type.js";
 import NpmRepository            from "./npm-repository.js";
@@ -50,7 +50,7 @@ export default class Depsync
         return placeholder == "*" ? value : placeholder;
     }
 
-    private parseTemplate(source: string, template: string): Version
+    private parseTemplate(source: string, template: string): string
     {
         type RawVersion = [string, string, string, string?, string?];
 
@@ -60,18 +60,11 @@ export default class Depsync
         const [sourceMajor, sourceMinor, sourceRevision] = source.split("-").map(x => x.split("."))
             .flat() as RawVersion;
 
-        const major    = Number(this.applyPlaceholder(templateMajor, sourceMajor));
-        const minor    = Number(this.applyPlaceholder(templateMinor, sourceMinor));
-        const revision = Number(this.applyPlaceholder(templateRevision, sourceRevision));
+        const major = Number(this.applyPlaceholder(templateMajor, sourceMajor));
+        const minor = Number(this.applyPlaceholder(templateMinor, sourceMinor));
+        const patch = Number(this.applyPlaceholder(templateRevision, sourceRevision));
 
-        const version = new Version(major, minor, revision);
-
-        // if (preReleaseType && preReleaseVersion)
-        // {
-        //     // version.prerelease = { type: preReleaseType, version: Number(preReleaseVersion) };
-        // }
-
-        return version;
+        return `${major}.${minor},${patch}`;
     }
 
     private async hasUpdate(manifest: Manifest): Promise<boolean>
@@ -80,13 +73,13 @@ export default class Depsync
         {
             const targetVersion = this.parseTemplate(manifest.version, this.template);
 
-            if (this.hasStrategies(StrategyType.ForceVersion) || Version.compare(targetVersion, Version.parse(manifest.version)) == 1)
+            if (this.hasStrategies(StrategyType.ForceVersion) || semver.gt(targetVersion, manifest.version))
             {
-                if (!targetVersion.prerelease || !this.hasStrategies(StrategyType.OnlyStable))
+                if (!semver.prerelease(targetVersion) || !this.hasStrategies(StrategyType.OnlyStable))
                 {
                     const actual = manifest.version;
 
-                    manifest.version = targetVersion.toString();
+                    manifest.version = targetVersion;
 
                     // c8 ignore if
                     if (!this.silent)
@@ -144,7 +137,7 @@ export default class Depsync
                 }
             }
         }
-        else if (!(this.hasStrategies(StrategyType.OnlyStable) && Version.parse(manifest.version).prerelease))
+        else if (!(this.hasStrategies(StrategyType.OnlyStable) && semver.prerelease(manifest.version)))
         {
             await this.updateDependents(manifest, "dependencies");
             await this.updateDependents(manifest, "devDependencies");
@@ -154,20 +147,9 @@ export default class Depsync
 
     private update(manifest: Manifest): void
     {
-        const version = Version.parse(manifest.version);
-
-        // if (version.prerelease)
-        // {
-        //     version.prerelease.version++;
-        // }
-        // else
-        // {
-        version.patch++;
-        // }
-
         const actual = manifest.version;
 
-        manifest.version = version.toString();
+        manifest.version = semver.inc(manifest.version, "patch") ?? manifest.version;
 
         // c8 ignore if
         if (!this.silent)

@@ -1,11 +1,10 @@
-import { readFile, writeFile } from "fs/promises";
-import path                    from "path";
-import { Version }             from "@surface/core";
-import { isDirectory }         from "@surface/io";
-import Logger, { LogLevel }    from "@surface/logger";
-import pacote                  from "pacote";
-import type { Manifest }       from "pacote";
-import BumpType                from "./enums/bump-types.js";
+import { readFile, writeFile }      from "fs/promises";
+import path                         from "path";
+import { isDirectory }              from "@surface/io";
+import Logger, { LogLevel }         from "@surface/logger";
+import pacote                       from "pacote";
+import type { Manifest }            from "pacote";
+import semver, { type ReleaseType } from "semver";
 
 enum Status
 // eslint-disable-next-line @typescript-eslint/indent
@@ -56,7 +55,7 @@ export default class Publisher
 
         if (latest)
         {
-            if (Version.compare(Version.parse(manifest.version), Version.parse(latest.version)) == 1)
+            if (semver.gt(manifest.version, latest.version))
             {
                 return Status.Updated;
             }
@@ -67,8 +66,7 @@ export default class Publisher
         return Status.New;
     }
 
-    private async update(manifest: Manifest, type: BumpType, customVersion?: string): Promise<void>;
-    private async update(manifest: Manifest, type: BumpType, customVersion?: string): Promise<void>
+    private async update(manifest: Manifest, releaseType: ReleaseType, identifier?: string): Promise<void>
     {
         if (!this.updated.has(manifest.name))
         {
@@ -76,43 +74,27 @@ export default class Publisher
             {
                 const actual = manifest.version;
 
-                if (customVersion && type == BumpType.Custom)
+                const updated = semver.inc(manifest.version, releaseType, true, identifier);
+
+                if (!updated)
                 {
-                    manifest.version = Version.parse(customVersion).toString();
+                    this.looger.error(`Packaged ${manifest.name} has invalid version ${manifest.version}`);
                 }
                 else
                 {
-                    const version = Version.parse(manifest.version);
+                    manifest.version = updated;
 
-                    if (type == BumpType.Major)
-                    {
-                        version.major++;
-                        version.minor = 0;
-                        version.patch = 0;
-                    }
-                    else if (type == BumpType.Minor)
-                    {
-                        version.minor++;
-                        version.patch = 0;
-                    }
-                    else if (type == BumpType.Patch)
-                    {
-                        version.patch++;
-                    }
-
-                    manifest.version = version.toString();
+                    this.looger.trace(`${manifest.name} - ${actual} >> ${manifest.version}`);
                 }
-
-                this.looger.trace(`${manifest.name} - ${actual} >> ${manifest.version}`);
             }
 
             this.updated.add(manifest.name);
 
-            await this.updateDependents(manifest, type);
+            await this.updateDependents(manifest, releaseType);
         }
     }
 
-    private async updateDependents(manifest: Manifest, type: BumpType, dependencyType?: "dependencies" | "devDependencies" | "peerDependencies"): Promise<void>
+    private async updateDependents(manifest: Manifest, releaseType: ReleaseType, dependencyType?: "dependencies" | "devDependencies" | "peerDependencies"): Promise<void>
     {
         if (dependencyType)
         {
@@ -128,18 +110,18 @@ export default class Publisher
 
                 this.looger.info(`${manifest.name} ${dependencyType} in ${dependent.name} - ${version} >> ${manifest.version}`);
 
-                await this.update(dependent, type);
+                await this.update(dependent, releaseType);
             }
         }
         else
         {
-            await this.updateDependents(manifest, type, "dependencies");
-            await this.updateDependents(manifest, type, "devDependencies");
-            await this.updateDependents(manifest, type, "peerDependencies");
+            await this.updateDependents(manifest, releaseType, "dependencies");
+            await this.updateDependents(manifest, releaseType, "devDependencies");
+            await this.updateDependents(manifest, releaseType, "peerDependencies");
         }
     }
 
-    public async bump(type: BumpType): Promise<void>
+    public async bump(releaseType: ReleaseType): Promise<void>
     {
         for (const filepath of this.options.packages)
         {
@@ -157,7 +139,7 @@ export default class Publisher
         {
             for (const entry of this.lookup.values())
             {
-                await this.update(entry.manifest, type);
+                await this.update(entry.manifest, releaseType);
                 await writeFile(entry.path, JSON.stringify(entry.manifest, null, 4));
             }
 

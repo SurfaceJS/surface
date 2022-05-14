@@ -1,6 +1,6 @@
-import { Version }                 from "@surface/core";
 import { shouldPass, suite, test } from "@surface/test-suite";
 import chai                        from "chai";
+import semver                      from "semver";
 import FieldInfo                   from "../internal/field-info.js";
 import MethodInfo                  from "../internal/method-info.js";
 import PropertyInfo                from "../internal/property-info.js";
@@ -373,7 +373,7 @@ export default class TypeSpec
 
         const actual = Array.from(Type.of(Mock).getStaticFields()).filter(x => !x.declaringType.equals(Object));
 
-        if (Version.compare(Version.parse(process.version), new Version(16, 0, 0)) == 1)
+        if (semver.gte(process.version, "16.0.0"))
         {
             const expected =
             [
@@ -531,7 +531,7 @@ export default class TypeSpec
 
         const actual = Array.from(Type.of(Mock).getStaticMembers()).filter(x => !x.declaringType.equals(Object));
 
-        if (Version.compare(Version.parse(process.version), new Version(16, 0, 0)) == 1)
+        if (semver.gte(process.version, "16.0.0"))
         {
             const expected =
             [

@@ -1,6 +1,6 @@
 import path                              from "path";
 import type { Manifest, ManifestResult } from "pacote";
-import BumpType                          from "../internal/enums/bump-types.js";
+import type { ReleaseType }              from "semver";
 import type { Options }                  from "../internal/publisher.js";
 
 const CWD = process.cwd();
@@ -17,7 +17,7 @@ export type Scenario =
     directory: VirtualDirectory,
     registry:  Record<string, ManifestResult>,
     expected:  Record<string, Partial<Manifest>>,
-    bumpType:  BumpType,
+    bumpType:  ReleaseType,
     skip:      boolean,
 };
 
@@ -29,7 +29,7 @@ export const validScenarios: Scenario[] =
         registry:  { },
         directory: { },
         expected:  { },
-        bumpType:  BumpType.Major,
+        bumpType:  "major",
         skip,
     },
     {
@@ -44,7 +44,7 @@ export const validScenarios: Scenario[] =
                 path.join(CWD, "package-d"),
             ],
         },
-        bumpType:  BumpType.Minor,
+        bumpType:  "minor",
         registry:
         {
             "package-a@latest": { version: "0.0.1" } as ManifestResult,
