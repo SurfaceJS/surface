@@ -1,4 +1,5 @@
-import { readFile, writeFile }                                                   from "fs/promises";
+import { existsSync }                                                            from "fs";
+import { readFile, readdir, writeFile }                                          from "fs/promises";
 import path                                                                      from "path";
 import type { Delegate }                                                         from "@surface/core";
 import { isDirectory }                                                           from "@surface/io";
@@ -13,10 +14,12 @@ import { type Scenario, type VirtualDirectory, validScenarios }                 
 
 chai.use(chaiAsPromised);
 
+const existsSyncMock   = Mock.of(existsSync);
 const isDirectoryMock = Mock.of(isDirectory);
 const loggerMock      = Mock.instance<Logger>();
 const LoggerMock      = Mock.of(Logger);
 const pacoteMock      = Mock.of(pacote);
+const readdirMock     = Mock.of(readdir);
 const readFileMock    = Mock.of(readFile);
 const writeFileMock   = Mock.of(writeFile);
 
@@ -39,6 +42,7 @@ export default class SuiteSpec
         this.setDirectory(parent);
 
         isDirectoryMock.call(filepath).resolve(false);
+        existsSyncMock.call(filepath).returns(true);
 
         const buffer = Buffer.from(content);
 
@@ -71,9 +75,10 @@ export default class SuiteSpec
 
         for (const [key, entry] of Object.entries(directory))
         {
-            const filepath = path.isAbsolute(key)
-                ? key
-                : (entries.push(key), path.join(parent, key));
+            const filepath = path.isAbsolute(key) ? key : path.join(parent, key);
+            const dir      = path.basename(path.dirname(key));
+
+            entries.push(dir == "." ? key : dir);
 
             if (typeof entry == "string")
             {
@@ -84,27 +89,34 @@ export default class SuiteSpec
                 this.setupVirtualDirectory(entry, filepath);
             }
         }
+
+        readdirMock.call(parent).resolve(entries);
     }
 
     @beforeEach
     public beforeEach(): void
     {
         LoggerMock.new(It.any()).returns(loggerMock.proxy);
+        LoggerMock.lock();
 
-        readFileMock.lock();
+        existsSyncMock.lock();
         isDirectoryMock.lock();
         pacoteMock.lock();
-        LoggerMock.lock();
+        readdirMock.lock();
+        readFileMock.lock();
         writeFileMock.lock();
     }
 
     @afterEach
     public afterEach(): void
     {
-        readFileMock.release();
+        LoggerMock.release();
+
+        existsSyncMock.release();
         isDirectoryMock.release();
         pacoteMock.release();
-        LoggerMock.release();
+        readdirMock.release();
+        readFileMock.release();
         writeFileMock.release();
     }
 

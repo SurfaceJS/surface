@@ -1,6 +1,7 @@
+import { existsSync }               from "fs";
 import { readFile, writeFile }      from "fs/promises";
 import path                         from "path";
-import { isDirectory }              from "@surface/io";
+import { enumeratePaths }           from "@surface/io";
 import Logger, { LogLevel }         from "@surface/logger";
 import pacote                       from "pacote";
 import type { Manifest }            from "pacote";
@@ -84,7 +85,7 @@ export default class Publisher
                 {
                     manifest.version = updated;
 
-                    this.looger.trace(`${manifest.name} - ${actual} >> ${manifest.version}`);
+                    this.looger.trace(`${manifest.name} version updated from ${actual} to ${manifest.version}`);
                 }
             }
 
@@ -108,7 +109,7 @@ export default class Publisher
 
                 dependent[dependencyType]![manifest.name] = `~${manifest.version}`;
 
-                this.looger.info(`${manifest.name} ${dependencyType} in ${dependent.name} - ${version} >> ${manifest.version}`);
+                this.looger.trace(`${manifest.name} in ${dependent.name} ${dependencyType} updated from ${version} to ${manifest.version}`);
 
                 await this.update(dependent, releaseType);
             }
@@ -123,17 +124,21 @@ export default class Publisher
 
     public async bump(releaseType: ReleaseType): Promise<void>
     {
-        for (const filepath of this.options.packages)
+        for await (const filepath of enumeratePaths(this.options.packages))
         {
-            const filename = await isDirectory(filepath) ? path.join(filepath, "package.json") : filepath;
-            const manifest = JSON.parse((await readFile(filename)).toString()) as object as Manifest;
+            const filename = filepath.endsWith("package.json") ? filepath : path.join(filepath, "package.json");
 
-            this.lookup.set(manifest.name, { manifest, path: filename });
+            if (existsSync(filename))
+            {
+                const manifest = JSON.parse((await readFile(filename)).toString()) as object as Manifest;
+
+                this.lookup.set(manifest.name, { manifest, path: filename });
+            }
         }
 
         if (this.lookup.size == 0)
         {
-            this.looger.info("");
+            this.looger.info("No packages found");
         }
         else
         {

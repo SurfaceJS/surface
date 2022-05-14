@@ -23,7 +23,7 @@ export default class Logger
 
     private log(message: string, level: keyof typeof LogLevel): void
     {
-        console.log(`${chalk.gray(`[${level} ${new Date().toISOString()}]`)} ${COLORS[level](message)}`);
+        console.log(`${COLORS[level](level)}: ${message}`);
     }
 
     public fatal(message: string): void
