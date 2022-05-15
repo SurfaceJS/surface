@@ -2,10 +2,10 @@
 
 type CalleableOverloads<T> = T extends
 {
-    (...args: infer A1):  infer R1,
-    (...args: infer A2):  infer R2,
-    (...args: infer A3):  infer R3,
-    (...args: infer A4):  infer R4,
+    (...args: infer A1): infer R1,
+    (...args: infer A2): infer R2,
+    (...args: infer A3): infer R3,
+    (...args: infer A4): infer R4,
 }
     ? [A1, (...args: A1) => R1] | [A2, (...args: A2) => R2] | [A3, (...args: A3) => R3] | [A4, (...args: A4) => R4]
     : T extends
@@ -27,10 +27,10 @@ type CalleableOverloads<T> = T extends
 
 type NewableOverloads<T> = T extends
 {
-    new (...args: infer A1):  infer R1,
-    new (...args: infer A2):  infer R2,
-    new (...args: infer A3):  infer R3,
-    new (...args: infer A4):  infer R4,
+    new (...args: infer A1): infer R1,
+    new (...args: infer A2): infer R2,
+    new (...args: infer A3): infer R3,
+    new (...args: infer A4): infer R4,
 }
     ? [A1, new (...args: A1) => R1] | [A2, new (...args: A2) => R2] | [A3, new (...args: A3) => R3] | [A4, new (...args: A4) => R4]
     : T extends

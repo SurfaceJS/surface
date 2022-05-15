@@ -3,17 +3,19 @@ import { readFile, writeFile }      from "fs/promises";
 import path                         from "path";
 import { enumeratePaths }           from "@surface/io";
 import Logger, { LogLevel }         from "@surface/logger";
-import pacote                       from "pacote";
+// import pacote                       from "pacote";
 import type { Manifest }            from "pacote";
 import semver, { type ReleaseType } from "semver";
 
-enum Status
-// eslint-disable-next-line @typescript-eslint/indent
-{
-    New,
-    Updated,
-    InRegistry
-}
+// enum Status
+// // eslint-disable-next-line @typescript-eslint/indent
+// {
+//     New,
+//     Updated,
+//     InRegistry
+// }
+
+const GLOB_PRERELEASE = /^\*-(.*)/;
 
 export type Options =
 {
@@ -38,64 +40,77 @@ export default class Publisher
         this.looger = new Logger(this.options.logLevel);
     }
 
-    private async get(uri: string): Promise<Manifest | null>
-    {
-        try
-        {
-            return await pacote.manifest(uri, { alwaysAuth: true });
-        }
-        catch (error)
-        {
-            return null;
-        }
-    }
+    // private async get(uri: string): Promise<Manifest | null>
+    // {
+    //     try
+    //     {
+    //         return await pacote.manifest(uri, { alwaysAuth: true });
+    //     }
+    //     catch (error)
+    //     {
+    //         return null;
+    //     }
+    // }
 
-    private async getStatus(manifest: Manifest): Promise<Status>
-    {
-        const latest = await this.get(`${manifest.name}@latest`);
+    // private async getStatus(manifest: Manifest): Promise<Status>
+    // {
+    //     const latest = await this.get(`${manifest.name}@latest`);
 
-        if (latest)
-        {
-            if (semver.gt(manifest.version, latest.version))
-            {
-                return Status.Updated;
-            }
+    //     if (latest)
+    //     {
+    //         if (semver.gt(manifest.version, latest.version))
+    //         {
+    //             return Status.Updated;
+    //         }
 
-            return Status.InRegistry;
-        }
+    //         return Status.InRegistry;
+    //     }
 
-        return Status.New;
-    }
+    //     return Status.New;
+    // }
 
-    private async update(manifest: Manifest, releaseType: ReleaseType, identifier?: string): Promise<void>
+    private async update(manifest: Manifest, releaseType: ReleaseType | "custom", version: string | undefined, identifier: string | undefined): Promise<void>
     {
         if (!this.updated.has(manifest.name))
         {
-            if (await this.getStatus(manifest) == Status.Updated)
+            const actual = manifest.version;
+
+            let updated: string | null;
+
+            if (releaseType == "custom")
             {
-                const actual = manifest.version;
-
-                const updated = semver.inc(manifest.version, releaseType, true, identifier);
-
-                if (!updated)
+                if (GLOB_PRERELEASE.test(version!))
                 {
-                    this.looger.error(`Packaged ${manifest.name} has invalid version ${manifest.version}`);
+                    updated = `${manifest.version.split("-")[0]}-${version!.split("-")[1]}`;
                 }
                 else
                 {
-                    manifest.version = updated;
-
-                    this.looger.trace(`${manifest.name} version updated from ${actual} to ${manifest.version}`);
+                    updated = version!;
                 }
+            }
+            else
+            {
+                updated = semver.inc(manifest.version, releaseType, { loose: true }, identifier);
+            }
+
+            if (!updated)
+            {
+                this.looger.error(`Packaged ${manifest.name} has invalid version ${manifest.version}`);
+            }
+            else
+            {
+                manifest.version = updated;
+
+                this.looger.trace(`${manifest.name} version updated from ${actual} to ${manifest.version}`);
             }
 
             this.updated.add(manifest.name);
 
-            await this.updateDependents(manifest, releaseType);
+            await this.updateDependents(manifest, releaseType, version, identifier);
         }
     }
 
-    private async updateDependents(manifest: Manifest, releaseType: ReleaseType, dependencyType?: "dependencies" | "devDependencies" | "peerDependencies"): Promise<void>
+    private async updateDependents(manifest: Manifest, releaseType: ReleaseType | "custom", version: string | undefined, identifier: string | undefined, dependencyType?: "dependencies" | "devDependencies" | "peerDependencies"): Promise<void>
     {
         if (dependencyType)
         {
@@ -105,25 +120,45 @@ export default class Publisher
 
             for (const dependent of dependentPackages)
             {
-                const version = dependent[dependencyType]![manifest.name];
+                const dependencyVersion = dependent[dependencyType]![manifest.name];
 
                 dependent[dependencyType]![manifest.name] = `~${manifest.version}`;
 
-                this.looger.trace(`${manifest.name} in ${dependent.name} ${dependencyType} updated from ${version} to ${manifest.version}`);
+                this.looger.trace(`${manifest.name} in ${dependent.name} ${dependencyType} updated from ${dependencyVersion} to ${manifest.version}`);
 
-                await this.update(dependent, releaseType);
+                await this.update(dependent, releaseType, version, identifier);
             }
         }
         else
         {
-            await this.updateDependents(manifest, releaseType, "dependencies");
-            await this.updateDependents(manifest, releaseType, "devDependencies");
-            await this.updateDependents(manifest, releaseType, "peerDependencies");
+            await this.updateDependents(manifest, releaseType, version, identifier, "dependencies");
+            await this.updateDependents(manifest, releaseType, version, identifier, "devDependencies");
+            await this.updateDependents(manifest, releaseType, version, identifier, "peerDependencies");
         }
     }
 
-    public async bump(releaseType: ReleaseType): Promise<void>
+    private isPrerelease(releaseType: ReleaseType | "custom"): releaseType is Exclude<ReleaseType, "major" | "minor" | "patch">
     {
+        return releaseType.startsWith("pre");
+    }
+
+    public async bump(releaseType: ReleaseType): Promise<void>;
+    public async bump(releaseType: "custom", version: string): Promise<void>;
+    public async bump(releaseType: Exclude<ReleaseType, "major" | "minor" | "patch">, identifier: string): Promise<void>;
+    public async bump(releaseType: ReleaseType | "custom", identifierOrVersion?: string): Promise<void>
+    {
+        let version:    string | undefined;
+        let identifier: string | undefined;
+
+        if (releaseType == "custom")
+        {
+            version = identifierOrVersion;
+        }
+        else if (this.isPrerelease(releaseType))
+        {
+            identifier = identifierOrVersion;
+        }
+
         for await (const filepath of enumeratePaths(this.options.packages))
         {
             const filename = filepath.endsWith("package.json") ? filepath : path.join(filepath, "package.json");
@@ -144,7 +179,7 @@ export default class Publisher
         {
             for (const entry of this.lookup.values())
             {
-                await this.update(entry.manifest, releaseType);
+                await this.update(entry.manifest, releaseType, version, identifier);
                 await writeFile(entry.path, JSON.stringify(entry.manifest, null, 4));
             }
 

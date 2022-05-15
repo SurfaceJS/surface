@@ -1,20 +1,20 @@
 import { existsSync }                                                            from "fs";
 import { readFile, readdir, writeFile }                                          from "fs/promises";
 import path                                                                      from "path";
-import type { Delegate }                                                         from "@surface/core";
 import { isDirectory }                                                           from "@surface/io";
 import Logger                                                                    from "@surface/logger";
 import Mock, { It }                                                              from "@surface/mock";
 import { afterEach, batchTest, beforeEach, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                                                      from "chai";
 import chaiAsPromised                                                            from "chai-as-promised";
+import type { Manifest }                                                         from "pacote";
 import pacote, { type ManifestResult }                                           from "pacote";
 import Publisher                                                                 from "../internal/publisher.js";
 import { type Scenario, type VirtualDirectory, validScenarios }                  from "./publisher.expectations.js";
 
 chai.use(chaiAsPromised);
 
-const existsSyncMock   = Mock.of(existsSync);
+const existsSyncMock  = Mock.of(existsSync);
 const isDirectoryMock = Mock.of(isDirectory);
 const loggerMock      = Mock.instance<Logger>();
 const LoggerMock      = Mock.of(Logger);
@@ -127,22 +127,24 @@ export default class SuiteSpec
         this.setupVirtualRegistry(scenario.registry);
         this.setupVirtualDirectory(scenario.directory);
 
-        const assertions: Delegate[] = [];
+        const actual:   Manifest[] = [];
+        const expected: Manifest[] = [];
 
         writeFileMock.call(It.any(), It.any())
             .callback
             (
                 (_, data) =>
                 {
-                    const manifest = JSON.parse(data as string);
+                    const manifest = JSON.parse(data as string) as Manifest;
 
-                    assertions.push(() => chai.assert.deepEqual(manifest, scenario.expected[manifest.name]));
+                    actual.push(manifest);
+                    expected.push(scenario.expected[manifest.name] as Manifest);
                 },
             );
 
-        await chai.assert.isFulfilled(new Publisher(scenario.options).bump(scenario.bumpType));
+        await chai.assert.isFulfilled(new Publisher(scenario.options).bump(...scenario.bumpArgs as Parameters<Publisher["bump"]>));
 
-        assertions.forEach(assert => assert());
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
