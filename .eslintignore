@@ -1,3 +1,4 @@
 *.d.ts
+**/.*js
 !**/interfaces/**/*.d.ts
 !**/@?types/**/*.d.ts

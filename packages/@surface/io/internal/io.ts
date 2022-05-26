@@ -2,11 +2,9 @@ import { existsSync, lstatSync, mkdirSync, readdirSync, readlinkSync, rmdirSync,
 import { lstat, mkdir, readdir, readlink, rmdir, stat, unlink }                                         from "fs/promises";
 import { dirname, isAbsolute, join, resolve }                                                           from "path";
 import type { Callable }                                                                                from "@surface/core";
-import parsePatternPath                                                                                 from "./parse-pattern-path.js";
+import PathMatcher                                                                                      from "./path-matcher.js";
 
 type ErrorCode = Error & { code: string };
-
-const GLOB_STAR = /^\*\*(\/|\\)?/;
 
 function errorHandler(error: ErrorCode): null
 {
@@ -32,7 +30,7 @@ function handler<T extends Callable>(action: Callable): ReturnType<T> | null
     }
 }
 
-async function *internalEnumeratePaths(include: RegExp, exclude: RegExp | null, context: string): AsyncGenerator<string>
+async function *internalEnumeratePaths(matcher: PathMatcher, context: string): AsyncGenerator<string>
 {
     for (const entry of await readdir(context))
     {
@@ -40,19 +38,19 @@ async function *internalEnumeratePaths(include: RegExp, exclude: RegExp | null, 
 
         if (await isDirectory(path))
         {
-            for await (const file of internalEnumeratePaths(include, exclude, path))
+            for await (const file of internalEnumeratePaths(matcher, path))
             {
                 yield file;
             }
         }
-        else if (!exclude?.test(path) && include.test(path))
+        else if (matcher.test(path))
         {
             yield path;
         }
     }
 }
 
-function *internalEnumeratePathsSync(include: RegExp, exclude: RegExp | null, context: string): Generator<string>
+function *internalEnumeratePathsSync(matcher: PathMatcher, context: string): Generator<string>
 {
     for (const entry of readdirSync(context))
     {
@@ -60,54 +58,16 @@ function *internalEnumeratePathsSync(include: RegExp, exclude: RegExp | null, co
 
         if (isDirectorySync(path))
         {
-            for (const file of internalEnumeratePathsSync(include, exclude, path))
+            for (const file of internalEnumeratePathsSync(matcher, path))
             {
                 yield file;
             }
         }
-        else if (!exclude?.test(path) && include.test(path))
+        else if (matcher.test(path))
         {
             yield path;
         }
     }
-}
-
-function breakPattern(patterns: string | RegExp | (string | RegExp)[], cwd: string): [include: RegExp, exclude: RegExp | null]
-{
-    const $include: RegExp[] = [];
-    const $exclude: RegExp[] = [];
-
-    for (const pattern of Array.isArray(patterns) ? patterns : [patterns])
-    {
-        if (typeof pattern == "string")
-        {
-            let resolved = pattern;
-
-            let excluded = false;
-
-            if (resolved.startsWith("!"))
-            {
-                resolved = resolved.replace(/^\!/, "");
-
-                excluded = true;
-            }
-
-            resolved = GLOB_STAR.test(resolved) ? resolved : resolve(cwd, resolved);
-
-            const regex = parsePatternPath(resolved);
-
-            excluded ? $exclude.push(regex) : $include.push(regex);
-        }
-        else
-        {
-            $include.push(pattern);
-        }
-    }
-
-    return [
-        new RegExp($include.map(x => `(${x.source})`).join("|")),
-        $exclude.length > 0 ? new RegExp($exclude.map(x => `(${x.source})`).join("|")) : null,
-    ];
 }
 
 /**
@@ -195,22 +155,13 @@ export function createPathSync(path: string, mode?: number): void
 }
 
 /**
- * Creates a regex that test the provided patterns.
- * @param patterns Patterns to test.
- */
-export function createPathMatcher(...patterns: string[]): RegExp
-{
-    return new RegExp(patterns.map(x => `(?:${parsePatternPath(x).source})`).join("|"));
-}
-
-/**
  * Asynchronous enumerate paths using given patterns.
  * @param patterns Patterns to match. Strings prefixed with "!" will be negated.
  * @param cwd      Working dir.
  */
 export function enumeratePaths(patterns: string | RegExp | (string | RegExp)[], cwd: string = process.cwd()): AsyncGenerator<string>
 {
-    return internalEnumeratePaths(...breakPattern(patterns, cwd), cwd);
+    return internalEnumeratePaths(new PathMatcher(patterns, cwd), cwd);
 }
 
 /**
@@ -220,7 +171,7 @@ export function enumeratePaths(patterns: string | RegExp | (string | RegExp)[], 
  */
 export function enumeratePathsSync(patterns: string | RegExp | (string | RegExp)[], cwd: string = process.cwd()): Generator<string>
 {
-    return internalEnumeratePathsSync(...breakPattern(patterns, cwd), cwd);
+    return internalEnumeratePathsSync(new PathMatcher(patterns, cwd), cwd);
 }
 
 /**
@@ -354,19 +305,6 @@ export function lookupSync(files: string[], context: string = process.cwd()): st
     }
 
     return null;
-}
-
-/**
- * Returns true if the path matches one of the provided patterns.
- * @param path     Path to test.
- * @param patterns Patterns to which the path must match.
- * @param cwd      Working dir.
- */
-export function matchesPath(path: string, patterns: [string, ...string[]], cwd: string = process.cwd()): boolean
-{
-    const [include, exclude] = breakPattern(patterns, cwd);
-
-    return !exclude?.test(path) && include.test(path);
 }
 
 /**

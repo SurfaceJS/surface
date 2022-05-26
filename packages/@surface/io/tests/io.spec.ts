@@ -38,7 +38,6 @@ import
 {
     bottomUp,
     createPath,
-    createPathMatcher,
     createPathSync,
     isDirectory,
     isDirectorySync,
@@ -48,7 +47,6 @@ import
     listPathsSync,
     lookup,
     lookupSync,
-    matchesPath,
     removePath,
     removePathSync,
 } from "../internal/io.js";
@@ -131,15 +129,6 @@ export default class IoSpec
 
         chai.assert.equal(bottomUp(PATH_TO_LOOKUP, "empty.txt"), null);
         chai.assert.equal(bottomUp(PATH_TO_LOOKUP, "file.txt"), expected);
-    }
-
-    @test @shouldPass
-    public async createPathMatcher(): Promise<void>
-    {
-        const actual   = createPathMatcher("foo", "bar/baz");
-        const expected = /(?:^foo$)|(?:^bar(?:\/|\\)baz$)/;
-
-        chai.assert.equal(actual.source, expected.source);
     }
 
     @test @shouldPass
@@ -406,12 +395,6 @@ export default class IoSpec
 
         chai.assert.equal(lookupSync(relativePaths), expected);
         chai.assert.equal(lookupSync(absoltePaths), expected);
-    }
-
-    @test @shouldPass
-    public matchesPath(): void
-    {
-        chai.assert.isTrue(matchesPath(PATH, ["**", "!*"]));
     }
 
     @test @shouldPass

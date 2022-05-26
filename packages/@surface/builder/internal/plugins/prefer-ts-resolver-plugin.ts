@@ -1,20 +1,18 @@
-import fs                    from "fs";
-import path                  from "path";
-import { createPathMatcher } from "@surface/io";
-import type webpack          from "webpack";
+import fs              from "fs";
+import path            from "path";
+import { PathMatcher } from "@surface/io";
+import type webpack    from "webpack";
 
 type ResolverPluginInstance = Exclude<Exclude<webpack.ResolveOptions["plugins"], undefined>[number], "...">;
 type Resolver               = Parameters<ResolverPluginInstance["apply"]>[0];
 
 export default class PreferTsResolverPlugin implements ResolverPluginInstance
 {
-    private readonly patterns: RegExp | null;
+    private readonly matcher: PathMatcher | null;
 
     public constructor(patterns?: string[])
     {
-        const cwd = process.cwd();
-
-        this.patterns = patterns ? createPathMatcher(...patterns.map(x => path.resolve(cwd, x))) : null;
+        this.matcher = patterns ? new PathMatcher(patterns, process.cwd()) : null;
     }
 
     public apply(resolver: Resolver): void
@@ -28,7 +26,7 @@ export default class PreferTsResolverPlugin implements ResolverPluginInstance
                 {
                     const target = path.parse(request.path);
 
-                    if (target.ext.toLowerCase() == ".js" && (this.patterns?.test(request.path) ?? true))
+                    if (target.ext.toLowerCase() == ".js" && (this.matcher?.test(request.path) ?? true))
                     {
                         const simbling = path.join(target.dir, `${target.name}.ts`);
 

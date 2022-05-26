@@ -1,3 +1,5 @@
+const isSeparator = (value: string): boolean => value == "/" || value == "\\";
+
 export default function parsePatternPath(pattern: string): RegExp
 {
     let expression = "";
@@ -30,13 +32,22 @@ export default function parsePatternPath(pattern: string): RegExp
                     const next = pattern[index + 1];
 
                     const isGlobstar = starCount > 1
-                        && (previous == "/" || previous == "\\" || !previous)
-                        && (next == "/" || next == "\\" || !next);
+                        && (!previous || isSeparator(previous))
+                        && (!next || isSeparator(next));
 
                     if (isGlobstar)
                     {
-                        expression += ".*(?:\\/|\\\\)?";
                         index++;
+
+                        if (isSeparator(previous) && index == pattern.length)
+                        {
+                            expression += "?.*";
+                        }
+                        else
+                        {
+                            expression += ".*(?:\\/|\\\\)?";
+                        }
+
                     }
 
                     else

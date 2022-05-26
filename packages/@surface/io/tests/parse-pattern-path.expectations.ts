@@ -35,7 +35,7 @@ export const validScenarios: Scenario[] =
     {
         matches:   ["bar/foo"],
         pattern:   "bar/**",
-        regex:     /^bar(?:\/|\\).*(?:\/|\\)?$/,
+        regex:     /^bar(?:\/|\\)?.*$/,
         unmatches: ["foo/bar"],
     },
     {
@@ -53,14 +53,14 @@ export const validScenarios: Scenario[] =
     {
         matches:   ["bar/foo/foo", "/bar/foo/foo", "foo/bar/foo", "foo/foo/bar/"],
         pattern:   "**/bar/**",
-        regex:     /^.*(?:\/|\\)?bar(?:\/|\\).*(?:\/|\\)?$/,
-        unmatches: ["bar", "foo/bar"],
+        regex:     /^.*(?:\/|\\)?bar(?:\/|\\)?.*$/,
+        unmatches: [],
     },
     {
         matches:   ["bar\\foo\\foo", "\\bar\\foo\\foo", "foo\\bar\\foo", "foo\\foo\\bar\\"],
         pattern:   "**\\bar\\**",
-        regex:     /^.*(?:\/|\\)?bar(?:\/|\\).*(?:\/|\\)?$/,
-        unmatches: ["foo/foo/bar"],
+        regex:     /^.*(?:\/|\\)?bar(?:\/|\\)?.*$/,
+        unmatches: [],
     },
     {
         matches:   ["file.ext", "/file.ext", "foo/file.ext"],
