@@ -8,7 +8,7 @@ export default function listener(...propertiesOrPaths: (string | string[])[]): M
 {
     return (target, propertyKey) =>
     {
-        const paths = propertiesOrPaths.map(x => Array.isArray(x) ? x : [x]) as string[][];
+        const paths = propertiesOrPaths.map(x => Array.isArray(x) ? x : [x]) as [string, ...string[]][];
 
         const finisher = (instance: object): void =>
         {

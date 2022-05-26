@@ -10,6 +10,6 @@ export default class RestNode implements INode
 
     public toString(): string
     {
-        return NodeType[NodeType.Rest];
+        return NodeType[NodeType.Rest]!;
     }
 }

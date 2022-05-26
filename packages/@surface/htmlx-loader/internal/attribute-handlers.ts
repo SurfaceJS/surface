@@ -160,7 +160,7 @@ export function mapHandlers(entries: Handler[]): AttributeHandlers
     {
         const handler = handlers[entry.tag] ?? (handlers[entry.tag] = { });
 
-        handler[entry.attribute] = { filter: entry.filter, resolve: entry.resolve ?? resolvers[entry.type] };
+        handler[entry.attribute] = { filter: entry.filter, resolve: entry.resolve ?? resolvers[entry.type]! };
     }
 
     return handlers;

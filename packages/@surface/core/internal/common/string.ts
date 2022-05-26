@@ -34,7 +34,7 @@ export function captureAll(source: string, start: RegExp, end: RegExp): [string,
     {
         if (!captures[0] && !captures[1])
         {
-            const tail       = result[result.length - 1];
+            const tail       = result[result.length - 1]!;
             const endCapture = tail[2];
 
             tail[2] = `${endCapture}${captures[2]}`;
@@ -46,13 +46,13 @@ export function captureAll(source: string, start: RegExp, end: RegExp): [string,
 
         const endMatch = end.exec(content);
 
-        const endCapture = content.substring(0, endMatch?.[0].length ?? 0);
+        const endCapture = content.substring(0, endMatch?.[0]!.length ?? 0);
 
-        content = content.substring(endMatch?.[0].length ?? 0, content.length);
+        content = content.substring(endMatch?.[0]!.length ?? 0, content.length);
 
         end.lastIndex = 0;
 
-        result.push([captures[0], captures[1], endCapture]);
+        result.push([captures[0]!, captures[1]!, endCapture]);
     }
 
     return result;

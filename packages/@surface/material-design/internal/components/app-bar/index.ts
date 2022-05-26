@@ -19,7 +19,7 @@ declare global
 export default class AppBar extends mix(HTMLXElement, [colorable, elevatable, themeable])
 {
     @query("#root")
-    public colorable!: HTMLElement;
+    public declare colorable: HTMLElement;
 
     @computed("elevationClasses", "themeClasses")
     public get classes(): Record<string, boolean>

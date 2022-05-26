@@ -147,7 +147,7 @@ export default class ElementDecoratorSpec
                 this._property = value;
             }
 
-            public attributeChangedCallback(name: string, _: string | undefined, value: string): void
+            public override attributeChangedCallback(name: string, _: string | undefined, value: string): void
             {
                 super.attributeChangedCallback(name, _, value);
 

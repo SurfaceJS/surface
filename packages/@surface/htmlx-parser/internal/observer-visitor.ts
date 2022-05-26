@@ -33,7 +33,7 @@ export default class ObserverVisitor extends ExpressionVisitor
     private brokenPath: boolean = false;
     private stack: string[]     = [];
 
-    public static observe(expression: INode): string[][]
+    public static observe(expression: INode): [string, ...string[]][]
     {
         const visitor = new ObserverVisitor();
 
@@ -41,7 +41,7 @@ export default class ObserverVisitor extends ExpressionVisitor
 
         visitor.commit();
 
-        return visitor.paths;
+        return visitor.paths as [string, ...string[]][];
     }
 
     private commit(): void
@@ -66,7 +66,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         this.stack      = [];
     }
 
-    protected visitArrayPattern(expression: ArrayPattern): INode
+    protected override visitArrayPattern(expression: ArrayPattern): INode
     {
         for (const element of expression.elements)
         {
@@ -79,7 +79,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         return expression;
     }
 
-    protected visitArrowFunctionExpression(expression: ArrowFunctionExpression): INode
+    protected override visitArrowFunctionExpression(expression: ArrowFunctionExpression): INode
     {
         for (const paramenter of expression.parameters)
         {
@@ -92,21 +92,21 @@ export default class ObserverVisitor extends ExpressionVisitor
         return expression;
     }
 
-    protected visitAssignmentExpression(expression: AssignmentExpression): INode
+    protected override visitAssignmentExpression(expression: AssignmentExpression): INode
     {
         this.visit(expression.right);
 
         return expression;
     }
 
-    protected visitAssignmentPattern(expression: AssignmentPattern): INode
+    protected override visitAssignmentPattern(expression: AssignmentPattern): INode
     {
         this.visit(expression.right);
 
         return expression;
     }
 
-    protected visitAssignmentProperty(expression: AssignmentProperty): INode
+    protected override visitAssignmentProperty(expression: AssignmentProperty): INode
     {
         if (TypeGuard.isAssignmentPattern(expression.value))
         {
@@ -116,7 +116,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         return expression;
     }
 
-    protected visitCallExpression(expression: CallExpression): INode
+    protected override visitCallExpression(expression: CallExpression): INode
     {
         this.rollback();
 
@@ -129,7 +129,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         return expression;
     }
 
-    protected visitLogicalExpression(expression: LogicalExpression): INode
+    protected override visitLogicalExpression(expression: LogicalExpression): INode
     {
         if (expression.operator == "??")
         {
@@ -143,14 +143,14 @@ export default class ObserverVisitor extends ExpressionVisitor
         return expression;
     }
 
-    protected visitConditionalExpression(expression: ConditionalExpression): INode
+    protected override visitConditionalExpression(expression: ConditionalExpression): INode
     {
         this.visit(expression.test);
 
         return expression;
     }
 
-    protected visitIdentifier(expression: Identifier): INode
+    protected override visitIdentifier(expression: Identifier): INode
     {
         if (expression.name != "undefined")
         {
@@ -162,7 +162,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         return expression;
     }
 
-    protected visitMemberExpression(expression: MemberExpression): INode
+    protected override visitMemberExpression(expression: MemberExpression): INode
     {
         if (expression.computed && expression.property.type != NodeType.Literal)
         {
@@ -186,7 +186,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         return expression;
     }
 
-    protected visitNewExpression(expression: NewExpression): INode
+    protected override visitNewExpression(expression: NewExpression): INode
     {
         this.rollback();
 
@@ -199,7 +199,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         return expression;
     }
 
-    protected visitParenthesizedExpression(expression: ParenthesizedExpression): INode
+    protected override visitParenthesizedExpression(expression: ParenthesizedExpression): INode
     {
         this.reset();
 
@@ -208,7 +208,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         return expression;
     }
 
-    protected visitProperty(expression: Property): INode
+    protected override visitProperty(expression: Property): INode
     {
         if (expression.computed)
         {
@@ -220,7 +220,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         return expression;
     }
 
-    protected visitRestElement(expression: RestElement): INode
+    protected override visitRestElement(expression: RestElement): INode
     {
         if (!TypeGuard.isIdentifier(expression.argument))
         {
@@ -230,7 +230,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         return expression;
     }
 
-    protected visitTaggedTemplateExpression(expression: TaggedTemplateExpression): INode
+    protected override visitTaggedTemplateExpression(expression: TaggedTemplateExpression): INode
     {
         this.rollback();
 
@@ -243,7 +243,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         return expression;
     }
 
-    protected visitThisExpression(expression: ThisExpression): INode
+    protected override visitThisExpression(expression: ThisExpression): INode
     {
         this.stack.unshift("this");
 
@@ -252,7 +252,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         return expression;
     }
 
-    protected visitUpdateExpression(expression: UpdateExpression): INode
+    protected override visitUpdateExpression(expression: UpdateExpression): INode
     {
         this.rollback();
 

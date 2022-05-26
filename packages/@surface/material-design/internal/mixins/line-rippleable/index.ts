@@ -57,7 +57,7 @@ function lineRippleable<T extends Constructor<HTMLXElement & { noRipple: boolean
                     return;
                 }
 
-                const ripple = ripples[0];
+                const ripple = ripples[0]!;
 
                 const remaining = performance.now() - Number.parseInt(ripple.dataset.animationStart!);
                 const timeLeft  = Math.max(250 - remaining, 0);

@@ -123,7 +123,7 @@ const CONFIGURATION_JS: Configuration =
             index:        "template.html",
             mode:         "production",
             output:       "www",
-            preferTs:     ["srs/**/*"],
+            preferTs:     ["src/**/*"],
             publicPath:   "app",
             target:       "web",
             tsconfig:     "tsconfig.production.json",
@@ -308,7 +308,7 @@ export default class CommandsSpec
             main:     "static",
             projects:
             {
-                main:   CONFIGURATION_JSON.projects!.main,
+                main:   CONFIGURATION_JSON.projects!.main!,
                 static:
                 {
                     analyzer: { },

@@ -296,8 +296,9 @@ export function getPropertyDescriptor(target: object, key: string | symbol): Pro
     return null;
 }
 
-export function getValue<T extends object, P extends ArrayPathOf<T, P>>(target: T, ...path: P): ArrayPathOfValue<T, P>;
-export function getValue(root: object, ...path: string[]): unknown
+export function getValue<T extends object, P extends ArrayPathOf<T, P>>(target: T, ...path: [P, ...P[]]): ArrayPathOfValue<T, P>;
+export function getValue(root: object, ...path: [string, ...string[]]): unknown;
+export function getValue(root: object, ...path: [string, ...string[]]): unknown
 {
     const [key, ...keys] = path;
 
@@ -305,7 +306,7 @@ export function getValue(root: object, ...path: string[]): unknown
     {
         if (key in root)
         {
-            return getValue((root as Indexer)[key] as object, ...keys);
+            return getValue((root as Indexer)[key] as Indexer, ...(keys as [string, ...string[]]));
         }
 
         const typeName = root instanceof Function ? root.name : root.constructor.name;
@@ -388,7 +389,7 @@ export function objectFactory(keys: [string, unknown][], target: Indexer = { }):
         const [key, value] = entries;
         if (key.includes("."))
         {
-            const [name, ...rest] = key.split(".");
+            const [name, ...rest] = key.split(".") as [string, ...string[]];
             target[name] = objectFactory([[rest.join("."), value]], target[name] as Indexer);
         }
         else
@@ -475,14 +476,14 @@ export function proxyFrom(...instances: Indexer[]): Indexer
             }
             else
             {
-                instances[0][key as string] = value;
+                instances[0]![key as string] = value;
             }
 
             return true;
         },
     };
 
-    return new Proxy(instances[0], handler);
+    return new Proxy(instances[0]!, handler);
 }
 
 export function resolveError(error: unknown): Error
@@ -491,13 +492,13 @@ export function resolveError(error: unknown): Error
 }
 
 export function setValue<T extends object, P extends ArrayPathOf<T, P>>(value: ArrayPathOfValue<T, P>, root: T, ...path: P): void;
-export function setValue(value: unknown, root: object, ...path: string[]): void
+export function setValue(value: unknown, root: object, ...path: [string, ...string[]]): void
 {
-    const key = path[path.length - 1];
+    const key = path[path.length - 1]!;
 
     if (path.length - 1 > 0)
     {
-        const property = getValue(root, ...path.slice(0, path.length - 1));
+        const property = getValue(root, ...path.slice(0, path.length - 1) as [string, ...string[]]);
 
         (property as Indexer)[key] = value;
     }

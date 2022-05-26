@@ -106,7 +106,7 @@ export default class LinkedList<T> extends Enumerable<Link<T>>
         }
     }
 
-    public count(predicate?: Delegate<[Link<T>], boolean>): number
+    public override count(predicate?: Delegate<[Link<T>], boolean>): number
     {
         if (predicate)
         {

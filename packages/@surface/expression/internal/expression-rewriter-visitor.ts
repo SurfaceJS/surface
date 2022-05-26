@@ -41,112 +41,112 @@ export default abstract class ExpressionRewriterVisitor extends ExpressionVisito
         return new ArrayPattern(node.elements.map(x => x ? this.visit(x) as IPattern : x));
     }
 
-    protected visitArrowFunctionExpression(node: ArrowFunctionExpression): INode
+    protected override visitArrowFunctionExpression(node: ArrowFunctionExpression): INode
     {
         return new ArrowFunctionExpression(node.parameters.map(x => this.visit(x) as IPattern), this.visit(node.body) as IExpression);
     }
 
-    protected visitAssignmentExpression(node: AssignmentExpression): INode
+    protected override visitAssignmentExpression(node: AssignmentExpression): INode
     {
         return new AssignmentExpression(this.visit(node.left) as Identifier | MemberExpression, this.visit(node.right) as IExpression, node.operator);
     }
 
-    protected visitAssignmentPattern(node: AssignmentPattern): INode
+    protected override visitAssignmentPattern(node: AssignmentPattern): INode
     {
         return new AssignmentPattern(this.visit(node.left) as IPattern, this.visit(node.right) as IExpression);
     }
 
-    protected visitAssignmentProperty(node: AssignmentProperty): INode
+    protected override visitAssignmentProperty(node: AssignmentProperty): INode
     {
         return new AssignmentProperty(this.visit(node.key) as IExpression, this.visit(node.value) as IPattern, node.computed, node.shorthand);
     }
 
-    protected visitBinaryExpression(node: BinaryExpression): INode
+    protected override visitBinaryExpression(node: BinaryExpression): INode
     {
         return new BinaryExpression(this.visit(node.left) as IExpression, this.visit(node.right) as IExpression, node.operator);
     }
 
-    protected visitCallExpression(node: CallExpression): INode
+    protected override visitCallExpression(node: CallExpression): INode
     {
         return new CallExpression(this.visit(node.callee) as IExpression, node.arguments.map(x => this.visit(x) as IExpression));
     }
 
-    protected visitChainExpression(node: ChainExpression): INode
+    protected override visitChainExpression(node: ChainExpression): INode
     {
         return new ChainExpression(this.visit(node.expression) as IExpression);
     }
 
-    protected visitConditionalExpression(node: ConditionalExpression): INode
+    protected override visitConditionalExpression(node: ConditionalExpression): INode
     {
         return new ConditionalExpression(this.visit(node.test) as IExpression, this.visit(node.alternate) as IExpression, this.visit(node.consequent) as IExpression);
     }
 
-    protected visitLogicalExpression(node: LogicalExpression): INode
+    protected override visitLogicalExpression(node: LogicalExpression): INode
     {
         return new LogicalExpression(this.visit(node.left) as IExpression, this.visit(node.right) as IExpression, node.operator);
     }
 
-    protected visitMemberExpression(node: MemberExpression): INode
+    protected override visitMemberExpression(node: MemberExpression): INode
     {
         return new MemberExpression(this.visit(node.object) as IExpression, this.visit(node.property) as IExpression, node.computed, node.optional);
     }
 
-    protected visitNewExpression(node: NewExpression): INode
+    protected override visitNewExpression(node: NewExpression): INode
     {
         return new NewExpression(this.visit(node.callee) as IExpression, node.arguments.map(x => this.visit(x) as IExpression));
     }
 
-    protected visitObjectExpression(node: ObjectExpression): INode
+    protected override visitObjectExpression(node: ObjectExpression): INode
     {
         return new ObjectExpression(node.properties.map(x => this.visit(x) as SpreadElement | Property));
     }
 
-    protected visitObjectPattern(node: ObjectPattern): INode
+    protected override visitObjectPattern(node: ObjectPattern): INode
     {
         return new ObjectPattern(node.properties.map(x => this.visit(x) as AssignmentProperty | RestElement));
     }
 
-    protected visitParenthesizedExpression(node: ParenthesizedExpression): INode
+    protected override visitParenthesizedExpression(node: ParenthesizedExpression): INode
     {
         return new ParenthesizedExpression(this.visit(node.argument) as IExpression);
     }
 
-    protected visitProperty(node: Property): INode
+    protected override visitProperty(node: Property): INode
     {
         return new Property(this.visit(node.key) as IExpression, this.visit(node.value) as IExpression, node.computed, node.shorthand);
     }
 
-    protected visitRestElement(node: RestElement): INode
+    protected override visitRestElement(node: RestElement): INode
     {
         return new RestElement(this.visit(node.argument) as IPattern);
     }
 
-    protected visitSequenceExpression(node: SequenceExpression): INode
+    protected override visitSequenceExpression(node: SequenceExpression): INode
     {
         return new SequenceExpression(node.expressions.map(x => this.visit(x) as IExpression));
     }
 
-    protected visitSpreadExpression(node: SpreadElement): INode
+    protected override visitSpreadExpression(node: SpreadElement): INode
     {
         return new SpreadElement(this.visit(node.argument) as IExpression);
     }
 
-    protected visitTaggedTemplateExpression(node: TaggedTemplateExpression): INode
+    protected override visitTaggedTemplateExpression(node: TaggedTemplateExpression): INode
     {
         return new TaggedTemplateExpression(this.visit(node.callee) as IExpression, this.visit(node.quasi) as TemplateLiteral);
     }
 
-    protected visitTemplateLiteral(node: TemplateLiteral): INode
+    protected override visitTemplateLiteral(node: TemplateLiteral): INode
     {
         return new TemplateLiteral(node.quasis.map(x => this.visit(x) as TemplateElement), node.expressions.map(x => this.visit(x) as IExpression));
     }
 
-    protected visitUnaryExpression(node: UnaryExpression): INode
+    protected override visitUnaryExpression(node: UnaryExpression): INode
     {
         return new UnaryExpression(this.visit(node.argument) as IExpression, node.operator);
     }
 
-    protected visitUpdateExpression(node: UpdateExpression): INode
+    protected override visitUpdateExpression(node: UpdateExpression): INode
     {
         return new UpdateExpression(this.visit(node.argument) as Identifier | MemberExpression, node.operator, node.prefix);
     }

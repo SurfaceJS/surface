@@ -19,7 +19,7 @@ declare global
 export default class Footer extends mix(HTMLXElement, [colorable, elevationable, themeable])
 {
     @query("#root")
-    public colorable!: HTMLElement;
+    public declare colorable: HTMLElement;
 
     @computed("elevationClasses", "themeClasses")
     public get classes(): Record<string, boolean>

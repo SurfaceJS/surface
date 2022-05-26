@@ -178,6 +178,6 @@ function attribute(...args: [Types | AttributeOptions] |  [IHTMLXElement, string
     decorator(target, propertyKey);
 }
 
-export { AttributeOptions };
+export type { AttributeOptions };
 
 export default attribute;

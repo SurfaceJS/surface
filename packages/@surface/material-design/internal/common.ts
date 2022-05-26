@@ -22,15 +22,15 @@ function interpolate(color: string | Shades): [string, string][]
     const base:   string[][] = [];
     const accent: string[][] = [];
 
-    entries.forEach(x => x[0].startsWith("A") ? accent.push(x) : base.push(x));
+    entries.forEach(x => x[0]!.startsWith("A") ? accent.push(x) : base.push(x));
 
     if (base.length == 10 && accent.length == 4)
     {
         return [...base, ...accent] as [string, string][];
     }
 
-    const baseSwatches   = base.map(([key, value]) => ({ index: key == "50" ? 1 : Number.parseInt(key) / 100 + 1, color: hexToHsva(value) }));
-    const accentSwatches = accent.map(([key, value]) => ({ index: Number.parseInt(key.replace("A", "")) / 100, color: hexToHsva(value) }));
+    const baseSwatches   = (base as [string, string][]).map(([key, value]) => ({ index: key == "50" ? 1 : Number.parseInt(key) / 100 + 1, color: hexToHsva(value) }));
+    const accentSwatches = (accent as [string, string][]).map(([key, value]) => ({ index: Number.parseInt(key.replace("A", "")) / 100, color: hexToHsva(value) }));
 
     const baseInterpolation = baseSwatches.length == 10
         ? baseSwatches
@@ -49,7 +49,7 @@ function resolveAccentSwatch(swatch: Swatch): [string, string]
 {
     const map: Record<number, number> = { 4: 1, 6: 2, 7: 4, 8: 7 };
 
-    return [`A${(map[swatch.index] * 100).toString()}`, hsvaToHex(swatch.color)];
+    return [`A${(map[swatch.index]! * 100).toString()}`, hsvaToHex(swatch.color)];
 }
 
 function resolveSwatch(swatch: Swatch): [string, string]

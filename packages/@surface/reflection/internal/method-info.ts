@@ -27,7 +27,7 @@ export default class MethodInfo extends MemberInfo
 
             if (match)
             {
-                const args = match[1].split(",").map(x => x.trim());
+                const args = match[1]!.split(",").map(x => x.trim());
 
                 this._parameters = args.map((name, index) => new ParameterInfo(name, index, this));
             }

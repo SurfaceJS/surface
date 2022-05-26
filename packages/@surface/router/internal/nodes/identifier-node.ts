@@ -10,6 +10,6 @@ export default class IdentifierNode implements INode
 
     public toString(): string
     {
-        return NodeType[NodeType.Identifier];
+        return NodeType[NodeType.Identifier]!;
     }
 }

@@ -5,7 +5,7 @@ export default class FixtureExpressionVisitor extends ExpressionVisitor
 {
     private readonly visited: string[] = [];
 
-    public visit(expression: IExpression): IExpression
+    public override visit(expression: IExpression): IExpression
     {
         this.visited.push(expression.constructor.name);
 
@@ -14,7 +14,7 @@ export default class FixtureExpressionVisitor extends ExpressionVisitor
         return expression;
     }
 
-    public toString(): string
+    public override toString(): string
     {
         return this.visited.join(" > ");
     }

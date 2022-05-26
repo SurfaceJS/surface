@@ -16,6 +16,6 @@ export default class TransformerNode implements INode
 
     public toString(): string
     {
-        return NodeType[NodeType.Transformer];
+        return NodeType[NodeType.Transformer]!;
     }
 }

@@ -28,10 +28,10 @@ export type Size = ""
 export default class Button extends mix(HTMLXElement, [colorable, disableable, elevatable, rippleable, themeable])
 {
     @query("#root")
-    public colorable!: HTMLElement;
+    public declare colorable: HTMLElement;
 
     @query("#root")
-    public rippleable!: HTMLElement;
+    public declare rippleable: HTMLElement;
 
     @attribute(Boolean)
     public block: boolean = false;

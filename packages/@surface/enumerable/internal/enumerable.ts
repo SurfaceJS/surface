@@ -880,7 +880,7 @@ class EnumerableIterator<TSource> extends Enumerable<TSource>
             // eslint-disable-next-line @typescript-eslint/prefer-for-of
             for (let index = 0; index < this.source.length; index++)
             {
-                yield this.source[index];
+                yield this.source[index]!;
             }
         }
         else
@@ -892,7 +892,7 @@ class EnumerableIterator<TSource> extends Enumerable<TSource>
         }
     }
 
-    public count(predicate?: Delegate<[TSource], boolean>): number
+    public override count(predicate?: Delegate<[TSource], boolean>): number
     {
         if (Array.isArray(this.source))
         {
@@ -1065,7 +1065,7 @@ class OrderByIterator<TKey, TSource> extends OrderedEnumerable<TSource>
 
         for (const index of indexes)
         {
-            yield buffer[index];
+            yield buffer[index]!;
         }
     }
 }

@@ -68,7 +68,7 @@ export default class Route
 
         for (let index = 0; index < this.nodes.length; index++)
         {
-            const node  = this.nodes[index];
+            const node  = this.nodes[index]!;
             const group = match[index + 1];
 
             if (!TypeGuard.isLiteral(node))

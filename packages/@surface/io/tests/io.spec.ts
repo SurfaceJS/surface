@@ -197,7 +197,7 @@ export default class IoSpec
         const expected1: string[] = [PATH_INCLUDE_FILE_A, PATH_INCLUDE_FILE_B, PATH_EXCLUDE_FILE_A, PATH_EXCLUDE_FILE_B];
         const expected2: string[] = [PATH_INCLUDE_FILE_A, PATH_INCLUDE_FILE_B];
 
-        const actual1 = await listPaths(patterns[0]);
+        const actual1 = await listPaths(patterns[0]!);
         const actual2 = await listPaths(/.*/);
         const actual3 = await listPaths(patterns);
 
@@ -232,7 +232,7 @@ export default class IoSpec
         const expected1: string[] = [PATH_INCLUDE_FILE_A, PATH_INCLUDE_FILE_B, PATH_EXCLUDE_FILE_A, PATH_EXCLUDE_FILE_B];
         const expected2: string[] = [PATH_INCLUDE_FILE_A, PATH_INCLUDE_FILE_B];
 
-        const actual1 = listPathsSync(patterns[0]);
+        const actual1 = listPathsSync(patterns[0]!);
         const actual2 = listPathsSync(/.*/);
         const actual3 = listPathsSync(patterns);
 

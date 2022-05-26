@@ -90,8 +90,8 @@ export function buildStackTrace(stackTrace: StackTrace): string
 
 export function checkPath(scope: object, path: ObservablePath, source?: string, stackTrace?: StackTrace): void
 {
-    const target = getValue(scope, ...path.slice(0, path.length - 1)) as object;
-    const key    = path[path.length - 1];
+    const target = getValue(scope, ...path.slice(0, path.length - 1) as [string, ...string[]]) as object;
+    const key    = path[path.length - 1]!;
 
     checkProperty(target, key, source, stackTrace);
 }

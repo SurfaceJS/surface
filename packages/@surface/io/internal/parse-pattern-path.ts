@@ -1,4 +1,4 @@
-const isSeparator = (value: string): boolean => value == "/" || value == "\\";
+const isSeparator = (value: string | undefined): boolean => value == "/" || value == "\\";
 
 export default function parsePatternPath(pattern: string): RegExp
 {

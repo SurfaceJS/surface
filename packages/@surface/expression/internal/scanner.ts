@@ -125,7 +125,7 @@ export default class Scanner
     {
         for (let i = this.index + 1; i < this.length; i++)
         {
-            const char = this.source[i];
+            const char = this.source[i]!;
 
             if (char == "8" || char == "9")
             {
@@ -297,14 +297,14 @@ export default class Scanner
 
         if (!this.eof())
         {
-            if (!this.isBinary(this.source[this.index]))
+            if (!this.isBinary(this.source[this.index]!))
             {
                 this.throwUnexpectedToken();
             }
 
             while (!this.eof())
             {
-                const char = this.source[this.index];
+                const char = this.source[this.index]!;
 
                 if (this.isBinary(char))
                 {
@@ -371,7 +371,7 @@ export default class Scanner
         {
             if (!this.eof() && Character.isHexDigit(this.source.charCodeAt(this.index)))
             {
-                code = code * 16 + this.hexValue(this.source[this.index]);
+                code = code * 16 + this.hexValue(this.source[this.index]!);
 
                 this.advance();
             }
@@ -398,7 +398,7 @@ export default class Scanner
 
             while (!this.eof())
             {
-                const char = this.source[this.index];
+                const char = this.source[this.index]!;
 
                 if (Character.isHexDigit(char.charCodeAt(0)))
                 {
@@ -521,7 +521,7 @@ export default class Scanner
 
         if (this.source[this.index] != ".")
         {
-            value = this.source[this.index];
+            value = this.source[this.index]!;
 
             this.advance();
 
@@ -529,7 +529,7 @@ export default class Scanner
             {
                 if (value == "0")
                 {
-                    const char = this.source[this.index];
+                    const char = this.source[this.index]!;
 
                     if (char == "_")
                     {
@@ -703,7 +703,7 @@ export default class Scanner
 
             while (!this.eof())
             {
-                const char = this.source[this.index];
+                const char = this.source[this.index]!;
 
                 if (Character.isOctalDigit(char.charCodeAt(0)))
                 {
@@ -771,7 +771,7 @@ export default class Scanner
 
         while (!this.eof())
         {
-            const char = this.source[this.index];
+            const char = this.source[this.index]!;
 
             this.advance();
 
@@ -783,7 +783,7 @@ export default class Scanner
             }
             else if (char == "\\")
             {
-                const char = this.source[this.index];
+                const char = this.source[this.index]!;
 
                 this.advance();
 
@@ -1042,7 +1042,7 @@ export default class Scanner
                                     break;
 
                                 default:
-                                    punctuator = this.source[this.index];
+                                    punctuator = this.source[this.index]!;
 
                                     if ("<>=!+-*%&|^/".includes(punctuator))
                                     {
@@ -1089,13 +1089,13 @@ export default class Scanner
 
         while (!this.eof())
         {
-            const char = this.source[this.index];
+            const char = this.source[this.index]!;
 
             this.advance();
 
             if (char == "`")
             {
-                isTail       = true;
+                isTail     = true;
                 terminated = true;
 
                 break;
@@ -1118,7 +1118,7 @@ export default class Scanner
             }
             else if (char == "\\")
             {
-                const char = this.source[this.index];
+                const char = this.source[this.index]!;
 
                 this.advance();
 
@@ -1289,7 +1289,7 @@ export default class Scanner
 
         while (!this.eof())
         {
-            char = this.source[this.index];
+            char = this.source[this.index]!;
 
             this.advance();
 
@@ -1417,7 +1417,7 @@ export default class Scanner
 
         if (!this.eof() && this.source[this.index] == "/")
         {
-            pattern = this.source[this.index];
+            pattern = this.source[this.index]!;
 
             while (!this.eof())
             {
@@ -1433,7 +1433,7 @@ export default class Scanner
                     {
                         this.advance();
 
-                        const char = this.source[this.index];
+                        const char = this.source[this.index]!;
 
                         if (Character.isLineTerminator(char.charCodeAt(0)))
                         {
@@ -1475,7 +1475,7 @@ export default class Scanner
 
         while (!this.eof())
         {
-            const char = this.source[this.index];
+            const char = this.source[this.index]!;
 
             if (!Character.isIdentifierPart(char.charCodeAt(0)))
             {

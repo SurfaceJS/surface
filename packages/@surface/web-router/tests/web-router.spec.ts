@@ -465,13 +465,13 @@ export default class WebRouterSpec
         const anchor = document.body.firstElementChild!.shadowRoot!.querySelectorAll("a");
         const slot   = document.body.firstElementChild!.shadowRoot!.querySelector<HTMLElement>("router-outlet")!;
 
-        anchor[0].click();
+        anchor[0]!.click();
 
         await new Promise(x => window.setTimeout(x));
 
         chai.assert.instanceOf(slot.firstElementChild, HomeView, "click #to='/home': slot.firstElementChild instanceOf HomeView");
 
-        anchor[1].click();
+        anchor[1]!.click();
 
         await new Promise(x => window.setTimeout(x));
 
@@ -486,13 +486,13 @@ export default class WebRouterSpec
 
         chai.assert.equal(windows.length, 1);
 
-        anchor[0].click();
+        anchor[0]!.click();
 
         await new Promise(x => window.setTimeout(x));
 
         chai.assert.instanceOf(slot.firstElementChild, HomeView, "click #to='/home': slot.firstElementChild instanceOf HomeView");
 
-        anchor[0].dispatchEvent(new MouseEvent("click", { ctrlKey: true }));
+        anchor[0]!.dispatchEvent(new MouseEvent("click", { ctrlKey: true }));
 
         await new Promise(x => window.setTimeout(x));
 

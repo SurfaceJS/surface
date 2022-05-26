@@ -6,11 +6,11 @@ const ARRAY_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "uns
 
 export default class Observer<TValue = unknown> implements IDisposable
 {
-    protected readonly path:      string[];
+    protected readonly path:      [string, ...string[]];
     protected readonly root:      object;
     protected readonly listeners: Set<Delegate<[TValue]>> = new Set();
 
-    public constructor(root: object, path: string[])
+    public constructor(root: object, path: [string, ...string[]])
     {
         this.root = root;
         this.path = path;
@@ -21,7 +21,7 @@ export default class Observer<TValue = unknown> implements IDisposable
         Metadata.from(root).computed.set(key, dependencies);
     }
 
-    protected static observePath(root: Object, path: string[], observer: Observer): void
+    protected static observePath(root: Object, path: [string, ...string[]], observer: Observer): void
     {
         if (root instanceof Object)
         {
@@ -51,7 +51,7 @@ export default class Observer<TValue = unknown> implements IDisposable
 
             if (keys.length > 0 && hasValue(property))
             {
-                this.observePath(property, keys, observer);
+                this.observePath(property, keys as [string, ...string[]], observer);
             }
         }
     }
@@ -92,7 +92,7 @@ export default class Observer<TValue = unknown> implements IDisposable
         {
             for (const dependency of computed)
             {
-                this.observePath(root, dependency, observer);
+                this.observePath(root, dependency as [string, ...string[]], observer);
             }
         }
     }
@@ -115,8 +115,8 @@ export default class Observer<TValue = unknown> implements IDisposable
                 {
                     if (path.length > 0)
                     {
-                        hasValue(oldValue) && this.unobservePath(oldValue, path, observer);
-                        hasValue(newValue) && this.observePath(newValue, path, observer);
+                        hasValue(oldValue) && this.unobservePath(oldValue, path as [string, ...string[]], observer);
+                        hasValue(newValue) && this.observePath(newValue, path as [string, ...string[]], observer);
                     }
 
                     observer.notify();
@@ -181,7 +181,7 @@ export default class Observer<TValue = unknown> implements IDisposable
         }
     }
 
-    protected static unobservePath(root: Object, path: string[], observer: Observer): void
+    protected static unobservePath(root: Object, path: [string, ...string[]], observer: Observer): void
     {
         if (root instanceof Object)
         {
@@ -193,7 +193,7 @@ export default class Observer<TValue = unknown> implements IDisposable
 
             if (keys.length > 0 && hasValue(property))
             {
-                this.unobservePath(property, keys, observer);
+                this.unobservePath(property, keys as [string, ...string[]], observer);
             }
         }
     }
@@ -205,7 +205,7 @@ export default class Observer<TValue = unknown> implements IDisposable
         return this.observe(target, [key]);
     }
 
-    public static observe(root: object, path: string[]): Observer
+    public static observe(root: object, path: [string, ...string[]]): Observer
     {
         const key = path.join("\u{fffff}");
 

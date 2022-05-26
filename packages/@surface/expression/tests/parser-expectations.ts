@@ -210,14 +210,14 @@ export const validExpressions: ParseExpectedSpec[] =
         scope,
         toString: "(a, [b, c]) => a + b + c",
         type:     ArrowFunctionExpression,
-        value:    (a: number, [b, c]: number[]): unknown => a + b + c,
+        value:    (a: number, [b, c]: [number, number]): unknown => a + b + c,
     },
     {
         raw:      "(a, [b, [c]]) => a + b + c",
         scope,
         toString: "(a, [b, [c]]) => a + b + c",
         type:     ArrowFunctionExpression,
-        value:    (a: number, [b, [c]]: [number, number[]]): unknown => a + b + c,
+        value:    (a: number, [b, [c]]: [number, [number]]): unknown => a + b + c,
     },
     {
         raw:      "(...a) => a",
@@ -252,14 +252,14 @@ export const validExpressions: ParseExpectedSpec[] =
         scope,
         toString: "(...[a, ...b]) => a + b[0]",
         type:     ArrowFunctionExpression,
-        value:    (...[a, ...b]: number[]): unknown => a + b[0],
+        value:    (...[a, ...b]: [number, number]): unknown => a + b[0],
     },
     {
         raw:      "(...[a, [b]]) => a + b",
         scope,
         toString: "(...[a, [b]]) => a + b",
         type:     ArrowFunctionExpression,
-        value:    (...[a, [b]]: [number, number[]]): unknown => a + b,
+        value:    (...[a, [b]]: [number, [number]]): unknown => a + b,
     },
     {
         raw:      "(...[a, { b }]) => a + b",
@@ -338,7 +338,7 @@ export const validExpressions: ParseExpectedSpec[] =
         scope,
         toString: "(...[{ a: [x] }]) => x",
         type:     ArrowFunctionExpression,
-        value:    (...[{ a: [x] }]: { a: number[] }[]): unknown => x,
+        value:    (...[{ a: [x] }]: [{ a: [number] }]): unknown => x,
     },
     {
         raw:      "(a, { b, x: { c } }) => a + b + c",

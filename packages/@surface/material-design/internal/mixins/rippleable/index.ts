@@ -42,7 +42,7 @@ const rippleable = <T extends Constructor<HTMLXElement & { rippleable?: HTMLElem
             this.firedByTouch = isTouch;
 
             const { pageX, pageY } = typeGuard<TouchEvent>(event, isTouch)
-                ? event.touches[event.touches.length - 1]
+                ? event.touches[event.touches.length - 1]!
                 : event;
 
             const x = pageX - (bounding.x + window.scrollX);
@@ -97,7 +97,7 @@ const rippleable = <T extends Constructor<HTMLXElement & { rippleable?: HTMLElem
                 return;
             }
 
-            const ripple = ripples[ripples.length - 1];
+            const ripple = ripples[ripples.length - 1]!;
 
             const remaining = performance.now() - Number.parseInt(ripple.dataset.animationStart!);
             const timeLeft  = Math.max(250 - remaining, 0);

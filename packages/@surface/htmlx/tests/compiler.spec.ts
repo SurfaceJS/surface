@@ -61,7 +61,7 @@ async function tryActionAsync(action: Delegate): Promise<RawError>
         {
             await scheduler.enqueue(() => void 0, "high"); // Reset State
 
-            return toRaw(error.errors[0]);
+            return toRaw(error.errors[0]!);
         }
 
         return toRaw(resolveError(error));
@@ -781,8 +781,8 @@ export default class CompilerSpec
 
         await scheduler.execution();
 
-        chai.assert.equal(host.shadowRoot!.childNodes[0].textContent, "#start", "childNodes[0]");
-        chai.assert.equal(host.shadowRoot!.childNodes[1].textContent, "#end",   "childNodes[1]");
+        chai.assert.equal(host.shadowRoot!.childNodes[0]!.textContent, "#start", "childNodes[0]");
+        chai.assert.equal(host.shadowRoot!.childNodes[1]!.textContent, "#end",   "childNodes[1]");
 
         host.items =
         [
@@ -881,19 +881,19 @@ export default class CompilerSpec
 
         await scheduler.execution();
 
-        chai.assert.equal(host.shadowRoot!.childNodes[1].textContent, "First");
+        chai.assert.equal(host.shadowRoot!.childNodes[1]!.textContent, "First");
 
         host.order = 2;
 
         await scheduler.execution();
 
-        chai.assert.equal(host.shadowRoot!.childNodes[1].textContent, "Second");
+        chai.assert.equal(host.shadowRoot!.childNodes[1]!.textContent, "Second");
 
         host.order = 3;
 
         await scheduler.execution();
 
-        chai.assert.equal(host.shadowRoot!.childNodes[1].textContent, "Last");
+        chai.assert.equal(host.shadowRoot!.childNodes[1]!.textContent, "Last");
     }
 
     @test @shouldPass

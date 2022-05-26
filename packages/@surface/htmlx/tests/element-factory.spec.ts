@@ -198,8 +198,8 @@ export default class ElementFactorySpec
 
         const disposable = activator(document.body, element, scope, globalCustomDirectives);
 
-        chai.assert.equal(element.childNodes[0].textContent, "custom: Hello World!!!");
-        chai.assert.equal(element.childNodes[1].textContent, "custom-factory: Hello World!!!");
+        chai.assert.equal(element.childNodes[0]!.textContent, "custom: Hello World!!!");
+        chai.assert.equal(element.childNodes[1]!.textContent, "custom-factory: Hello World!!!");
 
         disposable.dispose();
     }

@@ -6,7 +6,7 @@ export default function createSpreadAttributesFactory(source: HTMLElement, targe
     // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let index = 0; index < source.attributes.length; index++)
     {
-        const attribute = source.attributes[index];
+        const attribute = source.attributes[index]!;
 
         target.setAttribute(attribute.name, attribute.value);
     }

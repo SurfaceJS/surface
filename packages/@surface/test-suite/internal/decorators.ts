@@ -22,7 +22,7 @@ export function after(...args: [string] | [object, string | symbol]): MethodDeco
 {
     const decorator = (target: TestObject, key: string | symbol, description: string): void =>
     {
-        const metadata = Metadata.from(target[key as string]);
+        const metadata = Metadata.from(target[key as string]!);
 
         metadata.after       = true;
         metadata.description = description;
@@ -44,7 +44,7 @@ export function afterEach(...args: [string] | [object, string | symbol]): Method
 {
     const decorator = (target: TestObject, key: string | symbol, description: string): void =>
     {
-        const metadata = Metadata.from(target[key as string]);
+        const metadata = Metadata.from(target[key as string]!);
 
         metadata.afterEach   = true;
         metadata.description = description;
@@ -65,7 +65,7 @@ export function batchTest<T = unknown>(source: T[], expectation?: Delegate<[data
 {
     return (target: object, key: string | symbol) =>
     {
-        const metadata = Metadata.from((target as TestObject)[key as string]);
+        const metadata = Metadata.from((target as TestObject)[key as string]!);
 
         const fallback = camelToText(String(key));
 
@@ -84,7 +84,7 @@ export function before(...args: [string] | [object, string | symbol]): MethodDec
 {
     const decorator = (target: TestObject, key: string | symbol, description: string): void =>
     {
-        const metadata = Metadata.from(target[key as string]);
+        const metadata = Metadata.from(target[key as string]!);
 
         metadata.before      = true;
         metadata.description = description;
@@ -106,7 +106,7 @@ export function beforeEach(...args: [string] | [object, string | symbol]): Metho
 {
     const decorator = (target: TestObject, key: string | symbol, description: string): void =>
     {
-        const metadata = Metadata.from(target[key as string]);
+        const metadata = Metadata.from(target[key as string]!);
 
         metadata.beforeEach  = true;
         metadata.description = description;
@@ -126,7 +126,7 @@ export function category(name: string): MethodDecorator
 {
     return (target: object, key: string | symbol) =>
     {
-        const metadata = Metadata.from((target as TestObject)[key as string]);
+        const metadata = Metadata.from((target as TestObject)[key as string]!);
 
         metadata.category = name;
     };
@@ -166,7 +166,7 @@ export function skip(...args: [Function] | [object, string | symbol, TypedProper
 
     const [target, key] = args as [TestObject, string, unknown];
 
-    Metadata.from(target[key]).skip = true;
+    Metadata.from(target[key]!).skip = true;
 }
 
 export function suite<T extends Function>(target: T): T;
@@ -325,7 +325,7 @@ export function test(...args: [string] | [object, string | symbol]): MethodDecor
 {
     const decorator = (target: TestObject, key: string, expectation: string): void =>
     {
-        const metadata = Metadata.from(target[key]);
+        const metadata = Metadata.from(target[key]!);
 
         metadata.test        = true;
         metadata.expectation = expectation;

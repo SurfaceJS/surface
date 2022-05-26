@@ -7,6 +7,6 @@ export default class PlaceholderNode implements INode
 
     public toString(): string
     {
-        return NodeType[NodeType.Wildcard];
+        return NodeType[NodeType.Wildcard]!;
     }
 }

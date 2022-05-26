@@ -8,14 +8,14 @@ export default class AsyncObserver extends Observer
     private readonly scheduler: Scheduler;
     private cancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
 
-    public constructor(root: object, path: string[], scheduler: Scheduler)
+    public constructor(root: object, path: [string, ...string[]], scheduler: Scheduler)
     {
         super(root, path);
 
         this.scheduler = scheduler;
     }
 
-    protected static observePath(root: Object, path: string[], observer: Observer): void
+    protected static override observePath(root: Object, path: [string, ...string[]], observer: Observer): void
     {
         if (root instanceof HTMLElement && (root.contentEditable == "true" || root.nodeName == "INPUT"))
         {
@@ -52,7 +52,7 @@ export default class AsyncObserver extends Observer
 
             if (keys.length > 0 && hasValue(property))
             {
-                this.observePath(property, keys, observer);
+                this.observePath(property, keys as [string, ...string[]], observer);
             }
         }
         else
@@ -61,7 +61,7 @@ export default class AsyncObserver extends Observer
         }
     }
 
-    public static observe(root: object, path: string[], scheduler?: Scheduler): Observer
+    public static override observe(root: object, path: [string, ...string[]], scheduler?: Scheduler): Observer
     {
         if (scheduler)
         {
@@ -84,7 +84,7 @@ export default class AsyncObserver extends Observer
         return super.observe(root, path);
     }
 
-    public notify(): void
+    public override notify(): void
     {
         const task = (): void => super.notify();
 

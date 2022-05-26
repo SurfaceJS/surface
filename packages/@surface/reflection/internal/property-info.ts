@@ -3,7 +3,7 @@ import type Type from "./type.js";
 
 export default class PropertyInfo extends FieldInfo
 {
-    public get readonly(): boolean
+    public override get readonly(): boolean
     {
         return !!this.descriptor.get && !this.descriptor.set;
     }

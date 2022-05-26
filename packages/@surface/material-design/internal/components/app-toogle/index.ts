@@ -22,5 +22,5 @@ declare global
 @element("smd-app-toogle", { style, template })
 export default class AppToogle extends mix(HTMLXElement, [colorable, elevatable, themeable])
 {
-    public colorable?: HTMLElement;
+    public declare colorable: HTMLElement;
 }

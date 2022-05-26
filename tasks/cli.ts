@@ -9,6 +9,7 @@ program.version("1.0.0");
 program
     .command("cover <n>")
     .action(Commands.cover);
+
 program
     .command("publish <registry>")
     .requiredOption("--token         <n>", "NPM token", toString)

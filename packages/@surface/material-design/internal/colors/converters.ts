@@ -72,14 +72,14 @@ export function hexToHsva(hex: string): HSVA
 
 export function hexToRgb(hex: string): RGB
 {
-    const [r, g, b] = hex.replace("#", "").match(/../g)!.map((x: string) => Number.parseInt(x, 16));
+    const [r, g, b] = hex.replace("#", "").match(/../g)!.map((x: string) => Number.parseInt(x, 16)) as [number, number, number];
 
     return { r, g, b };
 }
 
 export function hexToRgba(hex: string): RGBA
 {
-    const [r, g, b, a = 255] = hex.replace("#", "").match(/../g)!.map((x: string) => Number.parseInt(x, 16));
+    const [r, g, b, a = 255] = hex.replace("#", "").match(/../g)!.map((x: string) => Number.parseInt(x, 16)) as [number, number, number, number?];
 
     return { r, g, b, a };
 }

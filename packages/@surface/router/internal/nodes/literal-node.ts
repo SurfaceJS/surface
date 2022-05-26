@@ -10,6 +10,6 @@ export default class LiteralNode implements INode
 
     public toString(): string
     {
-        return NodeType[NodeType.Literal];
+        return NodeType[NodeType.Literal]!;
     }
 }

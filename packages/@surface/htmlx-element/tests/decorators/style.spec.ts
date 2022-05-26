@@ -23,7 +23,7 @@ export default class ElementDecoratorSpec
         const adoptedStyleSheets = (instance.shadowRoot as { adoptedStyleSheets?: CSSStyleSheet[] }).adoptedStyleSheets!;
 
         chai.assert.equal(adoptedStyleSheets.length, 2);
-        chai.assert.equal(adoptedStyleSheets[0].toString(), "h2 { color: blue }");
-        chai.assert.equal(adoptedStyleSheets[1].toString(), "h1 { color: red }");
+        chai.assert.equal(adoptedStyleSheets[0]!.toString(), "h2 { color: blue }");
+        chai.assert.equal(adoptedStyleSheets[1]!.toString(), "h1 { color: red }");
     }
 }

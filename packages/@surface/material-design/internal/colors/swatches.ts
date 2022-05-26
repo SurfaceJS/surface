@@ -23,7 +23,7 @@ function *enumerateInterpolation(swatches: Swatch[], range?: { start: number, en
         throw new Error("Expected at least two swatches when not using range");
     }
 
-    range = range ?? { start: swatches[0].index, end: swatches[swatches.length - 1].index };
+    range = range ?? { start: swatches[0]!.index, end: swatches[swatches.length - 1]!.index };
 
     if (range.start > range.end)
     {
@@ -142,7 +142,7 @@ export function scaleSwatches(swatches: Swatch[], factor: number): Swatch[]
 
             const color = colorFromVector(Vector4.add(origin, Vector4.multiply(normalized, distance)));
 
-            return { index: swatches[index].index, color };
+            return { index: swatches[index]!.index, color };
         },
     );
 }

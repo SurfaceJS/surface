@@ -32,7 +32,7 @@ export default class EnumerableSorter<TKey, TElement>
 
     private compareKeys(left: number, right: number): number
     {
-        const order = this.comparer.compare(this.keys[left], this.keys[right]);
+        const order = this.comparer.compare(this.keys[left]!, this.keys[right]!);
 
         if (order == 0)
         {
@@ -69,27 +69,27 @@ export default class EnumerableSorter<TKey, TElement>
 
         while (leftIndex < left.length && rightIndex < right.length)
         {
-            if (this.compareKeys(left[leftIndex], right[rightIndex]) < 0)
+            if (this.compareKeys(left[leftIndex]!, right[rightIndex]!) < 0)
             {
-                buffer.push(left[leftIndex]);
+                buffer.push(left[leftIndex]!);
                 leftIndex++;
             }
             else
             {
-                buffer.push(right[rightIndex]);
+                buffer.push(right[rightIndex]!);
                 rightIndex++;
             }
         }
 
         while (leftIndex < left.length)
         {
-            buffer.push(left[leftIndex]);
+            buffer.push(left[leftIndex]!);
             leftIndex++;
         }
 
         while (rightIndex < right.length)
         {
-            buffer.push(right[rightIndex]);
+            buffer.push(right[rightIndex]!);
             rightIndex++;
         }
 

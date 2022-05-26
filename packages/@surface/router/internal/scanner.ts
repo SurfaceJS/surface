@@ -8,7 +8,7 @@ export default class Scanner
 
     private get current(): string
     {
-        return this.source[this.index];
+        return this.source[this.index]!;
     }
 
     private get eof(): boolean

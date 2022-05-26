@@ -228,19 +228,19 @@ export default class ObserverSpec
     {
         const target = [{ value: 1 }];
 
-        let receiver = target[0].value;
+        let receiver = target[0]!.value;
 
         Observer.observe(target, ["0", "value"]).subscribe(x => receiver = x as number);
 
-        chai.assert.equal(target[0].value, receiver);
+        chai.assert.equal(target[0]!.value, receiver);
 
         target.unshift({ value: 2 });
 
-        chai.assert.equal(target[0].value, receiver);
+        chai.assert.equal(target[0]!.value, receiver);
 
         target.shift();
 
-        chai.assert.equal(target[0].value, receiver);
+        chai.assert.equal(target[0]!.value, receiver);
     }
 
     @test @shouldPass
@@ -463,6 +463,6 @@ export default class ObserverSpec
     @test @shouldFail
     public unsubscribeInvalidListener(): void
     {
-        chai.assert.throws(() => new Observer({ }, []).unsubscribe(() => void 0), "Listerner not subscribed");
+        chai.assert.throws(() => new Observer({ }, [""]).unsubscribe(() => void 0), "Listerner not subscribed");
     }
 }

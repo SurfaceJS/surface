@@ -27,10 +27,10 @@ export default class TextField extends mix(HTMLXElement, [colorable, lineRipplea
     protected input!: HTMLElement;
 
     @query("#root")
-    public colorable!: HTMLElement;
+    public declare colorable: HTMLElement;
 
     @query(".rippleable")
-    public rippleable!: HTMLElement;
+    public declare rippleable: HTMLElement;
 
     // @ts-expect-error
     public get noRipple(): boolean

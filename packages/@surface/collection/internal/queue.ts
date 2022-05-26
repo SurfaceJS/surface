@@ -48,13 +48,13 @@ export default class Queue<T> extends Enumerable<T>
     /**
      * Returns the number of elements in a sequence.
      */
-    public count(): number;
+    public override count(): number;
 
     /**
      * Returns a number that represents how many elements in the specified sequence satisfy a condition.
      * @param predicate A function to test each element for a condition.
      */
-    public count(predicate?: Delegate<[T], boolean>): number
+    public override count(predicate?: Delegate<[T], boolean>): number
     {
         if (predicate)
         {

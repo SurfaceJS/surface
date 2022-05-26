@@ -62,10 +62,10 @@ export default class PublisherSpec
         ];
 
         const aManifestMock = Mock.instance<Manifest>();
-        aManifestMock.setupGet("version").returns(actual[0].version);
+        aManifestMock.setupGet("version").returns(actual[0]!.version);
 
         const bManifestMock = Mock.instance<Manifest>();
-        bManifestMock.setupGet("version").returns(actual[1].version);
+        bManifestMock.setupGet("version").returns(actual[1]!.version);
 
         const npmRepositoryMock = new Mock(new NpmRepository());
 
@@ -103,7 +103,7 @@ export default class PublisherSpec
         ];
 
         const bGetDataMock = Mock.instance<Manifest>();
-        bGetDataMock.setupGet("version").returns(actual[1].version);
+        bGetDataMock.setupGet("version").returns(actual[1]!.version);
 
         const npmRepositoryMock = new Mock(new NpmRepository());
 
@@ -142,10 +142,10 @@ export default class PublisherSpec
         const options: Options = { silent: true, strategy: StrategyType.Default, version: "*.2.*-*.*" };
 
         const bGetDataMock = Mock.instance<Manifest>();
-        bGetDataMock.setupGet("version").returns(actual[1].version);
+        bGetDataMock.setupGet("version").returns(actual[1]!.version);
 
         const cGetDataMock = Mock.instance<Manifest>();
-        cGetDataMock.setupGet("version").returns(actual[2].version);
+        cGetDataMock.setupGet("version").returns(actual[2]!.version);
 
         const npmRepositoryMock = new Mock(new NpmRepository());
 

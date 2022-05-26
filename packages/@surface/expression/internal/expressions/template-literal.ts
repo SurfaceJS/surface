@@ -51,10 +51,10 @@ export default class TemplateLiteral implements IExpression
 
         for (let i = 0; i < this.expressions.length; i++)
         {
-            result += `${this.quasis[i].cooked}${this.expressions[i].evaluate(scope)}`;
+            result += `${this.quasis[i]!.cooked}${this.expressions[i]!.evaluate(scope)}`;
         }
 
-        return result + this.quasis[this.quasis.length - 1].cooked;
+        return result + this.quasis[this.quasis.length - 1]!.cooked;
     }
 
     public toString(): string
@@ -63,9 +63,9 @@ export default class TemplateLiteral implements IExpression
 
         for (let i = 0; i < this.expressions.length; i++)
         {
-            result += `${this.quasis[i].raw}\$\{${this.expressions[i]}\}`;
+            result += `${this.quasis[i]!.raw}\$\{${this.expressions[i]}\}`;
         }
 
-        return `\`${result + this.quasis[this.quasis.length - 1].raw}\``;
+        return `\`${result + this.quasis[this.quasis.length - 1]!.raw}\``;
     }
 }

@@ -78,7 +78,7 @@ export function parseDestructuredPattern(expression: string): IPattern
 
     try
     {
-        return expressionCache[arrowExpression] = (parseExpression(arrowExpression) as ArrowFunctionExpression).parameters[0];
+        return expressionCache[arrowExpression] = (parseExpression(arrowExpression) as ArrowFunctionExpression).parameters[0]!;
     }
     catch (error)
     {
@@ -96,7 +96,7 @@ export function parseForLoopStatement(expression: string): ForLoopStatement
 {
     if (expression in forLoopStatementCache)
     {
-        return forLoopStatementCache[expression];
+        return forLoopStatementCache[expression]!;
     }
 
     if (!forExpression.test(expression))

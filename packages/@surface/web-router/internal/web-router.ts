@@ -161,7 +161,7 @@ export default class WebRouter
 
             for (let index = 0; index < definition.stack.length; index++)
             {
-                const entry = definition.stack[index];
+                const entry = definition.stack[index]!;
 
                 const keys = new Set(entry.keys());
 
@@ -169,7 +169,7 @@ export default class WebRouter
 
                 if (entry == previous?.definition?.stack[index])
                 {
-                    const next = cache[index].default ?? cache[index][keys.values().next().value];
+                    const next = cache[index]!.default ?? cache[index]![keys.values().next().value]!;
 
                     if (hasUpdate)
                     {
@@ -205,7 +205,7 @@ export default class WebRouter
 
                         this.connectToOutlet(parent, element, key, to, from, definition.selector);
 
-                        cache[index][key] = element;
+                        cache[index]![key] = element;
 
                         if (!next || key == "default")
                         {
@@ -399,7 +399,7 @@ export default class WebRouter
 
         if (index != this.index)
         {
-            const [url, routeItem, routeData] = this.history[index];
+            const [url, routeItem, routeData] = this.history[index]!;
 
             await this.create(url, routeItem, routeData, true, false);
 

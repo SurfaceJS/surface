@@ -301,7 +301,7 @@ export default class Parser
 
             let previousToken: Token | undefined;
 
-            while (stack.length > 2 && precedence <= precedences[precedences.length - 1])
+            while (stack.length > 2 && precedence <= precedences[precedences.length - 1]!)
             {
                 const right    = stack.pop() as IExpression;
                 const token    = stack.pop() as Token;
@@ -598,7 +598,7 @@ export default class Parser
 
                 if (!this.match(")"))
                 {
-                    throw this.syntaxError(tokens[0], Messages.restParameterMustBeLastFormalParameter);
+                    throw this.syntaxError(tokens[0]!, Messages.restParameterMustBeLastFormalParameter);
                 }
 
                 this.expect(")");
@@ -626,7 +626,7 @@ export default class Parser
 
                                 if (!this.match(")"))
                                 {
-                                    throw this.syntaxError(tokens[tokens.length - 1], Messages.restParameterMustBeLastFormalParameter);
+                                    throw this.syntaxError(tokens[tokens.length - 1]!, Messages.restParameterMustBeLastFormalParameter);
                                 }
 
                                 break;
@@ -652,7 +652,7 @@ export default class Parser
 
                 const checker = this.createDupeChecker();
 
-                const parameters = expressions.map((x, i) => this.reinterpret(x, tokens[i], checker));
+                const parameters = expressions.map((x, i) => this.reinterpret(x, tokens[i]!, checker));
 
                 this.expect("=>");
 

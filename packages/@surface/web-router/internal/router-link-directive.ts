@@ -31,7 +31,7 @@ export default class RouterLinkDirective extends Directive
         }
     };
 
-    public dispose(): void
+    public override dispose(): void
     {
         if (!this.disposed)
         {

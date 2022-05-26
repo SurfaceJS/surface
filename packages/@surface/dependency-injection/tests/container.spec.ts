@@ -249,7 +249,7 @@ export default class DependencyInjectionSpec
 
         class Derived extends Base
         {
-            public constructor(@inject(derivedValue.name) public value: object)
+            public constructor(@inject(derivedValue.name) public override value: object)
             {
                 super(value);
             }

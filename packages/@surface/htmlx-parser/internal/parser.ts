@@ -87,7 +87,7 @@ export default class Parser
     {
         const template = this.elementToTemplate(element);
 
-        const [directive, ...directives] = this.enumerateDirectives(template.attributes);
+        const [directive, ...directives] = this.enumerateDirectives(template.attributes) as [Directive, ...Directive[]];
 
         if (directives.length > 0)
         {
@@ -146,7 +146,7 @@ export default class Parser
         // eslint-disable-next-line @typescript-eslint/prefer-for-of
         for (let i = 0; i < namedNodeMap.length; i++)
         {
-            const attribute = namedNodeMap[i];
+            const attribute = namedNodeMap[i]!;
 
             if (!resolved.has(attribute.name))
             {
@@ -241,7 +241,7 @@ export default class Parser
 
         for (let index = 0; index < node.childNodes.length; index++)
         {
-            const childNode = node.childNodes[index];
+            const childNode = node.childNodes[index]!;
 
             if (childNode.nodeType == NodeType.Element || childNode.nodeType == NodeType.Text)
             {
@@ -366,7 +366,7 @@ export default class Parser
 
         for (let i = 0; i < element.attributes.length; i++)
         {
-            const attribute = element.attributes[i];
+            const attribute = element.attributes[i]!;
 
             const source = this.attributeToString(attribute);
 
@@ -467,7 +467,7 @@ export default class Parser
                 }
                 else if (type == DescriptorType.Twoway)
                 {
-                    yield { left: key, right: observables[0], source, stackTrace, type };
+                    yield { left: key, right: observables[0]!, source, stackTrace, type };
                 }
                 else
                 {

@@ -26,7 +26,7 @@ export default class HTMLXElement extends HTMLElement implements IHTMLXElement
         return Object.fromEntries(HTMLXMetada.from(this).listeners);
     }
 
-    public shadowRoot!: ShadowRoot;
+    public declare shadowRoot: ShadowRoot;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public constructor()
@@ -82,7 +82,7 @@ export default class HTMLXElement extends HTMLElement implements IHTMLXElement
         {
             public static readonly [HTMLX_ELEMENT]: boolean = true;
 
-            public shadowRoot!: ShadowRoot;
+            public declare shadowRoot: ShadowRoot;
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             public constructor(...args: any[])

@@ -12,12 +12,12 @@ export default function listener(...properties: string[]): MethodDecorator;
  * Listen to property changes.
  * @param paths Paths to be observed.
  */
-export default function listener(...paths: string[][]): MethodDecorator;
-export default function listener(...propertiesOrPaths: (string | string[])[]): MethodDecorator
+export default function listener(...paths: [string, ...string[]][]): MethodDecorator;
+export default function listener(...propertiesOrPaths: (string | [string, ...string[]])[]): MethodDecorator
 {
     return (target, propertyKey) =>
     {
-        const paths = propertiesOrPaths.map(x => Array.isArray(x) ? x : [x]) as string[][];
+        const paths = propertiesOrPaths.map(x => Array.isArray(x) ? x : [x]) as [string, ...string[]][];
 
         const finisher = (instance: object): void =>
         {

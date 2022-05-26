@@ -10,6 +10,6 @@ export default class AssignmentNode implements INode
 
     public toString(): string
     {
-        return NodeType[NodeType.Assignment];
+        return NodeType[NodeType.Assignment]!;
     }
 }

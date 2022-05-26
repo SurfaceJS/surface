@@ -1,4 +1,4 @@
-type ObservablePath = string[];
+type ObservablePath = [string, ...string[]];
 
 export default ObservablePath;
 

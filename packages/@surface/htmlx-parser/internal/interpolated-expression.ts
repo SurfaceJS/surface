@@ -18,7 +18,7 @@ export default class InterpolatedExpression
 
     private get current(): string
     {
-        return this.source[this.index];
+        return this.source[this.index]!;
     }
 
     private get eof(): boolean

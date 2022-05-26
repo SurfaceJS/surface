@@ -37,9 +37,9 @@ export default class HashSet<TElement> implements Iterable<TElement>
 
     private find(element: TElement, hash: number): boolean
     {
-        for (let index = this.buckets[hash % this.buckets.length] - 1; index >= 0; index = this.slots[index].next)
+        for (let index = this.buckets[hash % this.buckets.length]! - 1; index >= 0; index = this.slots[index]!.next)
         {
-            if (this.slots[index].hash == hash && this.comparer.equals(element, this.slots[index].value))
+            if (this.slots[index]!.hash == hash && this.comparer.equals(element, this.slots[index]!.value))
             {
                 return true;
             }
@@ -56,9 +56,9 @@ export default class HashSet<TElement> implements Iterable<TElement>
 
         for (let i = 0; i < this.count; i++)
         {
-            const index = this.slots[i].hash % newSize;
+            const index = this.slots[i]!.hash % newSize;
 
-            this.slots[i].next = buckets[index] - 1;
+            this.slots[i]!.next = buckets[index]! - 1;
 
             buckets[index] = i + 1;
         }
@@ -88,7 +88,7 @@ export default class HashSet<TElement> implements Iterable<TElement>
             if (this.freeList >= 0)
             {
                 index = this.freeList;
-                this.freeList = this.slots[index].next;
+                this.freeList = this.slots[index]!.next;
             }
             else
             {
@@ -101,7 +101,7 @@ export default class HashSet<TElement> implements Iterable<TElement>
                 this.count++;
             }
 
-            this.slots[index] = { hash, next: this.buckets[hash % this.buckets.length] - 1, value: element };
+            this.slots[index] = { hash, next: this.buckets[hash % this.buckets.length]! - 1, value: element };
 
             this.buckets[hash % this.buckets.length] = index + 1;
 
@@ -121,17 +121,17 @@ export default class HashSet<TElement> implements Iterable<TElement>
         const hash = Hashcode.encode(element);
         let lastIndex = -1;
 
-        for (let index = this.buckets[hash % this.buckets.length] - 1; index >= 0; index = this.slots[index].next)
+        for (let index = this.buckets[hash % this.buckets.length]! - 1; index >= 0; index = this.slots[index]!.next)
         {
-            if (this.slots[index].hash == hash && this.comparer.equals(element, this.slots[index].value))
+            if (this.slots[index]!.hash == hash && this.comparer.equals(element, this.slots[index]!.value))
             {
                 if (lastIndex < 0)
                 {
-                    this.buckets[hash % this.buckets.length] = this.slots[index].next + 1;
+                    this.buckets[hash % this.buckets.length] = this.slots[index]!.next + 1;
                 } /* c8 ignore next 4 */
                 else
                 {
-                    this.slots[lastIndex].next = this.slots[index].next;
+                    this.slots[lastIndex]!.next = this.slots[index]!.next;
                 }
 
                 this.slots[index] = { hash: -1, next: this.freeList, value: null };

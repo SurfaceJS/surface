@@ -23,7 +23,7 @@ export default class SourceGeneratorSpec
     public collectScope(seed: (typeof patternSeeds)[number]): void
     {
         const expression = Parser.parse(`(${seed.source}) => 0`) as ArrowFunctionExpression;
-        const actual     = ScopeRewriterVisitor.collectScope(expression.parameters[0]).toString();
+        const actual     = ScopeRewriterVisitor.collectScope(expression.parameters[0]!).toString();
 
         chai.assert.equal(actual, seed.expected);
     }

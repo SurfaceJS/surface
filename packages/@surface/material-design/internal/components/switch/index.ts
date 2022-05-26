@@ -21,10 +21,10 @@ declare global
 export default class Switch extends mix(HTMLXElement, [colorable, disableable, elevatable, rippleable, themeable])
 {
     @query("#root")
-    public colorable!: HTMLElement;
+    public declare colorable: HTMLElement;
 
     @query("#selection")
-    public rippleable!: HTMLElement;
+    public declare rippleable: HTMLElement;
 
     @attribute(Boolean)
     public checked: boolean = false;
