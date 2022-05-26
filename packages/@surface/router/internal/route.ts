@@ -75,6 +75,7 @@ export default class Route
             {
                 if (TypeGuard.isAssignment(node))
                 {
+                    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
                     parameters[node.left] = group || node.right;
                 }
                 else if (TypeGuard.isTransformer(node))

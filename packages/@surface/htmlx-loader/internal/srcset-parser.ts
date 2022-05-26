@@ -29,6 +29,7 @@ export default class SrcSetParser
                         const postfix = descriptor[descriptor.length - 1];
                         const value = Number.parseFloat(descriptor.slice(0, -1));
 
+                        // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
                         switch (postfix)
                         {
                             case "w":
