@@ -1,6 +1,6 @@
 /* eslint-disable no-empty-character-class */
 /* eslint-disable no-control-regex */
-const skip = false;
+const skip = true;
 
 export type Scenario =
 {
@@ -91,7 +91,7 @@ export const scenarios: Scenario[] =
         unmatches: ["[oo"],
     },
     {
-        skip:      false,
+        skip,
         pattern:   "[a\\]]oo",
         regex:     /^[a\]]oo$/,
         matches:   ["aoo", "]oo"],
@@ -208,6 +208,34 @@ export const scenarios: Scenario[] =
         regex:     /^[0-9a-fA-F]$/,
         matches:   ["0", "F", "C"],
         unmatches: ["G", "10"],
+    },
+    {
+        skip,
+        pattern:   "{a,b}",
+        regex:     /^(?:a|b)$/,
+        matches:   ["a", "b"],
+        unmatches: ["(a|b)"],
+    },
+    {
+        skip:      false,
+        pattern:   "{a..c}",
+        regex:     /^(?:[a-c])$/,
+        matches:   ["a", "b", "c"],
+        unmatches: ["d"],
+    },
+    {
+        skip:      false,
+        pattern:   "{Z..a}",
+        regex:     /^(?:[Z[\]\^_`a])$/,
+        matches:   ["Z", "[", "]", "^", "_", "`", "a"],
+        unmatches: ["A", "z"],
+    },
+    {
+        skip:      false,
+        pattern:   "{A..z..6}",
+        regex:     /^(?:[AGMSY_ekqw])$/,
+        matches:   ["A", "G", "M", "S", "Y", "_", "e", "k", "q", "w"],
+        unmatches: ["B", "F", "b", "f"],
     },
     {
         skip,
@@ -458,7 +486,7 @@ export const scenarios: Scenario[] =
         unmatches: ["foo"],
     },
     {
-        skip:      false,
+        skip,
         pattern:   "/foo/*/bar",
         regex:     /^(?:\/|\\)foo(?:\/|\\)[^\/\\]*(?:\/|\\)bar$/,
         matches:   ["/foo/baz/bar"],
@@ -486,7 +514,7 @@ export const scenarios: Scenario[] =
         unmatches: ["foo"],
     },
     {
-        skip:      false,
+        skip,
         pattern:   "**/foo/**/bar",
         regex:     /^.*(?:\/|\\)?foo(?:\/|\\).*(?:\/|\\)?bar$/,
         matches:   ["bar/foo/bar", "bar/foo/baz/bar"],

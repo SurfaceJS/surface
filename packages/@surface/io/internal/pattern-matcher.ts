@@ -1,6 +1,8 @@
 const REGEX_SPECIAL_CHARACTERS = new Set([".", "+", "*", "?", "^", "$", "(", ")", "[", "]", "{", "}", "|", "\\"]);
 const ESCAPABLE_CHARACTERS     = new Set(["!", "+", "*", "?", "^", "@", "(", ")", "[", "]", "{", "}", "|", "\\"]);
 const SEPARATORS               = new Set(["/", "\\"]);
+const NUMBRACES_PATTERN        = /^(-?\d+)\.\.(-?\d+)(?:\.\.(-?\d+))?$/;
+const ALPHABRACES_PATTERN      = /^([a-zA-Z])\.\.([a-zA-Z])(?:\.\.(-?\d+))?$/;
 const CHARACTERS_CLASS_MAP: Record<string, string> =
 {
     "[:alnum:]":  "[A-Za-z0-9]",
@@ -38,7 +40,7 @@ type PatternList =
 // improving this regexp to avoid a ReDOS vulnerability.
 // /\{(?:(?!\{).)*\}/.test(pattern)
 
-export default class FileExpansionParser
+export default class PatternMatcher
 {
     private readonly tokens: string[] = [];
 
@@ -71,6 +73,33 @@ export default class FileExpansionParser
     private getChar(offset?: number): string | undefined
     {
         return offset ? this.source.substring(this.index, this.index + offset) : this.source[this.index];
+    }
+
+    private lookahed(character: string): number | null
+    {
+        let index = this.index;
+
+        while (index < this.source.length)
+        {
+            const char = this.source[index];
+            const next = this.source[index + 1];
+
+            if (char == "\\" && next == character)
+            {
+                index += 2;
+            }
+            else
+            {
+                if (this.source[index] == character)
+                {
+                    return index;
+                }
+
+                index++;
+            }
+        }
+
+        return null;
     }
 
     private parse(): RegExp
@@ -229,6 +258,9 @@ export default class FileExpansionParser
                     }
 
                     break;
+                case "{":
+                    this.scanBraceExpand();
+                    break;
                 case "!":
                 case "*":
                 case "+":
@@ -271,6 +303,103 @@ export default class FileExpansionParser
 
                     break;
             }
+        }
+    }
+
+    private scanBraceExpand(): void
+    {
+        const end = this.lookahed("}");
+
+        if (end)
+        {
+            this.tokens.push(GROUPS["@"].open);
+            this.advance();
+
+            while (this.index < end)
+            {
+                const segmentEnd = this.lookahed(",") ?? end;
+
+                const segment = this.source.substring(this.index, segmentEnd);
+
+                const alphaMatch = ALPHABRACES_PATTERN.exec(segment);
+                const digitMatch = NUMBRACES_PATTERN.exec(segment);
+
+                if (alphaMatch)
+                {
+                    const startChar  = alphaMatch[1]!;
+                    const endChar    = alphaMatch[2]!;
+                    const startRange = startChar.charCodeAt(0);
+                    const endRange   = endChar.charCodeAt(0);
+                    const multiplier = Number(alphaMatch[3] ?? "1");
+
+                    if (multiplier != 0)
+                    {
+                        this.tokens.push("[");
+
+                        const isValidRange = startRange < endRange
+                            && (
+                                startChar == startChar.toLowerCase() && endChar == endChar.toLowerCase()
+                                || startChar == startChar.toLowerCase() && endChar == endChar.toLowerCase()
+                            );
+
+                        if (multiplier == 1 && isValidRange)
+                        {
+                            this.tokens.push(String.fromCharCode(startRange), "-", String.fromCharCode(endRange));
+                        }
+                        else
+                        {
+                            for (let i = startRange; i <= endRange; i += multiplier)
+                            {
+                                const char = String.fromCharCode(i);
+
+                                if (char != "\\")
+                                {
+                                    if (char == "]" || char == "^")
+                                    {
+                                        this.tokens.push("\\");
+                                    }
+
+                                    this.tokens.push(char);
+                                }
+                            }
+                        }
+
+                        this.tokens.push("]");
+                    }
+                }
+                else if (digitMatch)
+                {
+                    // const startRange = Number(digitMatch[1]!);
+                    // const endRange   = Number(digitMatch[2]!);
+                    // const multiplier = Number(digitMatch[3] ?? "1");
+                }
+                else
+                {
+                    while (this.index < segmentEnd)
+                    {
+                        this.scanLiteral();
+                    }
+                }
+
+                if (alphaMatch || digitMatch)
+                {
+                    this.advance(segmentEnd - this.index);
+                }
+
+                if (this.getChar() == ",")
+                {
+                    this.tokens.push("|");
+
+                    this.advance();
+                }
+            }
+
+            this.tokens.push(GROUPS["@"].close);
+            this.advance();
+        }
+        else
+        {
+            this.scanLiteral();
         }
     }
 
