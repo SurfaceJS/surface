@@ -7,7 +7,7 @@ export default class RestElement implements IPattern
 {
     private _argument: IPattern;
 
-    public [PATTERN]: void;
+    public [PATTERN]!: void;
 
     public get argument(): IPattern
     {

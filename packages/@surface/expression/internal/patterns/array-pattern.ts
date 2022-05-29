@@ -8,7 +8,7 @@ export default class ArrayPattern implements IPattern
 {
     private _elements: (IPattern | null)[];
 
-    public [PATTERN]: void;
+    public [PATTERN]!: void;
 
     public get elements(): (IPattern | null)[]
     {

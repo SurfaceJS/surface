@@ -1,5 +1,5 @@
-import type { CancellationToken, Delegate }       from "@surface/core";
-import { AggregateError, resolveError, runAsync } from "@surface/core";
+import type { CancellationToken, Delegate } from "@surface/core";
+import { resolveError, runAsync }           from "@surface/core";
 
 type Node<T> = { value: T, next?: Node<T> };
 
@@ -150,7 +150,7 @@ export default class Scheduler
 
         if (this.errors.length > 0)
         {
-            throw new AggregateError([...this.errors]);
+            throw new AggregateError([...this.errors], "One or more errors occurred.");
         }
     }
 

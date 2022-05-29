@@ -3,7 +3,7 @@
 import "@surface/dom-shim";
 
 import type { Constructor, Delegate, IDisposable } from "@surface/core";
-import { AggregateError, resolveError }            from "@surface/core";
+import { resolveError }                            from "@surface/core";
 import { shouldFail, shouldPass, suite, test }     from "@surface/test-suite";
 import chai                                        from "chai";
 import semver                                      from "semver";

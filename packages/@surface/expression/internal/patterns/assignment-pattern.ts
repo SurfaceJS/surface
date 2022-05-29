@@ -10,7 +10,7 @@ export default class AssignmentPattern implements IPattern
     private _left:  IPattern;
     private _right: IExpression;
 
-    public [PATTERN]: void;
+    public [PATTERN]!: void;
 
     public get left(): IPattern
     {

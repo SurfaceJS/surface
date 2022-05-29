@@ -11,7 +11,7 @@ export default class ObjectPattern implements IPattern
 {
     private _properties: (AssignmentProperty | RestElement)[];
 
-    public [PATTERN]: void;
+    public [PATTERN]!: void;
 
     public get properties(): (AssignmentProperty | RestElement)[]
     {
