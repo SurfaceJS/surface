@@ -15,6 +15,8 @@ import semver, { type ReleaseType } from "semver";
 //     InRegistry
 // }
 
+type CustomVersion = "custom";
+
 const GLOB_PRERELEASE = /^\*-(.*)/;
 
 export type Options =
@@ -25,6 +27,7 @@ export type Options =
 
 export default class Publisher
 {
+    private readonly errors: Error[] = [];
     private readonly looger: Logger;
     private readonly lookup  = new Map<string, { manifest: Manifest, path: string }>();
     private readonly updated = new Set<string>();
@@ -69,7 +72,7 @@ export default class Publisher
     //     return Status.New;
     // }
 
-    private async update(manifest: Manifest, releaseType: ReleaseType | "custom", version: string | undefined, identifier: string | undefined): Promise<void>
+    private async update(manifest: Manifest, releaseType: ReleaseType | CustomVersion, version: string | undefined, identifier: string | undefined): Promise<void>
     {
         if (!this.updated.has(manifest.name))
         {
@@ -95,7 +98,11 @@ export default class Publisher
 
             if (!updated)
             {
-                this.looger.error(`Packaged ${manifest.name} has invalid version ${manifest.version}`);
+                const message = `Packaged ${manifest.name} has invalid version ${manifest.version}`;
+
+                this.looger.error(message);
+
+                this.errors.push(new Error(message));
             }
             else
             {
@@ -110,7 +117,7 @@ export default class Publisher
         }
     }
 
-    private async updateDependents(manifest: Manifest, releaseType: ReleaseType | "custom", version: string | undefined, identifier: string | undefined, dependencyType?: "dependencies" | "devDependencies" | "peerDependencies"): Promise<void>
+    private async updateDependents(manifest: Manifest, releaseType: ReleaseType | CustomVersion, version: string | undefined, identifier: string | undefined, dependencyType?: "dependencies" | "devDependencies" | "peerDependencies"): Promise<void>
     {
         if (dependencyType)
         {
@@ -142,10 +149,10 @@ export default class Publisher
         return releaseType.startsWith("pre");
     }
 
+    public async bump(releaseType: CustomVersion, version: string): Promise<void>;
     public async bump(releaseType: ReleaseType): Promise<void>;
-    public async bump(releaseType: "custom", version: string): Promise<void>;
     public async bump(releaseType: Exclude<ReleaseType, "major" | "minor" | "patch">, identifier: string): Promise<void>;
-    public async bump(releaseType: ReleaseType | "custom", identifierOrVersion?: string): Promise<void>
+    public async bump(releaseType: ReleaseType | CustomVersion, identifierOrVersion?: string): Promise<void>
     {
         let version:    string | undefined;
         let identifier: string | undefined;
@@ -180,10 +187,21 @@ export default class Publisher
             for (const entry of this.lookup.values())
             {
                 await this.update(entry.manifest, releaseType, version, identifier);
-                await writeFile(entry.path, JSON.stringify(entry.manifest, null, 4));
             }
 
-            this.looger.info("Bump done!");
+            if (this.errors.length == 0)
+            {
+                for (const entry of this.lookup.values())
+                {
+                    await writeFile(entry.path, JSON.stringify(entry.manifest, null, 4));
+                }
+
+                this.looger.info("Bump done!");
+            }
+            else
+            {
+                throw new AggregateError(this.errors, "Failed to bump some packages.");
+            }
         }
     }
 }

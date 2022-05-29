@@ -1,21 +1,20 @@
-import { existsSync }                                                            from "fs";
-import { readFile, readdir, writeFile }                                          from "fs/promises";
-import path                                                                      from "path";
-import { isDirectory }                                                           from "@surface/io";
-import Logger                                                                    from "@surface/logger";
-import Mock, { It }                                                              from "@surface/mock";
-import { afterEach, batchTest, beforeEach, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import chai                                                                      from "chai";
-import chaiAsPromised                                                            from "chai-as-promised";
-import type { Manifest }                                                         from "pacote";
-import pacote, { type ManifestResult }                                           from "pacote";
-import Publisher                                                                 from "../internal/publisher.js";
-import { type Scenario, type VirtualDirectory, validScenarios }                  from "./publisher.expectations.js";
+import { type Stats, existsSync }                                                 from "fs";
+import { readFile, readdir, stat, writeFile }                                     from "fs/promises";
+import path                                                                       from "path";
+import Logger                                                                     from "@surface/logger";
+import Mock, { It }                                                               from "@surface/mock";
+import { afterEach, batchTest, beforeEach, shouldFail, shouldPass, suite }        from "@surface/test-suite";
+import chai                                                                       from "chai";
+import chaiAsPromised                                                             from "chai-as-promised";
+import type { Manifest }                                                          from "pacote";
+import pacote, { type ManifestResult }                                            from "pacote";
+import Publisher                                                                  from "../internal/publisher.js";
+import { type Scenario, type VirtualDirectory, invalidScenarios, validScenarios } from "./publisher.expectations.js";
 
 chai.use(chaiAsPromised);
 
 const existsSyncMock  = Mock.of(existsSync);
-const isDirectoryMock = Mock.of(isDirectory);
+const statMock        = Mock.of(stat);
 const loggerMock      = Mock.instance<Logger>();
 const LoggerMock      = Mock.of(Logger);
 const pacoteMock      = Mock.of(pacote);
@@ -33,15 +32,11 @@ loggerMock.setup("warn").call(It.any());
 @suite
 export default class SuiteSpec
 {
-    private readonly directoryTree = new Set<string>();
+    private readonly directoryTree = new Map<string, Set<string>>();
 
     private createFile(filepath: string, content: string): void
     {
-        const parent = path.dirname(filepath);
-
-        this.setDirectory(parent);
-
-        isDirectoryMock.call(filepath).resolve(false);
+        statMock.call(filepath).resolve({ isDirectory: () => false } as Stats);
         existsSyncMock.call(filepath).returns(true);
 
         const buffer = Buffer.from(content);
@@ -49,13 +44,26 @@ export default class SuiteSpec
         readFileMock.call(filepath).resolve(buffer);
     }
 
-    private setDirectory(filepath: string): void
+    private resolveFileTree(filepath: string): void
     {
-        if (!this.directoryTree.has(filepath))
-        {
-            isDirectoryMock.call(filepath).resolve(true);
+        const parent = path.dirname(filepath);
+        const child  = path.basename(filepath);
 
-            this.directoryTree.add(filepath);
+        let entries = this.directoryTree.get(parent);
+
+        if (!entries)
+        {
+            this.directoryTree.set(parent, entries = new Set());
+
+            statMock.call(parent).resolve({ isDirectory: () => true } as Stats);
+            readdirMock.call(parent).returnsFactory(async () => Promise.resolve(Array.from(entries!)));
+
+            this.resolveFileTree(parent);
+        }
+
+        if (child)
+        {
+            entries.add(child);
         }
     }
 
@@ -69,16 +77,13 @@ export default class SuiteSpec
 
     private setupVirtualDirectory(directory: VirtualDirectory, parent: string = process.cwd()): void
     {
-        this.setDirectory(parent);
+        readdirMock.call(parent).resolve([]);
 
-        const entries: string[] = [];
+        this.resolveFileTree(parent);
 
         for (const [key, entry] of Object.entries(directory))
         {
             const filepath = path.isAbsolute(key) ? key : path.join(parent, key);
-            const dir      = path.basename(path.dirname(key));
-
-            entries.push(dir == "." ? key : dir);
 
             if (typeof entry == "string")
             {
@@ -88,9 +93,9 @@ export default class SuiteSpec
             {
                 this.setupVirtualDirectory(entry, filepath);
             }
-        }
 
-        readdirMock.call(parent).resolve(entries);
+            this.resolveFileTree(filepath);
+        }
     }
 
     @beforeEach
@@ -100,7 +105,7 @@ export default class SuiteSpec
         LoggerMock.lock();
 
         existsSyncMock.lock();
-        isDirectoryMock.lock();
+        statMock.lock();
         pacoteMock.lock();
         readdirMock.lock();
         readFileMock.lock();
@@ -110,10 +115,12 @@ export default class SuiteSpec
     @afterEach
     public afterEach(): void
     {
+        this.directoryTree.clear();
+
         LoggerMock.release();
 
         existsSyncMock.release();
-        isDirectoryMock.release();
+        statMock.release();
         pacoteMock.release();
         readdirMock.release();
         readFileMock.release();
@@ -122,7 +129,7 @@ export default class SuiteSpec
 
     @batchTest(validScenarios, x => x.message, x => x.skip)
     @shouldPass
-    public async bump(scenario: Scenario): Promise<void>
+    public async validScenarios(scenario: Scenario): Promise<void>
     {
         this.setupVirtualRegistry(scenario.registry);
         this.setupVirtualDirectory(scenario.directory);
@@ -147,9 +154,13 @@ export default class SuiteSpec
         chai.assert.deepEqual(actual, expected);
     }
 
-    @test @shouldFail
-    public failingTest(): void
+    @batchTest(invalidScenarios, x => x.message, x => x.skip)
+    @shouldFail
+    public async invalidScenarios(scenario: Scenario): Promise<void>
     {
-        chai.assert.isNotOk(false);
+        this.setupVirtualRegistry(scenario.registry);
+        this.setupVirtualDirectory(scenario.directory);
+
+        await chai.assert.isRejected(new Publisher(scenario.options).bump(...scenario.bumpArgs as Parameters<Publisher["bump"]>));
     }
 }

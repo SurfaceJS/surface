@@ -42,13 +42,7 @@ export const validScenarios: Scenario[] =
             ],
         },
         bumpArgs:  ["minor"],
-        registry:
-        {
-            "package-a@latest": { version: "0.0.1" } as ManifestResult,
-            "package-b@latest": { version: "0.0.1" } as ManifestResult,
-            "package-c@latest": { version: "0.0.1" } as ManifestResult,
-            "package-d@latest": { version: "0.0.1" } as ManifestResult,
-        },
+        registry:  { },
         directory:
         {
             "./packages":
@@ -392,7 +386,7 @@ export const validScenarios: Scenario[] =
                 version: "1.0.0-alpha",
             },
         },
-        skip: false,
+        skip,
     },
     {
         message:   "Bump with glob prerelease",
@@ -516,4 +510,33 @@ export const validScenarios: Scenario[] =
 ];
 
 export const invalidScenarios: Scenario[] =
-[];
+[
+    {
+        message:   "Bump with multiples updates",
+        options:
+        {
+            logLevel: LogLevel.Trace,
+            packages:
+            [
+                "packages/package-a/package.json",
+            ],
+        },
+        bumpArgs:  ["minor"],
+        registry:  { },
+        directory:
+        {
+            "./packages":
+            {
+                "./package-a/package.json": JSON.stringify
+                (
+                    {
+                        name:    "package-a",
+                        version: "invalid",
+                    } as Partial<Manifest>,
+                ),
+            },
+        },
+        expected: { },
+        skip,
+    },
+];
