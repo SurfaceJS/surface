@@ -1,5 +1,6 @@
 const isSeparator = (value: string | undefined): boolean => value == "/" || value == "\\";
 
+// TODO: implement Bash 4.3 specification(https://www.gnu.org/software/bash/manual/bash.html#Filename-Expansion)
 export default function parsePatternPath(pattern: string): RegExp
 {
     let expression = "";
