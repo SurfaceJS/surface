@@ -1,6 +1,6 @@
 /* eslint-disable no-empty-character-class */
 /* eslint-disable no-control-regex */
-const skip = true;
+const skip = false;
 
 export type Scenario =
 {
@@ -217,21 +217,21 @@ export const scenarios: Scenario[] =
         unmatches: ["(a|b)"],
     },
     {
-        skip:      false,
+        skip,
         pattern:   "{a..c}",
         regex:     /^(?:[a-c])$/,
         matches:   ["a", "b", "c"],
         unmatches: ["d"],
     },
     {
-        skip:      false,
+        skip,
         pattern:   "{Z..a}",
         regex:     /^(?:[Z[\]\^_`a])$/,
         matches:   ["Z", "[", "]", "^", "_", "`", "a"],
         unmatches: ["A", "z"],
     },
     {
-        skip:      false,
+        skip,
         pattern:   "{A..z..6}",
         regex:     /^(?:[AGMSY_ekqw])$/,
         matches:   ["A", "G", "M", "S", "Y", "_", "e", "k", "q", "w"],
@@ -259,7 +259,7 @@ export const scenarios: Scenario[] =
         unmatches: ["c"],
     },
     {
-        skip,
+        skip:      false,
         pattern:   "@(@(a|b))",
         regex:     /^(?:(?:a|b))$/,
         matches:   ["a", "b"],

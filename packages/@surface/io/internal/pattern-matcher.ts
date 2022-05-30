@@ -75,9 +75,11 @@ export default class PatternMatcher
         return offset ? this.source.substring(this.index, this.index + offset) : this.source[this.index];
     }
 
-    private lookahed(character: string): number | null
+    private lookahed(character: string, condition: (index: number) => boolean = () => true): number | null
     {
         let index = this.index;
+
+        let end: number | null = null;
 
         while (index < this.source.length)
         {
@@ -92,14 +94,19 @@ export default class PatternMatcher
             {
                 if (this.source[index] == character)
                 {
-                    return index;
+                    if (condition(index))
+                    {
+                        return index;
+                    }
+
+                    end = index;
                 }
 
                 index++;
             }
         }
 
-        return null;
+        return end;
     }
 
     private parse(): RegExp
@@ -131,52 +138,15 @@ export default class PatternMatcher
             }
         }
 
-        let closed            = false;
-        let hasImplicitEscape = false;
+        const end = this.lookahed("]", index => index > this.index + 1);
 
-        let index = this.index + 1;
-
-        while (!closed && index < this.source.length)
-        {
-            const char = this.source[index];
-            const next = this.source[index + 1];
-
-            if (char == "\\" && next == "]")
-            {
-                index += 2;
-            }
-            else
-            {
-                if (this.source[index] == "]")
-                {
-                    if (index == this.index + 1)
-                    {
-                        hasImplicitEscape = true;
-                    }
-                    else
-                    {
-                        closed = true;
-                    }
-                }
-
-                index++;
-            }
-
-        }
-
-        if (!closed && this.source[this.index + 1] == "]")
-        {
-            closed            = true;
-            hasImplicitEscape = false;
-        }
-
-        if (closed)
+        if (end)
         {
             this.tokens.push("[");
 
             this.advance();
 
-            if (hasImplicitEscape)
+            if (this.getChar() == "]" && end > this.index)
             {
                 this.tokens.push("\\]");
                 this.advance();
@@ -190,7 +160,7 @@ export default class PatternMatcher
                 this.advance();
             }
 
-            while (!this.eof())
+            while (this.index < end)
             {
                 const char = this.getChar();
                 const next = this.source[this.index + 1];
@@ -202,22 +172,15 @@ export default class PatternMatcher
 
                     this.advance(2);
                 }
-                else if (char == "]")
-                {
-                    break;
-                }
                 else
                 {
                     this.scanLiteral();
                 }
             }
 
-            if (!this.eof())
-            {
-                this.tokens.push("]");
+            this.tokens.push("]");
 
-                this.advance();
-            }
+            this.advance();
         }
         else
         {
@@ -425,30 +388,9 @@ export default class PatternMatcher
 
     private scanPatternList(): void
     {
-        let index = this.index;
-        let end   = -1;
+        const end = this.lookahed(")", index => !!this.patternList?.end && index < this.patternList.end);
 
-        while (index < this.source.length)
-        {
-            const char = this.source[index];
-            const next = this.source[index + 1];
-
-            if (char == "\\" && (next == "|" || next == ")"))
-            {
-                index += 2;
-            }
-            else
-            {
-                if (char == ")" && this.patternList?.end != index)
-                {
-                    end = index;
-                }
-
-                index++;
-            }
-        }
-
-        if (end != -1)
+        if (end)
         {
             this.patternList = { start: this.index, end, parent: this.patternList };
 
