@@ -19,7 +19,7 @@
     ],
     "tasks": [
         {
-            "command": "npm run build",
+            "command": "npm run ts:build",
             "label": "build",
             "presentation": {
                 "reveal": "silent"
@@ -30,7 +30,7 @@
             "type": "shell"
         },
         {
-            "command": "npm run build:dry",
+            "command": "npm run ts:dry",
             "label": "dry",
             "presentation": {
                 "reveal": "always"
@@ -41,7 +41,7 @@
             "type": "shell"
         },
         {
-            "command": "npm run build:watch",
+            "command": "npm run ts:watch",
             "label": "watch",
             "presentation": {
                 "reveal": "always"
@@ -52,7 +52,7 @@
             "type": "shell"
         },
         {
-            "command": "npm run build:clean",
+            "command": "npm run ts:clean",
             "label": "clean",
             "presentation": {
                 "reveal": "silent"

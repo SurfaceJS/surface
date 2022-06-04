@@ -30,19 +30,17 @@
                 "${workspaceFolder}/packages/@surface/*/tests/**/*.js"
             ],
             "program":  "${workspaceFolder}/packages/@surface/builder/cli",
-            "protocol": "inspector",
             "request":  "launch",
             "skipFiles":
             [
                 "<node_internals>/**",
             ],
-            "type": "node"
+            "type": "pwa-node"
         },
         {
             "cwd":      "${fileDirname}",
             "name":     "Debug File",
             "program":  "${fileDirname}/${fileBasenameNoExtension}.js",
-            "protocol": "inspector",
             "request":  "launch",
             "runtimeArgs":
             [
@@ -53,7 +51,7 @@
                 "<node_internals>/**",
             ],
             "sourceMaps": true,
-            "type":       "node"
+            "type":       "pwa-node"
         },
         {
             // "args":
@@ -67,7 +65,6 @@
             "cwd":      "${fileDirname}",
             "name":     "Debug Task Cli",
             "program":  "${workspaceFolder}/tasks/cli",
-            "protocol": "inspector",
             "request":  "launch",
             "runtimeArgs":
             [
@@ -78,7 +75,7 @@
                 "<node_internals>/**",
             ],
             "sourceMaps": true,
-            "type":       "node"
+            "type":       "pwa-node"
         },
         {
             "args":
@@ -98,7 +95,6 @@
                 "${workspaceFolder}/packages/@surface/*/tests/**/*.js"
             ],
             "program":  "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-            "protocol": "inspector",
             "request":  "launch",
             "runtimeArgs":
             [
