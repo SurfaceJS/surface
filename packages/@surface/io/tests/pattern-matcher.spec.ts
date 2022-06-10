@@ -8,19 +8,19 @@ import { scenarios as rangeScenarios }  from "./pattern-matcher.ranges.expectati
 export default class PatternMatcherSpec
 {
     @shouldPass
-    @batchTest([...scenarios, ...rangeScenarios], x => `Expects "${x.pattern}" matches: [${x.matches.join(", ")}] and unmatches: [${x.unmatches.join(", ")}]`, x => x.skip)
+    @batchTest([...scenarios, ...rangeScenarios], x => `Expects "${x.pattern}" matches: [${x.matches.join(", ")}] and mismatches: [${x.mismatches.join(", ")}]`, x => x.skip)
     public parsePatternPath(scenario: Scenario): void
     {
         const regex = PatternMatcher.parse(scenario.pattern);
 
-        // chai.assert.deepEqual(regex, scenario.regex, "regex deep equal to expectation.regex");
+        chai.assert.deepEqual(regex, scenario.regex, "regex deep equal to expectation.regex");
 
         for (const path of scenario.matches)
         {
             chai.assert.isTrue(regex.test(path), `regex.test("${path}") should be true`);
         }
 
-        for (const path of scenario.unmatches)
+        for (const path of scenario.mismatches)
         {
             chai.assert.isFalse(regex.test(path), `regex.test("${path}") should be false`);
         }

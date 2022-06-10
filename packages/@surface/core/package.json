@@ -6,7 +6,7 @@
     "dependencies": {
         "tslib": "~2.4.0"
     },
-    "description": "Provives core functionality of many @surfaces modules.",
+    "description": "Provides core functionality of many @surfaces modules.",
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
         "@types/chai": "~4.3.1",

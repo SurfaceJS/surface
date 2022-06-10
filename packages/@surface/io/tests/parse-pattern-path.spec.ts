@@ -7,7 +7,7 @@ import { type Scenario, validScenarios } from "./parse-pattern-path.expectations
 export default class ParsePatternPathSpec
 {
     @shouldPass
-    @batchTest(validScenarios, x => `Expects "${x.pattern}" matches: [${x.matches.join(", ")}] and unmatches: [${x.unmatches.join(", ")}]`)
+    @batchTest(validScenarios, x => `Expects "${x.pattern}" matches: [${x.matches.join(", ")}] and mismatches: [${x.mismatches.join(", ")}]`)
     public parsePatternPath(scenario: Scenario): void
     {
         const regex = parsePatternPath(scenario.pattern);
@@ -17,7 +17,7 @@ export default class ParsePatternPathSpec
             chai.assert.isTrue(regex.test(path), `regex.test("${path}") is true`);
         }
 
-        for (const path of scenario.unmatches)
+        for (const path of scenario.mismatches)
         {
             chai.assert.isFalse(regex.test(path), `regex.test("${path}") is false`);
         }

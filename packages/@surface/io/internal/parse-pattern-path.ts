@@ -32,11 +32,11 @@ export default function parsePatternPath(pattern: string): RegExp
 
                     const next = pattern[index + 1];
 
-                    const isGlobstar = starCount > 1
+                    const isGlobStar = starCount > 1
                         && (!previous || isSeparator(previous))
                         && (!next || isSeparator(next));
 
-                    if (isGlobstar)
+                    if (isGlobStar)
                     {
                         index++;
 

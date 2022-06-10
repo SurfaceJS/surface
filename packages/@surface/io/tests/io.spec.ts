@@ -339,7 +339,7 @@ export default class IoSpec
             TO_RESOLVE_3_FILE,
         ];
 
-        const absoltePaths =
+        const absolutePaths =
         [
             path.join(PATH, TO_RESOLVE_1_FILE),
             path.join(PATH, TO_RESOLVE_2_FILE),
@@ -357,7 +357,7 @@ export default class IoSpec
         statMock.call(path.join(PATH, TO_RESOLVE_3_FILE)).resolve({ isFIFO: () => true, isFile: () => false } as Stats);
 
         chai.assert.equal(await lookup(relativePaths), expected);
-        chai.assert.equal(await lookup(absoltePaths), expected);
+        chai.assert.equal(await lookup(absolutePaths), expected);
     }
 
     @test @shouldPass
@@ -376,7 +376,7 @@ export default class IoSpec
             TO_RESOLVE_3_FILE,
         ];
 
-        const absoltePaths =
+        const absolutePaths =
         [
             path.join(PATH, TO_RESOLVE_1_FILE),
             path.join(PATH, TO_RESOLVE_2_FILE),
@@ -394,7 +394,7 @@ export default class IoSpec
         statSyncMock.call(path.join(PATH, TO_RESOLVE_3_FILE)).returns({ isFIFO: () => true, isFile: () => false } as Stats);
 
         chai.assert.equal(lookupSync(relativePaths), expected);
-        chai.assert.equal(lookupSync(absoltePaths), expected);
+        chai.assert.equal(lookupSync(absolutePaths), expected);
     }
 
     @test @shouldPass
@@ -449,13 +449,13 @@ export default class IoSpec
     public async createPathError(): Promise<void>
     {
         const PATH_TO_CREATE        = path.join(PATH, "to", "create");
-        const PATH_TO_SIMBOLIC_LINK = path.join(PATH, "to", "simbolic", "link");
+        const PATH_TO_SYMBOLIC_LINK = path.join(PATH, "to", "symbolic", "link");
 
         existsSyncMock.call(PATH_TO_CREATE).returns(true);
-        existsSyncMock.call(PATH_TO_SIMBOLIC_LINK).returns(true);
-        lstatMock.call(PATH_TO_SIMBOLIC_LINK).resolve({ isSymbolicLink: () => true } as Stats);
+        existsSyncMock.call(PATH_TO_SYMBOLIC_LINK).returns(true);
+        lstatMock.call(PATH_TO_SYMBOLIC_LINK).resolve({ isSymbolicLink: () => true } as Stats);
         statMock.call(PATH_TO_CREATE).resolve({ isDirectory: () => false } as Stats);
-        readlinkMock.call(PATH_TO_SIMBOLIC_LINK).resolve(PATH_TO_SIMBOLIC_LINK);
+        readlinkMock.call(PATH_TO_SYMBOLIC_LINK).resolve(PATH_TO_SYMBOLIC_LINK);
 
         try
         {
@@ -468,11 +468,11 @@ export default class IoSpec
 
         try
         {
-            await createPath(PATH_TO_SIMBOLIC_LINK);
+            await createPath(PATH_TO_SYMBOLIC_LINK);
         }
         catch (error)
         {
-            chai.assert.deepEqual(resolveError(error).message, `${PATH_TO_SIMBOLIC_LINK} exist and isn't an directory`);
+            chai.assert.deepEqual(resolveError(error).message, `${PATH_TO_SYMBOLIC_LINK} exist and isn't an directory`);
         }
     }
 
