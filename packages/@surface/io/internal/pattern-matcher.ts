@@ -343,8 +343,6 @@ export default class PatternMatcher
             }
             else
             {
-                const separator = endDigit - startDigit > 1 ? "-" : "";
-
                 const startRange = startDigit;
                 const endRange   = endDigit - (rest == 0 ? 0 : 1);
 
@@ -354,7 +352,7 @@ export default class PatternMatcher
                 }
                 else
                 {
-                    endPattern += `[${startDigit}${separator}${endDigit - (rest == 0 ? 0 : 1)}]`;
+                    endPattern += this.createRange(startDigit, endDigit - (rest == 0 ? 0 : 1));
                 }
 
                 if (rest > 0)
