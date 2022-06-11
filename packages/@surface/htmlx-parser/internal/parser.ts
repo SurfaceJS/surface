@@ -357,7 +357,7 @@ export default class Parser
     {
         this.trimContent(template.content);
 
-        return { childs: this.enumerateParsedNodes(template.content), type: DescriptorType.Fragment };
+        return { children: this.enumerateParsedNodes(template.content), type: DescriptorType.Fragment };
     }
 
     private *parseAttributes(element: Element, stackTrace: StackTrace): Iterable<AttributeBindDescritor>
@@ -448,7 +448,7 @@ export default class Parser
                 const type = isOneWay
                     ? DescriptorType.Oneway
                     : isTwoWay
-                        ? DescriptorType.Twoway
+                        ? DescriptorType.TwoWay
                         : DescriptorType.Interpolation;
 
                 const expression = this.tryParseExpression(isInterpolation ? parseInterpolation : parseExpression, attribute.value, source);
@@ -465,7 +465,7 @@ export default class Parser
                     yield { name: attribute.name, type: DescriptorType.Attribute, value: "" };
                     yield { key: attribute.name, observables, source, stackTrace, type, value: expression };
                 }
-                else if (type == DescriptorType.Twoway)
+                else if (type == DescriptorType.TwoWay)
                 {
                     yield { left: key, right: observables[0]!, source, stackTrace, type };
                 }
@@ -531,32 +531,32 @@ export default class Parser
 
                 const nextElementSibling = node.nextElementSibling!;
 
-                const [simblingTemplate, simblingDirective] = this.decomposeDirectives(node.nextElementSibling!) as [HTMLTemplateElement, StatementDirective];
+                const [siblingTemplate, siblingDirective] = this.decomposeDirectives(node.nextElementSibling!) as [HTMLTemplateElement, StatementDirective];
 
                 if (!this.isDecomposed(nextElementSibling))
                 {
                     this.pushToStack(nextElementSibling, ++elementIndex);
                 }
 
-                const value = simblingDirective.type == DirectiveType.Else ? "true" : simblingDirective.expression;
+                const value = siblingDirective.type == DirectiveType.Else ? "true" : siblingDirective.expression;
 
                 this.index++;
 
-                const expression = this.tryParseExpression(parseExpression, value, simblingDirective.source);
-                const fragment = this.parseTemplate(simblingTemplate);
+                const expression = this.tryParseExpression(parseExpression, value, siblingDirective.source);
+                const fragment = this.parseTemplate(siblingTemplate);
 
                 const conditionalBranchDescriptor: BranchDescriptor =
                 {
                     expression,
                     fragment,
                     observables: ObserverVisitor.observe(expression),
-                    source:      simblingDirective.source,
+                    source:      siblingDirective.source,
                     stackTrace:  [...this.stackTrace],
                 };
 
                 branches.push(conditionalBranchDescriptor);
 
-                node = simblingTemplate;
+                node = siblingTemplate;
 
                 this.stackTrace.pop();
             }
@@ -638,7 +638,7 @@ export default class Parser
         const descriptor: ElementDescriptor =
         {
             attributes: this.parseAttributes(element, stackTrace),
-            childs:     element.nodeName == "SCRIPT" || element.nodeName == "STYLE"
+            children:   element.nodeName == "SCRIPT" || element.nodeName == "STYLE"
                 ? element.textContent
                     ? [{ type: DescriptorType.Text, value: element.textContent }]
                     : []

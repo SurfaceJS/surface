@@ -28,8 +28,8 @@ const attributeFactoryMap: Record<Exclude<AttributeBindDescritor["type"], Descri
     [DescriptorType.Spread]:        "createSpreadFactory",
     [DescriptorType.EventListener]: "createEventListenerFactory",
     [DescriptorType.Interpolation]: "createInterpolationFactory",
-    [DescriptorType.Oneway]:        "createOnewayFactory",
-    [DescriptorType.Twoway]:        "createTwowayFactory",
+    [DescriptorType.Oneway]:        "createOneWayFactory",
+    [DescriptorType.TwoWay]:        "createTwoWayFactory",
 };
 
 const spreadFactories =
@@ -208,7 +208,7 @@ export default class SourceGenerator
                         this.writeLine(this.generateStackStrace ? `${JSON.stringify(descriptor.source)},` : "undefined,");
                         this.writeLine(this.generateStackStrace ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
                         break;
-                    case DescriptorType.Twoway:
+                    case DescriptorType.TwoWay:
                     default:
                         this.writeLine(`"${descriptor.left}",`);
                         this.writeLine(`${JSON.stringify(descriptor.right)},`);
@@ -230,7 +230,7 @@ export default class SourceGenerator
         }
     }
 
-    private writeChilds(descriptors: Iterable<Descriptor>, optional: boolean): void
+    private writeChildren(descriptors: Iterable<Descriptor>, optional: boolean): void
     {
         let empty = true;
 
@@ -315,12 +315,12 @@ export default class SourceGenerator
         this.lines.length     = 0;
     }
 
-    private writeBranchs(branchs: BranchDescriptor[]): void
+    private writeBranches(branches: BranchDescriptor[]): void
     {
         this.writeLine("[");
         this.increaseIndent();
 
-        for (const branch of branchs)
+        for (const branch of branches)
         {
             this.writeLine("[");
             this.increaseIndent();
@@ -352,7 +352,7 @@ export default class SourceGenerator
             case DescriptorType.Element:
                 this.writeLine(`${JSON.stringify(descriptor.tag)},`);
                 this.writeAttributeBinds(descriptor.tag, descriptor.attributes);
-                this.writeChilds(descriptor.childs, true);
+                this.writeChildren(descriptor.children, true);
                 this.write(",");
                 break;
             case DescriptorType.Comment:
@@ -366,7 +366,7 @@ export default class SourceGenerator
                 this.writeLine(this.generateStackStrace ? `${JSON.stringify(descriptor.stackTrace)},` : "undefined,");
                 break;
             case DescriptorType.Choice:
-                this.writeBranchs(descriptor.branches);
+                this.writeBranches(descriptor.branches);
                 break;
             case DescriptorType.Loop:
                 this.writeLine(`${this.stringifyPattern(descriptor.left)},`);
@@ -398,7 +398,7 @@ export default class SourceGenerator
                 break;
             case DescriptorType.Fragment:
             default:
-                this.writeChilds(descriptor.childs, false);
+                this.writeChildren(descriptor.children, false);
         }
 
         this.decreaseIndent();

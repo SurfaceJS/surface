@@ -1,5 +1,5 @@
 import type { IDisposable }       from "@surface/core";
-import { onewaybind, twowaybind } from "../common.js";
+import { oneWayBind, twoWayBind } from "../common.js";
 import Metadata                   from "../metadata.js";
 
 export default function createSpreadBindsFactory(source: HTMLElement, target: HTMLElement): IDisposable
@@ -10,12 +10,12 @@ export default function createSpreadBindsFactory(source: HTMLElement, target: HT
 
     for (const entry of metadata.context.binds.oneway.values())
     {
-        disposables.push(onewaybind(target, entry.scope, entry.key, entry.evaluator, entry.observables));
+        disposables.push(oneWayBind(target, entry.scope, entry.key, entry.evaluator, entry.observables));
     }
 
-    for (const entry of metadata.context.binds.twoway.values())
+    for (const entry of metadata.context.binds.twoWay.values())
     {
-        disposables.push(twowaybind(target, entry.scope, entry.left, entry.right));
+        disposables.push(twoWayBind(target, entry.scope, entry.left, entry.right));
     }
 
     return { dispose: () => disposables.splice(0).forEach(x => x.dispose()) };

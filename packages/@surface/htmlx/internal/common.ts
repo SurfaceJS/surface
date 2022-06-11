@@ -10,7 +10,7 @@ import { scheduler }                                                           f
 import type DestructuredEvaluator                                              from "./types/destructured-evaluator.js";
 import type Evaluator                                                          from "./types/evaluator.js";
 
-export function onewaybind(element: HTMLElement, scope: object, key: string, evaluator: Evaluator, observables: ObservablePath[], source?: string, stackTrace?: StackTrace): IDisposable
+export function oneWayBind(element: HTMLElement, scope: object, key: string, evaluator: Evaluator, observables: ObservablePath[], source?: string, stackTrace?: StackTrace): IDisposable
 {
     let listener: Delegate;
 
@@ -36,16 +36,16 @@ export function onewaybind(element: HTMLElement, scope: object, key: string, eva
     return { dispose: () => (subscription.unsubscribe(), Metadata.from(element).context.binds.oneway.delete(key)) };
 }
 
-export function twowaybind(element: HTMLElement, scope: object, left: string, right: ObservablePath, source?: string, stackTrace?: StackTrace): IDisposable
+export function twoWayBind(element: HTMLElement, scope: object, left: string, right: ObservablePath, source?: string, stackTrace?: StackTrace): IDisposable
 {
     checkPath(scope, right, source, stackTrace);
     checkProperty(element, left, source, stackTrace);
 
     const subscription = bind(element, [left], scope, right);
 
-    Metadata.from(element).context.binds.twoway.set(left, { left, right, scope });
+    Metadata.from(element).context.binds.twoWay.set(left, { left, right, scope });
 
-    return { dispose: () => (subscription.unsubscribe(), Metadata.from(element).context.binds.twoway.delete(left)) };
+    return { dispose: () => (subscription.unsubscribe(), Metadata.from(element).context.binds.twoWay.delete(left)) };
 }
 
 export default function eventListener(element: HTMLElement, scope: object, type: string, listenerEvaluator: Evaluator, contextEvaluator: Evaluator, source?: string, stackTrace?: StackTrace): IDisposable
@@ -125,11 +125,11 @@ export function classMap(element: HTMLElement, classes: Record<string, boolean>)
 
 export function *enumerateRange(start: ChildNode, end: ChildNode): Iterable<ChildNode>
 {
-    let simbling: ChildNode | null = null;
+    let sibling: ChildNode | null = null;
 
-    while ((simbling = start.nextSibling) && simbling != end)
+    while ((sibling = start.nextSibling) && sibling != end)
     {
-        yield simbling;
+        yield sibling;
     }
 }
 

@@ -250,18 +250,18 @@ export default class Observer<TValue = unknown> implements IDisposable
         Observer.unobservePath(this.root, this.path, this as Observer);
     }
 
-    public subscribe(listerner: Delegate<[TValue]>): Subscription
+    public subscribe(listener: Delegate<[TValue]>): Subscription
     {
-        this.listeners.add(listerner);
+        this.listeners.add(listener);
 
-        return { unsubscribe: () => this.unsubscribe(listerner) };
+        return { unsubscribe: () => this.unsubscribe(listener) };
     }
 
-    public unsubscribe(listerner: Delegate<[TValue]>): void
+    public unsubscribe(listener: Delegate<[TValue]>): void
     {
-        if (!this.listeners.delete(listerner))
+        if (!this.listeners.delete(listener))
         {
-            throw new Error("Listerner not subscribed");
+            throw new Error("Listener not subscribed");
         }
     }
 
@@ -271,9 +271,9 @@ export default class Observer<TValue = unknown> implements IDisposable
         {
             const value = getValue(this.root, ...this.path) as TValue;
 
-            for (const listerner of this.listeners)
+            for (const listener of this.listeners)
             {
-                listerner(value);
+                listener(value);
             }
         }
     }

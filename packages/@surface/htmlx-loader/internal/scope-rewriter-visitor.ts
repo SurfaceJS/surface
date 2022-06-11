@@ -36,11 +36,11 @@ export default class ScopeRewriterVisitor extends ExpressionRewriterVisitor
 
         visitor.createScope();
 
-        const rewritedPattern = visitor.visit(pattern) as IPattern;
+        const rewrittenPattern = visitor.visit(pattern) as IPattern;
 
         visitor.deleteScope();
 
-        return rewritedPattern;
+        return rewrittenPattern;
     }
 
     public static collectScope(pattern: IPattern): ObjectExpression

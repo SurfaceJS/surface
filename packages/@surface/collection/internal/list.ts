@@ -162,15 +162,15 @@ export default class List<T> extends Enumerable<T>
      * @param count Quantity of items to remove.
      */
     public remove(index: number, count: number): void;
-    public remove(indexOritem: number | T, count?: number): void
+    public remove(indexOrItem: number | T, count?: number): void
     {
-        if (typeof indexOritem == "number")
+        if (typeof indexOrItem == "number")
         {
-            this[SOURCE].splice(indexOritem, count ?? 1);
+            this[SOURCE].splice(indexOrItem, count ?? 1);
         }
         else
         {
-            this[SOURCE].splice(this[SOURCE].indexOf(indexOritem), 1);
+            this[SOURCE].splice(this[SOURCE].indexOf(indexOrItem), 1);
         }
     }
 }

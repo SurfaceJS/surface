@@ -16,8 +16,8 @@ export default class Setup<TResult>
     private readonly callbacks: Map<Args, Function> = new Map();
     private readonly factories: Map<Args, Delegate<Args, TResult>> = new Map();
     private readonly results:   Map<Args, TResult> = new Map();
-    private readonly resolveds: Map<Args, Promise<TResult>> = new Map();
-    private readonly rejecteds: Map<Args, Promise<TResult>> = new Map();
+    private readonly resolved:  Map<Args, Promise<TResult>> = new Map();
+    private readonly rejected:  Map<Args, Promise<TResult>> = new Map();
     private readonly throws:    Map<Args, unknown> = new Map();
 
     private all(source: Args, args: Args): boolean
@@ -98,14 +98,14 @@ export default class Setup<TResult>
             return factory(...args);
         }
 
-        const rejected = this.getFrom(this.rejecteds, args);
+        const rejected = this.getFrom(this.rejected, args);
 
         if (rejected)
         {
             return rejected;
         }
 
-        const resolved = this.getFrom(this.resolveds, args);
+        const resolved = this.getFrom(this.resolved, args);
 
         if (resolved)
         {
@@ -122,12 +122,12 @@ export default class Setup<TResult>
 
     public setRejected(args: Args, reason: unknown): void
     {
-        this.rejecteds.set(this.getKey(this.results, args), Promise.reject(reason));
+        this.rejected.set(this.getKey(this.results, args), Promise.reject(reason));
     }
 
     public setResolved(args: Args, value: Awaited<TResult>): void
     {
-        this.resolveds.set(this.getKey(this.results, args), Promise.resolve(value));
+        this.resolved.set(this.getKey(this.results, args), Promise.resolve(value));
     }
 
     public setReturns(args: Args, value: TResult): void

@@ -28,7 +28,7 @@ export type Options =
 export default class Publisher
 {
     private readonly errors: Error[] = [];
-    private readonly looger: Logger;
+    private readonly logger: Logger;
     private readonly lookup  = new Map<string, { manifest: Manifest, path: string }>();
     private readonly updated = new Set<string>();
     private readonly options: Required<Options>;
@@ -40,7 +40,7 @@ export default class Publisher
             packages: options.packages ?? [],
         };
 
-        this.looger = new Logger(this.options.logLevel);
+        this.logger = new Logger(this.options.logLevel);
     }
 
     // private async get(uri: string): Promise<Manifest | null>
@@ -100,7 +100,7 @@ export default class Publisher
             {
                 const message = `Packaged ${manifest.name} has invalid version ${manifest.version}`;
 
-                this.looger.error(message);
+                this.logger.error(message);
 
                 this.errors.push(new Error(message));
             }
@@ -108,7 +108,7 @@ export default class Publisher
             {
                 manifest.version = updated;
 
-                this.looger.trace(`${manifest.name} version updated from ${actual} to ${manifest.version}`);
+                this.logger.trace(`${manifest.name} version updated from ${actual} to ${manifest.version}`);
             }
 
             this.updated.add(manifest.name);
@@ -131,7 +131,7 @@ export default class Publisher
 
                 dependent[dependencyType]![manifest.name] = `~${manifest.version}`;
 
-                this.looger.trace(`${manifest.name} in ${dependent.name} ${dependencyType} updated from ${dependencyVersion} to ${manifest.version}`);
+                this.logger.trace(`${manifest.name} in ${dependent.name} ${dependencyType} updated from ${dependencyVersion} to ${manifest.version}`);
 
                 await this.update(dependent, releaseType, version, identifier);
             }
@@ -180,7 +180,7 @@ export default class Publisher
 
         if (this.lookup.size == 0)
         {
-            this.looger.info("No packages found");
+            this.logger.info("No packages found");
         }
         else
         {
@@ -196,7 +196,7 @@ export default class Publisher
                     await writeFile(entry.path, JSON.stringify(entry.manifest, null, 4));
                 }
 
-                this.looger.info("Bump done!");
+                this.logger.info("Bump done!");
             }
             else
             {

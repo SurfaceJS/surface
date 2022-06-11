@@ -2,7 +2,7 @@
 import type { Constructor, Delegate }                  from "@surface/core";
 import { DisposableMetadata, HookableMetadata }        from "@surface/core";
 import type { DirectiveConstructor, DirectiveFactory } from "@surface/htmlx";
-import { Metadata as HTMLXMetada }                     from "@surface/htmlx";
+import { Metadata as HTMLXMetadata }                   from "@surface/htmlx";
 import Observer                                        from "@surface/observer";
 import type IHTMLXElement                              from "./interfaces/htmlx-element";
 import Metadata                                        from "./metadata/metadata.js";
@@ -18,12 +18,12 @@ export default class HTMLXElement extends HTMLElement implements IHTMLXElement
 
     public get $injections(): string[]
     {
-        return Array.from(HTMLXMetada.from(this).injections.keys());
+        return Array.from(HTMLXMetadata.from(this).injections.keys());
     }
 
     public get $listeners(): Record<string, Delegate>
     {
-        return Object.fromEntries(HTMLXMetada.from(this).listeners);
+        return Object.fromEntries(HTMLXMetadata.from(this).listeners);
     }
 
     public declare shadowRoot: ShadowRoot;
@@ -38,7 +38,7 @@ export default class HTMLXElement extends HTMLElement implements IHTMLXElement
 
     private static applyMetadata(instance: HTMLElement & { shadowRoot: ShadowRoot }): void
     {
-        const htmlxMetadata      = HTMLXMetada.from(instance);
+        const htmlxMetadata      = HTMLXMetadata.from(instance);
         const disposableMetadata = DisposableMetadata.from(instance);
 
         const injectionsSubscription = htmlxMetadata.injections.subscribe(() => Observer.notifyAll(instance, "$injections"));

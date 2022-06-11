@@ -135,65 +135,65 @@ export default class InterpolatedExpressionSpec
     @test @shouldPass
     public interpolationWithBracketInsideDoubleQuotedString(): void
     {
-        const expression = InterpolatedExpression.parse("interpolatation with { \" double quoted string } - { \" } inside");
+        const expression = InterpolatedExpression.parse("interpolation with { \" double quoted string } - { \" } inside");
 
-        chai.assert.deepEqual(expression.evaluate({ }), "interpolatation with  double quoted string } - {  inside");
+        chai.assert.deepEqual(expression.evaluate({ }), "interpolation with  double quoted string } - {  inside");
     }
 
     @test @shouldPass
     public interpolationWithBracketInsideScapedDoubleQuotedString(): void
     {
-        const expression = InterpolatedExpression.parse("interpolatation with { \" double \\\"quoted\\\" string } - { \" } inside");
+        const expression = InterpolatedExpression.parse("interpolation with { \" double \\\"quoted\\\" string } - { \" } inside");
 
-        chai.assert.deepEqual(expression.evaluate({ }), "interpolatation with  double \"quoted\" string } - {  inside");
+        chai.assert.deepEqual(expression.evaluate({ }), "interpolation with  double \"quoted\" string } - {  inside");
     }
 
     @test @shouldPass
     public interpolationWithBracketInsideSingleQuotedString(): void
     {
-        const expression = InterpolatedExpression.parse("interpolatation with { ' single quoted string } - { ' } inside");
+        const expression = InterpolatedExpression.parse("interpolation with { ' single quoted string } - { ' } inside");
 
-        chai.assert.deepEqual(expression.evaluate({ }), "interpolatation with  single quoted string } - {  inside");
+        chai.assert.deepEqual(expression.evaluate({ }), "interpolation with  single quoted string } - {  inside");
     }
 
     @test @shouldPass
     public interpolationWithBracketInsideScapedSingleQuotedString(): void
     {
-        const expression = InterpolatedExpression.parse("interpolatation with { ' single \\'quoted\\' string } - { ' } inside");
+        const expression = InterpolatedExpression.parse("interpolation with { ' single \\'quoted\\' string } - { ' } inside");
 
-        chai.assert.deepEqual(expression.evaluate({ }), "interpolatation with  single 'quoted' string } - {  inside");
+        chai.assert.deepEqual(expression.evaluate({ }), "interpolation with  single 'quoted' string } - {  inside");
     }
 
     @test @shouldPass
     public interpolationWithBracketInsideTemplateString(): void
     {
-        const expression = InterpolatedExpression.parse("interpolatation with { ` template single string } - { ` } inside");
+        const expression = InterpolatedExpression.parse("interpolation with { ` template single string } - { ` } inside");
 
-        chai.assert.deepEqual(expression.evaluate({ }), "interpolatation with  template single string } - {  inside");
+        chai.assert.deepEqual(expression.evaluate({ }), "interpolation with  template single string } - {  inside");
     }
 
     @test @shouldPass
     public interpolationWithBracketInsideScapedTemplateString(): void
     {
-        const expression = InterpolatedExpression.parse("interpolatation with { ` template \\`single\\` string } - { ` } inside");
+        const expression = InterpolatedExpression.parse("interpolation with { ` template \\`single\\` string } - { ` } inside");
 
-        chai.assert.deepEqual(expression.evaluate({ }), "interpolatation with  template `single` string } - {  inside");
+        chai.assert.deepEqual(expression.evaluate({ }), "interpolation with  template `single` string } - {  inside");
     }
 
     @test @shouldPass
     public interpolationWithBracketInsideTemplateStringAndTemplateInterpolation(): void
     {
-        const expression = InterpolatedExpression.parse("interpolatation with { ` template single ${ `value: ` + \"1\"} ` } inside");
+        const expression = InterpolatedExpression.parse("interpolation with { ` template single ${ `value: ` + \"1\"} ` } inside");
 
-        chai.assert.deepEqual(expression.evaluate({  }), "interpolatation with  template single value: 1  inside");
+        chai.assert.deepEqual(expression.evaluate({  }), "interpolation with  template single value: 1  inside");
     }
 
     @test @shouldPass
     public interpolationWithBracketInsideTemplateAndStringAndConditionalTemplateInterpolation(): void
     {
-        const expression = InterpolatedExpression.parse("interpolatation with { value == 'default' ? '' : `${value} expression` } inside");
+        const expression = InterpolatedExpression.parse("interpolation with { value == 'default' ? '' : `${value} expression` } inside");
 
-        chai.assert.deepEqual(expression.evaluate({ value: "conditional" }), "interpolatation with conditional expression inside");
+        chai.assert.deepEqual(expression.evaluate({ value: "conditional" }), "interpolation with conditional expression inside");
     }
 
     @test @shouldPass
@@ -229,7 +229,7 @@ export default class InterpolatedExpressionSpec
     }
 
     @test @shouldFail
-    public unclosedBrancket(): void
+    public unclosedBracket(): void
     {
         chai.assert.deepEqual(parseWithError("This { Should throw"), toRaw(new SyntaxError("Unexpected end of expression", 1, 18, 19)));
         chai.assert.deepEqual(parseWithError("This { 'Should throw' "), toRaw(new SyntaxError("Unexpected end of expression", 1, 21, 22)));
@@ -253,7 +253,7 @@ export default class InterpolatedExpressionSpec
     }
 
     @test @shouldFail
-    public unclosedTemplateBrackedString(): void
+    public unclosedTemplateBracketString(): void
     {
         chai.assert.deepEqual(parseWithError("This { `Should ${'throw'` }"), toRaw(new SyntaxError("Unexpected end of expression", 1, 26, 27)));
 

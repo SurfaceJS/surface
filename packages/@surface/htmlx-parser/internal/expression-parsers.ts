@@ -104,12 +104,12 @@ export function parseForLoopStatement(expression: string): ForLoopStatement
         throw new Error("Invalid for-loop statement");
     }
 
-    const [, rawLeft, operator, rawRigth] = Array.from(forExpression.exec(expression)!) as [string, string, "in" | "of", string];
+    const [, rawLeft, operator, rawRight] = Array.from(forExpression.exec(expression)!) as [string, string, "in" | "of", string];
 
     const destructured = rawLeft.startsWith("[") || rawLeft.startsWith("{");
 
     const left  = parseStatement(destructured ? parseDestructuredPattern : parseExpression, expression, rawLeft);
-    const right = parseStatement(parseExpression, expression, rawRigth);
+    const right = parseStatement(parseExpression, expression, rawRight);
 
     if (!TypeGuard.isIdentifier(left) && !TypeGuard.isArrayPattern(left) && !TypeGuard.isObjectPattern(left))
     {

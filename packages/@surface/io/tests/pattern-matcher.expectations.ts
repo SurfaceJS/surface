@@ -1,6 +1,7 @@
 /* eslint-disable max-lines */
 /* eslint-disable no-empty-character-class */
 /* eslint-disable no-control-regex */
+// cSpell:ignore AGMSY, ekqw
 const skip = false;
 
 export type Scenario =

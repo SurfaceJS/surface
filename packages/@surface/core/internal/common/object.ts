@@ -400,9 +400,9 @@ export function objectFactory(keys: [string, unknown][], target: Indexer = { }):
     return target;
 }
 
-export function pathfy(source: object, options?: { keySeparator?: string, keyTranform?: Delegate<[string], string>, valueSeparator?: string }): string[]
+export function makePath(source: object, options?: { keySeparator?: string, keyTransform?: Delegate<[string], string>, valueSeparator?: string }): string[]
 {
-    const { keySeparator = ".", keyTranform = (x: string) => x, valueSeparator = ": " } = options ?? { };
+    const { keySeparator = ".", keyTransform = (x: string) => x, valueSeparator = ": " } = options ?? { };
 
     const result: string[] = [];
 
@@ -410,11 +410,11 @@ export function pathfy(source: object, options?: { keySeparator?: string, keyTra
     {
         if (value instanceof Object)
         {
-            result.push(...pathfy(value, options).map(x => keyTranform(key) + (keySeparator ?? ".") + x));
+            result.push(...makePath(value, options).map(x => keyTransform(key) + (keySeparator ?? ".") + x));
         }
         else
         {
-            result.push(`${keyTranform(key)}${valueSeparator ?? ": "}${value}`);
+            result.push(`${keyTransform(key)}${valueSeparator ?? ": "}${value}`);
         }
     }
 

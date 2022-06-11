@@ -8,12 +8,12 @@ import type RouteMatch                                         from "../internal
 import type { RouteInvalidExpectation, RouteValidExpectation } from "./route-expectations.js";
 import { routeInvalidExpectations, routeValidExpectations }    from "./route-expectations.js";
 
-const numberconstraint:   IConstraint  = { validate: x => !Number.isNaN(Number(x)) };
+const numberConstraint:   IConstraint  = { validate: x => !Number.isNaN(Number(x)) };
 const alphaConstraint:    IConstraint  = { validate: x => /[a-z]/i.test(x) };
 const booleanTransformer: ITransformer = { parse: x => x == "true", stringify: String };
 const numberTransformer:  ITransformer = { parse: Number, stringify: String };
 
-const constraints  = new Map([["Number", numberconstraint],  ["Alpha", alphaConstraint]]);
+const constraints  = new Map([["Number", numberConstraint],  ["Alpha", alphaConstraint]]);
 const transformers = new Map([["Number", numberTransformer], ["Boolean", booleanTransformer]]);
 
 @suite

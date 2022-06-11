@@ -81,11 +81,11 @@ export default class ObserverVisitor extends ExpressionVisitor
 
     protected override visitArrowFunctionExpression(expression: ArrowFunctionExpression): INode
     {
-        for (const paramenter of expression.parameters)
+        for (const parameter of expression.parameters)
         {
-            if (!TypeGuard.isIdentifier(paramenter))
+            if (!TypeGuard.isIdentifier(parameter))
             {
-                this.visit(paramenter);
+                this.visit(parameter);
             }
         }
 

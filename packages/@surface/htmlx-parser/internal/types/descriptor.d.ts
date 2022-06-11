@@ -28,7 +28,7 @@ export type TwoWayAttributeDescritor =
     right:      ObservablePath,
     source:     string,
     stackTrace: StackTrace,
-    type:       DescriptorType.Twoway,
+    type:       DescriptorType.TwoWay,
 };
 
 export type DirectiveAttributeDescritor =
@@ -73,7 +73,7 @@ export type ChoiceStatementDescriptor =
 export type ElementDescriptor =
 {
     attributes: Iterable<AttributeBindDescritor>,
-    childs:     Iterable<Descriptor>,
+    children:     Iterable<Descriptor>,
     tag:        string,
     type:       DescriptorType.Element,
 };
@@ -100,7 +100,7 @@ export type EventDescritor =
 
 export type FragmentDescriptor =
 {
-    childs: Iterable<Descriptor>,
+    children: Iterable<Descriptor>,
     type:   DescriptorType.Fragment,
 };
 

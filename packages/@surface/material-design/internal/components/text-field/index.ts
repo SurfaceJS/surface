@@ -54,7 +54,7 @@ export default class TextField extends mix(HTMLXElement, [colorable, lineRipplea
     public label: string = "";
 
     @attribute(Number)
-    public maxLenght: number = 0;
+    public maxLength: number = 0;
 
     @attribute(Boolean)
     public outlined: boolean = false;
@@ -116,7 +116,7 @@ export default class TextField extends mix(HTMLXElement, [colorable, lineRipplea
 
         const value = this.input.textContent?.replace(/&nbsp;/g, "") ?? "";
 
-        const remaining = this.maxLenght > 0 ? this.maxLenght - value.length : value.length;
+        const remaining = this.maxLength > 0 ? this.maxLength - value.length : value.length;
 
         if (remaining > 0)
         {
@@ -124,9 +124,9 @@ export default class TextField extends mix(HTMLXElement, [colorable, lineRipplea
         }
         else
         {
-            this.value = this.input.textContent = value.slice(0, this.maxLenght);
+            this.value = this.input.textContent = value.slice(0, this.maxLength);
 
-            this.setCaret(this.maxLenght);
+            this.setCaret(this.maxLength);
         }
     }
 

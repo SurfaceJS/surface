@@ -24,7 +24,7 @@ type Context =
     source?:     { key: string, scope: string },
     stackTrace?: StackTrace,
 };
-export default class PlaceholdeDirective implements IDisposable
+export default class PlaceholderDirective implements IDisposable
 {
     private readonly cancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
     private readonly keySubscription:         Subscription;

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-type CalleableOverloads<T> = T extends
+type CallableOverloads<T> = T extends
 {
     (...args: infer A1): infer R1,
     (...args: infer A2): infer R2,
@@ -164,9 +164,9 @@ export type MethodsOf<T extends object>                                      = K
 export type Mix<A extends ((superClass: Constructor<any>) => Constructor)[]> = Constructor<UnionToIntersection<InstanceType<ReturnType<A[number]>>>>;
 export type Newable<T = object>                                              = new (...args: any[]) => T;
 export type OnlyOfType<T extends object, U>                                  = Pick<T, KeysOfType<T, U>>;
-export type Overload<T extends Callable, TArgs>                              = Extract<CalleableOverloads<T>, [TArgs, any]>[1];
+export type Overload<T extends Callable, TArgs>                              = Extract<CallableOverloads<T>, [TArgs, any]>[1];
 export type Overwrite<T, U>                                                  = { [K in Exclude<keyof T, U>]: K extends keyof U ? U[K] : T[K] };
-export type ParameterOverloads<T extends Callable>                           = CalleableOverloads<T>[0];
+export type ParameterOverloads<T extends Callable>                           = CallableOverloads<T>[0];
 export type PropertyType<T extends object, K>                                = K extends keyof T ? T[K] : unknown;
 export type Required<T>                                                      = { [K in keyof T]-?: NonNullable<T[K]> };
 export type RequiredProperties<T>                                            = { [K in keyof Required<T>]: (T[K] | undefined) };

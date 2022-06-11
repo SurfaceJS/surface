@@ -5,10 +5,10 @@ import { shouldPass, suite, test } from "@surface/test-suite";
 import chai                        from "chai";
 import createDirectiveFactory      from "../internal/factories/create-directive-factory.js";
 import createElementFactory        from "../internal/factories/create-element-factory.js";
-import createEventListernerFactory from "../internal/factories/create-event-listener-factory.js";
+import createEventListenerFactory  from "../internal/factories/create-event-listener-factory.js";
 import createInterpolationFactory  from "../internal/factories/create-interpolation-factory.js";
-import createOnewayFactory         from "../internal/factories/create-oneway-factory.js";
-import createTwowayFactory         from "../internal/factories/create-twoway-factory.js";
+import createOnewayFactory         from "../internal/factories/create-one-way-factory.js";
+import createTwoWayFactory         from "../internal/factories/create-two-way-factory.js";
 import { scheduler }               from "../internal/singletons.js";
 import type Activator              from "../internal/types/activator";
 import type Evaluator              from "../internal/types/evaluator.js";
@@ -118,7 +118,7 @@ export default class ElementFactorySpec
         (
             "div",
             undefined,
-            [createTwowayFactory("className", ["host", "value"])],
+            [createTwoWayFactory("className", ["host", "value"])],
         )() as [Element, Activator];
 
         const scope = { host: { value: "my-class" } };
@@ -159,7 +159,7 @@ export default class ElementFactorySpec
         (
             "div",
             undefined,
-            [createEventListernerFactory("click", ((scope: Scope) => scope.host.click) as Evaluator, ((scope: Scope) => scope.host.click) as Evaluator)],
+            [createEventListenerFactory("click", ((scope: Scope) => scope.host.click) as Evaluator, ((scope: Scope) => scope.host.click) as Evaluator)],
         )() as [Element, Activator];
 
         let clicked = 0;
@@ -205,7 +205,7 @@ export default class ElementFactorySpec
     }
 
     @test @shouldPass
-    public async childs(): Promise<void>
+    public async children(): Promise<void>
     {
         const [element, activator] = createElementFactory
         (

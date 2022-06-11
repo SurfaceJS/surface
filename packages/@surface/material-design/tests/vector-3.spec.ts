@@ -6,7 +6,7 @@ import Vector3                     from "../internal/colors/vector-3.js";
 export default class Vector3Spec
 {
     @test @shouldPass
-    public lenght(): void
+    public length(): void
     {
         const vector = new Vector3(1, 1, 1);
 

@@ -5,7 +5,7 @@ import type NodeFactory      from "../types/node-factory";
 
 type Attributes = [name: string, value: string];
 
-export default function createElementFactory(tag: string, attributes?: Attributes[], attributeFactories?: AttributeFactory[], childs?: NodeFactory[]): NodeFactory
+export default function createElementFactory(tag: string, attributes?: Attributes[], attributeFactories?: AttributeFactory[], children?: NodeFactory[]): NodeFactory
 {
     return () =>
     {
@@ -27,9 +27,9 @@ export default function createElementFactory(tag: string, attributes?: Attribute
             disposables.push(element as unknown as IDisposable);
         }
 
-        if (childs)
+        if (children)
         {
-            for (const childFactory of childs)
+            for (const childFactory of children)
             {
                 const [childElement, activator] = childFactory();
 

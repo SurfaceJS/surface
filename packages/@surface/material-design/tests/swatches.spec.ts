@@ -8,7 +8,7 @@ import type Swatch                             from "../internal/types/swatch";
 export default class SwatchesSpec
 {
     @test @shouldPass
-    public generatePalleteWithoutRange(): void
+    public generatePalletWithoutRange(): void
     {
         const swatches: Swatch[] =
         [
@@ -31,7 +31,7 @@ export default class SwatchesSpec
     }
 
     @test @shouldPass
-    public generatePalleteWithRangeAndSwatchAtStart(): void
+    public generatePalletWithRangeAndSwatchAtStart(): void
     {
         const swatches: Swatch[] =
         [
@@ -53,7 +53,7 @@ export default class SwatchesSpec
     }
 
     @test @shouldPass
-    public generatePalleteWithRangeAndSwatchAtEnd(): void
+    public generatePalletWithRangeAndSwatchAtEnd(): void
     {
         const swatches: Swatch[] =
         [
@@ -75,7 +75,7 @@ export default class SwatchesSpec
     }
 
     @test @shouldPass
-    public generatePalleteWithRangeAndSwatchAtCenter(): void
+    public generatePalletWithRangeAndSwatchAtCenter(): void
     {
         const swatches: Swatch[] =
         [
@@ -99,7 +99,7 @@ export default class SwatchesSpec
     }
 
     @test @shouldPass
-    public generatePalleteWithRangeAndSwatchAtStartAndEnd(): void
+    public generatePalletWithRangeAndSwatchAtStartAndEnd(): void
     {
         const swatches: Swatch[] =
         [
@@ -122,7 +122,7 @@ export default class SwatchesSpec
     }
 
     @test @shouldPass
-    public generatePalleteWithRangeAndSwatchRandom(): void
+    public generatePalletWithRangeAndSwatchRandom(): void
     {
         const swatches: Swatch[] =
         [
@@ -160,7 +160,7 @@ export default class SwatchesSpec
     }
 
     @test @shouldPass
-    public palleteScale(): void
+    public palletScale(): void
     {
         const swatches: Swatch[] =
         [

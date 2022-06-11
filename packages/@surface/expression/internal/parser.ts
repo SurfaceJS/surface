@@ -1033,43 +1033,43 @@ export default class Parser
         throw this.unexpectedTokenError(this.lookahead);
     }
 
-    private reinterpret(expression: ArrayExpression,          token: Token, dupecheck: DupeCheck): ArrayPattern;
-    private reinterpret(expression: AssignmentExpression,     token: Token, dupecheck: DupeCheck): AssignmentPattern;
-    private reinterpret(expression: ObjectExpression,         token: Token, dupecheck: DupeCheck): ObjectPattern;
-    private reinterpret(expression: Property,                 token: Token, dupecheck: DupeCheck): AssignmentProperty;
-    private reinterpret(expression: SpreadElement,            token: Token, dupecheck: DupeCheck): RestElement;
-    private reinterpret(expression: Property | SpreadElement, token: Token, dupecheck: DupeCheck): AssignmentProperty | RestElement;
-    private reinterpret(expression: INode,                    token: Token, dupecheck: DupeCheck): IPattern;
-    private reinterpret(node:       INode,                    token: Token, dupecheck: DupeCheck): INode
+    private reinterpret(expression: ArrayExpression,          token: Token, dupeCheck: DupeCheck): ArrayPattern;
+    private reinterpret(expression: AssignmentExpression,     token: Token, dupeCheck: DupeCheck): AssignmentPattern;
+    private reinterpret(expression: ObjectExpression,         token: Token, dupeCheck: DupeCheck): ObjectPattern;
+    private reinterpret(expression: Property,                 token: Token, dupeCheck: DupeCheck): AssignmentProperty;
+    private reinterpret(expression: SpreadElement,            token: Token, dupeCheck: DupeCheck): RestElement;
+    private reinterpret(expression: Property | SpreadElement, token: Token, dupeCheck: DupeCheck): AssignmentProperty | RestElement;
+    private reinterpret(expression: INode,                    token: Token, dupeCheck: DupeCheck): IPattern;
+    private reinterpret(node:       INode,                    token: Token, dupeCheck: DupeCheck): INode
     {
         switch (node.type)
         {
             case NodeType.Identifier:
             {
-                return dupecheck(node as Identifier, token);
+                return dupeCheck(node as Identifier, token);
             }
             case NodeType.ObjectPattern:
             case NodeType.RestElement:
                 return node;
             case NodeType.AssignmentExpression:
             {
-                return this.reinterpretAssignmentExpression(node as AssignmentExpression, token, dupecheck);
+                return this.reinterpretAssignmentExpression(node as AssignmentExpression, token, dupeCheck);
             }
             case NodeType.Property:
             {
-                return this.reinterpretProperty(node as Property, token, dupecheck);
+                return this.reinterpretProperty(node as Property, token, dupeCheck);
             }
             case NodeType.ArrayExpression:
             {
-                return this.reinterpretArrayExpression(node as ArrayExpression, token, dupecheck);
+                return this.reinterpretArrayExpression(node as ArrayExpression, token, dupeCheck);
             }
             case NodeType.ObjectExpression:
             {
-                return this.reinterpretObjectExpression(node as ObjectExpression, token, dupecheck);
+                return this.reinterpretObjectExpression(node as ObjectExpression, token, dupeCheck);
             }
             case NodeType.SpreadElement:
             {
-                return this.reinterpretSpreadElement(node as SpreadElement, token, dupecheck);
+                return this.reinterpretSpreadElement(node as SpreadElement, token, dupeCheck);
             } /* c8 ignore next 2 */
             default:
                 break;
@@ -1078,7 +1078,7 @@ export default class Parser
         throw this.unexpectedTokenError(token);
     }
 
-    private reinterpretAssignmentExpression(expression: AssignmentExpression, token: Token, dupecheck: DupeCheck): AssignmentPattern
+    private reinterpretAssignmentExpression(expression: AssignmentExpression, token: Token, dupeCheck: DupeCheck): AssignmentPattern
     {
         if (expression.operator != "=")
         {
@@ -1087,13 +1087,13 @@ export default class Parser
 
         if (TypeGuard.isIdentifier(expression.left))
         {
-            return new AssignmentPattern(dupecheck(expression.left, token), expression.right);
+            return new AssignmentPattern(dupeCheck(expression.left, token), expression.right);
         }
 
         throw this.syntaxError(token, Messages.illegalPropertyInDeclarationContext);
     }
 
-    private reinterpretArrayExpression(expression: ArrayExpression, token: Token, dupecheck: DupeCheck): ArrayPattern
+    private reinterpretArrayExpression(expression: ArrayExpression, token: Token, dupeCheck: DupeCheck): ArrayPattern
     {
         const elements: (IPattern | null)[] = [];
 
@@ -1115,7 +1115,7 @@ export default class Parser
                     throw this.syntaxError(token, Messages.restParameterMustBeLastFormalParameter);
                 }
 
-                elements.push(this.reinterpret(element, token, dupecheck));
+                elements.push(this.reinterpret(element, token, dupeCheck));
             }
 
             else
@@ -1129,7 +1129,7 @@ export default class Parser
         return new ArrayPattern(elements);
     }
 
-    private reinterpretObjectExpression(expression: ObjectExpression, token: Token, dupecheck: DupeCheck): ObjectPattern
+    private reinterpretObjectExpression(expression: ObjectExpression, token: Token, dupeCheck: DupeCheck): ObjectPattern
     {
         const entries: (AssignmentProperty | RestElement)[] = [];
 
@@ -1142,7 +1142,7 @@ export default class Parser
                 throw this.syntaxError(token, Messages.restParameterMustBeLastFormalParameter);
             }
 
-            entries.push(this.reinterpret(property, token, dupecheck));
+            entries.push(this.reinterpret(property, token, dupeCheck));
 
             index++;
         }
@@ -1150,7 +1150,7 @@ export default class Parser
         return new ObjectPattern(entries);
     }
 
-    private reinterpretProperty(property: Property, token: Token, dupecheck: DupeCheck): AssignmentProperty
+    private reinterpretProperty(property: Property, token: Token, dupeCheck: DupeCheck): AssignmentProperty
     {
         const { key, value, computed, shorthand } = property as Property;
 
@@ -1158,23 +1158,23 @@ export default class Parser
         {
             if (TypeGuard.isIdentifier(value))
             {
-                const identifier = dupecheck(value, token);
+                const identifier = dupeCheck(value, token);
 
                 return new AssignmentProperty(identifier.clone(), identifier.clone(), computed, shorthand);
             }
             else if (TypeGuard.isAssignmentExpression(value))
             {
-                return new AssignmentProperty(key, this.reinterpretAssignmentExpression(value, token, dupecheck), computed, shorthand);
+                return new AssignmentProperty(key, this.reinterpretAssignmentExpression(value, token, dupeCheck), computed, shorthand);
             }
         }
         else if (TypeGuard.isArrayExpression(value) || TypeGuard.isAssignmentExpression(value) || TypeGuard.isIdentifier(value) || TypeGuard.isObjectExpression(value))
         {
             if (TypeGuard.isIdentifier(value))
             {
-                return new AssignmentProperty(key, dupecheck(value, token).clone(), computed, shorthand);
+                return new AssignmentProperty(key, dupeCheck(value, token).clone(), computed, shorthand);
             }
 
-            return new AssignmentProperty(key, this.reinterpret(value, token, dupecheck) as IPattern, computed, shorthand);
+            return new AssignmentProperty(key, this.reinterpret(value, token, dupeCheck) as IPattern, computed, shorthand);
         }
         else if (TypeGuard.isMemberExpression(value))
         {
@@ -1184,7 +1184,7 @@ export default class Parser
         throw this.syntaxError(token, Messages.invalidDestructuringAssignmentTarget);
     }
 
-    private reinterpretSpreadElement(node: SpreadElement, token: Token, dupecheck: DupeCheck): RestElement
+    private reinterpretSpreadElement(node: SpreadElement, token: Token, dupeCheck: DupeCheck): RestElement
     {
         const expression = node as SpreadElement;
 
@@ -1193,7 +1193,7 @@ export default class Parser
             throw this.syntaxError(token, Messages.invalidDestructuringAssignmentTarget);
         }
 
-        return new RestElement(this.reinterpret(expression.argument, token, dupecheck));
+        return new RestElement(this.reinterpret(expression.argument, token, dupeCheck));
     }
 
     private regexExpression(): IExpression
@@ -1212,7 +1212,7 @@ export default class Parser
 
         if (expression.type == NodeType.AssignmentPattern)
         {
-            throw this.syntaxError(lookahead, Messages.restParameterMayNotHaveAdefaultInitializer);
+            throw this.syntaxError(lookahead, Messages.restParameterMayNotHaveADefaultInitializer);
         }
 
         return new RestElement(expression);

@@ -8,8 +8,8 @@ import StaticMetadata                                          from "../metadata
 
 type Serializer =
 {
-    parse:     (value: string) => unknown,
-    stringfy?: (value: unknown) => string,
+    parse:      (value: string) => unknown,
+    stringify?: (value: unknown) => string,
 };
 
 type Types = typeof Boolean | typeof Number | typeof String;
@@ -146,13 +146,13 @@ function attribute(...args: [Types | AttributeOptions] |  [IHTMLXElement, string
             {
                 metadata.reflectingAttribute.add(attributeName);
 
-                if (typeof value == "boolean" && !serializer.stringfy)
+                if (typeof value == "boolean" && !serializer.stringify)
                 {
                     value ? instance.setAttribute(attributeName, "") : instance.removeAttribute(attributeName);
                 }
                 else
                 {
-                    instance.setAttribute(attributeName, (serializer.stringfy ?? String)(value));
+                    instance.setAttribute(attributeName, (serializer.stringify ?? String)(value));
                 }
 
                 metadata.reflectingAttribute.delete(attributeName);

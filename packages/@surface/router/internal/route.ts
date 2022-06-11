@@ -84,12 +84,12 @@ export default class Route
                         ? [node.transformer.left, group ?? node.transformer.right]
                         : [node.transformer.name, group];
 
-                    const constraint = this.constraints.get(key);
-                    const tranformer = this.transformers.get(key);
+                    const constraint  = this.constraints.get(key);
+                    const transformer = this.transformers.get(key);
 
-                    if (!constraint && !tranformer)
+                    if (!constraint && !transformer)
                     {
-                        throw new Error(`Unregistred constraint or transformer ${key}`);
+                        throw new Error(`Unregistered constraint or transformer ${key}`);
                     }
 
                     if (value && !node.optional && !(constraint?.validate(value) ?? true))
@@ -99,7 +99,7 @@ export default class Route
 
                     if (value)
                     {
-                        parameters[node.name] = tranformer ? tranformer.parse(value) : value;
+                        parameters[node.name] = transformer ? transformer.parse(value) : value;
                     }
                 }
                 else if (TypeGuard.isIdentifier(node) && group)
@@ -161,7 +161,7 @@ export default class Route
 
                     if (!constraint && !transformer)
                     {
-                        throw new Error(`Unregistred constraint or transformer ${key}`);
+                        throw new Error(`Unregistered constraint or transformer ${key}`);
                     }
 
                     if (!hasValue(value))

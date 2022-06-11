@@ -99,8 +99,8 @@ function linkHrefFilter(_name: string, _value: string, attributes: Map<string, s
         return false;
     }
 
-    const usedRels = rel.split(" ").filter(x => x);
-    const allowedRels =
+    const usedRel = new Set(rel.split(" ").filter(x => x));
+    const allowedRel =
     [
         "stylesheet",
         "icon",
@@ -113,7 +113,7 @@ function linkHrefFilter(_name: string, _value: string, attributes: Map<string, s
         "preload",
     ];
 
-    return allowedRels.filter(x => usedRels.includes(x)).length > 0;
+    return allowedRel.filter(x => usedRel.has(x)).length > 0;
 }
 
 function linkUnionFilter(name: string, value: string, attributes: Map<string, string>): boolean

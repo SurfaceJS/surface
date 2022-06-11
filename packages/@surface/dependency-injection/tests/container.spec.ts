@@ -114,7 +114,7 @@ export default class DependencyInjectionSpec
 
         container.registerSingleton("key", instance);
 
-        chai.assert.equal(instance, container.resolve(Mock), "intance equal container.resolve(Mock)");
+        chai.assert.equal(instance, container.resolve(Mock), "instance equal container.resolve(Mock)");
     }
 
     @test @shouldPass
@@ -397,13 +397,13 @@ export default class DependencyInjectionSpec
 
         container.registerSingleton(Mock);
 
-        const intance = container.resolve(Mock);
+        const instance = container.resolve(Mock);
 
-        chai.assert.isFalse(intance.disposed);
+        chai.assert.isFalse(instance.disposed);
 
         container.dispose();
 
-        chai.assert.isTrue(intance.disposed);
+        chai.assert.isTrue(instance.disposed);
     }
 
     @test @shouldFail

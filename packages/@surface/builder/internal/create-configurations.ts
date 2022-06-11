@@ -101,7 +101,7 @@ export default async function createConfigurations(type: "analyze" | "build" | "
     const projects = configuration.projects ?? { default: { } };
     const main     = configuration.main     ?? Object.keys(projects)[0];
 
-    const webPackconfigurations: webpack.Configuration[] = [];
+    const webPackConfigurations: webpack.Configuration[] = [];
 
     for (const [name, _project] of Object.entries(projects))
     {
@@ -362,8 +362,8 @@ export default async function createConfigurations(type: "analyze" | "build" | "
             },
         };
 
-        webPackconfigurations.push(await configuration.hooks?.configured?.(webpackConfiguration) ?? webpackConfiguration);
+        webPackConfigurations.push(await configuration.hooks?.configured?.(webpackConfiguration) ?? webpackConfiguration);
     }
 
-    return webPackconfigurations;
+    return webPackConfigurations;
 }

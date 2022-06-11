@@ -17,7 +17,7 @@ export type Options =
     version?:  `${string}.${string}.${string}`,
 };
 
-export default class Depsync
+export default class DepSync
 {
     private readonly  updated:    Set<Manifest> = new Set();
     private readonly  lookup:     Map<string, Manifest>;
@@ -42,7 +42,7 @@ export default class Depsync
     // c8 ignore next
     public static async sync(lookup: Map<string, Manifest>, options?: Options): Promise<Manifest[]>
     {
-        return new Depsync(new NpmRepository(), lookup, options).sync();
+        return new DepSync(new NpmRepository(), lookup, options).sync();
     }
 
     private applyPlaceholder(placeholder: string | undefined, value: string | undefined): string | undefined

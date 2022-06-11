@@ -15,12 +15,12 @@ declare global
     // eslint-disable-next-line @typescript-eslint/naming-convention
     interface HTMLElementTagNameMap
     {
-        "smd-app-toogle": AppToogle;
+        "smd-app-toggle": AppToggle;
     }
 }
 
-@element("smd-app-toogle", { style, template })
-export default class AppToogle extends mix(HTMLXElement, [colorable, elevatable, themeable])
+@element("smd-app-toggle", { style, template })
+export default class AppToggle extends mix(HTMLXElement, [colorable, elevatable, themeable])
 {
     public declare colorable: HTMLElement;
 }

@@ -19,7 +19,7 @@ export default class Messages
     public static readonly numericSeparatorsAreNotAllowedAtTheEndOfNumericLiterals       = "Numeric separators are not allowed at the end of numeric literals";
     public static readonly octalLiteralsAreNotAllowedInTemplateStrings                   = "Octal literals are not allowed in template strings.";
     public static readonly restOperatorMustBeFollowedByAnIdentifierInDeclarationContexts = "`...` must be followed by an identifier in declaration contexts";
-    public static readonly restParameterMayNotHaveAdefaultInitializer                    = "Rest parameter may not have a default initializer";
+    public static readonly restParameterMayNotHaveADefaultInitializer                    = "Rest parameter may not have a default initializer";
     public static readonly restParameterMustBeLastFormalParameter                        = "Rest parameter must be last formal parameter";
     public static readonly unexpectedEndOfExpression                                     = "Unexpected end of expression";
     public static readonly unexpectedNumber                                              = "Unexpected number";

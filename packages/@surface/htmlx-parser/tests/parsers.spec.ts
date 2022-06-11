@@ -123,9 +123,9 @@ export default class ParsersSpec
 
         chai.assert.deepEqual(parseWithError(parseForLoopStatement, expression), toRaw(new SyntaxError("Cannot redeclare block-scoped variable", 1, 4, 5)));
 
-        const expressionWithLineBreake = "\n  let \n [a, a] in bar";
+        const expressionWithLineBreak = "\n  let \n [a, a] in bar";
 
-        chai.assert.deepEqual(parseWithError(parseForLoopStatement, expressionWithLineBreake), toRaw(new SyntaxError("Cannot redeclare block-scoped variable", 3, 9, 2)));
+        chai.assert.deepEqual(parseWithError(parseForLoopStatement, expressionWithLineBreak), toRaw(new SyntaxError("Cannot redeclare block-scoped variable", 3, 9, 2)));
     }
 
     @test @shouldFail
@@ -135,9 +135,9 @@ export default class ParsersSpec
 
         chai.assert.deepEqual(parseWithError(parseForLoopStatement, expression), toRaw(new SyntaxError("Cannot redeclare block-scoped variable", 1, 4, 5)));
 
-        const expressionWithLineBreake = "\n  let \n { a, a } in bar";
+        const expressionWithLineBreak = "\n  let \n { a, a } in bar";
 
-        chai.assert.deepEqual(parseWithError(parseForLoopStatement, expressionWithLineBreake), toRaw(new SyntaxError("Cannot redeclare block-scoped variable", 3, 9, 2)));
+        chai.assert.deepEqual(parseWithError(parseForLoopStatement, expressionWithLineBreak), toRaw(new SyntaxError("Cannot redeclare block-scoped variable", 3, 9, 2)));
     }
 
     @test @shouldFail
@@ -147,9 +147,9 @@ export default class ParsersSpec
 
         chai.assert.deepEqual(parseWithError(parseForLoopStatement, expression), toRaw(new SyntaxError("Illegal property in declaration context", 1, 4, 5)));
 
-        const expressionWithLineBreake = "\n  var \n [foo.x] in bar";
+        const expressionWithLineBreak = "\n  var \n [foo.x] in bar";
 
-        chai.assert.deepEqual(parseWithError(parseForLoopStatement, expressionWithLineBreake), toRaw(new SyntaxError("Illegal property in declaration context", 3, 9, 2)));
+        chai.assert.deepEqual(parseWithError(parseForLoopStatement, expressionWithLineBreak), toRaw(new SyntaxError("Illegal property in declaration context", 3, 9, 2)));
     }
 
     @test @shouldFail
@@ -159,9 +159,9 @@ export default class ParsersSpec
 
         chai.assert.deepEqual(parseWithError(parseDestructuredPattern, expression), toRaw(new SyntaxError("Invalid destructuring assignment target", 1, 0, 1)));
 
-        const expressionWithLineBreake = "  \n   [1]";
+        const expressionWithLineBreak = "  \n   [1]";
 
-        chai.assert.deepEqual(parseWithError(parseDestructuredPattern, expressionWithLineBreake), toRaw(new SyntaxError("Invalid destructuring assignment target", 2, 6, 4)));
+        chai.assert.deepEqual(parseWithError(parseDestructuredPattern, expressionWithLineBreak), toRaw(new SyntaxError("Invalid destructuring assignment target", 2, 6, 4)));
     }
 
     @test @shouldFail
@@ -179,9 +179,9 @@ export default class ParsersSpec
 
         chai.assert.deepEqual(parseWithError(parseForLoopStatement, expression), toRaw(new SyntaxError("Invalid left-hand side in for-loop", 1, 4, 5)));
 
-        const expressionWithLineBreake = "\n  let \n foo++ \n in \n bar";
+        const expressionWithLineBreak = "\n  let \n foo++ \n in \n bar";
 
-        chai.assert.deepEqual(parseWithError(parseForLoopStatement, expressionWithLineBreake), toRaw(new SyntaxError("Invalid left-hand side in for-loop", 3, 9, 2)));
+        chai.assert.deepEqual(parseWithError(parseForLoopStatement, expressionWithLineBreak), toRaw(new SyntaxError("Invalid left-hand side in for-loop", 3, 9, 2)));
     }
 
     @test @shouldFail
@@ -199,9 +199,9 @@ export default class ParsersSpec
 
         chai.assert.deepEqual(parseWithError(parseForLoopStatement, expression), toRaw(new SyntaxError("Unexpected number", 1, 7, 8)));
 
-        const expressionWithLineBreake = "\n  var \n foo.1 in bar";
+        const expressionWithLineBreak = "\n  var \n foo.1 in bar";
 
-        chai.assert.deepEqual(parseWithError(parseForLoopStatement, expressionWithLineBreake), toRaw(new SyntaxError("Unexpected number", 3, 12, 5)));
+        chai.assert.deepEqual(parseWithError(parseForLoopStatement, expressionWithLineBreak), toRaw(new SyntaxError("Unexpected number", 3, 12, 5)));
     }
 
     @test @shouldFail
@@ -211,9 +211,9 @@ export default class ParsersSpec
 
         chai.assert.deepEqual(parseWithError(parseForLoopStatement, expression), toRaw(new SyntaxError("Unexpected number", 1, 14, 15)));
 
-        const expressionWithLineBreake = "\n  let \n foo \n in \n foo.1";
+        const expressionWithLineBreak = "\n  let \n foo \n in \n foo.1";
 
-        chai.assert.deepEqual(parseWithError(parseForLoopStatement, expressionWithLineBreake), toRaw(new SyntaxError("Unexpected number", 5, 23, 5)));
+        chai.assert.deepEqual(parseWithError(parseForLoopStatement, expressionWithLineBreak), toRaw(new SyntaxError("Unexpected number", 5, 23, 5)));
     }
 
     @test @shouldFail
@@ -223,8 +223,8 @@ export default class ParsersSpec
 
         chai.assert.deepEqual(parseWithError(parseForLoopStatement, expression), toRaw(new SyntaxError("Unexpected token .", 1, 9, 10)));
 
-        const expressionWithLineBreake = "\n  var \n { \nfoo.x } in bar";
+        const expressionWithLineBreak = "\n  var \n { \nfoo.x } in bar";
 
-        chai.assert.deepEqual(parseWithError(parseForLoopStatement, expressionWithLineBreake), toRaw(new SyntaxError("Unexpected token .", 4, 15, 4)));
+        chai.assert.deepEqual(parseWithError(parseForLoopStatement, expressionWithLineBreak), toRaw(new SyntaxError("Unexpected token .", 4, 15, 4)));
     }
 }

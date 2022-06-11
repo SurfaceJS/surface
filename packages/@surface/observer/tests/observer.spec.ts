@@ -244,7 +244,7 @@ export default class ObserverSpec
     }
 
     @test @shouldPass
-    public observeSpreadedRoot(): void
+    public observeSpreedRoot(): void
     {
         const target = { value: 1 };
 
@@ -463,6 +463,6 @@ export default class ObserverSpec
     @test @shouldFail
     public unsubscribeInvalidListener(): void
     {
-        chai.assert.throws(() => new Observer({ }, [""]).unsubscribe(() => void 0), "Listerner not subscribed");
+        chai.assert.throws(() => new Observer({ }, [""]).unsubscribe(() => void 0), "Listener not subscribed");
     }
 }

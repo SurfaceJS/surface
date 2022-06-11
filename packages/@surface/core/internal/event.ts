@@ -5,26 +5,26 @@ export default class Event<TArgs = unknown>
 {
     private readonly listeners: Set<Delegate<[TArgs]>> = new Set();
 
-    public subscribe(listerner: Delegate<[TArgs]>): Subscription
+    public subscribe(listener: Delegate<[TArgs]>): Subscription
     {
-        this.listeners.add(listerner);
+        this.listeners.add(listener);
 
-        return { unsubscribe: () => this.unsubscribe(listerner) };
+        return { unsubscribe: () => this.unsubscribe(listener) };
     }
 
-    public unsubscribe(listerner: Delegate<[TArgs]>): void
+    public unsubscribe(listener: Delegate<[TArgs]>): void
     {
-        if (!this.listeners.delete(listerner))
+        if (!this.listeners.delete(listener))
         {
-            throw new Error("Listerner not subscribed");
+            throw new Error("Listener not subscribed");
         }
     }
 
     public notify(value: TArgs): void
     {
-        for (const listerner of this.listeners)
+        for (const listener of this.listeners)
         {
-            listerner(value);
+            listener(value);
         }
     }
 }

@@ -10,7 +10,7 @@ import createFragmentFactory                       from "./factories/create-frag
 import createInjectionFactory                      from "./factories/create-injection-factory.js";
 import createInterpolationFactory                  from "./factories/create-interpolation-factory.js";
 import createLoopFactory                           from "./factories/create-loop-factory.js";
-import createOnewayFactory                         from "./factories/create-oneway-factory.js";
+import createOnewayFactory                         from "./factories/create-one-way-factory.js";
 import createPlaceholderFactory                    from "./factories/create-placeholder-factory.js";
 import createSpreadAttributesFactory               from "./factories/create-spread-attributes-factory.js";
 import createSpreadBindsFactory                    from "./factories/create-spread-binds-factory.js";
@@ -19,7 +19,7 @@ import createSpreadInjectionsFactory               from "./factories/create-spre
 import createSpreadListenersFactory                from "./factories/create-spread-listeners.js";
 import createTextNodeFactory                       from "./factories/create-text-node-factory.js";
 import createTextNodeInterpolationFactory          from "./factories/create-text-node-interpolation-factory.js";
-import createTwowayFactory                         from "./factories/create-twoway-factory.js";
+import createTwoWayFactory                         from "./factories/create-two-way-factory.js";
 import TemplateFactory                             from "./template-factory.js";
 import type AttributeFactory                       from "./types/attribute-factory.js";
 import type NodeFactory                            from "./types/node-factory.js";
@@ -78,9 +78,9 @@ export default class Compiler
                         factories.push(createSpreadFactory(scope => bind.expression.evaluate(scope), bind.observables, spreadFactories, bind.source, bind.stackTrace));
                     }
                     break;
-                case DescriptorType.Twoway:
+                case DescriptorType.TwoWay:
                 default:
-                    factories.push(createTwowayFactory(bind.left, bind.right, bind.source, bind.stackTrace));
+                    factories.push(createTwoWayFactory(bind.left, bind.right, bind.source, bind.stackTrace));
                     break;
             }
         }
@@ -88,11 +88,11 @@ export default class Compiler
         return [attributes, factories];
     }
 
-    private static mapChilds(childs: Iterable<Descriptor>): NodeFactory[]
+    private static mapChildren(children: Iterable<Descriptor>): NodeFactory[]
     {
         const factories: NodeFactory[] = [];
 
-        for (const child of childs)
+        for (const child of children)
         {
             factories.push(Compiler.compileDescriptor(child));
         }
@@ -109,7 +109,7 @@ export default class Compiler
                 (
                     descriptor.tag,
                     ...Compiler.mapAttributes(descriptor.attributes),
-                    Compiler.mapChilds(descriptor.childs),
+                    Compiler.mapChildren(descriptor.children),
                 );
             case DescriptorType.Text:
                 return createTextNodeFactory(descriptor.value);
@@ -163,7 +163,7 @@ export default class Compiler
             default:
                 return createFragmentFactory
                 (
-                    Compiler.mapChilds(descriptor.childs),
+                    Compiler.mapChildren(descriptor.children),
                 );
         }
     }

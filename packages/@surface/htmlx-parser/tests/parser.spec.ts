@@ -112,39 +112,39 @@ export default class HTMLXElementParserSpec
 
         const expected: Descriptor =
         {
-            childs:
+            children:
             [
                 {
                     attributes: [],
-                    childs:     [],
+                    children:     [],
                     tag:        "span",
                     type:       DescriptorType.Element,
                 },
                 {
                     attributes: [],
-                    childs:     [],
+                    children:     [],
                     tag:        "span",
                     type:       DescriptorType.Element,
                 },
                 {
                     attributes: [],
-                    childs:     [],
+                    children:     [],
                     tag:        "span",
                     type:       DescriptorType.Element,
                 },
                 {
                     attributes: [],
-                    childs:     [],
+                    children:     [],
                     tag:        "span",
                     type:       DescriptorType.Element,
                 },
                 {
                     attributes: [],
-                    childs:
+                    children:
                     [
                         {
                             attributes: [],
-                            childs:     [],
+                            children:     [],
                             tag:        "span",
                             type:       DescriptorType.Element,
                         },
@@ -171,7 +171,7 @@ export default class HTMLXElementParserSpec
 
         const expected: Descriptor =
         {
-            childs:
+            children:
             [
                 {
                     attributes:
@@ -240,7 +240,7 @@ export default class HTMLXElementParserSpec
                                 ["#shadow-root"],
                                 ["<span foo bar=\"baz\" #show value=\"Hello {host.name}\" @click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"],
                             ],
-                            type: DescriptorType.Twoway,
+                            type: DescriptorType.TwoWay,
                         },
                         {
                             key:         "valueB",
@@ -256,7 +256,7 @@ export default class HTMLXElementParserSpec
                             value: parseExpression("host.x + host.y"),
                         },
                     ],
-                    childs:
+                    children:
                     [
                         {
                             observables: [],
@@ -297,7 +297,7 @@ export default class HTMLXElementParserSpec
 
         const expected: Descriptor =
         {
-            childs:
+            children:
             [
                 {
                     attributes:
@@ -342,7 +342,7 @@ export default class HTMLXElementParserSpec
                             type:  DescriptorType.EventListener,
                         },
                     ],
-                    childs:
+                    children:
                     [],
                     tag:  "span",
                     type: DescriptorType.Element,
@@ -362,23 +362,23 @@ export default class HTMLXElementParserSpec
     @shouldPass @test
     public parseElementWithEmptyTextNode(): void
     {
-        const template = "<span>\n\t<div> \n\tSome Idented Text\n</div>\n\t </span>";
+        const template = "<span>\n\t<div> \n\tSome Indented Text\n</div>\n\t </span>";
 
         const expected: Descriptor =
         {
-            childs:
+            children:
             [
                 {
                     attributes: [],
-                    childs:
+                    children:
                     [
                         {
                             attributes: [],
-                            childs:
+                            children:
                             [
                                 {
                                     type:  DescriptorType.Text,
-                                    value: " \n\tSome Idented Text\n",
+                                    value: " \n\tSome Indented Text\n",
                                 },
                             ],
                             tag:  "div",
@@ -411,13 +411,13 @@ export default class HTMLXElementParserSpec
 
         const expected: Descriptor =
         {
-            childs:
+            children:
             [
                 {
                     fragment:
                     {
-                        childs: [],
-                        type:   DescriptorType.Fragment,
+                        children: [],
+                        type:     DescriptorType.Fragment,
                     },
                     key:         parseExpression("'default'"),
                     observables: { key: [], scope: [] },
@@ -440,7 +440,7 @@ export default class HTMLXElementParserSpec
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
 
-        chai.assert.deepEqual(a.childs, e.childs);
+        chai.assert.deepEqual(a.children, e.children);
     }
 
     @shouldPass @test
@@ -457,16 +457,16 @@ export default class HTMLXElementParserSpec
 
         const expected: Descriptor =
         {
-            childs:
+            children:
             [
                 {
                     fragment:
                     {
-                        childs:
+                        children:
                         [
                             {
                                 attributes: [],
-                                childs:
+                                children:
                                 [
                                     {
                                         type:  DescriptorType.Text,
@@ -494,15 +494,15 @@ export default class HTMLXElementParserSpec
                 {
                     fragment:
                     {
-                        childs:
+                        children:
                         [
                             {
                                 attributes: [],
-                                childs:
+                                children:
                                 [
                                     {
                                         attributes: [],
-                                        childs:
+                                        children:
                                         [
                                             {
                                                 observables: [],
@@ -544,15 +544,15 @@ export default class HTMLXElementParserSpec
                 {
                     fragment:
                     {
-                        childs:
+                        children:
                         [
                             {
                                 attributes: [],
-                                childs:
+                                children:
                                 [
                                     {
                                         attributes: [],
-                                        childs:
+                                        children:
                                         [
                                             {
                                                 observables: [],
@@ -594,15 +594,15 @@ export default class HTMLXElementParserSpec
                 {
                     fragment:
                     {
-                        childs:
+                        children:
                         [
                             {
                                 attributes: [],
-                                childs:
+                                children:
                                 [
                                     {
                                         attributes: [],
-                                        childs:
+                                        children:
                                         [
                                             {
                                                 type:  DescriptorType.Text,
@@ -634,15 +634,15 @@ export default class HTMLXElementParserSpec
                 {
                     fragment:
                     {
-                        childs:
+                        children:
                         [
                             {
                                 attributes: [],
-                                childs:
+                                children:
                                 [
                                     {
                                         attributes: [],
-                                        childs:
+                                        children:
                                         [
                                             {
                                                 observables: [],
@@ -690,7 +690,7 @@ export default class HTMLXElementParserSpec
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
 
-        chai.assert.deepEqual(a.childs, e.childs);
+        chai.assert.deepEqual(a.children, e.children);
     }
 
     @shouldPass @test
@@ -707,7 +707,7 @@ export default class HTMLXElementParserSpec
 
         const expected: Descriptor =
         {
-            childs:
+            children:
             [
                 {
                     branches:
@@ -716,11 +716,11 @@ export default class HTMLXElementParserSpec
                             expression:  parseExpression("host.status == 1"),
                             fragment:
                             {
-                                childs:
+                                children:
                                 [
                                     {
                                         attributes: [],
-                                        childs:
+                                        children:
                                         [
                                             {
                                                 type:  DescriptorType.Text,
@@ -746,11 +746,11 @@ export default class HTMLXElementParserSpec
                             expression:  parseExpression("host.status == 2"),
                             fragment:
                             {
-                                childs:
+                                children:
                                 [
                                     {
                                         attributes: [],
-                                        childs:
+                                        children:
                                         [
                                             {
                                                 type:  DescriptorType.Text,
@@ -776,11 +776,11 @@ export default class HTMLXElementParserSpec
                             expression:  parseExpression("true"),
                             fragment:
                             {
-                                childs:
+                                children:
                                 [
                                     {
                                         attributes: [],
-                                        childs:
+                                        children:
                                         [
                                             {
                                                 type:  DescriptorType.Text,
@@ -831,16 +831,16 @@ export default class HTMLXElementParserSpec
 
         const expected: Descriptor =
         {
-            childs:
+            children:
             [
                 {
                     fragment:
                     {
-                        childs:
+                        children:
                         [
                             {
                                 attributes: [],
-                                childs:
+                                children:
                                 [
                                     {
                                         type:  DescriptorType.Text,
@@ -868,11 +868,11 @@ export default class HTMLXElementParserSpec
                 {
                     fragment:
                     {
-                        childs:
+                        children:
                         [
                             {
                                 attributes: [],
-                                childs:
+                                children:
                                 [
                                     {
                                         observables: [],
@@ -909,11 +909,11 @@ export default class HTMLXElementParserSpec
                 {
                     fragment:
                     {
-                        childs:
+                        children:
                         [
                             {
                                 attributes: [],
-                                childs:
+                                children:
                                 [
                                     {
                                         observables: [],
@@ -950,11 +950,11 @@ export default class HTMLXElementParserSpec
                 {
                     fragment:
                     {
-                        childs:
+                        children:
                         [
                             {
                                 attributes: [],
-                                childs:
+                                children:
                                 [
                                     {
                                         type:  DescriptorType.Text,
@@ -982,11 +982,11 @@ export default class HTMLXElementParserSpec
                 {
                     fragment:
                     {
-                        childs:
+                        children:
                         [
                             {
                                 attributes: [],
-                                childs:
+                                children:
                                 [
                                     {
                                         observables: [],
@@ -1053,23 +1053,23 @@ export default class HTMLXElementParserSpec
 
         const expected: Descriptor =
         {
-            childs:
+            children:
             [
                 {
                     attributes: [],
-                    childs:
+                    children:
                     [
                         {
                             attributes: [],
-                            childs:
+                            children:
                             [
                                 {
                                     attributes: [],
-                                    childs:
+                                    children:
                                     [
                                         {
                                             attributes: [],
-                                            childs:
+                                            children:
                                             [
                                                 {
                                                     type:  DescriptorType.Text,
@@ -1081,7 +1081,7 @@ export default class HTMLXElementParserSpec
                                         },
                                         {
                                             attributes: [],
-                                            childs:
+                                            children:
                                             [
                                                 {
                                                     type:  DescriptorType.Text,
@@ -1093,7 +1093,7 @@ export default class HTMLXElementParserSpec
                                         },
                                         {
                                             attributes: [],
-                                            childs:
+                                            children:
                                             [
                                                 {
                                                     type:  DescriptorType.Text,
@@ -1110,15 +1110,15 @@ export default class HTMLXElementParserSpec
                                 {
                                     fragment:
                                     {
-                                        childs:
+                                        children:
                                         [
                                             {
                                                 attributes: [{ name: "onclick", type: DescriptorType.Attribute, value: "fn({ clicked })" }],
-                                                childs:
+                                                children:
                                                 [
                                                     {
                                                         attributes: [],
-                                                        childs:
+                                                        children:
                                                         [
                                                             {
                                                                 observables: [["item", "id"]],
@@ -1142,7 +1142,7 @@ export default class HTMLXElementParserSpec
                                                     },
                                                     {
                                                         attributes: [],
-                                                        childs:
+                                                        children:
                                                         [
                                                             {
                                                                 observables: [["item", "name"]],
@@ -1166,7 +1166,7 @@ export default class HTMLXElementParserSpec
                                                     },
                                                     {
                                                         attributes: [],
-                                                        childs:
+                                                        children:
                                                         [
                                                             {
                                                                 observables: [["item", "status"]],
@@ -1241,7 +1241,7 @@ export default class HTMLXElementParserSpec
 
         const expected: Descriptor =
         {
-            childs:
+            children:
             [
                 {
                     attributes:
@@ -1260,9 +1260,9 @@ export default class HTMLXElementParserSpec
                             type: DescriptorType.Spread,
                         },
                     ],
-                    childs: [],
-                    tag:    "div",
-                    type:   DescriptorType.Element,
+                    children: [],
+                    tag:      "div",
+                    type:     DescriptorType.Element,
                 },
                 {
                     attributes:
@@ -1320,9 +1320,9 @@ export default class HTMLXElementParserSpec
                             type: DescriptorType.Spread,
                         },
                     ],
-                    childs: [],
-                    tag:    "div",
-                    type:   DescriptorType.Element,
+                    children: [],
+                    tag:      "div",
+                    type:     DescriptorType.Element,
                 },
             ],
             type:   DescriptorType.Fragment,
@@ -1333,7 +1333,7 @@ export default class HTMLXElementParserSpec
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
 
-        chai.assert.deepEqual(a.childs, e.childs);
+        chai.assert.deepEqual(a.children, e.children);
     }
 
     @shouldPass @test
@@ -1350,17 +1350,17 @@ export default class HTMLXElementParserSpec
 
         const expected: Descriptor =
         {
-            childs:
+            children:
             [
                 {
                     attributes: [],
-                    childs:     [],
+                    children:     [],
                     tag:        "hr",
                     type:       DescriptorType.Element,
                 },
                 {
                     attributes: [],
-                    childs:
+                    children:
                     [
                         {
                             type:  DescriptorType.Text,
@@ -1376,13 +1376,13 @@ export default class HTMLXElementParserSpec
                         { name: "rel",  type: DescriptorType.Attribute, value: "stylesheet" },
                         { name: "href", type: DescriptorType.Attribute, value: "./styles.css" },
                     ],
-                    childs: [],
-                    tag:    "style",
-                    type:   DescriptorType.Element,
+                    children: [],
+                    tag:      "style",
+                    type:     DescriptorType.Element,
                 },
                 {
                     attributes: [],
-                    childs:
+                    children:
                     [
                         {
                             type:  DescriptorType.Text,
@@ -1415,7 +1415,7 @@ export default class HTMLXElementParserSpec
 
         const expected: Descriptor =
         {
-            childs:
+            children:
             [
                 {
                     branches:
@@ -1424,16 +1424,16 @@ export default class HTMLXElementParserSpec
                             expression: parseExpression("true"),
                             fragment:
                             {
-                                childs:
+                                children:
                                 [
                                     {
                                         fragment:
                                         {
-                                            childs:
+                                            children:
                                             [
                                                 {
                                                     attributes: [],
-                                                    childs:
+                                                    children:
                                                     [
                                                         {
                                                             observables: [["item", "value"]],
@@ -1502,7 +1502,7 @@ export default class HTMLXElementParserSpec
 
         const expected: Descriptor =
         {
-            childs:
+            children:
             [
                 {
                     branches:
@@ -1511,16 +1511,16 @@ export default class HTMLXElementParserSpec
                             expression: parseExpression("true"),
                             fragment:
                             {
-                                childs:
+                                children:
                                 [
                                     {
                                         fragment:
                                         {
-                                            childs:
+                                            children:
                                             [
                                                 {
                                                     attributes: [],
-                                                    childs:
+                                                    children:
                                                     [
                                                         {
                                                             type:  DescriptorType.Text,
@@ -1579,21 +1579,21 @@ export default class HTMLXElementParserSpec
 
         const expected: Descriptor =
         {
-            childs:
+            children:
             [
                 {
                     fragment:
                     {
-                        childs:
+                        children:
                         [
                             {
                                 fragment:
                                 {
-                                    childs:
+                                    children:
                                     [
                                         {
                                             attributes: [],
-                                            childs:
+                                            children:
                                             [
                                                 {
                                                     observables: [["source", "value"]],
@@ -1662,7 +1662,7 @@ export default class HTMLXElementParserSpec
 
         const expected: Descriptor =
         {
-            childs:
+            children:
             [
                 {
                     branches:
@@ -1671,16 +1671,16 @@ export default class HTMLXElementParserSpec
                             expression: parseExpression("true"),
                             fragment:
                             {
-                                childs:
+                                children:
                                 [
                                     {
                                         fragment:
                                         {
-                                            childs:
+                                            children:
                                             [
                                                 {
                                                     attributes: [],
-                                                    childs:
+                                                    children:
                                                     [
                                                         {
                                                             observables: [["source", "value"]],
@@ -1748,21 +1748,21 @@ export default class HTMLXElementParserSpec
 
         const expected: Descriptor =
         {
-            childs:
+            children:
             [
                 {
                     fragment:
                     {
-                        childs:
+                        children:
                         [
                             {
                                 fragment:
                                 {
-                                    childs:
+                                    children:
                                     [
                                         {
                                             attributes: [],
-                                            childs:
+                                            children:
                                             [
                                                 {
                                                     observables: [["source", "value"]],
@@ -1831,12 +1831,12 @@ export default class HTMLXElementParserSpec
 
         const expected: Descriptor =
         {
-            childs:
+            children:
             [
                 {
                     fragment:
                     {
-                        childs:
+                        children:
                         [
                             {
                                 branches:
@@ -1845,17 +1845,17 @@ export default class HTMLXElementParserSpec
                                         expression: parseExpression("true"),
                                         fragment:
                                         {
-                                            childs:
+                                            children:
                                             [
                                                 {
                                                     fragment:
                                                     {
-                                                        childs:
+                                                        children:
                                                         [
                                                             {
                                                                 fragment:
                                                                 {
-                                                                    childs:
+                                                                    children:
                                                                     [
                                                                         {
                                                                             attributes:
@@ -1866,7 +1866,7 @@ export default class HTMLXElementParserSpec
                                                                                     value: "foo",
                                                                                 },
                                                                             ],
-                                                                            childs:
+                                                                            children:
                                                                             [
                                                                                 {
                                                                                     observables: [["source", "value"]],
@@ -1965,16 +1965,16 @@ export default class HTMLXElementParserSpec
 
         const expected: Descriptor =
         {
-            childs:
+            children:
             [
                 {
                     fragment:
                     {
-                        childs:
+                        children:
                         [
                             {
                                 attributes: [],
-                                childs:
+                                children:
                                 [
                                     {
                                         observables: [["source", "value"]],
@@ -2027,21 +2027,21 @@ export default class HTMLXElementParserSpec
 
         const expected: Descriptor =
         {
-            childs:
+            children:
             [
                 {
                     fragment:
                     {
-                        childs:
+                        children:
                         [
                             {
                                 fragment:
                                 {
-                                    childs:
+                                    children:
                                     [
                                         {
                                             attributes: [],
-                                            childs:
+                                            children:
                                             [
                                                 {
                                                     observables: [["source", "value"]],
@@ -2257,7 +2257,7 @@ export default class HTMLXElementParserSpec
     }
 
     @shouldFail @test
-    public invalidTwoWayDataBindWithDinamicProperty(): void
+    public invalidTwoWayDataBindWithDynamicProperty(): void
     {
         const template = "<x-foo ::value=\"host[a + b]\"></x-foo>";
 

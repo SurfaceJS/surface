@@ -1,6 +1,6 @@
 /* eslint-disable sort-keys */
 import type { Indexer }                       from "@surface/core";
-import { camelToDashed, pathfy, typeGuard }   from "@surface/core";
+import { camelToDashed, makePath, typeGuard } from "@surface/core";
 import { hexToHsva, hsvaToHex }               from "./colors/converters.js";
 import { interpolateSwatches, scaleSwatches } from "./colors/swatches.js";
 import type RawPalette                        from "./types/raw-palette";
@@ -91,7 +91,7 @@ export function generateCssVariables(source: object): string[]
     const defaultWeightPattern = /-500:/;
     const accentPattern        = /A[1247]00/;
 
-    const variables = pathfy(source, { keySeparator: "-", keyTranform: x => accentPattern.test(x) ? x : camelToDashed(x) }).map(x => `--smd-${x};`);
+    const variables = makePath(source, { keySeparator: "-", keyTransform: x => accentPattern.test(x) ? x : camelToDashed(x) }).map(x => `--smd-${x};`);
     const defaults  = variables.filter(x => x.includes("-500:")).map(x => x.replace(defaultWeightPattern, ":"));
 
     return defaults.concat(variables);

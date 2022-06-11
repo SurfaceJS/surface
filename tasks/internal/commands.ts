@@ -14,7 +14,7 @@ import
     paths,
     restoreBackup,
 } from "./common.js";
-import Depsync                from "./depsync.js";
+import DepSync                from "./dep-sync.js";
 import StrategyType           from "./enums/strategy-type.js";
 import NpmRepository          from "./npm-repository.js";
 import Publisher              from "./publisher.js";
@@ -57,7 +57,7 @@ export default class Commands
 
     private static async sync(strategy: StrategyType, version?: SemanticVersion): Promise<void>
     {
-        const syncedPackages = await Depsync.sync(lookup, { strategy, version });
+        const syncedPackages = await DepSync.sync(lookup, { strategy, version });
 
         for (const $package of syncedPackages)
         {
@@ -79,12 +79,12 @@ export default class Commands
 
             commands.push(backupFile(manifest));
 
-            log(`Backuping ${chalk.bold.blue($package.name)}`);
+            log(`Making Backup ${chalk.bold.blue($package.name)}`);
         }
 
         await Promise.all(commands);
 
-        log(chalk.bold.green("Backuping modules done!"));
+        log(chalk.bold.green("Making Backup modules done!"));
     }
 
     public static async build(): Promise<void>

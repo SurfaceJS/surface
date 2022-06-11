@@ -6,7 +6,7 @@ import Vector4                     from "../internal/colors/vector-4.js";
 export default class Vector4Spec
 {
     @test @shouldPass
-    public lenght(): void
+    public length(): void
     {
         const vector = new Vector4(1, 1, 1, 1);
 

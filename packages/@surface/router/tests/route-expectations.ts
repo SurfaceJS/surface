@@ -1,3 +1,5 @@
+// cSpell:ignore pathpathpath, pathpathpathpathpathpathpathpath, pathpath
+
 import type { Indexer } from "@surface/core";
 import type RouteMatch  from "../internal/types/route-match";
 
@@ -640,12 +642,12 @@ export const routeValidExpectations: RouteValidExpectation[] =
 export const routeInvalidExpectations: RouteInvalidExpectation[] =
 [
     {
-        error:   new Error("Unregistred constraint or transformer Foo"),
+        error:   new Error("Unregistered constraint or transformer Foo"),
         pattern: "/path/{value:Foo}",
         value:   "/path/path",
     },
     {
-        error:   new Error("Unregistred constraint or transformer Foo"),
+        error:   new Error("Unregistered constraint or transformer Foo"),
         pattern: "/path/{value:Foo}",
         value:   { },
     },

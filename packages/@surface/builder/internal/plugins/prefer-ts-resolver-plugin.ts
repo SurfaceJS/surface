@@ -28,11 +28,11 @@ export default class PreferTsResolverPlugin implements ResolverPluginInstance
 
                     if (target.ext.toLowerCase() == ".js" && (this.matcher?.test(request.path) ?? true))
                     {
-                        const simbling = path.join(target.dir, `${target.name}.ts`);
+                        const sibling = path.join(target.dir, `${target.name}.ts`);
 
-                        if (fs.existsSync(simbling))
+                        if (fs.existsSync(sibling))
                         {
-                            request.path = simbling;
+                            request.path = sibling;
                         }
                     }
                 }

@@ -34,7 +34,7 @@ export const parsePattern = (pattern: RegExp) =>
             return value.toLowerCase();
         }
 
-        throw new Error(`'${value}' dont match the pattern ${pattern}`);
+        throw new Error(`'${value}' don't match the pattern ${pattern}`);
     };
 
 export const toBooleanOrParsePattern = (pattern: RegExp) =>

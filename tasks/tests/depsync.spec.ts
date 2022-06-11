@@ -2,8 +2,8 @@ import chai                                    from "chai";
 import type { Manifest }                       from "pacote";
 import Mock, { It }                            from "../../packages/@surface/mock/index.js";
 import { shouldFail, shouldPass, suite, test } from "../../packages/@surface/test-suite/index.js";
-import type { Options }                        from "../internal/depsync.js";
-import Depsync                                 from "../internal/depsync.js";
+import type { Options }                        from "../internal/dep-sync.js";
+import DepSync                                 from "../internal/dep-sync.js";
 import StrategyType                            from "../internal/enums/strategy-type.js";
 import NpmRepository                           from "../internal/npm-repository.js";
 
@@ -39,7 +39,7 @@ export default class PublisherSpec
 
         const options: Options = { silent: true };
 
-        await new Depsync(npmRepositoryMock.proxy, toLookup(actual as Manifest[]), options).sync();
+        await new DepSync(npmRepositoryMock.proxy, toLookup(actual as Manifest[]), options).sync();
 
         chai.assert.deepEqual(actual, expected);
     }
@@ -80,7 +80,7 @@ export default class PublisherSpec
 
         const options: Options = { silent: true };
 
-        await new Depsync(npmRepositoryMock.proxy, toLookup(actual), options).sync();
+        await new DepSync(npmRepositoryMock.proxy, toLookup(actual), options).sync();
 
         chai.assert.deepEqual(actual, expected);
     }
@@ -115,7 +115,7 @@ export default class PublisherSpec
 
         const options: Options = { silent: true, strategy: StrategyType.Default, version: "*.2.*" };
 
-        await new Depsync(npmRepositoryMock.proxy, toLookup(actual), options).sync();
+        await new DepSync(npmRepositoryMock.proxy, toLookup(actual), options).sync();
 
         chai.assert.deepEqual(actual, expected);
     }
@@ -158,7 +158,7 @@ export default class PublisherSpec
         npmRepositoryMock.setup("get").call(It.any())
             .returns(Promise.resolve(null));
 
-        await new Depsync(npmRepositoryMock.proxy, toLookup(actual), options).sync();
+        await new DepSync(npmRepositoryMock.proxy, toLookup(actual), options).sync();
 
         chai.assert.deepEqual(actual, expected);
     }
@@ -187,7 +187,7 @@ export default class PublisherSpec
 
         const options: Options = { silent: true, strategy: StrategyType.ForceUpdate, version: "2.0.0" };
 
-        await new Depsync(npmRepositoryMock.proxy, toLookup(actual), options).sync();
+        await new DepSync(npmRepositoryMock.proxy, toLookup(actual), options).sync();
 
         chai.assert.deepEqual(actual, expected);
     }
@@ -217,7 +217,7 @@ export default class PublisherSpec
         npmRepositoryMock.setup("get").call(It.any())
             .returns(Promise.resolve(null));
 
-        await new Depsync(npmRepositoryMock.proxy, toLookup(actual), options).sync();
+        await new DepSync(npmRepositoryMock.proxy, toLookup(actual), options).sync();
 
         chai.assert.deepEqual(actual, expected);
     }
@@ -245,7 +245,7 @@ export default class PublisherSpec
         npmRepositoryMock.setup("get").call(It.any())
             .returns(Promise.resolve(null));
 
-        await new Depsync(npmRepositoryMock.proxy, toLookup(actual), options).sync();
+        await new DepSync(npmRepositoryMock.proxy, toLookup(actual), options).sync();
 
         chai.assert.deepEqual(actual, expected);
     }
@@ -275,7 +275,7 @@ export default class PublisherSpec
         npmRepositoryMock.setup("get").call(It.any())
             .returns(Promise.resolve(null));
 
-        await new Depsync(npmRepositoryMock.proxy, toLookup(actual), options).sync();
+        await new DepSync(npmRepositoryMock.proxy, toLookup(actual), options).sync();
 
         chai.assert.deepEqual(actual, expected);
     }
@@ -298,7 +298,7 @@ export default class PublisherSpec
 
         try
         {
-            await new Depsync(npmRepositoryMock.proxy, toLookup(actual), options).sync();
+            await new DepSync(npmRepositoryMock.proxy, toLookup(actual), options).sync();
         }
         catch (error)
         {

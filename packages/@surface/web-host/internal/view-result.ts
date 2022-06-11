@@ -27,14 +27,14 @@ export default class ViewResult extends ActionResult
 
     public executeResult(): void
     {
-        const viewpath = path.join(this.httpContext.host.root, "views", this.controllerName, `${this.viewName}.html`);
+        const viewPath = path.join(this.httpContext.host.root, "views", this.controllerName, `${this.viewName}.html`);
 
-        if (!fs.existsSync(viewpath))
+        if (!fs.existsSync(viewPath))
         {
             throw new Error(`View ${this.viewName} cannot be founded.`);
         }
 
-        const data = fs.readFileSync(viewpath);
+        const data = fs.readFileSync(viewPath);
 
         this.httpContext.response.writeHead(this.statusCode, { "Content-Type": mymeType[".html"] });
         this.httpContext.response.write(data);

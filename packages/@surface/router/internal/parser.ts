@@ -108,8 +108,8 @@ export default class Parser
     }
 
     private parseIdentifierNode(): AssignmentNode | IdentifierNode | TransformerNode;
-    private parseIdentifierNode(ignoreTranformer: true): AssignmentNode | IdentifierNode;
-    private parseIdentifierNode(ignoreTranformer: boolean = false): INode
+    private parseIdentifierNode(ignoreTransformer: true): AssignmentNode | IdentifierNode;
+    private parseIdentifierNode(ignoreTransformer: boolean = false): INode
     {
         const token = this.nextToken();
 
@@ -121,7 +121,7 @@ export default class Parser
 
                 return new AssignmentNode(token.value, this.nextToken().value);
             }
-            else if (!ignoreTranformer && this.match(":"))
+            else if (!ignoreTransformer && this.match(":"))
             {
                 this.expect(":");
 

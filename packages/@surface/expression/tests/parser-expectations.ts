@@ -1559,7 +1559,7 @@ export const invalidExpressions: InvalidParseExpectedSpec[] =
         raw:   "({ ...{ a }, b }) => a",
     },
     {
-        error: new SyntaxError(Messages.restParameterMayNotHaveAdefaultInitializer, 1, 1, 2),
+        error: new SyntaxError(Messages.restParameterMayNotHaveADefaultInitializer, 1, 1, 2),
         raw:   "(...a = []) => a",
     },
     {

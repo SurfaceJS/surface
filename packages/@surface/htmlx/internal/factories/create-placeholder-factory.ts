@@ -1,6 +1,6 @@
 import type { ObservablePath, StackTrace } from "@surface/htmlx-parser";
 import Block                               from "../directives/block.js";
-import PlaceholdeDirective                 from "../directives/placeholder-directive.js";
+import PlaceholderDirective                 from "../directives/placeholder-directive.js";
 import type Activator                      from "../types/activator";
 import type Evaluator                      from "../types/evaluator";
 import type NodeFactory                    from "../types/node-factory";
@@ -33,7 +33,7 @@ export default function createPlaceholderFactory(keyEvaluator: Evaluator, valueE
                 value: valueEvaluator,
             };
 
-            return new PlaceholdeDirective(context);
+            return new PlaceholderDirective(context);
         };
 
         return [fragment, activator];

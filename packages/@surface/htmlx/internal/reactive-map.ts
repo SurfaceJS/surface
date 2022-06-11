@@ -34,18 +34,18 @@ export default class ReactiveMap<K, V> extends Map<K, V>
         this.notify();
     }
 
-    public subscribe(listerner: Delegate<[this]>): Subscription
+    public subscribe(listener: Delegate<[this]>): Subscription
     {
-        this.listeners.add(listerner);
+        this.listeners.add(listener);
 
-        return { unsubscribe: () => this.unsubscribe(listerner) };
+        return { unsubscribe: () => this.unsubscribe(listener) };
     }
 
-    public unsubscribe(listerner: Delegate<[this]>): void
+    public unsubscribe(listener: Delegate<[this]>): void
     {
-        if (!this.listeners.delete(listerner))
+        if (!this.listeners.delete(listener))
         {
-            throw new Error("Listerner not subscribed");
+            throw new Error("Listener not subscribed");
         }
     }
 }

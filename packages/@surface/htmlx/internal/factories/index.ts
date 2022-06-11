@@ -7,7 +7,7 @@ export { default as createFragmentFactory }              from "./create-fragment
 export { default as createInjectionFactory }             from "./create-injection-factory.js";
 export { default as createInterpolationFactory }         from "./create-interpolation-factory.js";
 export { default as createLoopFactory }                  from "./create-loop-factory.js";
-export { default as createOnewayFactory }                from "./create-oneway-factory.js";
+export { default as createOnewayFactory }                from "./create-one-way-factory.js";
 export { default as createPlaceholderFactory }           from "./create-placeholder-factory.js";
 export { default as createSpreadAttributesFactory }      from "./create-spread-attributes-factory.js";
 export { default as createSpreadBindsFactory }           from "./create-spread-binds-factory.js";
@@ -16,4 +16,4 @@ export { default as createSpreadInjectionsFactory }      from "./create-spread-i
 export { default as createSpreadListenersFactory }       from "./create-spread-listeners.js";
 export { default as createTextNodeFactory }              from "./create-text-node-factory.js";
 export { default as createTextNodeInterpolationFactory } from "./create-text-node-interpolation-factory.js";
-export { default as createTwowayFactory }                from "./create-twoway-factory.js";
+export { default as createTwoWayFactory }                from "./create-two-way-factory.js";

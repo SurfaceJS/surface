@@ -25,7 +25,7 @@ const DEFAULT_CONSTRAINTS: [string, IConstraint][] =
     ["UIID",    { validate: x => UIID_PATTERN.test(x) }],
 ];
 
-const DEFAULT_TRANFORMERS: [string, ITransformer][] =
+const DEFAULT_TRANSFORMERS: [string, ITransformer][] =
 [
     ["Boolean", { parse: Boolean,                              stringify: String }],
     ["Date",    { parse: (source: string) => new Date(source), stringify: (x: Date) => x.toISOString().replace(/T.+$/, "") }],
@@ -40,7 +40,7 @@ export default class Router<T = RouteData>
     public map(options: RouteOptions<T>): this
     {
         const constraints  = new Map([...DEFAULT_CONSTRAINTS, ...Object.entries(options.constraints ?? { })]);
-        const transformers = new Map([...DEFAULT_TRANFORMERS, ...Object.entries(options.transformers ?? { })]);
+        const transformers = new Map([...DEFAULT_TRANSFORMERS, ...Object.entries(options.transformers ?? { })]);
 
         const route = new Route(options.pattern, constraints, transformers);
 

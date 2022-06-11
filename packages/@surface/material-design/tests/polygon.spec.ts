@@ -25,16 +25,16 @@ export default class PolygonSpec
             new Vector3(0.1, 0.75, 0.45),
         ];
 
-        const poligon  = new Polygon(actualVertices);
+        const polygon  = new Polygon(actualVertices);
         const expected = new Polygon(expectedVertices);
 
-        const actual = Polygon.scale(poligon, new Vector3(0.2, 0.5, 0.9), 0.5);
+        const actual = Polygon.scale(polygon, new Vector3(0.2, 0.5, 0.9), 0.5);
 
         chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
-    public tranlate(): void
+    public translate(): void
     {
         const actualVertices =
         [
@@ -52,10 +52,10 @@ export default class PolygonSpec
             new Vector3(0.2, 1.5, 0.9),
         ];
 
-        const poligon  = new Polygon(actualVertices);
+        const polygon  = new Polygon(actualVertices);
         const expected = new Polygon(expectedVertices);
 
-        const actual = Polygon.translate(poligon, new Vector3(0.2, 0.5, 0.9));
+        const actual = Polygon.translate(polygon, new Vector3(0.2, 0.5, 0.9));
 
         chai.assert.deepEqual(actual, expected);
     }

@@ -9,7 +9,7 @@ import
     deepMerge,
     merge,
     objectFactory,
-    pathfy,
+    makePath,
     proxyFrom,
 } from "../../internal/common/object.js";
 import type { Indexer } from "../../internal/types";
@@ -386,7 +386,7 @@ export default class CommonObjectSpec
 
         const expected = ["a: 1", "b.c: 3", "e.f.g: 4"];
 
-        const actual = pathfy(source);
+        const actual = makePath(source);
 
         chai.assert.deepEqual(actual, expected);
     }
@@ -398,7 +398,7 @@ export default class CommonObjectSpec
 
         const expected = ["a = 1", "b-c = 3", "e-f-g = 4"];
 
-        const actual = pathfy(source, { keySeparator: "-", valueSeparator: " = " });
+        const actual = makePath(source, { keySeparator: "-", valueSeparator: " = " });
 
         chai.assert.deepEqual(actual, expected);
     }

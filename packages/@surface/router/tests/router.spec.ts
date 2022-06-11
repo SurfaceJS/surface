@@ -7,7 +7,17 @@ import type RouterMatch                        from "../internal/types/router-ma
 export default class RouterSpec
 {
     @test @shouldPass
-    public unmatch(): void
+    public noMatch(): void
+    {
+        const actual = new Router()
+            .map({ pattern: "/path" })
+            .match("/path1");
+
+        chai.assert.deepEqual(actual, { matched: false, reason: "No match found to the path: /path1" });
+    }
+
+    @test @shouldPass
+    public noMatchWithSelector(): void
     {
         const expected: RouterMatch =
         {
@@ -43,7 +53,7 @@ export default class RouterSpec
     }
 
     @test @shouldPass
-    public unmatchNamed(): void
+    public mismatchNamed(): void
     {
         const expected: RouterMatch =
         {
@@ -79,7 +89,7 @@ export default class RouterSpec
     }
 
     @test @shouldPass
-    public unmatchNamedWithParams(): void
+    public mismatchNamedWithParams(): void
     {
         const expected: RouterMatch =
         {
@@ -115,7 +125,7 @@ export default class RouterSpec
     }
 
     @test @shouldPass
-    public matchNamedWithParamsTranformers(): void
+    public matchNamedWithParamsTransformers(): void
     {
         const expected1: RouterMatch =
         {
@@ -156,16 +166,6 @@ export default class RouterSpec
             .match("default", { boolean: true, date: new Date("2020-01-01"), number: 1 });
 
         chai.assert.deepEqual(actual2, expected2);
-    }
-
-    @test @shouldPass
-    public dontMatch(): void
-    {
-        const actual = new Router()
-            .map({ pattern: "/path" })
-            .match("/path1");
-
-        chai.assert.deepEqual(actual, { matched: false, reason: "No match found to the path: /path1" });
     }
 
     @test @shouldPass

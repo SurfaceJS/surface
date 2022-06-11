@@ -16,7 +16,7 @@ enum DescriptorType
     Spread,
     Text,
     TextInterpolation,
-    Twoway,
+    TwoWay,
 }
 
 export default DescriptorType;

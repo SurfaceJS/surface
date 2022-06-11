@@ -26,21 +26,21 @@ export default class MvcRequestHandler extends RequestHandler
     private async getController(controller: string, filepath: string): Promise<Constructor<Controller>>
     {
         // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const esmodule = await import(pathToFileURL(filepath).href) as Indexer<Constructor<Controller> | null>;
+        const esModule = await import(pathToFileURL(filepath).href) as Indexer<Constructor<Controller> | null>;
 
         let constructor: Constructor<Controller> | null | undefined;
 
-        if (!(constructor = esmodule.default))
+        if (!(constructor = esModule.default))
         {
-            if (Type.from(esmodule).extends(Controller))
+            if (Type.from(esModule).extends(Controller))
             {
-                constructor = esmodule as object as Constructor<Controller>;
+                constructor = esModule as object as Constructor<Controller>;
             }
-            else if (Type.from(esmodule).equals(Object))
+            else if (Type.from(esModule).equals(Object))
             {
-                constructor = Enumerable.from(Object.keys(esmodule))
-                    .where(x => new RegExp(`^${controller}(controller)?$`, "i").test(x) && Type.of(esmodule[x] as Function).extends(Controller))
-                    .select(x => esmodule[x])
+                constructor = Enumerable.from(Object.keys(esModule))
+                    .where(x => new RegExp(`^${controller}(controller)?$`, "i").test(x) && Type.of(esModule[x] as Function).extends(Controller))
+                    .select(x => esModule[x])
                     .firstOrDefault();
             }
         }

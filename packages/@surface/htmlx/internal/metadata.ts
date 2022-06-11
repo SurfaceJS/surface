@@ -7,12 +7,12 @@ import type InjectionContext   from "./types/injection-context";
 const METADATA = Symbol("htmlx:metadata");
 
 type OnewayContext = { key: string, evaluator: Evaluator, scope: object, observables: ObservablePath[] };
-type TwowayContext = { left: string, right: ObservablePath, scope: object };
+type TwoWayContext = { left: string, right: ObservablePath, scope: object };
 
 type BindContexts =
 {
     oneway: Map<string, OnewayContext>,
-    twoway: Map<string, TwowayContext>,
+    twoWay: Map<string, TwoWayContext>,
 };
 
 type ListenerContext = { scope: object, type: string, listenerEvaluator: Evaluator, contextEvaluator: Evaluator };
@@ -35,7 +35,7 @@ export default class Metadata
             binds:
             {
                 oneway: new Map(),
-                twoway: new Map(),
+                twoWay: new Map(),
             },
             listeners: new Map(),
         };
