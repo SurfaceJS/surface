@@ -113,11 +113,23 @@ export default class Commands
 
         const file   = path.parse(filepath);
         const spec   = `${path.relative(process.cwd(), path.join(file.dir, file.name))}.js`;
-        const target = file.name.replace(".spec", "");
+        const target = file.name.replace("spec", "");
 
         const command = `${c8} --text-exclude --include=**/@surface/**/${target}.js --include=**/@surface/**/${target}.ts --exclude=**/tests --exclude=**/node_modules --extension=.js --extension=.ts --reporter=text ${mocha} --loader=@surface/mock-loader --reporter=progress ${spec}`;
 
         await execute(`cover ${chalk.bold.blue(filepath)} tests`, command);
+    }
+
+    public static async test(filepath: string): Promise<void>
+    {
+        const bin   = path.resolve(DIRNAME, "../../node_modules/.bin");
+        const mocha = path.join(bin, "mocha");
+        const file  = path.parse(filepath);
+        const spec  = `${path.relative(process.cwd(), path.join(file.dir, file.name.replace(/((?:\.\w+)*\.(?:scn))/, ".spec")))}.js`;
+
+        const command = `${mocha} --loader=@surface/mock-loader ${spec}`;
+
+        await execute(`test ${chalk.bold.blue(filepath)}`, command);
     }
 
     public static async publish(_: string, options: CliPublishOptions): Promise<void>

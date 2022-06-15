@@ -34,11 +34,11 @@ export default class CommonStringSpec
             "<tag one>",
             "Inner 1",
             "</tag>",
-            "Outter 1",
+            "Outer 1",
             "<tag two>",
             "Inner 2",
             "</tag>",
-            "Outter 2",
+            "Outer 2",
             "<tag three>",
             "Inner 3",
             "</tag>",
@@ -48,8 +48,8 @@ export default class CommonStringSpec
         const expected =
         [
             ["Start<tag one>",      "Inner 1", "</tag>"],
-            ["Outter 1<tag two>",   "Inner 2", "</tag>"],
-            ["Outter 2<tag three>", "Inner 3", "</tag>End"],
+            ["Outer 1<tag two>",   "Inner 2", "</tag>"],
+            ["Outer 2<tag three>", "Inner 3", "</tag>End"],
         ];
 
         const actual = captureAll(source, /<.*?>/, /<\/.*?>/);

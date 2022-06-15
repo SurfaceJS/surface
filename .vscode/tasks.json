@@ -99,7 +99,7 @@
             "type": "shell"
         },
         {
-            "command": "${workspaceFolder}/node_modules/.bin/mocha.cmd --loader=@surface/mock-loader --ui=tdd ${fileDirname}/${fileBasenameNoExtension}.js",
+            "command": "node ${workspaceFolder}/tasks/cli test ${file}",
             "label": "test-file",
             "presentation": {
                 "reveal": "always"

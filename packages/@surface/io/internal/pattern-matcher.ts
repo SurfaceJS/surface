@@ -40,6 +40,20 @@ type PatternList =
     parent?: PatternList,
 };
 
+type RangeValue =
+{
+    ceiling: string,
+    value:   string,
+};
+
+type RangeInfo =
+{
+    start:        RangeValue,
+    end:          RangeValue,
+    sign:         string,
+    intersection: number | null,
+};
+
 // improving this regexp to avoid a ReDOS vulnerability.
 // /\{(?:(?!\{).)*\}/.test(pattern)
 
@@ -286,260 +300,187 @@ export default class PatternMatcher
         }
     }
 
-    private createRange(min: number, max: number, quantifier: number = 1): string
+    private createRange(min: number, max: number, minQuantifier: number = 1, maxQuantifier: number = 0): string
     {
-        const separator = max - min > 1 ? "-" : "";
+        if (minQuantifier + maxQuantifier == 0)
+        {
+            return "";
+        }
 
         const range = min == max
             ? String(max)
             : min == 0 && max == 9
                 ? "\\d"
-                : `[${min}${separator}${max}]`;
+                : `[${min}${max - min > 1 ? "-" : ""}${max}]`;
 
-        return range + (quantifier == 1 ? "" : `{${quantifier}}`);
+        const quantifier = minQuantifier < maxQuantifier
+            ? minQuantifier == 0 && maxQuantifier == 1
+                ? "?"
+                : `{${minQuantifier},${maxQuantifier}}`
+            : minQuantifier > 1
+                ? `{${minQuantifier}}`
+                : "";
+
+        return range + quantifier;
     }
 
-    private parseRange(start: number, end: number, minLength: number): string[]
+    private createExtendedRange(min: number, max: number, minQuantifier: number = 1, maxQuantifier: number = 0): string
     {
-        const patterns: string[] = [];
+        return this.createRange(min, max) + this.createRange(0, 9, minQuantifier, maxQuantifier);
+    }
 
-        const startValue        = start.toString().replace("-", "");
-        const endValue          = end.toString().replace("-", "");
-        const leadingStartDigit = Number(startValue[0]);
-        const leadingEndDigit   = Number(endValue[0]);
-        const startSign         = start < 0 ? "-" : "";
-        const endSign           = end < 0 ? "-" : "";
-        const endLeadingZeros   = "0".repeat(Math.max(minLength - endValue.length, 0));
-        const hasSameLength     = endValue.length == startValue.length;
-        const endCeiling        = endValue[0] + "0".repeat(endValue.length - 1);
-        const startCeiling      = start > 0 ? startValue.length == 1 ? "0" : startValue[0] + "0".repeat(startValue.length - 1) : "";
-        // const hasLeadingZeros = minLength > 1 && startValue.length != endValue.length;
+    private getRangeInfo(start: number, end: number): RangeInfo
+    {
+        const startString = start.toString().replace("-", "");
+        const endString   = end.toString().replace("-", "");
 
-        for (let i = endValue.length - 1; i > 0; i--)
+        let intersection: number | null = null;
+
+        if (startString.length == endString.length)
         {
-            const rest = endValue.length - i - 1;
+            intersection = -1;
 
-            const leadingEnd   = endValue.substring(0, i);
-            const leadingStart = hasSameLength ? startValue.substring(0, i) : "";
-
-            const hasSameLeading = leadingEnd == leadingStart;
-
-            const startDigit = hasSameLeading ? Number(startValue[i]) : 0;
-            const endDigit   = Number(endValue[i]);
-
-            let endPattern = `${endSign}${endLeadingZeros}${leadingEnd}`;
-
-            if (endDigit == 0)
+            for (let index = 0; index < endString.length; index++)
             {
-                if (i == endValue.length - 1)
-                {
-                    endPattern += "0";
-                }
-
-                while (endValue[i - 1] == "0")
-                {
-                    i--;
-                }
-            }
-            else
-            {
-                const startRange = startDigit;
-                const endRange   = endDigit - (rest == 0 ? 0 : 1);
-
-                if (leadingStart == leadingEnd && startRange == endRange)
+                if (startString[index] != endString[index])
                 {
                     break;
                 }
-                else
-                {
-                    endPattern += this.createRange(startDigit, endDigit - (rest == 0 ? 0 : 1));
-                }
 
-                if (rest > 0)
-                {
-                    endPattern += "\\d";
-
-                    if (rest > 1)
-                    {
-                        endPattern += `{${rest}}`;
-                    }
-                }
-            }
-
-            if (patterns.length > 0)
-            {
-                patterns.push("|");
-            }
-
-            patterns.push(endPattern);
-
-            if (i > 1 && leadingEnd == leadingStart)
-            {
-                break;
+                intersection = index;
             }
         }
 
-        if (startValue == endCeiling)
+        const startValue = start.toString().replace("-", "");
+        const endValue   = end.toString().replace("-", "");
+
+        return {
+            start:
+            {
+                ceiling: startValue[0] + "0".repeat(startValue.length - 1),
+                value:   startValue,
+            },
+            end:
+            {
+                ceiling: endValue[0] + "0".repeat(endValue.length - 1),
+                value:   endValue,
+            },
+            sign:    end < 0 ? "-" : "",
+            intersection,
+        };
+    }
+
+    private parseRange(start: number, end: number, _minLength: number): string[]
+    {
+        const patterns: string[] = [];
+
+        const range = this.getRangeInfo(start, end);
+
+        for (let i = range.end.value.length - 1; i > -1; i--)
         {
-            return patterns;
+            if (i - 1 == range.intersection)
+            {
+                break;
+            }
+
+            const digit = Number(range.end.value[i]);
+
+            if (digit == 0 && i == range.end.value.length - 1)
+            {
+                patterns.push(range.sign + range.end.value);
+            }
+            else if (i > 0 && digit > 0 || i == 0 && digit > 1)
+            {
+                const rest       = range.end.value.length - i - 1;
+                const startRange = i == 0 ? 1 : 0;
+                const endRange   = digit - (i == range.end.value.length - 1 ? 0 : 1);
+
+                const pattern = range.sign + range.end.value.substring(0, i) + this.createExtendedRange(startRange, endRange, rest);
+
+                if (patterns.length > 0)
+                {
+                    patterns.push("|");
+                }
+
+                patterns.push(pattern);
+            }
         }
 
         if (start == 0)
         {
-            patterns.push("|");
+            const rest = range.end.value.length - 1;
 
-            if (endValue.length == 2)
+            if (rest > 1)
             {
-                const rest = endValue.length - 1;
+                patterns.push("|", range.sign + this.createExtendedRange(1, 9, 1, rest - 1));
+            }
 
-                const digit = leadingEndDigit - 1;
-
-                if (digit == 0)
-                {
-                    if (rest == 1)
-                    {
-                        patterns.push(`${endSign}\\d`);
-                    }
-                    else
-                    {
-                        patterns.push(`${endSign}[1-9]\\d{${rest}}`);
-                    }
-                }
-                else if (digit == 1)
-                {
-                    patterns.push(`${endSign}1?\\d`);
-                }
-                else
-                {
-                    patterns.push(`${endSign}[1-${leadingEndDigit - 1}]?\\d`);
-                }
+            if (range.sign)
+            {
+                patterns.push("|", range.sign + this.createRange(1, 9));
+                patterns.push("|", "0");
             }
             else
             {
-                const rest = endValue.length - 1;
-
-                if (leadingEndDigit > 1 && rest > 1)
-                {
-                    patterns.push(`${endSign}[1-${leadingEndDigit - 1}]\\d{${rest}}`);
-
-                    const quantifier = rest == 2 ? "" : `{${rest - 1}}`;
-
-                    patterns.push("|", `${endSign}[1-9]\\d${quantifier}`);
-                    patterns.push("|", "\\d");
-                }
-                else
-                {
-                    patterns.push(`${endSign}[1-9]?\\d`);
-                }
-
+                patterns.push("|", this.createRange(0, 9));
             }
         }
-        else if (startValue.length == endValue.length && startValue == startCeiling)
+        else if (range.start.value == range.start.ceiling && range.intersection == -1)
         {
-            const rest       = startValue.length - 1;
-            const quantifier = rest == 1 ? "" : `{${rest}}`;
-            const range      = leadingEndDigit - 1 == leadingStartDigit
-                ? startValue[0]
-                : `[${startValue[0]}-${leadingEndDigit - 1}]`;
-
-            patterns.push("|", `${startSign}${range}\\d${quantifier}`);
-        }
-        else if (startValue == startCeiling)
-        {
-            const rest       = endValue.length - 2;
-            const quantifier = rest == 1 ? "" : `{${rest}}`;
-
-            if (leadingEndDigit > 1)
-            {
-                patterns.push("|", `${endSign}[1-${leadingEndDigit - 1}]\\d{${rest + 1}}`);
-            }
-
-            patterns.push("|", `${startSign}[${startValue[0]}-9]\\d${quantifier}`);
+            patterns.push("|", range.sign + this.createExtendedRange(Number(range.start.value[0]), Number(range.end.value[0]) - 1, range.start.value.length - 1));
         }
         else
         {
-            if (endValue.length - startValue.length > 1 || endValue.length - startValue.length > 0 && leadingEndDigit > 1)
+            const rest = range.end.value.length - range.start.value.length - 1;
+
+            if (rest > 0)
             {
-                if (leadingEndDigit > 1)
-                {
-                    const rest       = endValue.length - 1 + (endValue.length - startValue.length > 0 ? 0 : 1);
-                    const quantifier = rest == 1 ? "" : `{${rest}}`;
-
-                    patterns.push("|", `${endSign}[1-${leadingEndDigit - 1}]\\d${quantifier}`);
-                }
-
-                if (endValue.length - startValue.length > 1)
-                {
-                    const rest       = endValue.length - 2;
-                    const quantifier = rest == 1 ? "" : `{${rest}}`;
-
-                    patterns.push("|", `${endSign}[1-9]\\d${quantifier}`);
-                }
-
-                console.log();
+                patterns.push("|", range.sign + this.createExtendedRange(1, 9, 1, rest - 1));
             }
 
-            const hasSameLength  = startValue.length == endValue.length;
-            const resolveLeading = startValue.length == 1
-            || hasSameLength && leadingEndDigit - leadingStartDigit > 1
-            || !hasSameLength && leadingStartDigit < 9;
-
-            const limit = resolveLeading ? 0 : 1;
-
-            for (let i = startValue.length - 1; i >= limit; i--)
+            for (let i = range.start.value.length - 1; i > -1; i--)
             {
-                const leadingStart = startValue.substring(0, i);
-                const leadingEnd   = hasSameLength ? endValue.substring(0, i) : "";
+                const startDigit = Number(range.start.value[i]);
+                const endDigit   = Number(range.end.value[i]);
 
-                let startPattern = startSign;
+                const hasIntersected = i == range.intersection;
+                const willIntersect  = i - 1 == range.intersection;
 
-                const startDigit = Number(startValue[i]);
-                const endDigit   = Number(endValue[i]);
-                const rest       = startValue.length - i - 1;
-
-                if (leadingStart && leadingEnd == leadingStart)
+                if (hasIntersected || willIntersect && endDigit - startDigit < 2)
                 {
-                    const startRange = startDigit;
-                    const endRange   = endDigit - 1;
-                    const rest       = startValue.length - i - 1;
-
-                    if (endRange > startRange)
-                    {
-                        startPattern += leadingStart + this.createRange(startDigit, endRange) + this.createRange(0, 9, rest);
-
-                        patterns.push("|", startPattern);
-                    }
-
                     break;
                 }
-                else
+
+                const isTrailingDigit = i == range.start.value.length - 1;
+                const canResolveZero  = startDigit == 0 && (willIntersect || i == 1 && !isTrailingDigit);
+                const canResolveNine  = startDigit == 9 && range.start.value[i + 1] == "0";
+
+                if (startDigit == 9 && isTrailingDigit)
                 {
-                    startPattern += `${startValue.substring(0, i)}`;
-
-                    if (startDigit == 9 && i == startValue.length - 1)
+                    if (patterns.length > 0)
                     {
-                        startPattern += "9";
+                        patterns.push("|");
                     }
-                    else
-                    {
-                        const startRange = startDigit + (rest == 0 ? 0 : 1);
-                        const endRange   = i == limit && hasSameLength && endDigit > 1 ? endDigit - 1 : 9;
 
-                        startPattern += this.createRange(startRange, endRange);
-                    }
+                    patterns.push(range.sign + range.start.value);
                 }
-
-                if (rest > 0)
+                else if (canResolveZero || canResolveNine || startDigit > 0 && startDigit < 9)
                 {
-                    startPattern += "\\d";
+                    const rest        = range.start.value.length - i - 1;
+                    const startOffset = isTrailingDigit || range.start.value[i + 1] == "0" && (i > 0 || range.start.value.length == 2) ? 0 : 1;
+                    const endOffset   = isTrailingDigit ? 0 : 1;
+                    const startRange  = startDigit + startOffset;
+                    const endRange    = startDigit < 9 && willIntersect ? endDigit - endOffset : 9;
 
-                    if (rest > 1)
+                    const pattern = range.sign + range.start.value.substring(0, i) + this.createExtendedRange(startRange, endRange, rest);
+
+                    if (patterns.length > 0)
                     {
-                        startPattern += `{${rest}}`;
+                        patterns.push("|");
                     }
-                }
 
-                patterns.push("|", startPattern);
+                    patterns.push(pattern);
+                }
             }
         }
 
@@ -700,11 +641,11 @@ export default class PatternMatcher
             {
                 this.tokens.push(...this.parseRange(end, start, minLength));
             }
-            else if (end >= 0)
+            else
             {
                 this.tokens.push(...this.parseRange(0, start, minLength));
                 this.tokens.push("|");
-                this.tokens.push(...this.parseRange(0, end, minLength));
+                this.tokens.push(...this.parseRange(1, end, minLength));
             }
         }
         else if (inSimpleRange(start) && inSimpleRange(end))

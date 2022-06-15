@@ -7,9 +7,9 @@ import
     DeepMergeFlags,
     deepEqual,
     deepMerge,
+    makePath,
     merge,
     objectFactory,
-    makePath,
     proxyFrom,
 } from "../../internal/common/object.js";
 import type { Indexer } from "../../internal/types";
@@ -344,7 +344,7 @@ export default class CommonObjectSpec
     }
 
     @test @shouldPass
-    public deepMergeMutiplesObjects(): void
+    public deepMergeMultiplesObjects(): void
     {
         const first  = { a: 1, b: "2", c: { d: 3 } };
         const second = { c: { e: true } };
@@ -380,7 +380,7 @@ export default class CommonObjectSpec
     }
 
     @test @shouldFail
-    public pathfy(): void
+    public makePath(): void
     {
         const source = { a: 1, b: { c: 3 }, e: { f: { g: 4 } } };
 
@@ -392,7 +392,7 @@ export default class CommonObjectSpec
     }
 
     @test @shouldFail
-    public pathfyWithOptions(): void
+    public makePathWithOptions(): void
     {
         const source = { a: 1, b: { c: 3 }, e: { f: { g: 4 } } };
 

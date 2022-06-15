@@ -2,15 +2,15 @@
 /* eslint-disable no-empty-character-class */
 /* eslint-disable no-control-regex */
 // cSpell:ignore AGMSY, ekqw
-const skip = false;
+const skip = true;
 
 export type Scenario =
 {
-    pattern:   string,
-    matches:   string[],
-    regex:     RegExp,
+    pattern:    string,
+    matches:    string[],
+    regex:      RegExp,
     mismatches: string[],
-    skip:      boolean,
+    skip:       boolean,
 };
 
 export const scenarios: Scenario[] =

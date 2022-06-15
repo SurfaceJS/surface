@@ -11,6 +11,10 @@ program
     .action(Commands.cover);
 
 program
+    .command("test <n>")
+    .action(Commands.test);
+
+program
     .command("publish <registry>")
     .requiredOption("--token         <n>", "NPM token", toString)
     .option("--mode          <n>", "Configuration mode", parsePattern(/^nightly|release$/))

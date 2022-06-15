@@ -5,16 +5,12 @@ import { copyFile, lstat, readdir, rename, rm, unlink } from "fs/promises";
 import { createRequire }                                from "module";
 import path                                             from "path";
 import { fileURLToPath }                                from "url";
-import { promisify }                                    from "util";
-import { resolveError }                                 from "@surface/core";
-import { createPath, removePath }             from "@surface/io";
+import { createPath, removePath }                       from "@surface/io";
 import chalk                                            from "chalk";
 import type { Manifest }                                from "pacote";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
-
-const execAsync = promisify(child_process.exec);
 
 export function assert(condition: unknown, message?: string): asserts condition
 {
@@ -60,25 +56,21 @@ export function dashedToTitle(value: string): string
 
 export async function execute(label: string, command: string): Promise<void>
 {
-    try
-    {
-        log(label);
-        const { stdout, stderr } = await execAsync(command);
-
-        if (stdout)
+    await new Promise<void>
+    (
+        resolve =>
         {
-            console.log(stdout);
-        }
+            log(label);
 
-        if (stderr)
-        {
-            console.log(stderr);
-        }
-    }
-    catch (error)
-    {
-        console.log(resolveError(error).message);
-    }
+            const childProcess = child_process.exec(`${command} --color`);
+
+            childProcess.stdout?.on("data", x => console.log(String(x).trimEnd()));
+            childProcess.stderr?.on("data", x => console.log(String(x).trimEnd()));
+
+            childProcess.on("error", x => (console.log(String(x)), resolve));
+            childProcess.on("exit", resolve);
+        },
+    );
 }
 
 export function getPackages(packagesRoot: string): Manifest[]
