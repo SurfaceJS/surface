@@ -112,3 +112,27 @@ if (!Promise.prototype.finally)
         },
     );
 }
+
+if (!global.AggregateError)
+{
+    Object.defineProperty
+    (
+        global,
+        "AggregateError",
+        {
+            configurable: true,
+            value:        class AggregateError extends Error
+            {
+                public errors: any[] = [];
+
+                public constructor(errors: Iterable<any>, message?: string)
+                {
+                    super(message);
+
+                    this.errors = Array.from(errors);
+                }
+            },
+            writable: true,
+        },
+    );
+}
