@@ -300,6 +300,21 @@ export default class PatternMatcher
         }
     }
 
+    private createLeadingZeros(size: number): string
+    {
+        switch (size)
+        {
+            case 0:
+                return "";
+            case 1:
+                return "0";
+            case 2:
+                return "00";
+            default:
+                return `0{${size}}`;
+        }
+    }
+
     private createRange(min: number, max: number, minQuantifier: number = 1, maxQuantifier: number = 0): string
     {
         if (minQuantifier + maxQuantifier == 0)
@@ -357,12 +372,12 @@ export default class PatternMatcher
         return {
             start:
             {
-                ceiling: startValue[0] + "0".repeat(startValue.length - 1),
+                ceiling: startValue[0] + this.createLeadingZeros(startValue.length - 1),
                 value:   startValue,
             },
             end:
             {
-                ceiling: endValue[0] + "0".repeat(endValue.length - 1),
+                ceiling: endValue[0] + this.createLeadingZeros(endValue.length - 1),
                 value:   endValue,
             },
             sign:    end < 0 ? "-" : "",
@@ -370,11 +385,13 @@ export default class PatternMatcher
         };
     }
 
-    private parseRange(start: number, end: number, _minLength: number): string[]
+    private parseRange(start: number, end: number, minLength: number): string[]
     {
         const patterns: string[] = [];
 
         const range = this.getRangeInfo(start, end);
+
+        const leading = this.createLeadingZeros(Math.max(minLength - range.end.value.length, 0));
 
         for (let i = range.end.value.length - 1; i > -1; i--)
         {
@@ -387,7 +404,7 @@ export default class PatternMatcher
 
             if (digit == 0 && i == range.end.value.length - 1)
             {
-                patterns.push(range.sign + range.end.value);
+                patterns.push(range.sign + leading + range.end.value);
             }
             else if (i > 0 && digit > 0 || i == 0 && digit > 1)
             {
@@ -395,7 +412,7 @@ export default class PatternMatcher
                 const startRange = i == 0 ? 1 : 0;
                 const endRange   = digit - (i == range.end.value.length - 1 ? 0 : 1);
 
-                const pattern = range.sign + range.end.value.substring(0, i) + this.createExtendedRange(startRange, endRange, rest);
+                const pattern = range.sign + leading + range.end.value.substring(0, i) + this.createExtendedRange(startRange, endRange, rest);
 
                 if (patterns.length > 0)
                 {
@@ -412,17 +429,29 @@ export default class PatternMatcher
 
             if (rest > 1)
             {
-                patterns.push("|", range.sign + this.createExtendedRange(1, 9, 1, rest - 1));
+                if (minLength == 1)
+                {
+                    patterns.push("|", range.sign + this.createExtendedRange(1, 9, 1, rest - 1));
+                }
+                else
+                {
+                    for (let index = rest - 1; index > 0; index--)
+                    {
+                        const leading = this.createLeadingZeros(minLength - index - 1);
+
+                        patterns.push("|", range.sign + leading + this.createExtendedRange(1, 9, index));
+                    }
+                }
             }
 
             if (range.sign)
             {
-                patterns.push("|", range.sign + this.createRange(1, 9));
-                patterns.push("|", "0");
+                patterns.push("|", this.createLeadingZeros(minLength - 1) + range.sign + this.createRange(1, 9));
+                patterns.push("|", this.createLeadingZeros(minLength));
             }
             else
             {
-                patterns.push("|", this.createRange(0, 9));
+                patterns.push("|", this.createLeadingZeros(minLength - 1) + this.createRange(0, 9));
             }
         }
         else if (range.start.value == range.start.ceiling && range.intersection == -1)
@@ -431,12 +460,26 @@ export default class PatternMatcher
         }
         else
         {
-            const rest = range.end.value.length - range.start.value.length - 1;
+            const rest = range.end.value.length - range.start.value.length;
 
-            if (rest > 0)
+            if (rest > 1)
             {
-                patterns.push("|", range.sign + this.createExtendedRange(1, 9, 1, rest - 1));
+                if (minLength == 1)
+                {
+                    patterns.push("|", range.sign + this.createExtendedRange(1, 9, range.start.value.length, range.end.value.length - 2));
+                }
+                else
+                {
+                    for (let index = range.end.value.length - 2; index > range.start.value.length - 1; index--)
+                    {
+                        const leading = this.createLeadingZeros(Math.max(minLength - index - 1, 0));
+
+                        patterns.push("|", range.sign + leading + this.createExtendedRange(1, 9, index));
+                    }
+                }
             }
+
+            const leading = this.createLeadingZeros(Math.max(minLength - range.start.value.length, 0));
 
             for (let i = range.start.value.length - 1; i > -1; i--)
             {
@@ -462,7 +505,7 @@ export default class PatternMatcher
                         patterns.push("|");
                     }
 
-                    patterns.push(range.sign + range.start.value);
+                    patterns.push(range.sign + leading + range.start.value);
                 }
                 else if (canResolveZero || canResolveNine || startDigit > 0 && startDigit < 9)
                 {
@@ -472,7 +515,7 @@ export default class PatternMatcher
                     const startRange  = startDigit + startOffset;
                     const endRange    = startDigit < 9 && willIntersect ? endDigit - endOffset : 9;
 
-                    const pattern = range.sign + range.start.value.substring(0, i) + this.createExtendedRange(startRange, endRange, rest);
+                    const pattern = range.sign + leading + range.start.value.substring(0, i) + this.createExtendedRange(startRange, endRange, rest);
 
                     if (patterns.length > 0)
                     {
@@ -626,7 +669,7 @@ export default class PatternMatcher
             {
                 if (minLength > 1)
                 {
-                    this.tokens.push("0".repeat(minLength - 1));
+                    this.tokens.push(this.createLeadingZeros(minLength - 1));
                 }
 
                 this.tokens.push("[");

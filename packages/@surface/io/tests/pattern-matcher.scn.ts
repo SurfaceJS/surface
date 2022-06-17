@@ -2,7 +2,7 @@
 /* eslint-disable no-empty-character-class */
 /* eslint-disable no-control-regex */
 // cSpell:ignore AGMSY, ekqw
-const skip = true;
+const skip = false;
 
 export type Scenario =
 {
@@ -551,10 +551,10 @@ export const scenarios: Scenario[] =
         mismatches: ["B", "F", "b", "f"],
     },
     {
-        skip:       true,
-        pattern:    "**/file-{000..100}.{js,ts}",
-        regex:      /^.*(?:\/|\\)?file-(?:100|0[0-9]{2})\.(?:js|ts)$/,
-        matches:    ["file-000.ts", "foo/file-050.js", "foo/bar/file-100.ts"],
+        skip,
+        pattern:    "**/file{,000..100}.{js,ts}",
+        regex:      /^.*(?:\/|\\)?file(?:100|0[1-9]\d|00\d)?\.(?:js|ts)$/,
+        matches:    ["file.ts", "file000.ts", "foo/file050.js", "foo/bar/file100.ts"],
         mismatches: ["foo", "bar", "bar/foobar/bar"],
     },
     {
