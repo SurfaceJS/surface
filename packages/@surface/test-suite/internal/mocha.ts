@@ -1,17 +1,22 @@
+type Runnable =
+{
+    timeout(milliseconds: number): void,
+};
+
 declare interface IGlobalMocha
 {
-    after(name: string, callback: Function): void;
-    afterEach(name: string, callback: Function): void;
-    before(name: string, callback: Function): void;
-    beforeEach(name: string, callback: Function): void;
-    describe(title: string, callback: Function): void;
-    it(title: string, callback: Function): void;
-    setup(name: string, callback: Function): void;
-    suite(title: string, callback: Function): void;
-    suiteSetup(name: string, callback: Function): void;
-    suiteTeardown(name: string, callback: Function): void;
-    teardown(name: string, callback: Function): void;
-    test(title: string, callback: Function): void;
+    after(name: string, callback: Function): Runnable;
+    afterEach(name: string, callback: Function): Runnable;
+    before(name: string, callback: Function): Runnable;
+    beforeEach(name: string, callback: Function): Runnable;
+    describe(title: string, callback: Function): Runnable;
+    it(title: string, callback: Function): Runnable;
+    setup(name: string, callback: Function): Runnable;
+    suite(title: string, callback: Function): Runnable;
+    suiteSetup(name: string, callback: Function): Runnable;
+    suiteTeardown(name: string, callback: Function): Runnable;
+    teardown(name: string, callback: Function): Runnable;
+    test(title: string, callback: Function): Runnable;
 }
 
 declare const global: IGlobalMocha;

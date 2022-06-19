@@ -46,19 +46,32 @@ export default class PatternMatcherSpec
             chai.assert.isFalse(regex.test(String(path)), `regex.test("${path}") should be false`);
         }
 
+        chai.assert.deepEqual(regex, scenario.regex, "regex deep equal to expectation.regex");
+
         // !!! Don't commit this uncomented !!!
-        // const [min, max, interval = 1] = scenario.pattern.substring(1, scenario.pattern.length - 1).split("..").map(Number) as [number, number, number];
+        // const [startRange, endRange, interval = "1"] = scenario.pattern.substring(1, scenario.pattern.length - 1).split("..") as [string, string, string?];
+
+        // const getMinLength = (value: string): number =>
+        // {
+        //     const abs = value.replace("-", "");
+
+        //     return abs.startsWith("0") ? abs.length : 1;
+        // };
+
+        // const minLength = Math.max(getMinLength(startRange), getMinLength(endRange));
+
+        // const min = Number(startRange);
+        // const max = Number(endRange);
+
         // const offsetMin      = min == 0 ? -10 : Math.round(min * -13 / 10) * 10;
         // const offsetMax      = max * 13;
-        // const offsetInterval = interval;
+        // const offsetInterval = Number(interval);
 
         // for (let value = offsetMin; value < offsetMax; value += offsetInterval)
         // {
         //     const inRange = value >= min && value <= max;
 
-        //     chai.assert.isTrue(regex.test(String(value)) == inRange, `regex.test("${value}") should be ${inRange}`);
+        //     chai.assert.isTrue(regex.test(String(value).padStart(minLength, "0")) == inRange, `regex.test("${value}") should be ${inRange}`);
         // }
-
-        chai.assert.deepEqual(regex, scenario.regex, "regex deep equal to expectation.regex");
     }
 }

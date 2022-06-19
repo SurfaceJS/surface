@@ -510,6 +510,13 @@ export const scenarios: Scenario[] =
     },
     {
         skip,
+        pattern:    "!**/foo/**/bar",
+        regex:      /^(?!^.*(?:\/|\\)?foo(?:\/|\\).*(?:\/|\\)?bar$).*$/,
+        matches:    ["bar/bar", "foo/foo"],
+        mismatches: ["foo/bar"],
+    },
+    {
+        skip,
         pattern:    "{a,b",
         regex:      /^\{a,b$/,
         matches:    ["{a,b"],
@@ -556,33 +563,5 @@ export const scenarios: Scenario[] =
         regex:      /^.*(?:\/|\\)?file(?:100|0[1-9]\d|00\d)?\.(?:js|ts)$/,
         matches:    ["file.ts", "file000.ts", "foo/file050.js", "foo/bar/file100.ts"],
         mismatches: ["foo", "bar", "bar/foobar/bar"],
-    },
-    {
-        skip,
-        pattern:    "{-10..10..5}",
-        regex:      /^(?:-10|-5|0|5|10)$/,
-        matches:    ["-10", "-5", "0", "5", "10"],
-        mismatches: ["-7", "-3", "3", "7"],
-    },
-    {
-        skip,
-        pattern:    "{0..9..2}",
-        regex:      /^(?:[02468])$/,
-        matches:    ["0", "2", "4", "6", "8"],
-        mismatches: ["1", "5", "7", "10"],
-    },
-    {
-        skip,
-        pattern:    "{0..20..5}",
-        regex:      /^(?:0|5|10|15|20)$/,
-        matches:    ["0", "5", "10", "15", "20"],
-        mismatches: ["3", "7", "13", "17"],
-    },
-    {
-        skip,
-        pattern:    "{000..20..5}",
-        regex:      /^(?:000|005|010|015|020)$/,
-        matches:    ["000", "005", "010", "015", "020"],
-        mismatches: ["3", "003", "7", "007", "13", "013", "17", "017"],
     },
 ];

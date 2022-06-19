@@ -54,9 +54,6 @@ type RangeInfo =
     intersection: number | null,
 };
 
-// improving this regexp to avoid a ReDOS vulnerability.
-// /\{(?:(?!\{).)*\}/.test(pattern)
-
 export default class PatternMatcher
 {
     private readonly tokens: string[] = [];
@@ -85,6 +82,48 @@ export default class PatternMatcher
         /* c8 ignore stop */
     }
 
+    private createLeadingZeros(size: number): string
+    {
+        switch (size)
+        {
+            case 0:
+                return "";
+            case 1:
+                return "0";
+            case 2:
+                return "00";
+            default:
+                return `0{${size}}`;
+        }
+    }
+
+    private createExtendedRange(min: number, max: number, minQuantifier: number = 1, maxQuantifier: number = 0): string
+    {
+        return this.createRange(min, max) + this.createRange(0, 9, minQuantifier, maxQuantifier);
+    }
+
+    private createRange(min: number, max: number, minQuantifier: number = 1, maxQuantifier: number = 0): string
+    {
+        if (minQuantifier + maxQuantifier == 0)
+        {
+            return "";
+        }
+
+        const range = min == max
+            ? String(max)
+            : min == 0 && max == 9
+                ? "\\d"
+                : `[${min}${max - min > 1 ? "-" : ""}${max}]`;
+
+        const quantifier = minQuantifier < maxQuantifier
+            ? `{${minQuantifier},${maxQuantifier}}`
+            : minQuantifier > 1
+                ? `{${minQuantifier}}`
+                : "";
+
+        return range + quantifier;
+    }
+
     private eof(): boolean
     {
         return this.index == this.source.length;
@@ -93,6 +132,47 @@ export default class PatternMatcher
     private getChar(offset?: number): string | undefined
     {
         return offset ? this.source.substring(this.index, this.index + offset) : this.source[this.index];
+    }
+
+    private getRangeInfo(start: number, end: number): RangeInfo
+    {
+        const startString = start.toString().replace("-", "");
+        const endString   = end.toString().replace("-", "");
+
+        let intersection: number | null = null;
+
+        if (startString.length == endString.length)
+        {
+            intersection = -1;
+
+            for (let index = 0; index < endString.length; index++)
+            {
+                if (startString[index] != endString[index])
+                {
+                    break;
+                }
+
+                intersection = index;
+            }
+        }
+
+        const startValue = start.toString().replace("-", "");
+        const endValue   = end.toString().replace("-", "");
+
+        return {
+            start:
+            {
+                ceiling: startValue[0] + this.createLeadingZeros(startValue.length - 1),
+                value:   startValue,
+            },
+            end:
+            {
+                ceiling: endValue[0] + this.createLeadingZeros(endValue.length - 1),
+                value:   endValue,
+            },
+            sign:    end < 0 ? "-" : "",
+            intersection,
+        };
     }
 
     private lookahead(character: string, stopCondition: (index: number) => boolean = () => true): number | null
@@ -300,91 +380,6 @@ export default class PatternMatcher
         }
     }
 
-    private createLeadingZeros(size: number): string
-    {
-        switch (size)
-        {
-            case 0:
-                return "";
-            case 1:
-                return "0";
-            case 2:
-                return "00";
-            default:
-                return `0{${size}}`;
-        }
-    }
-
-    private createRange(min: number, max: number, minQuantifier: number = 1, maxQuantifier: number = 0): string
-    {
-        if (minQuantifier + maxQuantifier == 0)
-        {
-            return "";
-        }
-
-        const range = min == max
-            ? String(max)
-            : min == 0 && max == 9
-                ? "\\d"
-                : `[${min}${max - min > 1 ? "-" : ""}${max}]`;
-
-        const quantifier = minQuantifier < maxQuantifier
-            ? minQuantifier == 0 && maxQuantifier == 1
-                ? "?"
-                : `{${minQuantifier},${maxQuantifier}}`
-            : minQuantifier > 1
-                ? `{${minQuantifier}}`
-                : "";
-
-        return range + quantifier;
-    }
-
-    private createExtendedRange(min: number, max: number, minQuantifier: number = 1, maxQuantifier: number = 0): string
-    {
-        return this.createRange(min, max) + this.createRange(0, 9, minQuantifier, maxQuantifier);
-    }
-
-    private getRangeInfo(start: number, end: number): RangeInfo
-    {
-        const startString = start.toString().replace("-", "");
-        const endString   = end.toString().replace("-", "");
-
-        let intersection: number | null = null;
-
-        if (startString.length == endString.length)
-        {
-            intersection = -1;
-
-            for (let index = 0; index < endString.length; index++)
-            {
-                if (startString[index] != endString[index])
-                {
-                    break;
-                }
-
-                intersection = index;
-            }
-        }
-
-        const startValue = start.toString().replace("-", "");
-        const endValue   = end.toString().replace("-", "");
-
-        return {
-            start:
-            {
-                ceiling: startValue[0] + this.createLeadingZeros(startValue.length - 1),
-                value:   startValue,
-            },
-            end:
-            {
-                ceiling: endValue[0] + this.createLeadingZeros(endValue.length - 1),
-                value:   endValue,
-            },
-            sign:    end < 0 ? "-" : "",
-            intersection,
-        };
-    }
-
     private parseRange(start: number, end: number, minLength: number): string[]
     {
         const patterns: string[] = [];
@@ -530,6 +525,40 @@ export default class PatternMatcher
         return patterns;
     }
 
+    private parseSteppedRange(start: number, end: number, multiplier: number, minLength: number): string[]
+    {
+        const positives: string[] = [];
+        const negatives: string[] = [];
+
+        for (let i = start; i <= end; i += multiplier)
+        {
+            const patterns = i >= 0 ? positives : negatives;
+
+            if (patterns.length > 0)
+            {
+                patterns.push("|");
+            }
+
+            const value = Math.abs(i).toString();
+
+            if (value == "0")
+            {
+                patterns.push(this.createLeadingZeros(minLength));
+            }
+            else
+            {
+                patterns.push(this.createLeadingZeros(Math.max(minLength - value.length, 0)) + value);
+            }
+        }
+
+        if (negatives.length > 0)
+        {
+            return ["-(?:", ...negatives, ")", "|", ...positives];
+        }
+
+        return negatives.concat(positives);
+    }
+
     private scanBraceExpand(): void
     {
         const end = this.lookahead("}");
@@ -648,9 +677,9 @@ export default class PatternMatcher
     {
         const getMinLength = (value: string): number =>
         {
-            const padded = value.replace("-", "");
+            const abs = value.replace("-", "");
 
-            return padded.startsWith("0") ? padded.length : 1;
+            return abs.startsWith("0") ? abs.length : 1;
         };
 
         const minLength = Math.max(getMinLength(startRange), getMinLength(endRange));
@@ -693,31 +722,20 @@ export default class PatternMatcher
         }
         else if (inSimpleRange(start) && inSimpleRange(end))
         {
+            this.tokens.push(this.createLeadingZeros(minLength - 1));
+
             this.tokens.push("[");
 
             for (let i = start; i <= end; i += multiplier)
             {
                 this.tokens.push(i.toString());
-
-                if (i + multiplier < end)
-                {
-                    this.tokens.push();
-                }
             }
 
             this.tokens.push("]");
         }
         else
         {
-            for (let i = start; i <= end; i += multiplier)
-            {
-                this.tokens.push(i.toString().padStart(minLength, "0"));
-
-                if (i + multiplier <= end)
-                {
-                    this.tokens.push("|");
-                }
-            }
+            this.tokens.push(...this.parseSteppedRange(start, end, multiplier, minLength));
         }
     }
 
@@ -731,13 +749,6 @@ export default class PatternMatcher
         }
 
         this.tokens.push(char);
-        this.advance();
-    }
-
-    private scanPlaceholder(): void
-    {
-        this.tokens.push(".");
-
         this.advance();
     }
 
@@ -767,6 +778,13 @@ export default class PatternMatcher
         {
             this.scanLiteral();
         }
+    }
+
+    private scanPlaceholder(): void
+    {
+        this.tokens.push(".");
+
+        this.advance();
     }
 
     private scanStar(): void

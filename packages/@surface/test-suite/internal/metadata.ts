@@ -15,6 +15,7 @@ export default class Metadata
     public skip:        boolean = false;
     public suite:       boolean = false;
     public test:        boolean = false;
+    public timeout?:    number;
 
     public static from(target: object): Metadata
     {

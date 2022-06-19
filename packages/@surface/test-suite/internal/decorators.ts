@@ -247,11 +247,11 @@ export function suite(targetOrDescription: Function | string): ClassDecorator | 
                     if (categoryName)
                     {
                         const category = categories[categoryName] = categories[categoryName] ?? [];
-                        category.push({ expectation, getMethod });
+                        category.push({ expectation, getMethod, timeout: metadata.timeout });
                     }
                     else
                     {
-                        tests.push({ expectation, getMethod });
+                        tests.push({ expectation, getMethod, timeout: metadata.timeout });
                     }
 
                     index++;
@@ -290,7 +290,12 @@ export function suite(targetOrDescription: Function | string): ClassDecorator | 
                         {
                             for (const test of tests)
                             {
-                                mocha.test(test.expectation, test.getMethod(context));
+                                const runnable = mocha.test(test.expectation, test.getMethod(context));
+
+                                if (test.timeout)
+                                {
+                                    runnable.timeout(test.timeout);
+                                }
                             }
                         },
                     );
@@ -339,4 +344,14 @@ export function test(...args: [string] | [object, string | symbol]): MethodDecor
     const [target, key] = args;
 
     decorator(target as TestObject, key.toString(), camelToText(key.toString()));
+}
+
+export function timeout(milliseconds: number): MethodDecorator
+{
+    return (target, key): void =>
+    {
+        const metadata = Metadata.from(target[key as keyof object]!);
+
+        metadata.timeout = milliseconds;
+    };
 }
