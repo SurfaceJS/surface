@@ -19,7 +19,6 @@
     [
         { "path": "../core" },
         { "path": "../mock" },
-        { "path": "../path-matcher" },
         { "path": "../test-suite" },
     ]
 }

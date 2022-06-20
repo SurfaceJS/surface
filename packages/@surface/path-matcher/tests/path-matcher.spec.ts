@@ -1,8 +1,8 @@
 import { batchTest, shouldPass, suite }                                from "@surface/test-suite";
 import chai                                                            from "chai";
-import PatternMatcher                                                  from "../internal/pattern-matcher.js";
-import { type Scenario as RangeScenario, scenarios as rangeScenarios } from "./pattern-matcher.ranges.scn.js";
-import { type Scenario, scenarios }                                    from "./pattern-matcher.scn.js";
+import PathMatcher                                                  from "../internal/path-matcher.js";
+import { type Scenario as RangeScenario, scenarios as rangeScenarios } from "./path-matcher.ranges.scn.js";
+import { type Scenario, scenarios }                                    from "./path-matcher.scn.js";
 
 @suite
 export default class PatternMatcherSpec
@@ -11,7 +11,7 @@ export default class PatternMatcherSpec
     @batchTest(scenarios, x => `Expects "${x.pattern}" matches: [${x.matches.join(", ")}] and mismatches: [${x.mismatches.join(", ")}]`, x => x.skip)
     public parsePatternPath(scenario: Scenario): void
     {
-        const regex = PatternMatcher.parse(scenario.pattern);
+        const regex = PathMatcher.parse(scenario.pattern);
 
         // chai.assert.deepEqual(regex, scenario.regex, "regex deep equal to expectation.regex");
 
@@ -32,7 +32,7 @@ export default class PatternMatcherSpec
     @batchTest(rangeScenarios, x => `Expects "${x.pattern}" matches: [${x.matches.join(", ")}] and mismatches: [${x.mismatches.join(", ")}]`, x => x.skip)
     public parsePatternRange(scenario: RangeScenario): void
     {
-        const regex = PatternMatcher.parse(scenario.pattern);
+        const regex = PathMatcher.parse(scenario.pattern);
 
         // chai.assert.deepEqual(regex, scenario.regex, "regex deep equal to expectation.regex");
 

@@ -54,7 +54,7 @@ type RangeInfo =
     intersection: number | null,
 };
 
-export default class PatternMatcher
+export default class PathMatcher
 {
     private readonly tokens: string[] = [];
 
