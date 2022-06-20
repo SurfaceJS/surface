@@ -69,6 +69,11 @@ export default class PathMatcher
         return new this(pattern).parse();
     }
 
+    public static split(pattern: string): { base: string, pattern: string }
+    {
+        return new this(pattern).split();
+    }
+
     private advance(offset: number = 1): void
     {
         this.index += offset;
@@ -811,5 +816,60 @@ export default class PathMatcher
         {
             this.tokens.push("[^\\/\\\\]*");
         }
+    }
+
+    private split(): { base: string, pattern: string }
+    {
+        if (this.source.startsWith("!") && (this.source[1] != "(" || !this.lookahead(")", () => false)))
+        {
+            this.advance();
+        }
+
+        const start = this.index;
+        let   end   = start;
+
+        if (SEPARATORS.has(this.getChar()!))
+        {
+            this.advance();
+        }
+
+        const openGroups = new Set(["*", "!", "+", "@"]);
+
+        let broken = false;
+
+        while (!this.eof())
+        {
+            const char = this.getChar()!;
+
+            if (SEPARATORS.has(char))
+            {
+                end = this.index;
+            }
+            else
+            {
+                broken = char == "*"
+                    || char == "?"
+                    || char == "[" && !!this.lookahead("]")
+                    || char == "{" && !!this.lookahead("}")
+                    || openGroups.has(char!) && (this.source[this.index + 1] == "(" && !!this.lookahead(")", () => false));
+
+                if (broken)
+                {
+                    break;
+                }
+            }
+
+            this.advance();
+        }
+
+        if (!broken)
+        {
+            end = this.source.length - (this.source.endsWith("/") ? 1 : 0);
+        }
+
+        return {
+            base:    this.source.substring(start, end),
+            pattern: this.source.substring(end + 1, this.source.length),
+        };
     }
 }

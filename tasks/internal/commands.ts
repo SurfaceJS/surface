@@ -112,7 +112,7 @@ export default class Commands
         const c8    = path.join(bin, "c8");
 
         const file   = path.parse(filepath);
-        const spec   = `${path.relative(process.cwd(), path.join(file.dir, file.name.replace(/((?:\.\w+)*\.(?:scn))/, ".spec")))}.js`;
+        const spec   = `${path.relative(process.cwd(), path.join(file.dir, file.name.replace(/((?:\.[-a-zA-Z0-9]+)*\.(?:scn))/, ".spec")))}.js`;
         const target = file.name.replace(/((?:\.\w+)*\.(?:scn|spec))/, "");
 
         const command = `${c8} --text-exclude --include=**/@surface/**/${target}.js --include=**/@surface/**/${target}.ts --exclude=**/tests --exclude=**/node_modules --extension=.js --extension=.ts --reporter=text ${mocha} --loader=@surface/mock-loader --reporter=progress ${spec}`;
@@ -125,7 +125,7 @@ export default class Commands
         const bin   = path.resolve(DIRNAME, "../../node_modules/.bin");
         const mocha = path.join(bin, "mocha");
         const file  = path.parse(filepath);
-        const spec  = `${path.relative(process.cwd(), path.join(file.dir, file.name.replace(/((?:\.\w+)*\.(?:scn))/, ".spec")))}.js`;
+        const spec  = `${path.relative(process.cwd(), path.join(file.dir, file.name.replace(/((?:\.[-a-zA-Z0-9]+)*\.(?:scn))/, ".spec")))}.js`;
 
         const command = `${mocha} --loader=@surface/mock-loader ${spec}`;
 
