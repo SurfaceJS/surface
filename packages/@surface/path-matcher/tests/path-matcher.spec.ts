@@ -10,10 +10,10 @@ import { type SplitScenario, splitScenarios }     from "./path-matcher.split.scn
 export default class PatternMatcherSpec
 {
     @shouldPass
-    @batchTest(scenarios, x => `Expects "${x.source}" matches: [${x.matches.join(", ")}] and mismatches: [${x.mismatches.join(", ")}]`, x => x.skip)
+    @batchTest(scenarios, x => `Expects "${x.source}" ${x.options ? `with options: ${JSON.stringify(x.options)}` : ""} matches: [${x.matches.join(", ")}] and mismatches: [${x.mismatches.join(", ")}]`, x => x.skip)
     public parse(scenario: Scenario): void
     {
-        const regex = PathMatcher.parse(scenario.source);
+        const regex = PathMatcher.parse(scenario.source, scenario.options);
 
         // chai.assert.deepEqual(regex, scenario.regex, "regex deep equal to expectation.regex");
 

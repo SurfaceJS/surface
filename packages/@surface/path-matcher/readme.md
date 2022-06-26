@@ -29,6 +29,32 @@ console.log(regex.test("/packages/foo/index.js"));     // true
 console.log(regex.test("/packages/foo/bar/index.ts")); // true
 ```
 
+The parse method also accept the following options:
+
+```ts
+type Options =
+{
+
+    /** Allow patterns to match dotfiles. Otherwise dotfiles are ignored unless a `.` is explicitly defined in the pattern. */
+    dot?: boolean,
+
+    /** Disables brace matching `{js,ts}, {a..z}, {0..10}`. */
+    noBrace?: boolean,
+
+    /** Perform case-insensitive matching. */
+    noCase?: boolean,
+
+    /** Disables pattern lists matching `!(..), @(..), +(..) *(..)`. */
+    noExtGlob?: boolean,
+
+    /** Disables GlobStar matching `**`.*/
+    noGlobStar?: boolean,
+
+    /** Disables negate matching. `!/foo/**` */
+    noNegate?: boolean,
+};
+```
+
 ## Split
 Splits base path from the pattern.
 ```ts

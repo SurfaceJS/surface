@@ -98,7 +98,16 @@ export const splitScenarios: SplitScenario[] =
         expected:
         {
             base:    "/foo",
-            pattern: "",
+            pattern: "!",
+        },
+    },
+    {
+        skip,
+        source:   "!(foo",
+        expected:
+        {
+            base:    "(foo",
+            pattern: "!",
         },
     },
     {

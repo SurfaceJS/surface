@@ -57,23 +57,48 @@ type RangeInfo =
     intersection: number | null,
 };
 
+export type Options =
+{
+
+    /** Allow patterns to match dotfiles. Otherwise dotfiles are ignored unless a `.` is explicitly defined in the pattern. */
+    dot?: boolean,
+
+    /** Disables brace matching `{js,ts}, {a..z}, {0..10}`. */
+    noBrace?: boolean,
+
+    /** Perform case-insensitive matching. */
+    noCase?: boolean,
+
+    /** Disables pattern lists matching `!(..), @(..), +(..) *(..)`. */
+    noExtGlob?: boolean,
+
+    /** Disables GlobStar matching `**`.*/
+    noGlobStar?: boolean,
+
+    /** Disables negate matching. `!/foo/**` */
+    noNegate?: boolean,
+};
+
 export default class PathMatcher
 {
     private readonly tokens: string[] = [];
+    private readonly options: Options;
 
     private index: number = 0;
     private patternList?: PatternList;
 
-    public constructor(private readonly source: string)
-    { }
+    public constructor(private readonly source: string, options: Options = { })
+    {
+        this.options = options;
+    }
 
     /**
      * Creates a regex object from given pattern
      * @param pattern Pattern to be parsed.
      */
-    public static parse(pattern: string): RegExp
+    public static parse(pattern: string, options?: Options): RegExp
     {
-        return new this(pattern).parse();
+        return new this(pattern, options).parse();
     }
 
     /**
@@ -242,21 +267,19 @@ export default class PathMatcher
     {
         let negate = false;
 
-        if (this.source.startsWith("!") && (this.source[1] != "(" || !this.lookahead(")", () => false)))
+        if (!this.options.noNegate && this.source.startsWith("!") && (this.source[1] != "(" || !this.lookahead(")", () => false)))
         {
             negate = true;
 
             this.advance();
         }
 
-        while (!this.eof())
-        {
-            this.scanPattern();
-        }
+        this.scanPattern();
 
-        const expression = `^${this.tokens.join("")}$`;
+        const expression = negate && !this.options.dot ? `^(?:${this.tokens.join("")})|(?:(^|.*[\\/\\\\])\\.[^\\/\\\\]+[\\/\\\\]?.*)$` : `^${this.tokens.join("")}$`;
+        // const expression = `^${this.tokens.join("")}$`;
 
-        return new RegExp(negate ? `^(?!${expression}).*$` : expression);
+        return new RegExp(negate ? `^(?!${expression}).*$` : expression, this.options.noCase ? "i" : "");
     }
 
     private scanClasses(): void
@@ -355,21 +378,21 @@ export default class PathMatcher
                         }
                         else
                         {
-                            this.tokens.push("(?:\\/|\\\\)");
+                            this.tokens.push("[\\/\\\\]");
                             this.advance();
                         }
                     }
 
                     break;
                 case "{":
-                    this.scanBraceExpand();
+                    !this.options.noBrace ? this.scanBraceExpand() : this.scanLiteral();
                     break;
                 case "!":
                 case "*":
                 case "+":
                 case "?":
                 case "@":
-                    if (this.source[this.index + 1] == "(")
+                    if (!this.options.noExtGlob && this.source[this.index + 1] == "(")
                     {
                         this.scanPatternList();
                     }
@@ -820,6 +843,8 @@ export default class PathMatcher
     {
         let stars = 0;
 
+        const canUseGlobStar = this.index == 0 || SEPARATORS.has(this.source[this.index - 1]!);
+
         while (this.getChar() == "*")
         {
             this.advance();
@@ -827,9 +852,13 @@ export default class PathMatcher
             stars++;
         }
 
-        if (stars == 2)
+        if (canUseGlobStar && !this.options.noGlobStar && stars == 2)
         {
-            this.tokens.push(".*(?:\\/|\\\\)?");
+            const pattern = this.options.dot
+                ? "(?!\\.\\.?[\\/\\\\]).*[\\/\\\\]?"
+                : "(?:[^.\\/\\\\][^\\/\\\\]*[\\/\\\\]?)*";
+
+            this.tokens.push(pattern);
 
             if (SEPARATORS.has(this.getChar()!))
             {
@@ -838,14 +867,18 @@ export default class PathMatcher
         }
         else
         {
-            this.tokens.push("[^\\/\\\\]*");
+            this.tokens.push(`${!this.options.dot && canUseGlobStar ? "[^.\\/\\\\]" : ""}[^\\/\\\\]*`);
         }
     }
 
     private split(): { base: string, pattern: string }
     {
+        let negated = false;
+
         if (this.source.startsWith("!") && (this.source[1] != "(" || !this.lookahead(")", () => false)))
         {
+            negated = true;
+
             this.advance();
         }
 
@@ -893,7 +926,7 @@ export default class PathMatcher
 
         return {
             base:    this.source.substring(start, end),
-            pattern: this.source.substring(end + 1, this.source.length),
+            pattern: (negated ? "!" : "") + this.source.substring(end + 1, this.source.length),
         };
     }
 }
