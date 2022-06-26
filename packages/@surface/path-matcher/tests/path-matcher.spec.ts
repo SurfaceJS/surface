@@ -1,16 +1,17 @@
-import { batchTest, shouldPass, suite }                                      from "@surface/test-suite";
-import chai                                                                  from "chai";
-import PathMatcher                                                           from "../internal/path-matcher.js";
-import { type Scenario as RangeScenario, scenarios as rangeScenarios }       from "./path-matcher.ranges.scn.js";
-import { type Scenario, scenarios }                                          from "./path-matcher.scn.js";
-import { type Scenario as BasePathScenario, scenarios as basePathScenarios } from "./path-matcher.split.scn.js";
+import { batchTest, shouldPass, suite }           from "@surface/test-suite";
+import chai                                       from "chai";
+import PathMatcher                                from "../internal/path-matcher.js";
+import { type RangeScenario, rangeScenarios }     from "./path-matcher.ranges.scn.js";
+import { type ResolveScenario, resolveScenarios } from "./path-matcher.resolve.scn.js";
+import { type Scenario, scenarios }               from "./path-matcher.scn.js";
+import { type SplitScenario, splitScenarios }     from "./path-matcher.split.scn.js";
 
 @suite
 export default class PatternMatcherSpec
 {
     @shouldPass
     @batchTest(scenarios, x => `Expects "${x.source}" matches: [${x.matches.join(", ")}] and mismatches: [${x.mismatches.join(", ")}]`, x => x.skip)
-    public parsePatternPath(scenario: Scenario): void
+    public parse(scenario: Scenario): void
     {
         const regex = PathMatcher.parse(scenario.source);
 
@@ -31,7 +32,7 @@ export default class PatternMatcherSpec
 
     @shouldPass
     @batchTest(rangeScenarios, x => `Expects "${x.source}" matches: [${x.matches.join(", ")}] and mismatches: [${x.mismatches.join(", ")}]`, x => x.skip)
-    public parsePatternRange(scenario: RangeScenario): void
+    public parseRanges(scenario: RangeScenario): void
     {
         const regex = PathMatcher.parse(scenario.source);
 
@@ -77,11 +78,18 @@ export default class PatternMatcherSpec
     }
 
     @shouldPass
-    @batchTest(basePathScenarios, x => `Expects "${x.source}" splits to base: "${x.expected.base}" and pattern: "${x.expected.pattern}"`, x => x.skip)
-    public split(scenario: BasePathScenario): void
+    @batchTest(splitScenarios, x => `Expects "${x.source}" splits to base: "${x.expected.base}" and pattern: "${x.expected.pattern}"`, x => x.skip)
+    public split(scenario: SplitScenario): void
     {
         const actual = PathMatcher.split(scenario.source);
 
         chai.assert.deepEqual(actual, scenario.expected);
+    }
+
+    @shouldPass
+    @batchTest(resolveScenarios, x => `Expects base: "${x.base}" and pattern: "${x.pattern}" resolves to ${x.expected}`, x => x.skip)
+    public resolve(scenario: ResolveScenario): void
+    {
+        chai.assert.equal(PathMatcher.resolve(scenario.base, scenario.pattern), scenario.expected);
     }
 }

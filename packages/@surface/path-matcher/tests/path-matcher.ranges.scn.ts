@@ -2,7 +2,7 @@
 
 const skip = false;
 
-export type Scenario =
+export type RangeScenario =
 {
     source:    `{${number}..${number}${`..${number}` | ""}}`,
     regex:      RegExp,
@@ -11,7 +11,7 @@ export type Scenario =
     mismatches: (string | number)[],
 };
 
-export const scenarios: Scenario[] =
+export const rangeScenarios: RangeScenario[] =
 [
     {
         skip,

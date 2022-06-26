@@ -123,7 +123,7 @@ export default class LoopDirective implements IDisposable
 
             const count = index + 1;
 
-            if (Math.ceil(count / LoopDirective.maximumAmount) * LoopDirective.maximumAmount == count)
+            if (count % LoopDirective.maximumAmount == 0)
             {
                 this.cache.trim();
 

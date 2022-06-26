@@ -483,7 +483,7 @@ export const scenarios: Scenario[] =
     {
         skip,
         source:     "/foo/**",
-        regex:      /^(?:\/|\\)foo(?:\/|\\).*(?:\/|\\)?$/,
+        regex:      /^(?:\/|\\)foo(?:\/|\\).*(?:\/|\\)?$/, // ^(?:\/|\\)foo(?:(?:\.\.?(?:\/|\\))?(?!\.)[^\/\\]*?(?:\/|\\)?)*$
         matches:    ["/foo/bar", "/foo/bar/baz"],
         mismatches: ["foo"],
     },

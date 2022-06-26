@@ -1,5 +1,8 @@
 /* eslint-disable complexity */
 /* eslint-disable max-lines-per-function */
+
+import { resolve } from "path";
+
 /* eslint-disable max-statements */
 const REGEX_SPECIAL_CHARACTERS = new Set([".", "+", "*", "?", "^", "$", "(", ")", "[", "]", "{", "}", "|", "\\"]);
 const ESCAPABLE_CHARACTERS     = new Set(["!", "+", "*", "?", "^", "@", "(", ")", "[", "]", "{", "}", "|", "\\"]);
@@ -64,14 +67,35 @@ export default class PathMatcher
     public constructor(private readonly source: string)
     { }
 
+    /**
+     * Creates a regex object from given pattern
+     * @param pattern Pattern to be parsed.
+     */
     public static parse(pattern: string): RegExp
     {
         return new this(pattern).parse();
     }
 
+    /**
+     * Splits base path from the pattern.
+     * @param pattern Pattern to be splited.
+     */
     public static split(pattern: string): { base: string, pattern: string }
     {
         return new this(pattern).split();
+    }
+
+    /**
+     * Resolve relative patterns. Mostly useful when pattern can include negation.
+     * @param base Base pattern.
+     * @param pattern Pattern to resolve relative to base.
+     */
+    public static resolve(base: string, pattern: string): string
+    {
+        const negated = pattern.startsWith("!");
+        const prefix  = negated ? "!" : "";
+
+        return prefix + resolve(base, negated ? pattern.substring(1) : pattern);
     }
 
     private advance(offset: number = 1): void

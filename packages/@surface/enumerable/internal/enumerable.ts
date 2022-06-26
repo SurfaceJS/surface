@@ -56,26 +56,26 @@ abstract class Enumerable<TSource> implements Iterable<TSource>
 
     /**
      * Applies an accumulator function over a sequence.
-     * @param acumulator An accumulator function to be invoked on each element.
+     * @param accumulator An accumulator function to be invoked on each element.
      * @param seed       The initial accumulator value.
      */
-    public aggregate(acumulator: Delegate<[TSource, TSource], TSource>, seed?: TSource): TSource
+    public aggregate(accumulator: Delegate<[TSource, TSource], TSource>, seed?: TSource): TSource
     {
-        let acumulatted = seed;
+        let accumulated = seed;
 
         for (const element of this)
         {
-            if (acumulatted)
+            if (accumulated)
             {
-                acumulatted = acumulator(acumulatted, element);
+                accumulated = accumulator(accumulated, element);
             }
             else
             {
-                acumulatted = element;
+                accumulated = element;
             }
         }
 
-        return acumulatted as TSource;
+        return accumulated as TSource;
     }
 
     /**
@@ -307,14 +307,14 @@ abstract class Enumerable<TSource> implements Iterable<TSource>
     /**
      * Return all elements when there is a match in either outter or inner sequence. A specified IComparer<T> is used to compare keys.
      * @param inner             The sequence to join to the source sequence.
-     * @param outterKeySelector A function to extract the join key from each element of the source sequence.
+     * @param outerKeySelector A function to extract the join key from each element of the source sequence.
      * @param innerKeySelector  A function to extract the join key from each element of the second sequence.
      * @param resultSelector    A function to create a result element from two matching elements.
      * @param comparer          An IComparer<T> to hash and compare keys.
      */
-    public fullJoin<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Delegate<[TSource], TKey>, innerKeySelector: Delegate<[TInner], TKey>, resultSelector: Delegate<[TSource | null, TInner | null], TResult>, comparer: IComparer<TKey> = new Comparer()): Enumerable<TResult>
+    public fullJoin<TInner, TKey, TResult>(inner: Iterable<TInner>, outerKeySelector: Delegate<[TSource], TKey>, innerKeySelector: Delegate<[TInner], TKey>, resultSelector: Delegate<[TSource | null, TInner | null], TResult>, comparer: IComparer<TKey> = new Comparer()): Enumerable<TResult>
     {
-        return new FullJoinIterator(this, inner, outterKeySelector, innerKeySelector, resultSelector, comparer);
+        return new FullJoinIterator(this, inner, outerKeySelector, innerKeySelector, resultSelector, comparer);
     }
 
     /**
@@ -332,14 +332,14 @@ abstract class Enumerable<TSource> implements Iterable<TSource>
     /**
      * Correlates the elements of two sequences based on matching keys and groups the results. A specified IComparer<T> is used to compare keys.
      * @param inner             The sequence to join to the source sequence.
-     * @param outterKeySelector A function to extract the join key from each element of the source sequence.
+     * @param outerKeySelector A function to extract the join key from each element of the source sequence.
      * @param innerKeySelector  A function to extract the join key from each element of the second sequence.
      * @param resultSelector    A function to create a result element from two matching elements.
      * @param comparer          An IComparer<T> to hash and compare keys.
      */
-    public groupJoin<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Delegate<[TSource], TKey>, innerKeySelector: Delegate<[TInner], TKey>, resultSelector: Delegate<[TSource, Iterable<TInner>], TResult>, comparer: IComparer<TKey> = new Comparer()): Enumerable<TResult>
+    public groupJoin<TInner, TKey, TResult>(inner: Iterable<TInner>, outerKeySelector: Delegate<[TSource], TKey>, innerKeySelector: Delegate<[TInner], TKey>, resultSelector: Delegate<[TSource, Iterable<TInner>], TResult>, comparer: IComparer<TKey> = new Comparer()): Enumerable<TResult>
     {
-        return new GroupJoinIterator(this, inner, outterKeySelector, innerKeySelector, resultSelector, comparer);
+        return new GroupJoinIterator(this, inner, outerKeySelector, innerKeySelector, resultSelector, comparer);
     }
 
     /**
@@ -354,15 +354,15 @@ abstract class Enumerable<TSource> implements Iterable<TSource>
 
     /**
      * Correlates the elements of two sequences based on matching keys. A specified IComparer<T> is used to compare keys.
-     * @param inner             The sequence to join to the source sequence.
-     * @param outterKeySelector A function to extract the join key from each element of the source sequence.
-     * @param innerKeySelector  A function to extract the join key from each element of the second sequence.
-     * @param resultSelector    A function to create a result element from two matching elements.
-     * @param comparer          An IComparer<T> to hash and compare keys.
+     * @param inner            The sequence to join to the source sequence.
+     * @param outerKeySelector A function to extract the join key from each element of the source sequence.
+     * @param innerKeySelector A function to extract the join key from each element of the second sequence.
+     * @param resultSelector   A function to create a result element from two matching elements.
+     * @param comparer         An IComparer<T> to hash and compare keys.
      */
-    public join<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Delegate<[TSource], TKey>, innerKeySelector: Delegate<[TInner], TKey>, resultSelector: Delegate<[TSource, TInner], TResult>, comparer: IComparer<TKey> = new Comparer()): Enumerable<TResult>
+    public join<TInner, TKey, TResult>(inner: Iterable<TInner>, outerKeySelector: Delegate<[TSource], TKey>, innerKeySelector: Delegate<[TInner], TKey>, resultSelector: Delegate<[TSource, TInner], TResult>, comparer: IComparer<TKey> = new Comparer()): Enumerable<TResult>
     {
-        return new JoinIterator(this, inner, outterKeySelector, innerKeySelector, resultSelector, comparer);
+        return new JoinIterator(this, inner, outerKeySelector, innerKeySelector, resultSelector, comparer);
     }
 
     /**
@@ -410,15 +410,15 @@ abstract class Enumerable<TSource> implements Iterable<TSource>
 
     /**
      * Returns all elements from the inner sequence, and the matched records from the outter sequence. The result is null from the outter element, when there is no match. A specified IComparer<T> is used to compare keys.
-     * @param inner             The sequence to join to the source sequence.
-     * @param outterKeySelector A function to extract the join key from each element of the source sequence.
-     * @param innerKeySelector  A function to extract the join key from each element of the second sequence.
-     * @param resultSelector    A function to create a result element from two matching elements.
-     * @param comparer          An IComparer<T> to hash and compare keys.
+     * @param inner            The sequence to join to the source sequence.
+     * @param outerKeySelector A function to extract the join key from each element of the source sequence.
+     * @param innerKeySelector A function to extract the join key from each element of the second sequence.
+     * @param resultSelector   A function to create a result element from two matching elements.
+     * @param comparer         An IComparer<T> to hash and compare keys.
      */
-    public leftJoin<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Delegate<[TSource], TKey>, innerKeySelector: Delegate<[TInner], TKey>, resultSelector: Delegate<[TSource, TInner | null], TResult>, comparer: IComparer<TKey> = new Comparer()): Enumerable<TResult>
+    public leftJoin<TInner, TKey, TResult>(inner: Iterable<TInner>, outerKeySelector: Delegate<[TSource], TKey>, innerKeySelector: Delegate<[TInner], TKey>, resultSelector: Delegate<[TSource, TInner | null], TResult>, comparer: IComparer<TKey> = new Comparer()): Enumerable<TResult>
     {
-        return new LeftJoinIterator(this, inner, outterKeySelector, innerKeySelector, resultSelector, comparer);
+        return new LeftJoinIterator(this, inner, outerKeySelector, innerKeySelector, resultSelector, comparer);
     }
 
     /**
@@ -492,7 +492,7 @@ abstract class Enumerable<TSource> implements Iterable<TSource>
      * @param keySelector A function to extract a key from an element.
      * @param comparer    A function to compare keys.
      */
-    public orderBy<TKey>(keySelector: Delegate<[TSource], TKey>, comparer: IComparer<TKey> = new Comparer()): OrderedEnumerable<TSource>
+    public orderBy<TKey>(keySelector: Delegate<[TSource], TKey>, comparer: IComparer<TKey> = new Comparer()): OrderedEnumerable<TKey, TSource>
     {
         return new OrderByIterator(this, keySelector, false, comparer);
     }
@@ -502,7 +502,7 @@ abstract class Enumerable<TSource> implements Iterable<TSource>
      * @param keySelector A function to extract a key from an element.
      * @param comparer    A function to compare keys.
      */
-    public orderByDescending<TKey>(keySelector: Delegate<[TSource], TKey>, comparer: IComparer<TKey> = new Comparer()): OrderedEnumerable<TSource>
+    public orderByDescending<TKey>(keySelector: Delegate<[TSource], TKey>, comparer: IComparer<TKey> = new Comparer()): OrderedEnumerable<TKey, TSource>
     {
         return new OrderByIterator(this, keySelector, true, comparer);
     }
@@ -524,15 +524,15 @@ abstract class Enumerable<TSource> implements Iterable<TSource>
 
     /**
      * Returns all elements from the inner sequence, and the matched records from the outter sequence. The result is null from the outter element, when there is no match. A specified IComparer<T> is used to compare keys.
-     * @param inner             The sequence to join to the source sequence.
-     * @param outterKeySelector A function to extract the join key from each element of the source sequence.
-     * @param innerKeySelector  A function to extract the join key from each element of the second sequence.
-     * @param resultSelector    A function to create a result element from two matching elements.
-     * @param comparer          An IComparer<T> to hash and compare keys.
+     * @param inner            The sequence to join to the source sequence.
+     * @param outerKeySelector A function to extract the join key from each element of the source sequence.
+     * @param innerKeySelector A function to extract the join key from each element of the second sequence.
+     * @param resultSelector   A function to create a result element from two matching elements.
+     * @param comparer         An IComparer<T> to hash and compare keys.
      */
-    public rightJoin<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Delegate<[TSource], TKey>, innerKeySelector: Delegate<[TInner], TKey>, resultSelector: Delegate<[TSource | null, TInner], TResult>, comparer: IComparer<TKey> = new Comparer()): Enumerable<TResult>
+    public rightJoin<TInner, TKey, TResult>(inner: Iterable<TInner>, outerKeySelector: Delegate<[TSource], TKey>, innerKeySelector: Delegate<[TInner], TKey>, resultSelector: Delegate<[TSource | null, TInner], TResult>, comparer: IComparer<TKey> = new Comparer()): Enumerable<TResult>
     {
-        return new RightJoinIterator(this, inner, outterKeySelector, innerKeySelector, resultSelector, comparer);
+        return new RightJoinIterator(this, inner, outerKeySelector, innerKeySelector, resultSelector, comparer);
     }
 
     /**
@@ -748,36 +748,37 @@ abstract class Enumerable<TSource> implements Iterable<TSource>
     }
 }
 
-abstract class OrderedEnumerable<TSource> extends Enumerable<TSource>
+abstract class OrderedEnumerable<TKey, TSource> extends Enumerable<TSource>
 {
-    private _parent: OrderedEnumerable<TSource> | null = null;
+    private _parent: OrderedEnumerable<TKey, TSource> | null = null;
 
-    private enumerableSorter: EnumerableSorter<Object, TSource>;
+    private enumerableSorter: EnumerableSorter<TKey, TSource>;
 
-    public get parent(): OrderedEnumerable<TSource> | null
+    public get parent(): OrderedEnumerable<TKey, TSource> | null
     {
         return this._parent;
     }
 
-    public set parent(value: OrderedEnumerable<TSource> | null)
+    public set parent(value: OrderedEnumerable<TKey, TSource> | null)
     {
         this._parent = value;
     }
 
-    public constructor(keySelector: Delegate<[TSource], Object>, descending: boolean, comparer: IComparer<Object>)
+    public constructor(keySelector: Delegate<[TSource], TKey>, descending: boolean, comparer: IComparer<TKey>)
     {
         super();
+
         this.enumerableSorter = new EnumerableSorter(keySelector, descending, comparer);
     }
 
-    public getSorter<TKey>(): EnumerableSorter<TKey, TSource>
+    public getSorter(): EnumerableSorter<TKey, TSource>
     {
         if (this.parent)
         {
             this.enumerableSorter.next = this.parent.getSorter();
         }
 
-        return this.enumerableSorter as EnumerableSorter<TKey, TSource>;
+        return this.enumerableSorter;
     }
 
     /**
@@ -785,9 +786,9 @@ abstract class OrderedEnumerable<TSource> extends Enumerable<TSource>
      * @param keySelector A function to extract a key from an element.
      * @param comparer    A function to compare keys.
      */
-    public thenBy<TKey>(keySelector: Delegate<[TSource], TKey>, comparer: IComparer<TKey> = new Comparer()): OrderedEnumerable<TSource>
+    public thenBy<TKey>(keySelector: Delegate<[TSource], TKey>, comparer: IComparer<TKey> = new Comparer()): OrderedEnumerable<TKey, TSource>
     {
-        return new ThenByIterator(this, keySelector, false, comparer);
+        return new ThenByIterator(this as object as OrderedEnumerable<TKey, TSource>, keySelector, false, comparer);
     }
 
     /**
@@ -795,9 +796,9 @@ abstract class OrderedEnumerable<TSource> extends Enumerable<TSource>
      * @param keySelector A function to extract a key from an element.
      * @param comparer    A function to compare keys.
      */
-    public thenByDescending<TKey>(keySelector: Delegate<[TSource], TKey>, comparer: IComparer<TKey> = new Comparer()): OrderedEnumerable<TSource>
+    public thenByDescending<TKey>(keySelector: Delegate<[TSource], TKey>, comparer: IComparer<TKey> = new Comparer()): OrderedEnumerable<TKey, TSource>
     {
-        return new ThenByIterator(this, keySelector, true, comparer);
+        return new ThenByIterator(this as object as OrderedEnumerable<TKey, TSource>, keySelector, true, comparer);
     }
 }
 
@@ -933,12 +934,12 @@ class JoinIterator<TOutter, TInner, TKey, TResult> extends Enumerable<TResult>
 {
     public constructor
     (
-        private readonly outter:            Iterable<TOutter>,
-        private readonly inner:             Iterable<TInner>,
-        private readonly outterKeySelector: Delegate<[TOutter], TKey>,
-        private readonly innerKeySelector:  Delegate<[TInner], TKey>,
-        private readonly resultSelector:    Delegate<[TOutter, TInner], TResult>,
-        private readonly comparer:          IComparer<TKey>,
+        private readonly outer:            Iterable<TOutter>,
+        private readonly inner:            Iterable<TInner>,
+        private readonly outerKeySelector: Delegate<[TOutter], TKey>,
+        private readonly innerKeySelector: Delegate<[TInner], TKey>,
+        private readonly resultSelector:   Delegate<[TOutter, TInner], TResult>,
+        private readonly comparer:         IComparer<TKey>,
     )
     {
         super();
@@ -948,9 +949,9 @@ class JoinIterator<TOutter, TInner, TKey, TResult> extends Enumerable<TResult>
     {
         const lookup = new Lookup(this.inner, this.innerKeySelector, x => x, this.comparer);
 
-        for (const element of this.outter)
+        for (const element of this.outer)
         {
-            const group = lookup.get(this.outterKeySelector(element));
+            const group = lookup.get(this.outerKeySelector(element));
 
             for (const item of group)
             {
@@ -989,12 +990,12 @@ class GroupJoinIterator<TOutter, TInner, TKey, TResult> extends Enumerable<TResu
 {
     public constructor
     (
-        private readonly outter:            Iterable<TOutter>,
-        private readonly inner:             Iterable<TInner>,
-        private readonly outterKeySelector: Delegate<[TOutter], TKey>,
-        private readonly innerKeySelector:  Delegate<[TInner], TKey>,
-        private readonly resultSelector:    Delegate<[TOutter, Iterable<TInner>], TResult>,
-        private readonly comparer:          IComparer<TKey>,
+        private readonly outer:            Iterable<TOutter>,
+        private readonly inner:            Iterable<TInner>,
+        private readonly outerKeySelector: Delegate<[TOutter], TKey>,
+        private readonly innerKeySelector: Delegate<[TInner], TKey>,
+        private readonly resultSelector:   Delegate<[TOutter, Iterable<TInner>], TResult>,
+        private readonly comparer:         IComparer<TKey>,
     )
     {
         super();
@@ -1004,9 +1005,9 @@ class GroupJoinIterator<TOutter, TInner, TKey, TResult> extends Enumerable<TResu
     {
         const lookup = new Lookup(this.inner, this.innerKeySelector, x => x, this.comparer);
 
-        for (const element of this.outter)
+        for (const element of this.outer)
         {
-            yield this.resultSelector(element, lookup.get(this.outterKeySelector(element)));
+            yield this.resultSelector(element, lookup.get(this.outerKeySelector(element)));
         }
     }
 
@@ -1016,12 +1017,12 @@ class LeftJoinIterator<TOutter, TInner, TKey, TResult> extends Enumerable<TResul
 {
     public constructor
     (
-        private readonly outter:            Iterable<TOutter>,
-        private readonly inner:             Iterable<TInner>,
-        private readonly outterKeySelector: Delegate<[TOutter], TKey>,
-        private readonly innerKeySelector:  Delegate<[TInner], TKey>,
-        private readonly resultSelector:    Delegate<[TOutter, TInner | null], TResult>,
-        private readonly comparer:          IComparer<TKey>,
+        private readonly outer:            Iterable<TOutter>,
+        private readonly inner:            Iterable<TInner>,
+        private readonly outerKeySelector: Delegate<[TOutter], TKey>,
+        private readonly innerKeySelector: Delegate<[TInner], TKey>,
+        private readonly resultSelector:   Delegate<[TOutter, TInner | null], TResult>,
+        private readonly comparer:         IComparer<TKey>,
     )
     {
         super();
@@ -1031,9 +1032,9 @@ class LeftJoinIterator<TOutter, TInner, TKey, TResult> extends Enumerable<TResul
     {
         const lookup = new Lookup(this.inner, this.innerKeySelector, x => x, this.comparer);
 
-        for (const element of this.outter)
+        for (const element of this.outer)
         {
-            const group = lookup.get(this.outterKeySelector(element));
+            const group = lookup.get(this.outerKeySelector(element));
 
             if (group.length > 0)
             {
@@ -1050,7 +1051,7 @@ class LeftJoinIterator<TOutter, TInner, TKey, TResult> extends Enumerable<TResul
     }
 }
 
-class OrderByIterator<TKey, TSource> extends OrderedEnumerable<TSource>
+class OrderByIterator<TKey, TSource> extends OrderedEnumerable<TKey, TSource>
 {
     public constructor(private readonly source: Iterable<TSource>, keySelector: Delegate<[TSource], TKey>, descending: boolean, comparer: IComparer<TKey>)
     {
@@ -1074,12 +1075,12 @@ class FullJoinIterator<TOutter, TInner, TKey, TResult> extends Enumerable<TResul
 {
     public constructor
     (
-        private readonly outter:            Iterable<TOutter>,
-        private readonly inner:             Iterable<TInner>,
-        private readonly outterKeySelector: Delegate<[TOutter], TKey>,
-        private readonly innerKeySelector:  Delegate<[TInner], TKey>,
-        private readonly resultSelector:    Delegate<[TOutter | null, TInner | null], TResult>,
-        private readonly comparer:          IComparer<TKey>,
+        private readonly outer:            Iterable<TOutter>,
+        private readonly inner:            Iterable<TInner>,
+        private readonly outerKeySelector: Delegate<[TOutter], TKey>,
+        private readonly innerKeySelector: Delegate<[TInner], TKey>,
+        private readonly resultSelector:   Delegate<[TOutter | null, TInner | null], TResult>,
+        private readonly comparer:         IComparer<TKey>,
     )
     {
         super();
@@ -1090,9 +1091,9 @@ class FullJoinIterator<TOutter, TInner, TKey, TResult> extends Enumerable<TResul
         const lookup = new Lookup(this.inner, this.innerKeySelector, x => x, this.comparer);
         const set    = new HashSet(new Comparer<TInner>());
 
-        for (const element of this.outter)
+        for (const element of this.outer)
         {
-            const group = lookup.get(this.outterKeySelector(element));
+            const group = lookup.get(this.outerKeySelector(element));
 
             if (group.length > 0)
             {
@@ -1182,12 +1183,12 @@ class RightJoinIterator<TOutter, TInner, TKey, TResult> extends Enumerable<TResu
 {
     public constructor
     (
-        private readonly outter:            Iterable<TOutter>,
-        private readonly inner:             Iterable<TInner>,
-        private readonly outterKeySelector: Delegate<[TOutter], TKey>,
-        private readonly innerKeySelector:  Delegate<[TInner], TKey>,
-        private readonly resultSelector:    Delegate<[TOutter | null, TInner], TResult>,
-        private readonly comparer:          IComparer<TKey>,
+        private readonly outer:            Iterable<TOutter>,
+        private readonly inner:            Iterable<TInner>,
+        private readonly outerKeySelector: Delegate<[TOutter], TKey>,
+        private readonly innerKeySelector: Delegate<[TInner], TKey>,
+        private readonly resultSelector:   Delegate<[TOutter | null, TInner], TResult>,
+        private readonly comparer:         IComparer<TKey>,
     )
     {
         super();
@@ -1195,7 +1196,7 @@ class RightJoinIterator<TOutter, TInner, TKey, TResult> extends Enumerable<TResu
 
     public *[Symbol.iterator](): Iterator<TResult>
     {
-        const lookup = new Lookup(this.outter, this.outterKeySelector, x => x, this.comparer);
+        const lookup = new Lookup(this.outer, this.outerKeySelector, x => x, this.comparer);
 
         for (const element of this.inner)
         {
@@ -1363,9 +1364,9 @@ class TakeWhileIterator<TSource> extends Enumerable<TSource>
     }
 }
 
-class ThenByIterator<TKey, TSource> extends OrderedEnumerable<TSource>
+class ThenByIterator<TKey, TSource> extends OrderedEnumerable<TKey, TSource>
 {
-    public constructor(private readonly source: OrderedEnumerable<TSource>, keySelector: Delegate<[TSource], TKey>, descending: boolean, comparer: IComparer<TKey>)
+    public constructor(private readonly source: OrderedEnumerable<TKey, TSource>, keySelector: Delegate<[TSource], TKey>, descending: boolean, comparer: IComparer<TKey>)
     {
         super(keySelector, descending, comparer);
 

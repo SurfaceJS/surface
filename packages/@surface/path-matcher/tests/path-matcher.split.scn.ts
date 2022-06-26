@@ -2,14 +2,14 @@ import type PathMatcher from "../internal/path-matcher.js";
 
 const skip = false;
 
-export type Scenario =
+export type SplitScenario =
 {
     skip:     boolean,
-    source:  string,
+    source:   string,
     expected: ReturnType<PathMatcher["split"]>,
 };
 
-export const scenarios: Scenario[] =
+export const splitScenarios: SplitScenario[] =
 [
     {
         skip,
@@ -36,6 +36,15 @@ export const scenarios: Scenario[] =
         {
             base:    "../foo",
             pattern: "",
+        },
+    },
+    {
+        skip,
+        source:   "/foo/../*{js,ts}",
+        expected:
+        {
+            base:    "/foo/..",
+            pattern: "*{js,ts}",
         },
     },
     {
