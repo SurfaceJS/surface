@@ -7,6 +7,7 @@ import { resolve } from "path";
 const REGEX_SPECIAL_CHARACTERS = new Set([".", "+", "*", "?", "^", "$", "(", ")", "[", "]", "{", "}", "|", "\\"]);
 const ESCAPABLE_CHARACTERS     = new Set(["!", "+", "*", "?", "^", "@", "(", ")", "[", "]", "{", "}", "|", "\\"]);
 const SEPARATORS               = new Set(["/", "\\"]);
+const QUOTES                   = new Set(["\"", "'"]);
 const NUMBRACES_PATTERN        = /^(-?\d+)\.\.(-?\d+)(?:\.\.(-?\d+))?$/;
 const ALPHABRACES_PATTERN      = /^([a-zA-Z])\.\.([a-zA-Z])(?:\.\.(-?\d+))?$/;
 const CHARACTERS_CLASS_MAP: Record<string, string> =
@@ -364,6 +365,10 @@ export default class PathMatcher
 
             switch (char)
             {
+                case "\"":
+                case "'":
+                    this.scanQuotes();
+                    break;
                 case "\\":
                 case "/":
                     {
@@ -385,7 +390,7 @@ export default class PathMatcher
 
                     break;
                 case "{":
-                    !this.options.noBrace ? this.scanBraceExpand() : this.scanLiteral();
+                    !this.options.noBrace && !this.patternList ? this.scanBraceExpand() : this.scanLiteral();
                     break;
                 case "!":
                 case "*":
@@ -641,6 +646,10 @@ export default class PathMatcher
                     {
                         this.scanNumericRange(digitMatch[1]!, digitMatch[2]!, Number(digitMatch[3] ?? "1"));
                     }
+                    else if (QUOTES.has(this.getChar()!))
+                    {
+                        this.scanQuotes();
+                    }
                     else
                     {
                         while (this.index < segmentEnd)
@@ -788,6 +797,34 @@ export default class PathMatcher
         else
         {
             this.tokens.push(...this.parseSteppedRange(start, end, multiplier, minLength));
+        }
+    }
+
+    private scanQuotes(): void
+    {
+        const quote = this.getChar()!;
+
+        this.advance();
+
+        const end = this.lookahead(quote);
+
+        if (end)
+        {
+            while (this.index < end && !this.eof())
+            {
+                if (this.getChar() == "\\")
+                {
+                    this.advance();
+                }
+
+                this.scanLiteral();
+            }
+
+            this.advance();
+        }
+        else
+        {
+            this.tokens.push(quote);
         }
     }
 

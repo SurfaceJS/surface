@@ -14,6 +14,7 @@ Supported Syntax
 | !(pattern-list) | Matches anything except one of the given patterns.                                                                                                                                                                                     |
 | {x..y[..incr]}  | A brace expansion is contained between a pair of braces `{}`. It can be a list of comma-separated items or a range specifier. Spaces are not permitted inside the braces unless you’ve wrapped the string in quotation marks `"`.      |
 | !               | When used at start, all pattern is negated                                                                                                                                                                                             |
+| "..."           | Escapes any character between quotes.                                                                                                                                                                                                  |
 
 # Api
 ## Parse
