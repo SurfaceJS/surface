@@ -35,9 +35,17 @@ export const scenarios: Scenario[] =
     {
         skip,
         source:     "?oo",
-        regex:      /^.oo$/,
+        regex:      /^[^.\/\\]oo$/,
         matches:    ["boo", "foo"],
-        mismatches: ["oo"],
+        mismatches: ["/oo", ".oo"],
+    },
+    {
+        skip,
+        source:     "?oo",
+        options:    { dot: true },
+        regex:      /^[^\/\\]oo$/,
+        matches:    ["boo", "foo", ".oo"],
+        mismatches: ["/oo"],
     },
     {
         skip,
@@ -100,7 +108,7 @@ export const scenarios: Scenario[] =
     {
         skip,
         source:     "[[]oo",
-        regex:      /^[\[]oo$/,
+        regex:      /^[[]oo$/,
         matches:    ["[oo"],
         mismatches: ["]oo"],
     },
@@ -120,6 +128,13 @@ export const scenarios: Scenario[] =
     },
     {
         skip,
+        source:     "foo[/.]bar",
+        regex:      /^foo[\/\\.]bar$/,
+        matches:    ["foo/bar", "foo.bar"],
+        mismatches: ["foobar"],
+    },
+    {
+        skip,
         source:     "[a-z]]oo",
         regex:      /^[a-z]\]oo$/,
         matches:    ["a]oo"],
@@ -131,6 +146,13 @@ export const scenarios: Scenario[] =
         regex:      /^\[a$/,
         matches:    ["[a"],
         mismatches: ["[", "a"],
+    },
+    {
+        skip,
+        source:     "[?*/@(@(a|b))]",
+        regex:      /^[?*\/\\@(@\(a\|b))]$/,
+        matches:    ["?", "*", "\\", "/", "@", "(", "a", "|", "b", ")"],
+        mismatches: [""],
     },
     {
         skip,
@@ -246,6 +268,20 @@ export const scenarios: Scenario[] =
     },
     {
         skip,
+        source:     "\\@(a|b)",
+        regex:      /^@\(a\|b\)$/,
+        matches:    ["@(a|b)"],
+        mismatches: ["a", "b"],
+    },
+    {
+        skip,
+        source:     "@(\\@(a\\|b\\))",
+        regex:      /^(?:@\(a\|b\))$/,
+        matches:    ["@(a|b)"],
+        mismatches: ["a", "b"],
+    },
+    {
+        skip,
         source:     "@a",
         regex:      /^@a$/,
         matches:    ["@a"],
@@ -257,6 +293,34 @@ export const scenarios: Scenario[] =
         regex:      /^@\(a$/,
         matches:    ["@(a"],
         mismatches: ["@", "(", "a"],
+    },
+    {
+        skip,
+        source:     "@(@(a|b)",
+        regex:      /^@\((?:a|b)$/,
+        matches:    ["@(a"],
+        mismatches: ["@", "(", "a"],
+    },
+    {
+        skip,
+        source:     "@(a|b))",
+        regex:      /^(?:a|b)\)$/,
+        matches:    ["a)", "b)"],
+        mismatches: ["a", "b"],
+    },
+    {
+        skip,
+        source:     "@(/)",
+        regex:      /^(?:[\/\\])$/,
+        matches:    ["/"],
+        mismatches: [""],
+    },
+    {
+        skip,
+        source:     "@('@(a))",
+        regex:      /^(?:'(?:a))$/,
+        matches:    ["'a"],
+        mismatches: ["a"],
     },
     {
         skip,
@@ -290,7 +354,7 @@ export const scenarios: Scenario[] =
     {
         skip,
         source:     "@((a\\|b))",
-        regex:      /^(?:\(a\|b\))$/,
+        regex:      /^(?:\(a\|b)\)$/,
         matches:    ["(a|b)"],
         mismatches: ["a", "b"],
     },
@@ -325,8 +389,8 @@ export const scenarios: Scenario[] =
     {
         skip,
         source:     "?((a\\|b))",
-        regex:      /^(?:\(a\|b\))?$/,
-        matches:    ["", "(a|b)"],
+        regex:      /^(?:\(a\|b)?\)$/,
+        matches:    [")", "(a|b)"],
         mismatches: ["a", "b"],
     },
     {
@@ -360,8 +424,8 @@ export const scenarios: Scenario[] =
     {
         skip,
         source:     "*((a\\|b))",
-        regex:      /^(?:\(a\|b\))*$/,
-        matches:    ["", "(a|b)"],
+        regex:      /^(?:\(a\|b)*\)$/,
+        matches:    [")", "(a|b)", "(a|b(a|b)"],
         mismatches: ["a", "b"],
     },
     {
@@ -410,8 +474,8 @@ export const scenarios: Scenario[] =
     {
         skip,
         source:     "+((a\\|b))",
-        regex:      /^(?:\(a\|b\))+$/,
-        matches:    ["(a|b)"],
+        regex:      /^(?:\(a\|b)+\)$/,
+        matches:    ["(a|b)", "(a|b(a|b)"],
         mismatches: ["", "a", "b"],
     },
     {
@@ -459,8 +523,8 @@ export const scenarios: Scenario[] =
     {
         skip,
         source:     "!((a\\|b))",
-        regex:      /^(?:(?!\(a\|b\)).*)$/,
-        matches:    ["", "a", "b"],
+        regex:      /^(?:(?!\(a\|b).*)\)$/,
+        matches:    [")", "a)", "b)"],
         mismatches: ["(a|b)"],
     },
     {
@@ -606,8 +670,8 @@ export const scenarios: Scenario[] =
     {
         skip,
         source:     "{{a,b}}",
-        regex:      /^(?:\{a|b)\}$/,
-        matches:    ["{a}", "b}"],
+        regex:      /^\{(?:a|b)\}$/,
+        matches:    ["{a}", "{b}"],
         mismatches: ["a", "b"],
     },
     {
@@ -663,17 +727,24 @@ export const scenarios: Scenario[] =
     },
     {
         skip,
-        source:     "**/file{,000..100}.{js,ts}",
-        regex:      /^(?:[^.\/\\][^\/\\]*[\/\\]?)*file(?:100|0[1-9]\d|00\d)?\.(?:js|ts)$/,
+        source:     "**/file{,{000..100}}.{js,ts}",
+        regex:      /^(?:[^.\/\\][^\/\\]*[\/\\]?)*file(?:(?:100|0[1-9]\d|00\d))?\.(?:js|ts)$/,
         matches:    ["file.ts", "file000.ts", "foo/file050.js", "foo/bar/file100.ts"],
         mismatches: ["foo", "bar", "bar/foobar/bar"],
     },
     {
         skip,
-        source:     "file-{a..c,1..3}",
-        regex:      /^file-(?:[a-c]|[1-3])$/,
+        source:     "file-{{a..c},{1..3}}",
+        regex:      /^file-(?:(?:[a-c])|(?:[1-3]))$/,
         matches:    ["file-a", "file-b", "file-c", "file-1", "file-2", "file-3"],
         mismatches: ["file", "file-a1"],
+    },
+    {
+        skip,
+        source:     "file{,-{1..3}}.js",
+        regex:      /^file(?:-(?:[1-3]))?\.js$/,
+        matches:    ["file.js", "file-1.js", "file-2.js", "file-3.js"],
+        mismatches: ["file"],
     },
     {
         skip,
@@ -698,7 +769,7 @@ export const scenarios: Scenario[] =
     },
     {
         skip,
-        source:     "/foo/\"*\"",
+        source:     "/foo/'*'",
         regex:      /^[\/\\]foo[\/\\]\*$/,
         matches:    ["/foo/*"],
         mismatches: ["/foo/bar"],
@@ -709,6 +780,34 @@ export const scenarios: Scenario[] =
         regex:      /^[\/\\]foo[\/\\]bar(?: |\.)baz$/,
         matches:    ["/foo/bar baz", "/foo/bar.baz"],
         mismatches: ["/foo/bar"],
+    },
+    {
+        skip,
+        source:     "/foo/bar@(\"@(a)\")baz",
+        regex:      /^[\/\\]foo[\/\\]bar(?:@\(a\))baz$/,
+        matches:    ["/foo/bar@(a)baz"],
+        mismatches: ["/foo/bar"],
+    },
+    {
+        skip,
+        source:     "/foo/bar{\" \",.}baz",
+        regex:      /^[\/\\]foo[\/\\]bar(?: |\.)baz$/,
+        matches:    ["/foo/bar baz", "/foo/bar.baz"],
+        mismatches: ["/foo/bar"],
+    },
+    {
+        skip,
+        source:     "{,'{a,b}'}",
+        regex:      /^(?:\{a,b\})?$/,
+        matches:    ["", "{a,b}"],
+        mismatches: ["a", "b"],
+    },
+    {
+        skip,
+        source:     "foo\\!(bar)",
+        regex:      /^foo!\(bar\)$/,
+        matches:    ["foo!(bar)"],
+        mismatches: ["foo", "bar"],
     },
     {
         skip,
@@ -726,37 +825,107 @@ export const scenarios: Scenario[] =
     },
     {
         skip,
-        source:     "/foo/bar{@(a|b)}baz",
-        regex:      /^[\/\\]foo[\/\\]bar(?:@\(a\|b\))baz$/,
-        matches:    ["/foo/bar@(a|b)baz"],
+        source:     "/foo/bar{@(-|_)}baz",
+        regex:      /^[\/\\]foo[\/\\]bar\{(?:-|_)\}baz$/,
+        matches:    ["/foo/bar{-}baz", "/foo/bar{_}baz"],
         mismatches: ["/foo/bar"],
     },
     {
         skip,
         source:     "/foo/bar@({a,b})baz",
-        regex:      /^[\/\\]foo[\/\\]bar(?:\{a,b\})baz$/,
-        matches:    ["/foo/bar{a,b}baz"],
+        regex:      /^[\/\\]foo[\/\\]bar@\((?:a|b)\)baz$/,
+        matches:    ["/foo/bar@(a)baz", "/foo/bar@(b)baz"],
         mismatches: ["/foo/bar"],
     },
     {
         skip,
-        source:     "/foo/bar@('@(a)')baz",
-        regex:      /^[\/\\]foo[\/\\]bar(?:@\(a\))baz$/,
-        matches:    ["/foo/bar@(a)baz"],
-        mismatches: ["/foo/bar"],
+        source:     "[{1,2}]",
+        regex:      /^\[(?:1|2)\]$/,
+        matches:    ["[1]", "[2]"],
+        mismatches: ["{", "1", ",", "2", "}"],
     },
     {
         skip,
-        source:     "/foo/bar{' ',.}baz",
-        regex:      /^[\/\\]foo[\/\\]bar(?: |\.)baz$/,
-        matches:    ["/foo/bar baz", "/foo/bar.baz"],
-        mismatches: ["/foo/bar"],
+        source:     "[@(1|2)]",
+        regex:      /^[@(1|2)]$/,
+        matches:    ["@", "(", "1", "|", "2", ")"],
+        mismatches: ["[1]", "[2]"],
     },
     {
         skip,
-        source:     "{'{a,b}'}",
-        regex:      /^(?:\{a,b\})$/,
-        matches:    ["{a,b}"],
-        mismatches: ["a", "b"],
+        source:     "@({1,2})",
+        regex:      /^@\((?:1|2)\)$/,
+        matches:    ["@(1)", "@(2)"],
+        mismatches: ["{1,2}"],
+    },
+    {
+        skip,
+        source:     "@([ab]|c)",
+        regex:      /^(?:[ab]|c)$/,
+        matches:    ["a", "b", "c"],
+        mismatches: ["abc"],
+    },
+    {
+        skip,       // Edge case
+        source:     "[{1,2]}",
+        regex:      /^[{1,2]\}$/,
+        matches:    ["{}", "1}", ",}", "2}"],
+        mismatches: ["}"],
+    },
+    {
+        skip,       // Edge case
+        source:     "[@(1|2])",
+        regex:      /^[@(1|2]\)$/,
+        matches:    ["@)", "()", "1)", "|)", "2)"],
+        mismatches: [")"],
+    },
+    {
+        skip,       // Edge case
+        source:     "@([)]",
+        regex:      /^(?:\[)\]$/,
+        matches:    ["[]"],
+        mismatches: ["[", "]"],
+    },
+    {
+        skip,       // Edge case
+        source:     "@({)}",
+        regex:      /^(?:\{)\}$/,
+        matches:    ["{}"],
+        mismatches: ["{", "}"],
+    },
+    {
+        skip,       // Edge case
+        source:     "@({),1}",
+        regex:      /^(?:\{),1\}$/,
+        matches:    ["{,1}"],
+        mismatches: ["{", "}"],
+    },
+    {
+        skip,       // Edge case
+        source:     "{@(1,}|2)",
+        regex:      /^\{@\(1,\}\|2\)$/,
+        matches:    ["{@(1,}|2)"],
+        mismatches: [],
+    },
+    {
+        skip,       // Edge case
+        source:     "{@(1,2})",
+        regex:      /^\{@\(1,2\}\)$/,
+        matches:    ["{@(1,2})"],
+        mismatches: [],
+    },
+    {
+        skip,       // Edge case
+        source:     "{@(1,2})",
+        regex:      /^\{@\(1,2\}\)$/,
+        matches:    ["{@(1,2})"],
+        mismatches: [],
+    },
+    {
+        skip,       // Edge case
+        source:     "{[1,2}]",
+        regex:      /^\{\[1,2\}\]$/,
+        matches:    ["{[1,2}]"],
+        mismatches: [],
     },
 ];

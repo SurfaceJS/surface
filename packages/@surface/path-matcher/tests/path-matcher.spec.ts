@@ -15,7 +15,7 @@ export default class PatternMatcherSpec
     {
         const regex = PathMatcher.parse(scenario.source, scenario.options);
 
-        // chai.assert.deepEqual(regex, scenario.regex, "regex deep equal to expectation.regex");
+        chai.assert.deepEqual(regex, scenario.regex, "regex deep equal to expectation.regex");
 
         for (const path of scenario.matches)
         {

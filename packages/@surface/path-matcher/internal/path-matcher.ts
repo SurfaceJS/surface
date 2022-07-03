@@ -1,48 +1,22 @@
+/* eslint-disable max-lines */
+/* eslint-disable max-statements */
 /* eslint-disable complexity */
 /* eslint-disable max-lines-per-function */
 
 import { resolve } from "path";
-
-/* eslint-disable max-statements */
-const REGEX_SPECIAL_CHARACTERS = new Set([".", "+", "*", "?", "^", "$", "(", ")", "[", "]", "{", "}", "|", "\\"]);
-const ESCAPABLE_CHARACTERS     = new Set(["!", "+", "*", "?", "^", "@", "(", ")", "[", "]", "{", "}", "|", "\\"]);
-const SEPARATORS               = new Set(["/", "\\"]);
-const QUOTES                   = new Set(["\"", "'"]);
-const NUMBRACES_PATTERN        = /^(-?\d+)\.\.(-?\d+)(?:\.\.(-?\d+))?$/;
-const ALPHABRACES_PATTERN      = /^([a-zA-Z])\.\.([a-zA-Z])(?:\.\.(-?\d+))?$/;
-const CHARACTERS_CLASS_MAP: Record<string, string> =
+import
 {
-    "[:alnum:]":  "[A-Za-z0-9]",
-    "[:alpha:]":  "[A-Za-z]",
-    "[:ascii:]":  "[\\x00-\\x7F]",
-    "[:blank:]":  "[ \\t]",
-    "[:cntrl:]":  "[\\x00-\\x1F\\x7F]",
-    "[:digit:]":  "\\d",
-    "[:graph:]":  "[\\x21-\\x7E]",
-    "[:lower:]":  "[a-z]",
-    "[:print:]":  "[\\x20-\\x7E]",
-    "[:punct:]":  "[^ A-Za-z0-9]",
-    "[:space:]":  "\\s",
-    "[:upper:]":  "[A-Z]",
-    "[:word:]":   "\\w",
-    "[:xdigit:]": "[0-9a-fA-F]",
-};
-
-const GROUPS =
-{
-    "!": { open: "(?:(?!", close: ").*)" },
-    "*": { open: "(?:",    close: ")*" },
-    "+": { open: "(?:",    close: ")+" },
-    "?": { open: "(?:",    close: ")?" },
-    "@": { open: "(?:",    close: ")" },
-};
-
-type PatternList =
-{
-    start:   number,
-    end:     number,
-    parent?: PatternList,
-};
+    ALPHABRACES_PATTERN,
+    CHARACTERS_CLASS_MAP,
+    GROUPS,
+    NUMBRACES_PATTERN,
+    PATTERN_TOKENS as PATTERN_LIST_TOKENS,
+    QUOTES,
+    REGEX_SPECIAL_CHARACTERS,
+    SEPARATORS,
+} from "./characters.js";
+import ContextType from "./context-type.js";
+import Context     from "./context.js";
 
 type RangeValue =
 {
@@ -82,11 +56,10 @@ export type Options =
 
 export default class PathMatcher
 {
-    private readonly tokens: string[] = [];
     private readonly options: Options;
 
     private index: number = 0;
-    private patternList?: PatternList;
+    private context: Context = new Context(ContextType.Literal);
 
     public constructor(private readonly source: string, options: Options = { })
     {
@@ -184,9 +157,26 @@ export default class PathMatcher
         return this.index == this.source.length;
     }
 
-    private getChar(offset?: number): string | undefined
+    private escape(token: string): string
     {
-        return offset ? this.source.substring(this.index, this.index + offset) : this.source[this.index];
+        return REGEX_SPECIAL_CHARACTERS.has(token)
+            ? `${!this.context.inside(ContextType.Class, 1) || token == "]" ? "\\" : ""}${token}`
+            : token;
+    }
+
+    private getChar(length?: number): string | undefined
+    {
+        return length ? this.source.substring(this.index, this.index + length) : this.source[this.index];
+    }
+
+    private getNextChar(): string | undefined
+    {
+        return this.source[this.index + 1];
+    }
+
+    private getPreviousChar(): string | undefined
+    {
+        return this.source[this.index - 1];
     }
 
     private getRangeInfo(start: number, end: number): RangeInfo
@@ -266,175 +256,9 @@ export default class PathMatcher
 
     private parse(): RegExp
     {
-        let negate = false;
-
-        if (!this.options.noNegate && this.source.startsWith("!") && (this.source[1] != "(" || !this.lookahead(")", () => false)))
-        {
-            negate = true;
-
-            this.advance();
-        }
-
         this.scanPattern();
 
-        const expression = negate && !this.options.dot ? `^(?:${this.tokens.join("")})|(?:(^|.*[\\/\\\\])\\.[^\\/\\\\]+[\\/\\\\]?.*)$` : `^${this.tokens.join("")}$`;
-        // const expression = `^${this.tokens.join("")}$`;
-
-        return new RegExp(negate ? `^(?!${expression}).*$` : expression, this.options.noCase ? "i" : "");
-    }
-
-    private scanClasses(): void
-    {
-        if (this.getChar(2) == "[:")
-        {
-            for (const offset of [8, 9, 10])
-            {
-                const characterClass = CHARACTERS_CLASS_MAP[this.getChar(offset)!];
-
-                if (characterClass)
-                {
-                    this.advance(offset);
-
-                    this.tokens.push(characterClass);
-
-                    return;
-                }
-            }
-        }
-
-        const end = this.lookahead("]", index => index > this.index + 1);
-
-        if (end)
-        {
-            this.tokens.push("[");
-
-            this.advance();
-
-            if (this.getChar() == "]" && end > this.index)
-            {
-                this.tokens.push("\\]");
-                this.advance();
-            }
-
-            const char = this.getChar();
-
-            if (char == "!" || char == "^")
-            {
-                this.tokens.push("^");
-                this.advance();
-            }
-
-            while (this.index < end)
-            {
-                const char = this.getChar();
-                const next = this.source[this.index + 1];
-
-                if (char == "\\" && ESCAPABLE_CHARACTERS.has(next!))
-                {
-                    this.tokens.push("\\");
-                    this.tokens.push(next!);
-
-                    this.advance(2);
-                }
-                else
-                {
-                    this.scanLiteral();
-                }
-            }
-
-            this.tokens.push("]");
-
-            this.advance();
-        }
-        else
-        {
-            this.scanLiteral();
-        }
-    }
-
-    private scanPattern(): void
-    {
-        while (!this.eof())
-        {
-            const char = this.getChar()!;
-
-            if (char == ")" && this.patternList?.end == this.index)
-            {
-                return;
-            }
-
-            switch (char)
-            {
-                case "\"":
-                case "'":
-                    this.scanQuotes();
-                    break;
-                case "\\":
-                case "/":
-                    {
-                        const next = this.source[this.index + 1];
-
-                        if (char == "\\" && ESCAPABLE_CHARACTERS.has(next!))
-                        {
-                            this.tokens.push("\\");
-                            this.tokens.push(next!);
-
-                            this.advance(2);
-                        }
-                        else
-                        {
-                            this.tokens.push("[\\/\\\\]");
-                            this.advance();
-                        }
-                    }
-
-                    break;
-                case "{":
-                    !this.options.noBrace && !this.patternList ? this.scanBraceExpand() : this.scanLiteral();
-                    break;
-                case "!":
-                case "*":
-                case "+":
-                case "?":
-                case "@":
-                    if (!this.options.noExtGlob && this.source[this.index + 1] == "(")
-                    {
-                        this.scanPatternList();
-                    }
-                    else if (char == "?")
-                    {
-                        this.scanPlaceholder();
-                    }
-                    else if (char == "*")
-                    {
-                        this.scanStar();
-                    }
-                    else
-                    {
-                        this.scanLiteral();
-                    }
-
-                    break;
-                case "[":
-                    this.scanClasses();
-                    break;
-                default:
-                    if (this.patternList && char == "|")
-                    {
-                        if (char == "|")
-                        {
-                            this.tokens.push("|");
-                            this.advance();
-                        }
-                    }
-                    else
-                    {
-                        this.scanLiteral();
-                    }
-
-                    break;
-            }
-        }
+        return new RegExp(`^${this.context.tokens.join("")}$`, this.options.noCase ? "i" : "");
     }
 
     private parseRange(start: number, end: number, minLength: number): string[]
@@ -616,82 +440,6 @@ export default class PathMatcher
         return negatives.concat(positives);
     }
 
-    private scanBraceExpand(): void
-    {
-        const end = this.lookahead("}");
-
-        if (end)
-        {
-            this.tokens.push(GROUPS["@"].open);
-            this.advance();
-
-            let isOptional = false;
-
-            while (this.index < end)
-            {
-                const segmentEnd = Math.min(this.lookahead(",") ?? end, end);
-
-                const segment = this.source.substring(this.index, segmentEnd);
-
-                if (segment)
-                {
-                    const alphaMatch = ALPHABRACES_PATTERN.exec(segment);
-                    const digitMatch = NUMBRACES_PATTERN.exec(segment);
-
-                    if (alphaMatch)
-                    {
-                        this.scanAlphaRange(alphaMatch[1]!, alphaMatch[2]!, Number(alphaMatch[3] ?? "1"));
-                    }
-                    else if (digitMatch)
-                    {
-                        this.scanNumericRange(digitMatch[1]!, digitMatch[2]!, Number(digitMatch[3] ?? "1"));
-                    }
-                    else if (QUOTES.has(this.getChar()!))
-                    {
-                        this.scanQuotes();
-                    }
-                    else
-                    {
-                        while (this.index < segmentEnd)
-                        {
-                            this.scanLiteral();
-                        }
-                    }
-
-                    if (alphaMatch || digitMatch)
-                    {
-                        this.advance(segmentEnd - this.index);
-                    }
-
-                    if (this.getChar() == ",")
-                    {
-                        this.tokens.push("|");
-
-                        this.advance();
-                    }
-                }
-                else
-                {
-                    isOptional = true;
-                    this.advance();
-                }
-            }
-
-            this.tokens.push(GROUPS["@"].close);
-
-            if (isOptional)
-            {
-                this.tokens.push("?");
-            }
-
-            this.advance();
-        }
-        else
-        {
-            this.scanLiteral();
-        }
-    }
-
     private scanAlphaRange(startChar: string, endChar: string, multiplier: number): void
     {
         const startRange = startChar.charCodeAt(0);
@@ -699,7 +447,7 @@ export default class PathMatcher
 
         if (multiplier != 0)
         {
-            this.tokens.push("[");
+            this.context.push("[");
 
             const isValidRange = startRange < endRange
                 && (
@@ -709,7 +457,7 @@ export default class PathMatcher
 
             if (multiplier == 1 && isValidRange)
             {
-                this.tokens.push(String.fromCharCode(startRange), "-", String.fromCharCode(endRange));
+                this.context.push(`${String.fromCharCode(startRange)}-${String.fromCharCode(endRange)}`);
             }
 
             else
@@ -722,16 +470,197 @@ export default class PathMatcher
                     {
                         if (char == "]" || char == "^")
                         {
-                            this.tokens.push("\\");
+                            this.context.push("\\");
                         }
 
-                        this.tokens.push(char);
+                        this.context.push(char);
                     }
                 }
             }
 
-            this.tokens.push("]");
+            this.context.push("]");
         }
+    }
+
+    private scanBraces(): void
+    {
+        this.context = new Context(ContextType.Braces, this.context);
+
+        const group = GROUPS["{"];
+
+        this.context.push(group.open, this.escape("{"));
+
+        this.advance();
+
+        const start = this.index;
+
+        let segments   = 0;
+        let isOptional = false;
+
+        while (!this.eof())
+        {
+            segments++;
+
+            this.scanPattern();
+
+            const char = this.getChar();
+
+            if (char == ",")
+            {
+                const previous = this.getPreviousChar();
+
+                const isEmpty = previous == "{" || previous == char;
+
+                if (!isOptional)
+                {
+                    isOptional = isEmpty;
+                }
+
+                if (!isEmpty)
+                {
+                    this.context.push("|", char);
+                }
+
+                this.advance();
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        if (this.getChar() == "}")
+        {
+            const end = this.index;
+
+            if (segments > 1)
+            {
+                this.context.push(group.close + (isOptional ? "?" : ""));
+
+                this.advance();
+            }
+            else
+            {
+                const segment = this.source.substring(start, end);
+
+                const alphaMatch = ALPHABRACES_PATTERN.exec(segment);
+                const digitMatch = NUMBRACES_PATTERN.exec(segment);
+
+                if (alphaMatch || digitMatch)
+                {
+                    this.context.discard();
+
+                    this.context.push(group.open);
+
+                    if (alphaMatch)
+                    {
+                        this.scanAlphaRange(alphaMatch[1]!, alphaMatch[2]!, Number(alphaMatch[3] ?? "1"));
+                    }
+                    else if (digitMatch)
+                    {
+                        this.scanNumericRange(digitMatch[1]!, digitMatch[2]!, Number(digitMatch[3] ?? "1"));
+                    }
+
+                    this.context.push(group.close);
+
+                    this.advance();
+                }
+                else
+                {
+                    this.context.rollback();
+                }
+            }
+        }
+        else
+        {
+            this.context.rollback();
+        }
+
+        if (!this.context.rolledBack)
+        {
+            let parent = this.context.parent;
+
+            while (parent && parent.type != ContextType.Literal)
+            {
+                if (parent.type != ContextType.Braces)
+                {
+                    parent.rollback();
+                }
+
+                parent = parent.parent;
+            }
+        }
+
+        this.context = this.context.parent!;
+    }
+
+    private scanClasses(): void
+    {
+        if (this.getChar(2) == "[:")
+        {
+            for (const offset of [8, 9, 10])
+            {
+                const characterClass = CHARACTERS_CLASS_MAP[this.getChar(offset)!];
+
+                if (characterClass)
+                {
+                    this.advance(offset);
+
+                    this.context.push(characterClass);
+
+                    return;
+                }
+            }
+        }
+
+        this.context = new Context(ContextType.Class, this.context);
+
+        const group = GROUPS["["];
+
+        this.context.push(group.open, "\\[");
+
+        this.advance();
+
+        const char = this.getChar();
+
+        if ((char == "^" || char == "!") && this.context.type == ContextType.Class && this.getPreviousChar() == "[")
+        {
+            this.context.push("^", this.escape(char));
+            this.advance();
+        }
+
+        this.scanPattern();
+
+        if (!this.context.rolledBack && this.getChar() == "]")
+        {
+            this.context.push(group.close);
+
+            this.context.children.forEach(x => x.rollback(true));
+
+            this.advance();
+        }
+        else
+        {
+            this.context.rollback();
+        }
+
+        this.context = this.context.parent!;
+    }
+
+    private scanEscaped(): void
+    {
+        this.context.push(this.escape(this.getNextChar()!));
+
+        this.advance(2);
+    }
+
+    private scanLiteral(): void
+    {
+        const char = this.getChar()!;
+
+        this.context.push(this.escape(char));
+
+        this.advance();
     }
 
     private scanNumericRange(startRange: string, endRange: string, multiplier: number): void
@@ -759,45 +688,71 @@ export default class PathMatcher
             {
                 if (minLength > 1)
                 {
-                    this.tokens.push(this.createLeadingZeros(minLength - 1));
+                    this.context.push(this.createLeadingZeros(minLength - 1));
                 }
 
-                this.tokens.push("[");
-                this.tokens.push(start.toString(), "-", end.toString());
-                this.tokens.push("]");
+                this.context.push("[");
+                this.context.push(`${start.toString()}-${end.toString()}`);
+                this.context.push("]");
             }
             else if (start >= 0 && end > 0)
             {
-                this.tokens.push(...this.parseRange(start, end, minLength));
+                this.context.push(this.parseRange(start, end, minLength).join(""));
             }
             else if (start < 0 && end <= 0)
             {
-                this.tokens.push(...this.parseRange(end, start, minLength));
+                this.context.push(this.parseRange(end, start, minLength).join(""));
             }
             else
             {
-                this.tokens.push(...this.parseRange(0, start, minLength));
-                this.tokens.push("|");
-                this.tokens.push(...this.parseRange(1, end, minLength));
+                this.context.push(this.parseRange(0, start, minLength).join(""));
+                this.context.push("|");
+                this.context.push(this.parseRange(1, end, minLength).join(""));
             }
         }
         else if (inSimpleRange(start) && inSimpleRange(end))
         {
-            this.tokens.push(this.createLeadingZeros(minLength - 1));
+            this.context.push(this.createLeadingZeros(minLength - 1));
 
-            this.tokens.push("[");
+            this.context.push("[");
 
             for (let i = start; i <= end; i += multiplier)
             {
-                this.tokens.push(i.toString());
+                this.context.push(i.toString());
             }
 
-            this.tokens.push("]");
+            this.context.push("]");
         }
         else
         {
-            this.tokens.push(...this.parseSteppedRange(start, end, multiplier, minLength));
+            this.context.push(this.parseSteppedRange(start, end, multiplier, minLength).join(""));
         }
+    }
+
+    private scanNegation(): void
+    {
+        this.context = new Context(ContextType.Negation, this.context);
+
+        const group = GROUPS[`!${this.options.dot ? "." : ""}` as keyof typeof GROUPS];
+
+        this.context.push(group.open, "");
+
+        if (this.getNextChar() == "(")
+        {
+            this.scanPatternList();
+        }
+        else
+        {
+            this.advance();
+            this.scanPattern();
+        }
+
+        if (!this.context.rolledBack)
+        {
+            this.context.push(group.close);
+        }
+
+        this.context = this.context.parent!;
     }
 
     private scanQuotes(): void
@@ -824,54 +779,135 @@ export default class PathMatcher
         }
         else
         {
-            this.tokens.push(quote);
+            this.context.tokens.push(quote);
         }
     }
 
-    private scanLiteral(): void
+    private scanPattern(): void
     {
-        const char = this.getChar()!;
-
-        if (REGEX_SPECIAL_CHARACTERS.has(char))
+        while (!this.eof())
         {
-            this.tokens.push("\\");
-        }
+            const char = this.getChar()!;
 
-        this.tokens.push(char);
-        this.advance();
+            const shouldStop =
+               char == ","  && this.context.type == ContextType.Braces
+            || char == "}"  && this.context.inside(ContextType.Braces)
+            || char == "|"  && this.context.type == ContextType.PatternList
+            || char == ")"  && this.context.inside(ContextType.PatternList)
+            || char == "]"  && !(this.getPreviousChar() == "[" && this.getNextChar() == "]") && this.context.inside(ContextType.Class);
+
+            if (shouldStop)
+            {
+                return;
+            }
+
+            if (QUOTES.has(char))
+            {
+                this.scanQuotes();
+            }
+            else if (char == "\\")
+            {
+                this.scanEscaped();
+            }
+            else if (char == "/")
+            {
+                this.scanSlash();
+            }
+            else if (char == "{" && !this.options.noBrace)
+            {
+                this.scanBraces();
+            }
+            else if (!this.options.noNegate && this.index == 0 && char == "!")
+            {
+                this.scanNegation();
+            }
+            else if (!this.options.noExtGlob && PATTERN_LIST_TOKENS.has(char) && this.getNextChar() == "(")
+            {
+                this.scanPatternList();
+            }
+            else if (char == "?")
+            {
+                this.scanPlaceholder();
+            }
+            else if (char == "*")
+            {
+                this.scanStar();
+            }
+            else if (char == "[" && this.context.type != ContextType.Class)
+            {
+                this.scanClasses();
+            }
+            else
+            {
+                this.scanLiteral();
+            }
+        }
     }
 
     private scanPatternList(): void
     {
-        const end = this.lookahead(")", index => !!this.patternList?.end && index < this.patternList.end);
+        const start = this.index;
+        this.context = new Context(ContextType.PatternList, this.context);
 
-        if (end)
+        const char  = this.getChar();
+        const group = GROUPS[`${char}(` as keyof typeof GROUPS];
+
+        this.context.push(group.open, char + this.escape("("));
+
+        this.advance(2);
+
+        while (!this.eof())
         {
-            this.patternList = { start: this.index, end, parent: this.patternList };
-
-            const char = this.getChar() as keyof typeof GROUPS;
-
-            this.advance(2);
-
-            this.tokens.push(GROUPS[char].open);
-
             this.scanPattern();
 
-            this.tokens.push(GROUPS[char].close);
+            const char = this.getChar();
 
+            if (char == "|")
+            {
+                this.context.push(char, this.escape(char));
+                this.advance();
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        if (!this.context.rolledBack && this.getChar() == ")")
+        {
             this.advance();
 
-            this.patternList = this.patternList.parent;
+            this.context.tokens.push(group.close);
+
+            if (start == 0 && char == "!" && this.context.parent?.type == ContextType.Negation)
+            {
+                this.context.parent.rollback();
+            }
         }
         else
         {
-            this.scanLiteral();
+            this.context.rollback();
         }
+
+        this.context = this.context.parent!;
     }
 
     private scanPlaceholder(): void
     {
-        this.tokens.push(".");
+        const pattern = `[^${this.options.dot ? "" : "."}\\/\\\\]`;
+
+        this.context.type == ContextType.Class
+            ? this.context.push("?", pattern)
+            : this.context.push(pattern);
+
+        this.advance();
+    }
+
+    private scanSlash(): void
+    {
+        this.context.type == ContextType.Class
+            ? this.context.push("\\/\\\\", "[\\/\\\\]")
+            : this.context.push("[\\/\\\\]");
 
         this.advance();
     }
@@ -895,7 +931,9 @@ export default class PathMatcher
                 ? "(?!\\.\\.?[\\/\\\\]).*[\\/\\\\]?"
                 : "(?:[^.\\/\\\\][^\\/\\\\]*[\\/\\\\]?)*";
 
-            this.tokens.push(pattern);
+            this.context.type == ContextType.Class
+                ? this.context.push("*", pattern)
+                : this.context.push(pattern);
 
             if (SEPARATORS.has(this.getChar()!))
             {
@@ -904,7 +942,11 @@ export default class PathMatcher
         }
         else
         {
-            this.tokens.push(`${!this.options.dot && canUseGlobStar ? "[^.\\/\\\\]" : ""}[^\\/\\\\]*`);
+            const pattern = `${!this.options.dot && canUseGlobStar ? "[^.\\/\\\\]" : ""}[^\\/\\\\]*`;
+
+            this.context.type == ContextType.Class
+                ? this.context.push("*", pattern)
+                : this.context.push(pattern);
         }
     }
 
