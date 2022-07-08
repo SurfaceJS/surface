@@ -2,6 +2,7 @@ export const PATTERN_TOKENS           = new Set(["!", "@", "?", "*", "+"]);
 export const REGEX_SPECIAL_CHARACTERS = new Set([".", "+", "*", "?", "^", "$", "(", ")", "[", "]", "{", "}", "|", "\\", "/"]);
 export const SEPARATORS               = new Set(["/", "\\"]);
 export const QUOTES                   = new Set(["\"", "'"]);
+export const ESCAPABLE_CHARACTERS     = new Set([...PATTERN_TOKENS, ...QUOTES, "{", "["]);
 export const NUMBRACES_PATTERN        = /^(-?\d+)\.\.(-?\d+)(?:\.\.(-?\d+))?$/;
 export const ALPHABRACES_PATTERN      = /^([a-zA-Z])\.\.([a-zA-Z])(?:\.\.(-?\d+))?$/;
 export const CHARACTERS_CLASS_MAP: Record<string, string> =

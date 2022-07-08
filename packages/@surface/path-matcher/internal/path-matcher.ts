@@ -3,14 +3,16 @@
 /* eslint-disable complexity */
 /* eslint-disable max-lines-per-function */
 
-import { resolve } from "path";
+import { resolve, sep } from "path";
 import
 {
     ALPHABRACES_PATTERN,
     CHARACTERS_CLASS_MAP,
+    ESCAPABLE_CHARACTERS,
     GROUPS,
     NUMBRACES_PATTERN,
     PATTERN_TOKENS as PATTERN_LIST_TOKENS,
+    PATTERN_TOKENS,
     QUOTES,
     REGEX_SPECIAL_CHARACTERS,
     SEPARATORS,
@@ -94,7 +96,8 @@ export default class PathMatcher
         const negated = pattern.startsWith("!");
         const prefix  = negated ? "!" : "";
 
-        return prefix + resolve(base, negated ? pattern.substring(1) : pattern);
+        /* c8 ignore next */
+        return prefix + resolve(sep == "\\" ? base.split("\\").join("/") : sep, negated ? pattern.substring(1) : pattern);
     }
 
     private advance(offset: number = 1): void
@@ -969,15 +972,17 @@ export default class PathMatcher
             this.advance();
         }
 
-        const openGroups = new Set(["*", "!", "+", "@"]);
-
         let broken = false;
 
         while (!this.eof())
         {
             const char = this.getChar()!;
 
-            if (SEPARATORS.has(char))
+            if (char == "\\" && ESCAPABLE_CHARACTERS.has(this.getNextChar()!))
+            {
+                broken = true;
+            }
+            else if (SEPARATORS.has(char))
             {
                 end = this.index;
             }
@@ -985,9 +990,11 @@ export default class PathMatcher
             {
                 broken = char == "*"
                     || char == "?"
+                    || char == "\"" && !!this.lookahead("\"")
+                    || char == "'" && !!this.lookahead("'")
                     || char == "[" && !!this.lookahead("]")
                     || char == "{" && !!this.lookahead("}")
-                    || openGroups.has(char!) && (this.source[this.index + 1] == "(" && !!this.lookahead(")", () => false));
+                    || PATTERN_TOKENS.has(char!) && (this.source[this.index + 1] == "(" && !!this.lookahead(")", () => false));
 
                 if (broken)
                 {

@@ -149,8 +149,8 @@ export const scenarios: Scenario[] =
     },
     {
         skip,
-        source:     "[?*/@(@(a|b))]",
-        regex:      /^[?*\/\\@(@\(a\|b))]$/,
+        source:     "[?*/**@(@(a|b))]",
+        regex:      /^[?*\/\\*@(@\(a\|b))]$/,
         matches:    ["?", "*", "\\", "/", "@", "(", "a", "|", "b", ")"],
         mismatches: [""],
     },

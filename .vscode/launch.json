@@ -35,7 +35,7 @@
             [
                 "<node_internals>/**",
             ],
-            "type": "pwa-node"
+            "type": "node"
         },
         {
             "cwd":      "${fileDirname}",
@@ -51,7 +51,7 @@
                 "<node_internals>/**",
             ],
             "sourceMaps": true,
-            "type":       "pwa-node"
+            "type":       "node"
         },
         {
             // "args":
@@ -75,7 +75,7 @@
                 "<node_internals>/**",
             ],
             "sourceMaps": true,
-            "type":       "pwa-node"
+            "type":       "node"
         },
         {
             "args":
@@ -107,7 +107,7 @@
                 "${workspaceFolder}/node_modules/**/*.js",
                 "<node_internals>/**"
             ],
-            "type": "pwa-node"
+            "type": "node"
         },
     ],
     "version": "0.2.0"

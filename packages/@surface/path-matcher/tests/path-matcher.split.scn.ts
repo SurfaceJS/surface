@@ -200,4 +200,67 @@ export const splitScenarios: SplitScenario[] =
             pattern: "ba[!z]",
         },
     },
+    {
+        skip,
+        source:   "/foo/bar.@({js,ts})",
+        expected:
+        {
+            base:    "/foo",
+            pattern: "bar.@({js,ts})",
+        },
+    },
+    {
+        skip,
+        source:   "/foo/bar{/,.}baz",
+        expected:
+        {
+            base:    "/foo",
+            pattern: "bar{/,.}baz",
+        },
+    },
+    {
+        skip,
+        source:   "/foo/bar{/}baz",
+        expected:
+        {
+            base:    "/foo",
+            pattern: "bar{/}baz",
+        },
+    },
+    {
+        skip,
+        source:   "/foo/bar-{1..2}",
+        expected:
+        {
+            base:    "/foo",
+            pattern: "bar-{1..2}",
+        },
+    },
+    {
+        skip,
+        source:   "/foo/bar-'{1..2}'",
+        expected:
+        {
+            base:    "/foo",
+            pattern: "bar-'{1..2}'",
+        },
+    },
+    {
+        skip,
+        source:   "/foo/bar-\"{1..2}\"",
+        expected:
+        {
+            base:    "/foo",
+            pattern: "bar-\"{1..2}\"",
+        },
+    },
+    {
+        skip,
+        source:   "/foo/bar-\\{1..2}",
+        expected:
+        {
+            base:    "/foo",
+            pattern: "bar-\\{1..2}",
+        },
+    },
 ];
