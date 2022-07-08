@@ -48,4 +48,16 @@ export const resolveScenarios: ResolveScenario[] =
         pattern:  "!bar/**",
         expected: `!${resolve("/foo/bar/**")}`,
     },
+    {
+        skip,
+        base:     resolve("/@foo?"),
+        pattern:  "!bar/**",
+        expected: `!${resolve("/@foo\\?/bar/**")}`,
+    },
+    {
+        skip,
+        base:     resolve("/@foo[1]{2}"),
+        pattern:  "!bar/**",
+        expected: `!${resolve("/@foo\\[1]\\{2}/bar/**")}`,
+    },
 ];

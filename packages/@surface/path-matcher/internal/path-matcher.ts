@@ -96,8 +96,17 @@ export default class PathMatcher
         const negated = pattern.startsWith("!");
         const prefix  = negated ? "!" : "";
 
+        const tokens: string[] = [];
+
+        for (const char of base)
+        {
+            char == sep
+                ? tokens.push("/")
+                : tokens.push(ESCAPABLE_CHARACTERS.has(char) ? `\\${char}` : char);
+        }
+
         /* c8 ignore next */
-        return prefix + resolve(sep == "\\" ? base.split("\\").join("/") : sep, negated ? pattern.substring(1) : pattern);
+        return prefix + resolve(tokens.join(""), negated ? pattern.substring(1) : pattern);
     }
 
     private advance(offset: number = 1): void
