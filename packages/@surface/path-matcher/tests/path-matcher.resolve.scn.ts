@@ -2,6 +2,8 @@ import { resolve } from "path";
 
 const skip = false;
 
+const root = resolve("/").replaceAll("\\", "/");
+
 export type ResolveScenario =
 {
     skip: boolean,
@@ -16,48 +18,48 @@ export const resolveScenarios: ResolveScenario[] =
         skip,
         base:     resolve("/"),
         pattern:  "",
-        expected: resolve("/"),
+        expected: root,
     },
     {
         skip,
         base:     resolve("/"),
         pattern:  ".",
-        expected: resolve("/"),
+        expected: root,
     },
     {
         skip,
         base:     resolve("/foo"),
         pattern:  "..",
-        expected: resolve("/"),
+        expected: root,
     },
     {
         skip,
         base:     resolve("/foo"),
         pattern:  "**",
-        expected: resolve("/foo/**"),
+        expected: `${root}foo/**`,
     },
     {
         skip,
         base:     resolve("/foo"),
         pattern:  "../**",
-        expected: resolve("/**"),
+        expected: `${root}**`,
     },
     {
         skip,
         base:     resolve("/foo"),
         pattern:  "!bar/**",
-        expected: `!${resolve("/foo/bar/**")}`,
+        expected: `!${root}foo/bar/**`,
     },
     {
         skip,
         base:     resolve("/@foo?"),
         pattern:  "!bar/**",
-        expected: `!${resolve("/@foo\\?/bar/**")}`,
+        expected: `!${root}\\@foo\\?/bar/**`,
     },
     {
         skip,
         base:     resolve("/@foo[1]{2}"),
         pattern:  "!bar/**",
-        expected: `!${resolve("/@foo\\[1]\\{2}/bar/**")}`,
+        expected: `!${root}\\@foo\\[1]\\{2}/bar/**`,
     },
 ];

@@ -5,7 +5,6 @@ import { copyFile, lstat, readdir, rename, rm, unlink } from "fs/promises";
 import { createRequire }                                from "module";
 import path                                             from "path";
 import { fileURLToPath }                                from "url";
-import { createPath, removePath }                       from "@surface/io";
 import chalk                                            from "chalk";
 import type { Manifest }                                from "pacote";
 
@@ -127,5 +126,3 @@ export const parsePattern = (pattern: RegExp) =>
 
 export const toArray  = (source: string): string[] => source.split(",");
 export const toString = (source: string): string => source;
-
-export { createPath as createPathAsync, removePath as removePathAsync };

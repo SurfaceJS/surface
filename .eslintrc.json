@@ -208,7 +208,6 @@
         "@typescript-eslint/prefer-string-starts-ends-with": "warn",
         "@typescript-eslint/promise-function-async":         "warn",
         "@typescript-eslint/quotes":                         "warn",
-        "@typescript-eslint/require-array-sort-compare":     "warn",
         "@typescript-eslint/return-await":                   "warn",
         "@typescript-eslint/semi":                           "warn",
         "@typescript-eslint/switch-exhaustiveness-check":    "warn",

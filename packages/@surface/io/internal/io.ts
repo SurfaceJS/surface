@@ -1,8 +1,8 @@
-import { existsSync, lstatSync, mkdirSync, readdirSync, readlinkSync, rmdirSync, statSync, unlinkSync } from "fs";
-import { lstat, mkdir, readdir, readlink, rmdir, stat, unlink }                                         from "fs/promises";
-import { dirname, isAbsolute, join, resolve }                                                           from "path";
-import type { Callable }                                                                                from "@surface/core";
-import PathMatcher                                                                                      from "./path-matcher.js";
+import { existsSync, lstatSync, readdirSync, statSync } from "fs";
+import { lstat, readdir, stat }                         from "fs/promises";
+import { dirname, isAbsolute, join, resolve }           from "path";
+import type { Callable }                                from "@surface/core";
+import PathMatcher, { type Options }                    from "@surface/path-matcher";
 
 type ErrorCode = Error & { code: string };
 
@@ -30,7 +30,27 @@ function handler<T extends Callable>(action: Callable): ReturnType<T> | null
     }
 }
 
-async function *internalEnumeratePaths(matcher: PathMatcher, context: string): AsyncGenerator<string>
+function resolveRedundantPatterns(patterns: string | string[], options: Options): { matcher: PathMatcher, paths: string[] }
+{
+    const matcher = new PathMatcher(patterns, options);
+
+    const paths: string[] = [];
+
+    let path: string | null = null;
+
+    for (const entry of matcher.paths.sort())
+    {
+        if (path === null || !entry.startsWith(path))
+        {
+            path = entry;
+            paths.push(path);
+        }
+    }
+
+    return { matcher, paths };
+}
+
+async function *internalEnumeratePaths(context: string, matcher: PathMatcher): AsyncGenerator<string>
 {
     for (const entry of await readdir(context))
     {
@@ -38,19 +58,19 @@ async function *internalEnumeratePaths(matcher: PathMatcher, context: string): A
 
         if (await isDirectory(path))
         {
-            for await (const file of internalEnumeratePaths(matcher, path))
+            for await (const file of internalEnumeratePaths(path, matcher))
             {
                 yield file;
             }
         }
-        else if (matcher.test(path))
+        else if (matcher.isMatch(path))
         {
             yield path;
         }
     }
 }
 
-function *internalEnumeratePathsSync(matcher: PathMatcher, context: string): Generator<string>
+function *internalEnumeratePathsSync(context: string, matcher: PathMatcher): Generator<string>
 {
     for (const entry of readdirSync(context))
     {
@@ -58,12 +78,12 @@ function *internalEnumeratePathsSync(matcher: PathMatcher, context: string): Gen
 
         if (isDirectorySync(path))
         {
-            for (const file of internalEnumeratePathsSync(matcher, path))
+            for (const file of internalEnumeratePathsSync(path, matcher))
             {
                 yield file;
             }
         }
-        else if (matcher.test(path))
+        else if (matcher.isMatch(path))
         {
             yield path;
         }
@@ -95,83 +115,39 @@ export function bottomUp(startPath: string, target: string): string | null
 }
 
 /**
- * Asynchronous create a path.
- * @param path A path to create. If a URL is provided, it must use the `file:` protocol.
- * @param mode A file mode.
- */
-export async function createPath(path: string, mode: number = 0o777): Promise<void>
-{
-    if (existsSync(path))
-    {
-        const resolvedPath = await isSymbolicLink(path) ? await readlink(path) : path;
-
-        if (!await isDirectory(path))
-        {
-            throw new Error(`${resolvedPath} exist and isn't an directory`);
-        }
-
-        return;
-    }
-
-    const parent = dirname(path);
-
-    if (!existsSync(parent))
-    {
-        await createPath(parent, mode);
-    }
-
-    return mkdir(path, mode);
-}
-
-/**
- * Create a path.
- * @param path A path to create. If a URL is provided, it must use the `file:` protocol.
- * @param mode A file mode.
- */
-export function createPathSync(path: string, mode?: number): void
-{
-    if (existsSync(path))
-    {
-        const resolvedPath = isSymbolicLinkSync(path) ? readlinkSync(path) : path;
-
-        if (!isDirectorySync(resolvedPath))
-        {
-            throw new Error(`${resolvedPath} exist and isn't an directory`);
-        }
-
-        return;
-    }
-
-    const parent = dirname(path);
-
-    if (!existsSync(parent))
-    {
-        createPathSync(parent, mode);
-
-        mkdirSync(path, mode);
-    }
-
-    mkdirSync(path, mode);
-}
-
-/**
  * Asynchronous enumerate paths using given patterns.
  * @param patterns Patterns to match. Strings prefixed with "!" will be negated.
- * @param cwd      Working dir.
+ * @param options  Options to parse patterns.
  */
-export function enumeratePaths(patterns: string | RegExp | (string | RegExp)[], cwd: string = process.cwd()): AsyncGenerator<string>
+export async function *enumeratePaths(patterns: string | string[], options: Options = { base: process.cwd() }): AsyncGenerator<string>
 {
-    return internalEnumeratePaths(new PathMatcher(patterns, cwd), cwd);
+    const resolved = resolveRedundantPatterns(patterns, options);
+
+    for (const path of resolved.paths)
+    {
+        for await (const iterator of internalEnumeratePaths(path, resolved.matcher))
+        {
+            yield iterator;
+        }
+    }
 }
 
 /**
  * enumerate paths using given patterns.
  * @param patterns Patterns to match. Strings prefixed with "!" will be negated.
- * @param cwd      Working dir.
+ * @param options  Options to parse patterns.
  */
-export function enumeratePathsSync(patterns: string | RegExp | (string | RegExp)[], cwd: string = process.cwd()): Generator<string>
+export function *enumeratePathsSync(patterns: string | string[], options: Options = { base: process.cwd() }): Generator<string>
 {
-    return internalEnumeratePathsSync(new PathMatcher(patterns, cwd), cwd);
+    const resolved = resolveRedundantPatterns(patterns, options);
+
+    for (const path of resolved.paths)
+    {
+        for (const iterator of internalEnumeratePathsSync(path, resolved.matcher))
+        {
+            yield iterator;
+        }
+    }
 }
 
 /**
@@ -242,14 +218,14 @@ export function isSymbolicLinkSync(path: string): boolean
 
 /**
  * Asynchronous list paths using given patterns.
- * @param patterns Patterns to match. Strings prefixed with "!" will be negated.
- * @param cwd      Working dir.
+ * @param pattern Pattern to match.
+ * @param cwd     Working dir.
  */
-export async function listPaths(patterns: string | RegExp | (string | RegExp)[], cwd: string = process.cwd()): Promise<string[]>
+export async function listPaths(pattern: string | string[], options?: Options): Promise<string[]>
 {
     const paths: string[] = [];
 
-    for await (const path of enumeratePaths(patterns, cwd))
+    for await (const path of enumeratePaths(pattern, options))
     {
         paths.push(path);
     }
@@ -259,12 +235,12 @@ export async function listPaths(patterns: string | RegExp | (string | RegExp)[],
 
 /**
  * List paths using given patterns.
- * @param patterns Patterns to match. Strings prefixed with "!" will be negated.
- * @param cwd      Working dir.
+ * @param pattern Pattern to match.
+ * @param cwd     Working dir.
  */
-export function listPathsSync(patterns: string | RegExp | (string | RegExp)[], cwd: string = process.cwd()): string[]
+export function listPathsSync(pattern: string | string[], options?: Options): string[]
 {
-    return Array.from(enumeratePathsSync(patterns, cwd));
+    return Array.from(enumeratePathsSync(pattern, options));
 }
 
 /**
@@ -305,64 +281,4 @@ export function lookupSync(files: string[], context: string = process.cwd()): st
     }
 
     return null;
-}
-
-/**
- * Deletes recursively delete a path and unlink symbolic links
- * @param path Path to delete. If a URL is provided, it must use the `file:` protocol.
- */
-export function removePathSync(path: string): boolean
-{
-    if (existsSync(path))
-    {
-        const lstat = lstatSync(path);
-
-        if (lstat.isSymbolicLink() || lstat.isFile())
-        {
-            unlinkSync(path);
-        }
-        else
-        {
-            for (const fileOrDirectory of readdirSync(path))
-            {
-                removePathSync(join(path, fileOrDirectory));
-            }
-
-            rmdirSync(path);
-        }
-
-        return true;
-    }
-
-    return false;
-}
-
-/**
- * Asynchronously delete a path recursively and unlink symbolic links
- * @param path Path to delete. If a URL is provided, it must use the `file:` protocol.
- */
-export async function removePath(path: string): Promise<boolean>
-{
-    if (existsSync(path))
-    {
-        const stat = await lstat(path);
-
-        if (stat.isSymbolicLink() || stat.isFile())
-        {
-            await unlink(path);
-        }
-        else
-        {
-            for (const fileOrDirectory of await readdir(path))
-            {
-                await removePath(join(path, fileOrDirectory));
-            }
-
-            await rmdir(path);
-        }
-
-        return true;
-    }
-
-    return false;
 }

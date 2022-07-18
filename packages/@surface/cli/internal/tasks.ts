@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/consistent-type-imports */
 import child_process                                               from "child_process";
 import { copyFile, existsSync, readFile, readFileSync, writeFile } from "fs";
+import { mkdir }                                                   from "fs/promises";
 import os                                                          from "os";
 import path                                                        from "path";
 import { fileURLToPath }                                           from "url";
 import util                                                        from "util";
 import { assert }                                                  from "@surface/core";
-import { createPath }                                              from "@surface/io";
 import inquirer, { QuestionCollection }                            from "inquirer";
 
 type TemplateIndex = typeof import("./templates/index.json");
@@ -42,7 +42,7 @@ export default class Tasks
 
             if (!existsSync(folder))
             {
-                await createPath(folder);
+                await mkdir(folder, { recursive: true });
             }
 
             await copyFileAsync(source, target);

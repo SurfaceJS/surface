@@ -1,14 +1,9 @@
-/* eslint-disable import/order */
-/* eslint-disable @typescript-eslint/consistent-type-imports */
-/* eslint-disable array-element-newline */
-/* eslint-disable import/no-namespace */
-
 import fs                                                 from "fs";
+import path                                               from "path";
 import Mock                                               from "@surface/mock";
 import { afterEach, beforeEach, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                               from "chai";
 import PreferTsResolverPlugin                             from "../../internal/plugins/prefer-ts-resolver-plugin.js";
-import path                                               from "path";
 
 const CWD = process.cwd();
 
@@ -128,25 +123,5 @@ export default class PreferTsResolverPluginSpec
         ];
 
         chai.assert.deepEqual(actual, expectedForRelativePattern, "Relative Pattern");
-
-        actual = [];
-
-        new PreferTsResolverPlugin([path.join(CWD, "**/path-1/**/*.js")]).apply(resolver);
-
-        const expectedForAbsolutePattern =
-        [
-            PATH1_BAR_JS,
-            PATH1_BAR_TS,
-            PATH1_BAZ_TS,
-            PATH1_FOO,
-            PATH1_FOO_TS,
-            PATH2_BAR_JS,
-            PATH2_BAR_TS,
-            PATH2_BAZ_TS,
-            PATH2_FOO,
-            PATH2_FOO_JS,
-        ];
-
-        chai.assert.deepEqual(actual, expectedForAbsolutePattern, "Absolute Pattern");
     }
 }

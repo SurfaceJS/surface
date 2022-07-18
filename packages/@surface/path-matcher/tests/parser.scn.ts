@@ -2,7 +2,7 @@
 /* eslint-disable no-empty-character-class */
 /* eslint-disable no-control-regex */
 // cSpell:ignore AGMSY, ekqw
-import type { Options } from "../internal/path-matcher.js";
+import type { Options } from "../internal/parser.js";
 
 const skip = false;
 
