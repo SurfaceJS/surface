@@ -38,12 +38,11 @@ function resolveRedundantPatterns(patterns: string | string[], options: Options)
 
     let path: string | null = null;
 
-    for (const entry of matcher.paths.sort())
+    for (const entry of Array.from(matcher.paths).sort())
     {
         if (path === null || !entry.startsWith(path))
         {
-            path = entry;
-            paths.push(path);
+            paths.push(path = entry);
         }
     }
 

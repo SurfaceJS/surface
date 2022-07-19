@@ -1,4 +1,4 @@
-Provides path matching functionality.
+# Provides path matching functionality
 
 Supported Syntax
 | Pattern         | Description                                                                                                                                                                                                                            |
@@ -16,63 +16,50 @@ Supported Syntax
 | !               | When used at start, all pattern is negated                                                                                                                                                                                             |
 | "..."           | Escapes any character between quotes.                                                                                                                                                                                                  |
 
-# Api
-## Parse
-Creates a regex object from given pattern.
+## Examples
+
+### instance
 
 ```ts
 import PathMatcher from "@surface/path-matcher";
 
-const regex = PathMatcher.parse("/packages/**/*.{ts,js}");
+const matcher = new PathMatcher("/packages/**/*.{ts,js}", "/modules", "!/packages/node_modules");
+
+console.log(matcher.paths) // ["/packages", "/modules"];
+console.log(matcher.isMatch("/packages/foo/index.js"));                  // true
+console.log(matcher.isMatch("/packages/foo/bar/index.ts"));              // true
+console.log(matcher.isMatch("/modules/index.js"));                       // true
+console.log(matcher.isMatch("/lib/foo/baz/index.js"));                   // false
+console.log(matcher.isMatch("/packages/node_modules/foo/bar/index.ts")); // false
+```
+
+### makeRegex
+
+```ts
+import PathMatcher from "@surface/path-matcher";
+
+const regex = PathMatcher.makeRegex("/packages/**/*.{ts,js}");
 
 console.log(regex.test("/lib/foo/baz/index.js"));      // false
 console.log(regex.test("/packages/foo/index.js"));     // true
 console.log(regex.test("/packages/foo/bar/index.ts")); // true
 ```
 
-The parse method also accept the following options:
+### split
 
-```ts
-type Options =
-{
-
-    /** Allow patterns to match dotfiles. Otherwise dotfiles are ignored unless a `.` is explicitly defined in the pattern. */
-    dot?: boolean,
-
-    /** Disables brace matching `{js,ts}, {a..z}, {0..10}`. */
-    noBrace?: boolean,
-
-    /** Perform case-insensitive matching. */
-    noCase?: boolean,
-
-    /** Disables pattern lists matching `!(..), @(..), +(..) *(..)`. */
-    noExtGlob?: boolean,
-
-    /** Disables GlobStar matching `**`.*/
-    noGlobStar?: boolean,
-
-    /** Disables negate matching. `!/foo/**` */
-    noNegate?: boolean,
-};
-```
-
-## Split
-Splits base path from the pattern.
 ```ts
 import PathMatcher from "@surface/path-matcher";
 
-console.log(PathMatcher.split("/foo/**/baz.{ts,js}")); // { base: "/foo", pattern: "**/baz.{ts,js}" }
+console.log(PathMatcher.split("/foo/**/baz.{ts,js}")); // { base: "/foo",    pattern: "**/baz.{ts,js}" }
 console.log(PathMatcher.split("/foo/../baz.{ts,js}")); // { base: "/foo/..", pattern: "baz.{ts,js}" }
 ```
 
-## Resolve
-Resolve relative patterns. Mostly useful when pattern can include negation.
+### resolve
 
 ```ts
 import PathMatcher from "@surface/path-matcher";
 
-console.log(PathMatcher.resolve("/foo/bar", "./baz.{ts,js}"));  // /foo/bar/baz.{ts,js}
-console.log(PathMatcher.resolve("/foo/bar", "../baz.{ts,js}")); // /foo/baz.{ts,js}
-
-console.log(PathMatcher.resolve("/foo/bar", "!../baz.{ts,js}")); // !/foo/baz.{ts,js}
+console.log(PathMatcher.resolve("/foo/bar", "./baz.{ts,js}"));   // { base: "/foo/bar", pattern: "baz.{ts,js}",  fullPattern: "/foo/bar/baz.{ts,js}" }
+console.log(PathMatcher.resolve("/foo/bar", "../baz.{ts,js}"));  // { base: "/foo",     pattern: "baz.{ts,js}",  fullPattern: "/foo/baz.{ts,js}" }
+console.log(PathMatcher.resolve("/foo/bar", "!../baz.{ts,js}")); // { base: "/foo",     pattern: "!baz.{ts,js}", fullPattern: "!/foo/baz.{ts,js}" }"
 ```

@@ -77,7 +77,7 @@ export default class PatternMatcherSpec
     }
 
     @shouldPass
-    @batchTest(splitScenarios, x => `Expects "${x.source}" splits to base: "${x.expected.base}" and pattern: "${x.expected.pattern}"`, x => x.skip)
+    @batchTest(splitScenarios, x => `Expects "${x.source}" splits to base: "${x.expected.path}" and pattern: "${x.expected.pattern}"`, x => x.skip)
     public split(scenario: SplitScenario): void
     {
         const actual = PathMatcher.split(scenario.source);

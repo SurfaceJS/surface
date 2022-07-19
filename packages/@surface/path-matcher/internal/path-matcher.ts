@@ -1,5 +1,5 @@
 
-import { resolve, sep }         from "path";
+import { parse, resolve, sep }         from "path";
 import { ESCAPABLE_CHARACTERS } from "./characters.js";
 import Parser, { type Options } from "./parser.js";
 
@@ -7,7 +7,7 @@ const toArray = <T>(value: T | T[]): T[] => Array.isArray(value) ? value : [valu
 
 export type ResolvedPattern =
 {
-    base:        string,
+    path:        string,
     fullPattern: string,
     pattern:     string,
 };
@@ -22,7 +22,7 @@ export default class PathMatcher
 {
     private readonly include: RegExp[] = [];
     private readonly exclude: RegExp[] = [];
-    public readonly paths: string[] = [];
+    public readonly paths: Set<string> = new Set();
 
     public constructor(patterns: string | string[], options?: Options)
     {
@@ -30,14 +30,15 @@ export default class PathMatcher
         {
             const resolved = options?.base
                 ? PathMatcher.resolve(options.base, pattern, options)
-                : {
-                    ...PathMatcher.split(pattern, options),
-                    fullPattern: pattern,
-                };
+                : { ...PathMatcher.split(pattern, options), fullPattern: pattern };
 
-            this.paths.push(resolved.base);
+            const [expressions, path] = pattern.startsWith("!")
+                ? [this.exclude, parse(resolved.path).dir]
+                : [this.include, resolved.path];
 
-            (pattern.startsWith("!") ? this.exclude : this.include).push(PathMatcher.makeRegex(resolved.fullPattern, options));
+            this.paths.add(path);
+
+            expressions.push(PathMatcher.makeRegex(resolved.fullPattern, options));
         }
     }
 
@@ -50,7 +51,7 @@ export default class PathMatcher
         const negated  = splitted.pattern.startsWith("!");
         const prefix   = negated ? "!" : "";
 
-        const resolved = resolve(base, splitted.base);
+        const resolved = resolve(base, splitted.path);
 
         let index = 0;
 
@@ -67,7 +68,7 @@ export default class PathMatcher
 
         return {
             fullPattern,
-            base:    resolved,
+            path:    resolved,
             pattern: splitted.pattern,
         };
     }
@@ -86,7 +87,7 @@ export default class PathMatcher
      * Splits base path from the pattern.
      * @param pattern Pattern to be splited.
      */
-    public static split(pattern: string, options?: Options): { base: string, pattern: string }
+    public static split(pattern: string, options?: Options): { path: string, pattern: string }
     {
         return new Parser(pattern, options).split();
     }

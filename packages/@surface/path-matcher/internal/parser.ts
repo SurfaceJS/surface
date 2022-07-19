@@ -923,7 +923,7 @@ export default class Parser
         return new RegExp(`^${this.context.tokens.join("")}$`, this.options.noCase ? "i" : "");
     }
 
-    public split(): { base: string, pattern: string }
+    public split(): { path: string, pattern: string }
     {
         let negated = false;
 
@@ -981,7 +981,7 @@ export default class Parser
         }
 
         return {
-            base:    this.source.substring(start, end),
+            path:    this.source.substring(start, end),
             pattern: (negated ? "!" : "") + (end == 0 ? this.source : this.source.substring(end + 1, this.source.length)),
         };
     }

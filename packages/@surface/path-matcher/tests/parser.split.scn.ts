@@ -16,7 +16,7 @@ export const splitScenarios: SplitScenario[] =
         source:   "./",
         expected:
         {
-            base:    ".",
+            path:    ".",
             pattern: "",
         },
     },
@@ -25,7 +25,7 @@ export const splitScenarios: SplitScenario[] =
         source:   "..",
         expected:
         {
-            base:    "..",
+            path:    "..",
             pattern: "",
         },
     },
@@ -34,7 +34,7 @@ export const splitScenarios: SplitScenario[] =
         source:   "**",
         expected:
         {
-            base:    "",
+            path:    "",
             pattern: "**",
         },
     },
@@ -43,7 +43,7 @@ export const splitScenarios: SplitScenario[] =
         source:   "{js,ts}",
         expected:
         {
-            base:    "",
+            path:    "",
             pattern: "{js,ts}",
         },
     },
@@ -52,7 +52,7 @@ export const splitScenarios: SplitScenario[] =
         source:   "../foo",
         expected:
         {
-            base:    "../foo",
+            path:    "../foo",
             pattern: "",
         },
     },
@@ -61,7 +61,7 @@ export const splitScenarios: SplitScenario[] =
         source:   "/foo/../*{js,ts}",
         expected:
         {
-            base:    "/foo/..",
+            path:    "/foo/..",
             pattern: "*{js,ts}",
         },
     },
@@ -70,7 +70,7 @@ export const splitScenarios: SplitScenario[] =
         source:   "/foo",
         expected:
         {
-            base:    "/foo",
+            path:    "/foo",
             pattern: "",
         },
     },
@@ -79,7 +79,7 @@ export const splitScenarios: SplitScenario[] =
         source:   "/foo/",
         expected:
         {
-            base:    "/foo",
+            path:    "/foo",
             pattern: "",
         },
     },
@@ -88,7 +88,7 @@ export const splitScenarios: SplitScenario[] =
         source:   "/foo@(",
         expected:
         {
-            base:    "/foo@(",
+            path:    "/foo@(",
             pattern: "",
         },
     },
@@ -97,7 +97,7 @@ export const splitScenarios: SplitScenario[] =
         source:   "/foo{",
         expected:
         {
-            base:    "/foo{",
+            path:    "/foo{",
             pattern: "",
         },
     },
@@ -106,7 +106,7 @@ export const splitScenarios: SplitScenario[] =
         source:   "/foo[",
         expected:
         {
-            base:    "/foo[",
+            path:    "/foo[",
             pattern: "",
         },
     },
@@ -115,7 +115,7 @@ export const splitScenarios: SplitScenario[] =
         source:   "!/foo/",
         expected:
         {
-            base:    "/foo",
+            path:    "/foo",
             pattern: "!",
         },
     },
@@ -124,7 +124,7 @@ export const splitScenarios: SplitScenario[] =
         source:   "!(foo",
         expected:
         {
-            base:    "(foo",
+            path:    "(foo",
             pattern: "!",
         },
     },
@@ -133,7 +133,7 @@ export const splitScenarios: SplitScenario[] =
         source:   "/foo/*",
         expected:
         {
-            base:    "/foo",
+            path:    "/foo",
             pattern: "*",
         },
     },
@@ -142,7 +142,7 @@ export const splitScenarios: SplitScenario[] =
         source:   "/foo/**",
         expected:
         {
-            base:    "/foo",
+            path:    "/foo",
             pattern: "**",
         },
     },
@@ -151,7 +151,7 @@ export const splitScenarios: SplitScenario[] =
         source:   "/foo/bar/baz/**/*.json",
         expected:
         {
-            base:    "/foo/bar/baz",
+            path:    "/foo/bar/baz",
             pattern: "**/*.json",
         },
     },
@@ -160,7 +160,7 @@ export const splitScenarios: SplitScenario[] =
         source:   "/foo/ba?",
         expected:
         {
-            base:    "/foo",
+            path:    "/foo",
             pattern: "ba?",
         },
     },
@@ -169,7 +169,7 @@ export const splitScenarios: SplitScenario[] =
         source:   "/foo/!(foo)",
         expected:
         {
-            base:    "/foo",
+            path:    "/foo",
             pattern: "!(foo)",
         },
     },
@@ -178,7 +178,7 @@ export const splitScenarios: SplitScenario[] =
         source:   "/foo/*(foo)",
         expected:
         {
-            base:    "/foo",
+            path:    "/foo",
             pattern: "*(foo)",
         },
     },
@@ -187,7 +187,7 @@ export const splitScenarios: SplitScenario[] =
         source:   "/foo/@(foo)",
         expected:
         {
-            base:    "/foo",
+            path:    "/foo",
             pattern: "@(foo)",
         },
     },
@@ -196,7 +196,7 @@ export const splitScenarios: SplitScenario[] =
         source:   "/foo/+(foo)",
         expected:
         {
-            base:    "/foo",
+            path:    "/foo",
             pattern: "+(foo)",
         },
     },
@@ -205,7 +205,7 @@ export const splitScenarios: SplitScenario[] =
         source:   "/foo/*.{js,ts}",
         expected:
         {
-            base:    "/foo",
+            path:    "/foo",
             pattern: "*.{js,ts}",
         },
     },
@@ -214,7 +214,7 @@ export const splitScenarios: SplitScenario[] =
         source:   "/foo/ba[!z]",
         expected:
         {
-            base:    "/foo",
+            path:    "/foo",
             pattern: "ba[!z]",
         },
     },
@@ -223,7 +223,7 @@ export const splitScenarios: SplitScenario[] =
         source:   "/foo/bar.@({js,ts})",
         expected:
         {
-            base:    "/foo",
+            path:    "/foo",
             pattern: "bar.@({js,ts})",
         },
     },
@@ -232,7 +232,7 @@ export const splitScenarios: SplitScenario[] =
         source:   "/foo/bar{/,.}baz",
         expected:
         {
-            base:    "/foo",
+            path:    "/foo",
             pattern: "bar{/,.}baz",
         },
     },
@@ -241,7 +241,7 @@ export const splitScenarios: SplitScenario[] =
         source:   "/foo/bar{/}baz",
         expected:
         {
-            base:    "/foo",
+            path:    "/foo",
             pattern: "bar{/}baz",
         },
     },
@@ -250,7 +250,7 @@ export const splitScenarios: SplitScenario[] =
         source:   "/foo/bar-{1..2}",
         expected:
         {
-            base:    "/foo",
+            path:    "/foo",
             pattern: "bar-{1..2}",
         },
     },
@@ -259,7 +259,7 @@ export const splitScenarios: SplitScenario[] =
         source:   "/foo/bar-'{1..2}'",
         expected:
         {
-            base:    "/foo",
+            path:    "/foo",
             pattern: "bar-'{1..2}'",
         },
     },
@@ -268,7 +268,7 @@ export const splitScenarios: SplitScenario[] =
         source:   "/foo/bar-\"{1..2}\"",
         expected:
         {
-            base:    "/foo",
+            path:    "/foo",
             pattern: "bar-\"{1..2}\"",
         },
     },
@@ -277,7 +277,7 @@ export const splitScenarios: SplitScenario[] =
         source:   "/foo/bar-\\{1..2}",
         expected:
         {
-            base:    "/foo",
+            path:    "/foo",
             pattern: "bar-\\{1..2}",
         },
     },
