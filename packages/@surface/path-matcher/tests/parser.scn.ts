@@ -1,7 +1,6 @@
 /* eslint-disable max-lines */
 /* eslint-disable no-empty-character-class */
 /* eslint-disable no-control-regex */
-// cSpell:ignore AGMSY, ekqw
 import type { Options } from "../internal/parser.js";
 
 const skip = false;
@@ -691,20 +690,6 @@ export const scenarios: Scenario[] =
     },
     {
         skip,
-        source:     "a{,b,c}d",
-        regex:      /^a(?:b|c)?d$/,
-        matches:    ["ad", "abd", "acd"],
-        mismatches: ["a", "d", "abcd"],
-    },
-    {
-        skip,
-        source:     "{a..c}",
-        regex:      /^(?:[a-c])$/,
-        matches:    ["a", "b", "c"],
-        mismatches: ["d"],
-    },
-    {
-        skip,
         source:     "{a..c}",
         options:    { noBrace: true },
         regex:      /^\{a\.\.c\}$/,
@@ -713,17 +698,10 @@ export const scenarios: Scenario[] =
     },
     {
         skip,
-        source:     "{Z..a}",
-        regex:      /^(?:[Z[\]\^_`a])$/,
-        matches:    ["Z", "[", "]", "^", "_", "`", "a"],
-        mismatches: ["A", "z"],
-    },
-    {
-        skip,
-        source:     "{A..z..6}",
-        regex:      /^(?:[AGMSY_ekqw])$/,
-        matches:    ["A", "G", "M", "S", "Y", "_", "e", "k", "q", "w"],
-        mismatches: ["B", "F", "b", "f"],
+        source:     "a{,b,c}d",
+        regex:      /^a(?:b|c)?d$/,
+        matches:    ["ad", "abd", "acd"],
+        mismatches: ["a", "d", "abcd"],
     },
     {
         skip,

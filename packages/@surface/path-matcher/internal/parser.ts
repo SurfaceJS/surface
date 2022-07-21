@@ -1,8 +1,3 @@
-/* eslint-disable max-lines */
-/* eslint-disable max-statements */
-/* eslint-disable complexity */
-/* eslint-disable max-lines-per-function */
-
 import
 {
     ALPHABRACES_PATTERN,
@@ -10,28 +5,14 @@ import
     ESCAPABLE_CHARACTERS,
     GROUPS,
     NUMBRACES_PATTERN,
-    PATTERN_TOKENS as PATTERN_LIST_TOKENS,
     PATTERN_TOKENS,
     QUOTES,
     REGEX_SPECIAL_CHARACTERS,
     SEPARATORS,
 } from "./characters.js";
-import ContextType from "./context-type.js";
-import Context     from "./context.js";
-
-type RangeValue =
-{
-    ceiling: string,
-    value:   string,
-};
-
-type RangeInfo =
-{
-    start:        RangeValue,
-    end:          RangeValue,
-    sign:         string,
-    intersection: number | null,
-};
+import ContextType                            from "./context-type.js";
+import Context                                from "./context.js";
+import { parseAlphaRange, parseNumericRange } from "./range-parser.js";
 
 export type Options =
 {
@@ -83,49 +64,7 @@ export default class Parser
         /* c8 ignore stop */
     }
 
-    private createLeadingZeros(size: number): string
-    {
-        switch (size)
-        {
-            case 0:
-                return "";
-            case 1:
-                return "0";
-            case 2:
-                return "00";
-            default:
-                return `0{${size}}`;
-        }
-    }
-
-    private createExtendedRange(min: number, max: number, minQuantifier: number = 1, maxQuantifier: number = 0): string
-    {
-        return this.createRange(min, max) + this.createRange(0, 9, minQuantifier, maxQuantifier);
-    }
-
-    private createRange(min: number, max: number, minQuantifier: number = 1, maxQuantifier: number = 0): string
-    {
-        if (minQuantifier + maxQuantifier == 0)
-        {
-            return "";
-        }
-
-        const range = min == max
-            ? String(max)
-            : min == 0 && max == 9
-                ? "\\d"
-                : `[${min}${max - min > 1 ? "-" : ""}${max}]`;
-
-        const quantifier = minQuantifier < maxQuantifier
-            ? `{${minQuantifier},${maxQuantifier}}`
-            : minQuantifier > 1
-                ? `{${minQuantifier}}`
-                : "";
-
-        return range + quantifier;
-    }
-
-    private eof(): boolean
+    private eos(): boolean
     {
         return this.index == this.source.length;
     }
@@ -150,47 +89,6 @@ export default class Parser
     private getPreviousChar(): string | undefined
     {
         return this.source[this.index - 1];
-    }
-
-    private getRangeInfo(start: number, end: number): RangeInfo
-    {
-        const startString = start.toString().replace("-", "");
-        const endString   = end.toString().replace("-", "");
-
-        let intersection: number | null = null;
-
-        if (startString.length == endString.length)
-        {
-            intersection = -1;
-
-            for (let index = 0; index < endString.length; index++)
-            {
-                if (startString[index] != endString[index])
-                {
-                    break;
-                }
-
-                intersection = index;
-            }
-        }
-
-        const startValue = start.toString().replace("-", "");
-        const endValue   = end.toString().replace("-", "");
-
-        return {
-            start:
-            {
-                ceiling: startValue[0] + this.createLeadingZeros(startValue.length - 1),
-                value:   startValue,
-            },
-            end:
-            {
-                ceiling: endValue[0] + this.createLeadingZeros(endValue.length - 1),
-                value:   endValue,
-            },
-            sign:    end < 0 ? "-" : "",
-            intersection,
-        };
     }
 
     private lookahead(character: string, stopCondition: (index: number) => boolean = () => true): number | null
@@ -227,227 +125,6 @@ export default class Parser
         return end;
     }
 
-    private parseRange(start: number, end: number, minLength: number): string[]
-    {
-        const patterns: string[] = [];
-
-        const range = this.getRangeInfo(start, end);
-
-        const leading = this.createLeadingZeros(Math.max(minLength - range.end.value.length, 0));
-
-        for (let i = range.end.value.length - 1; i > -1; i--)
-        {
-            if (i - 1 == range.intersection)
-            {
-                break;
-            }
-
-            const digit = Number(range.end.value[i]);
-
-            if (digit == 0 && i == range.end.value.length - 1)
-            {
-                patterns.push(range.sign + leading + range.end.value);
-            }
-            else if (i > 0 && digit > 0 || i == 0 && digit > 1)
-            {
-                const rest       = range.end.value.length - i - 1;
-                const startRange = i == 0 ? 1 : 0;
-                const endRange   = digit - (i == range.end.value.length - 1 ? 0 : 1);
-
-                const pattern = range.sign + leading + range.end.value.substring(0, i) + this.createExtendedRange(startRange, endRange, rest);
-
-                if (patterns.length > 0)
-                {
-                    patterns.push("|");
-                }
-
-                patterns.push(pattern);
-            }
-        }
-
-        if (start == 0)
-        {
-            const rest = range.end.value.length - 1;
-
-            if (rest > 1)
-            {
-                if (minLength == 1)
-                {
-                    patterns.push("|", range.sign + this.createExtendedRange(1, 9, 1, rest - 1));
-                }
-                else
-                {
-                    for (let index = rest - 1; index > 0; index--)
-                    {
-                        const leading = this.createLeadingZeros(minLength - index - 1);
-
-                        patterns.push("|", range.sign + leading + this.createExtendedRange(1, 9, index));
-                    }
-                }
-            }
-
-            if (range.sign)
-            {
-                patterns.push("|", this.createLeadingZeros(minLength - 1) + range.sign + this.createRange(1, 9));
-                patterns.push("|", this.createLeadingZeros(minLength));
-            }
-            else
-            {
-                patterns.push("|", this.createLeadingZeros(minLength - 1) + this.createRange(0, 9));
-            }
-        }
-        else if (range.start.value == range.start.ceiling && range.intersection == -1)
-        {
-            patterns.push("|", range.sign + this.createExtendedRange(Number(range.start.value[0]), Number(range.end.value[0]) - 1, range.start.value.length - 1));
-        }
-        else
-        {
-            const rest = range.end.value.length - range.start.value.length;
-
-            if (rest > 1)
-            {
-                if (minLength == 1)
-                {
-                    patterns.push("|", range.sign + this.createExtendedRange(1, 9, range.start.value.length, range.end.value.length - 2));
-                }
-                else
-                {
-                    for (let index = range.end.value.length - 2; index > range.start.value.length - 1; index--)
-                    {
-                        const leading = this.createLeadingZeros(Math.max(minLength - index - 1, 0));
-
-                        patterns.push("|", range.sign + leading + this.createExtendedRange(1, 9, index));
-                    }
-                }
-            }
-
-            const leading = this.createLeadingZeros(Math.max(minLength - range.start.value.length, 0));
-
-            for (let i = range.start.value.length - 1; i > -1; i--)
-            {
-                const startDigit = Number(range.start.value[i]);
-                const endDigit   = Number(range.end.value[i]);
-
-                const hasIntersected = i == range.intersection;
-                const willIntersect  = i - 1 == range.intersection;
-
-                if (hasIntersected || willIntersect && endDigit - startDigit < 2)
-                {
-                    break;
-                }
-
-                const isTrailingDigit = i == range.start.value.length - 1;
-                const canResolveZero  = startDigit == 0 && (willIntersect || i == 1 && !isTrailingDigit);
-                const canResolveNine  = startDigit == 9 && range.start.value[i + 1] == "0";
-
-                if (startDigit == 9 && isTrailingDigit)
-                {
-                    if (patterns.length > 0)
-                    {
-                        patterns.push("|");
-                    }
-
-                    patterns.push(range.sign + leading + range.start.value);
-                }
-                else if (canResolveZero || canResolveNine || startDigit > 0 && startDigit < 9)
-                {
-                    const rest        = range.start.value.length - i - 1;
-                    const startOffset = isTrailingDigit || range.start.value[i + 1] == "0" && (i > 0 || range.start.value.length == 2) ? 0 : 1;
-                    const endOffset   = isTrailingDigit ? 0 : 1;
-                    const startRange  = startDigit + startOffset;
-                    const endRange    = startDigit < 9 && willIntersect ? endDigit - endOffset : 9;
-
-                    const pattern = range.sign + leading + range.start.value.substring(0, i) + this.createExtendedRange(startRange, endRange, rest);
-
-                    if (patterns.length > 0)
-                    {
-                        patterns.push("|");
-                    }
-
-                    patterns.push(pattern);
-                }
-            }
-        }
-
-        return patterns;
-    }
-
-    private parseSteppedRange(start: number, end: number, multiplier: number, minLength: number): string[]
-    {
-        const positives: string[] = [];
-        const negatives: string[] = [];
-
-        for (let i = start; i <= end; i += multiplier)
-        {
-            const patterns = i >= 0 ? positives : negatives;
-
-            if (patterns.length > 0)
-            {
-                patterns.push("|");
-            }
-
-            const value = Math.abs(i).toString();
-
-            if (value == "0")
-            {
-                patterns.push(this.createLeadingZeros(minLength));
-            }
-            else
-            {
-                patterns.push(this.createLeadingZeros(Math.max(minLength - value.length, 0)) + value);
-            }
-        }
-
-        if (negatives.length > 0)
-        {
-            return ["-(?:", ...negatives, ")", "|", ...positives];
-        }
-
-        return negatives.concat(positives);
-    }
-
-    private scanAlphaRange(startChar: string, endChar: string, multiplier: number): void
-    {
-        const startRange = startChar.charCodeAt(0);
-        const endRange   = endChar.charCodeAt(0);
-
-        if (multiplier != 0)
-        {
-            this.context.push("[");
-
-            const isValidRange = startRange < endRange
-                && (
-                    startChar == startChar.toLowerCase() && endChar == endChar.toLowerCase()
-                    || startChar == startChar.toUpperCase() && endChar == endChar.toUpperCase()
-                );
-
-            if (multiplier == 1 && isValidRange)
-            {
-                this.context.push(`${String.fromCharCode(startRange)}-${String.fromCharCode(endRange)}`);
-            }
-
-            else
-            {
-                for (let i = startRange; i <= endRange; i += multiplier)
-                {
-                    const char = String.fromCharCode(i);
-
-                    if (char != "\\")
-                    {
-                        if (char == "]" || char == "^")
-                        {
-                            this.context.push("\\");
-                        }
-
-                        this.context.push(char);
-                    }
-                }
-            }
-
-            this.context.push("]");
-        }
-    }
-
     private scanBraces(): void
     {
         this.context = new Context(ContextType.Braces, this.context);
@@ -463,7 +140,7 @@ export default class Parser
         let segments   = 0;
         let isOptional = false;
 
-        while (!this.eof())
+        while (!this.eos())
         {
             segments++;
 
@@ -520,11 +197,11 @@ export default class Parser
 
                     if (alphaMatch)
                     {
-                        this.scanAlphaRange(alphaMatch[1]!, alphaMatch[2]!, Number(alphaMatch[3] ?? "1"));
+                        this.context.push(parseAlphaRange(alphaMatch[1]!, alphaMatch[2]!, Number(alphaMatch[3] ?? "1")));
                     }
                     else if (digitMatch)
                     {
-                        this.scanNumericRange(digitMatch[1]!, digitMatch[2]!, Number(digitMatch[3] ?? "1"));
+                        this.context.push(parseNumericRange(digitMatch[1]!, digitMatch[2]!, Number(digitMatch[3] ?? "1")));
                     }
 
                     this.context.push(group.close);
@@ -629,72 +306,6 @@ export default class Parser
         this.advance();
     }
 
-    private scanNumericRange(startRange: string, endRange: string, multiplier: number): void
-    {
-        const getMinLength = (value: string): number =>
-        {
-            const abs = value.replace("-", "");
-
-            return abs.startsWith("0") ? abs.length : 1;
-        };
-
-        const minLength = Math.max(getMinLength(startRange), getMinLength(endRange));
-
-        const parsedStartRange = Number(startRange);
-        const parsedEndRange   = Number(endRange);
-
-        const start = Math.min(parsedStartRange, parsedEndRange);
-        const end   = Math.max(parsedStartRange, parsedEndRange);
-
-        const inSimpleRange = (value: number): boolean => value >= 0 && value <= 9;
-
-        if (multiplier == 1)
-        {
-            if (inSimpleRange(start) && inSimpleRange(end))
-            {
-                if (minLength > 1)
-                {
-                    this.context.push(this.createLeadingZeros(minLength - 1));
-                }
-
-                this.context.push("[");
-                this.context.push(`${start.toString()}-${end.toString()}`);
-                this.context.push("]");
-            }
-            else if (start >= 0 && end > 0)
-            {
-                this.context.push(this.parseRange(start, end, minLength).join(""));
-            }
-            else if (start < 0 && end <= 0)
-            {
-                this.context.push(this.parseRange(end, start, minLength).join(""));
-            }
-            else
-            {
-                this.context.push(this.parseRange(0, start, minLength).join(""));
-                this.context.push("|");
-                this.context.push(this.parseRange(1, end, minLength).join(""));
-            }
-        }
-        else if (inSimpleRange(start) && inSimpleRange(end))
-        {
-            this.context.push(this.createLeadingZeros(minLength - 1));
-
-            this.context.push("[");
-
-            for (let i = start; i <= end; i += multiplier)
-            {
-                this.context.push(i.toString());
-            }
-
-            this.context.push("]");
-        }
-        else
-        {
-            this.context.push(this.parseSteppedRange(start, end, multiplier, minLength).join(""));
-        }
-    }
-
     private scanNegation(): void
     {
         this.context = new Context(ContextType.Negation, this.context);
@@ -731,7 +342,7 @@ export default class Parser
 
         if (end)
         {
-            while (this.index < end && !this.eof())
+            while (this.index < end && !this.eos())
             {
                 if (this.getChar() == "\\")
                 {
@@ -751,7 +362,7 @@ export default class Parser
 
     private scanPattern(): void
     {
-        while (!this.eof())
+        while (!this.eos())
         {
             const char = this.getChar()!;
 
@@ -787,7 +398,7 @@ export default class Parser
             {
                 this.scanNegation();
             }
-            else if (!this.options.noExtGlob && PATTERN_LIST_TOKENS.has(char) && this.getNextChar() == "(")
+            else if (!this.options.noExtGlob && PATTERN_TOKENS.has(char) && this.getNextChar() == "(")
             {
                 this.scanPatternList();
             }
@@ -822,7 +433,7 @@ export default class Parser
 
         this.advance(2);
 
-        while (!this.eof())
+        while (!this.eos())
         {
             this.scanPattern();
 
@@ -944,7 +555,7 @@ export default class Parser
 
         let broken = false;
 
-        while (!this.eof())
+        while (!this.eos())
         {
             const char = this.getChar()!;
 
@@ -985,5 +596,4 @@ export default class Parser
             pattern: (negated ? "!" : "") + (end == 0 ? this.source : this.source.substring(end + 1, this.source.length)),
         };
     }
-
 }

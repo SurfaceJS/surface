@@ -12,16 +12,12 @@ export type ResolvedPattern =
     pattern:     string,
 };
 
-export type ResolvedAndParsedPattern =
-{
-    matcher: PathMatcher,
-    paths:   string[],
-};
-
 export default class PathMatcher
 {
     private readonly include: RegExp[] = [];
     private readonly exclude: RegExp[] = [];
+
+    /** Path part extract from the provided patterns. Paths from negated patterns will be excluded. */
     public readonly paths: Set<string> = new Set();
 
     public constructor(patterns: string | string[], options?: Options)
