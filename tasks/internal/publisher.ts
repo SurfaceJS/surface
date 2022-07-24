@@ -44,9 +44,9 @@ export default class Publisher
                     }
                 }
 
-                const folderpath = path.join(paths.packages.root, manifest.name);
+                const folderPath = path.join(paths.packages.root, manifest.name);
 
-                const buffer = await pack(folderpath);
+                const buffer = await pack(folderPath);
 
                 log(`Publishing ${manifest.name}`);
 

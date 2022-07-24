@@ -5,14 +5,15 @@
         "fs/promises",
         "util",
         "pacote",
+        "libnpmpack",
         "webpack",
         "webpack-dev-server",
         "@surface/io",
         "@surface/logger",
-        "./packages/@surface/builder/internal/builder.js",
+        "./packages/@surface/publisher/internal/npm-repository.js",
         "./packages/@surface/builder/internal/commands.js",
         "./packages/@surface/builder/internal/common.js",
         "./packages/@surface/builder/internal/create-configurations.js",
-        "./packages/@surface/core/internal/logger.js"
+        "./packages/@surface/builder/internal/builder.js"
     ]
 }

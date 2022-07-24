@@ -1,26 +1,41 @@
-import { type Stats, existsSync }                                                 from "fs";
-import { readFile, readdir, stat, writeFile }                                     from "fs/promises";
-import path                                                                       from "path";
-import Logger                                                                     from "@surface/logger";
-import Mock, { It }                                                               from "@surface/mock";
-import { afterEach, batchTest, beforeEach, shouldFail, shouldPass, suite }        from "@surface/test-suite";
-import chai                                                                       from "chai";
-import chaiAsPromised                                                             from "chai-as-promised";
-import type { Manifest }                                                          from "pacote";
-import pacote, { type ManifestResult }                                            from "pacote";
-import Publisher                                                                  from "../internal/publisher.js";
-import { type Scenario, type VirtualDirectory, invalidScenarios, validScenarios } from "./publisher.expectations.js";
+import { type Stats, existsSync }                                          from "fs";
+import { readFile, readdir, stat, writeFile }                              from "fs/promises";
+import path                                                                from "path";
+import Logger                                                              from "@surface/logger";
+import Mock, { It }                                                        from "@surface/mock";
+import { afterEach, batchTest, beforeEach, shouldFail, shouldPass, suite } from "@surface/test-suite";
+import chai                                                                from "chai";
+import chaiAsPromised                                                      from "chai-as-promised";
+import pack                                                                from "libnpmpack";
+import type { Manifest }                                                   from "pacote";
+import Status                                                              from "../internal/enums/status.js";
+import NpmRepository                                                       from "../internal/npm-repository.js";
+import Publisher                                                           from "../internal/publisher.js";
+import
+{
+    type BumpScenario,
+    invalidScenarios as bumpInvalidScenarios,
+    validScenarios as bumpValidScenarios,
+} from "./publisher.bump.scn.js";
+import
+{
+    type PublishScenario,
+    validScenarios as publishValidScenarios,
+} from "./publisher.publish.scn.js";
+import type VirtualDirectory from "./types/virtual-directory";
 
 chai.use(chaiAsPromised);
 
-const existsSyncMock  = Mock.of(existsSync);
-const statMock        = Mock.of(stat);
-const loggerMock      = Mock.instance<Logger>();
-const LoggerMock      = Mock.of(Logger);
-const pacoteMock      = Mock.of(pacote);
-const readdirMock     = Mock.of(readdir);
-const readFileMock    = Mock.of(readFile);
-const writeFileMock   = Mock.of(writeFile);
+const existsSyncMock    = Mock.of(existsSync);
+const loggerMock        = Mock.instance<Logger>();
+const LoggerMock        = Mock.of(Logger);
+const npmRepositoryMock = Mock.instance<NpmRepository>();
+const NpmRepositoryMock = Mock.of(NpmRepository);
+const packMock          = Mock.of(pack);
+const readdirMock       = Mock.of(readdir);
+const readFileMock      = Mock.of(readFile);
+const statMock          = Mock.of(stat);
+const writeFileMock     = Mock.of(writeFile);
 
 loggerMock.setup("debug").call(It.any());
 loggerMock.setup("error").call(It.any());
@@ -67,12 +82,12 @@ export default class SuiteSpec
         }
     }
 
-    private setupVirtualRegistry(registry: Record<string, ManifestResult>): void
+    private setupVirtualRegistry(registry: Record<string, Status>): void
     {
-        for (const [key, value] of Object.entries(registry))
-        {
-            pacoteMock.setup("manifest").call(key, It.any()).resolve(value);
-        }
+        npmRepositoryMock
+            .setup("getStatus")
+            .call(It.any())
+            .returnsFactory(async x => Promise.resolve(registry[x.name] ?? Status.New));
     }
 
     private setupVirtualDirectory(directory: VirtualDirectory, parent: string = process.cwd()): void
@@ -102,13 +117,17 @@ export default class SuiteSpec
     public beforeEach(): void
     {
         LoggerMock.new(It.any()).returns(loggerMock.proxy);
+        NpmRepositoryMock.new(It.any(), It.any()).returns(npmRepositoryMock.proxy);
+        packMock.call(It.any()).resolve(Buffer.from([]));
+
         LoggerMock.lock();
+        NpmRepositoryMock.lock();
 
         existsSyncMock.lock();
-        statMock.lock();
-        pacoteMock.lock();
+        packMock.lock();
         readdirMock.lock();
         readFileMock.lock();
+        statMock.lock();
         writeFileMock.lock();
     }
 
@@ -118,20 +137,20 @@ export default class SuiteSpec
         this.directoryTree.clear();
 
         LoggerMock.release();
+        NpmRepositoryMock.release();
 
         existsSyncMock.release();
-        statMock.release();
-        pacoteMock.release();
+        packMock.release();
         readdirMock.release();
         readFileMock.release();
+        statMock.release();
         writeFileMock.release();
     }
 
-    @batchTest(validScenarios, x => x.message, x => x.skip)
+    @batchTest(bumpValidScenarios, x => x.message, x => x.skip)
     @shouldPass
-    public async validScenarios(scenario: Scenario): Promise<void>
+    public async bumpValidScenarios(scenario: BumpScenario): Promise<void>
     {
-        this.setupVirtualRegistry(scenario.registry);
         this.setupVirtualDirectory(scenario.directory);
 
         const actual:   Manifest[] = [];
@@ -154,11 +173,28 @@ export default class SuiteSpec
         chai.assert.deepEqual(actual, expected);
     }
 
-    @batchTest(invalidScenarios, x => x.message, x => x.skip)
-    @shouldFail
-    public async invalidScenarios(scenario: Scenario): Promise<void>
+    @batchTest(publishValidScenarios, x => x.message, x => x.skip)
+    @shouldPass
+    public async publishValidScenarios(scenario: PublishScenario): Promise<void>
     {
+        this.setupVirtualDirectory(scenario.directory);
         this.setupVirtualRegistry(scenario.registry);
+
+        const actual: string[] = [];
+
+        npmRepositoryMock.setup("publish").call(It.any(), It.any(), It.any())
+            .callback(x => actual.push(x.name))
+            .resolve();
+
+        await chai.assert.isFulfilled(new Publisher(scenario.options).publish());
+
+        chai.assert.deepEqual(actual, scenario.expected.published);
+    }
+
+    @batchTest(bumpInvalidScenarios, x => x.message, x => x.skip)
+    @shouldFail
+    public async bumpInvalidScenarios(scenario: BumpScenario): Promise<void>
+    {
         this.setupVirtualDirectory(scenario.directory);
 
         await chai.assert.isRejected(new Publisher(scenario.options).bump(...scenario.bumpArgs as Parameters<Publisher["bump"]>));

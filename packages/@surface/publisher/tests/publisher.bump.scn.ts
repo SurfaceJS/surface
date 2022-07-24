@@ -1,31 +1,27 @@
-import type { ParameterOverloads }       from "@surface/core";
-import { LogLevel }                      from "@surface/logger";
-import type { Manifest, ManifestResult } from "pacote";
-import type { Options }                  from "../internal/publisher.js";
-import type Publisher                    from "../internal/publisher.js";
+import type { ParameterOverloads } from "@surface/core";
+import { LogLevel }                from "@surface/logger";
+import type { Manifest }           from "pacote";
+import type { Options }            from "../internal/publisher.js";
+import type Publisher              from "../internal/publisher.js";
+import type VirtualDirectory       from "./types/virtual-directory";
 
 const skip = false;
 
-export type VirtualFile      = { content: string | object };
-export type VirtualDirectory = { [key: `./${string}`]: string | VirtualDirectory };
-
-export type Scenario =
+export type BumpScenario =
 {
     message:   string,
     options:   Options,
     directory: VirtualDirectory,
-    registry:  Record<string, ManifestResult>,
     expected:  Record<string, Partial<Manifest>>,
     bumpArgs:  ParameterOverloads<Publisher["bump"]>,
     skip:      boolean,
 };
 
-export const validScenarios: Scenario[] =
+export const validScenarios: BumpScenario[] =
 [
     {
         message:   "Bump with no updates",
         options:   { },
-        registry:  { },
         directory: { },
         expected:  { },
         bumpArgs:  ["major"],
@@ -42,7 +38,6 @@ export const validScenarios: Scenario[] =
             ],
         },
         bumpArgs:  ["minor"],
-        registry:  { },
         directory:
         {
             "./packages":
@@ -161,7 +156,6 @@ export const validScenarios: Scenario[] =
             ],
         },
         bumpArgs:  ["prerelease", "alpha"],
-        registry:  { },
         directory:
         {
             "./packages":
@@ -280,7 +274,6 @@ export const validScenarios: Scenario[] =
             ],
         },
         bumpArgs:  ["custom", "1.0.0-alpha"],
-        registry:  { },
         directory:
         {
             "./packages":
@@ -399,7 +392,6 @@ export const validScenarios: Scenario[] =
             ],
         },
         bumpArgs:  ["custom", "*-dev+2022.5"],
-        registry:  { },
         directory:
         {
             "./packages":
@@ -509,7 +501,7 @@ export const validScenarios: Scenario[] =
     },
 ];
 
-export const invalidScenarios: Scenario[] =
+export const invalidScenarios: BumpScenario[] =
 [
     {
         message:   "Bump with multiples updates",
@@ -522,7 +514,6 @@ export const invalidScenarios: Scenario[] =
             ],
         },
         bumpArgs:  ["minor"],
-        registry:  { },
         directory:
         {
             "./packages":

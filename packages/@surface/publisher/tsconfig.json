@@ -2,9 +2,9 @@
     "extends": "../../../tsconfig.json",
     "compilerOptions":
     {
-        "outDir":  ".",
-        "rootDir": ".",
-        "types":   ["node"],
+        "outDir":    ".",
+        "rootDir":   ".",
+        "types":     ["node"],
     },
     "files":
     [
@@ -12,6 +12,7 @@
     ],
     "include":
     [
+        "./@types",
         "./internal",
         "./tests"
     ],

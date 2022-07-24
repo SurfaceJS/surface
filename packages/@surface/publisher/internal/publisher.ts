@@ -1,19 +1,12 @@
 import { existsSync }               from "fs";
 import { readFile, writeFile }      from "fs/promises";
-import path                         from "path";
 import { enumeratePaths }           from "@surface/io";
 import Logger, { LogLevel }         from "@surface/logger";
-// import pacote                       from "pacote";
+import pack                         from "libnpmpack";
 import type { Manifest }            from "pacote";
 import semver, { type ReleaseType } from "semver";
-
-// enum Status
-// // eslint-disable-next-line @typescript-eslint/indent
-// {
-//     New,
-//     Updated,
-//     InRegistry
-// }
+import Status                       from "./enums/status.js";
+import NpmRepository                from "./npm-repository.js";
 
 type CustomVersion = "custom";
 
@@ -21,56 +14,73 @@ const GLOB_PRERELEASE = /^\*-(.*)/;
 
 export type Options =
 {
+    dry?:      boolean,
     packages?: string[],
     logLevel?: LogLevel,
+    registry?: string,
+    token?:    string,
 };
 
 export default class Publisher
 {
-    private readonly errors: Error[] = [];
+    private readonly backup: Map<string, { content: string, path: string }> = new Map();
+    private readonly errors: Error[]                                         = [];
     private readonly logger: Logger;
-    private readonly lookup  = new Map<string, { manifest: Manifest, path: string }>();
+    private readonly options: Options;
+    private readonly published: Set<string> = new Set();
+    private readonly repository: NpmRepository;
     private readonly updated = new Set<string>();
-    private readonly options: Required<Options>;
+    private lookup?: Map<string, { manifest: Manifest, path: string }>;
+
     public constructor(options: Options)
     {
-        this.options =
-        {
-            logLevel: options.logLevel ?? LogLevel.Info,
-            packages: options.packages ?? [],
-        };
+        this.repository = new NpmRepository(options.registry, options.token);
+        this.logger     = new Logger(options.logLevel ?? LogLevel.Info);
 
-        this.logger = new Logger(this.options.logLevel);
+        this.options = { ...options, packages: this.normalizePatterns(options.packages) };
     }
 
-    // private async get(uri: string): Promise<Manifest | null>
-    // {
-    //     try
-    //     {
-    //         return await pacote.manifest(uri, { alwaysAuth: true });
-    //     }
-    //     catch (error)
-    //     {
-    //         return null;
-    //     }
-    // }
+    private async getLookup(): Promise<Map<string, { manifest: Manifest, path: string }>>
+    {
+        if (!this.lookup)
+        {
+            this.lookup = new Map();
 
-    // private async getStatus(manifest: Manifest): Promise<Status>
-    // {
-    //     const latest = await this.get(`${manifest.name}@latest`);
+            for await (const filepath of enumeratePaths(this.options.packages ?? []))
+            {
+                if (existsSync(filepath))
+                {
+                    const content = (await readFile(filepath)).toString();
+                    const manifest = JSON.parse(content) as object as Manifest;
 
-    //     if (latest)
-    //     {
-    //         if (semver.gt(manifest.version, latest.version))
-    //         {
-    //             return Status.Updated;
-    //         }
+                    this.backup.set(manifest.name, { content, path: filepath });
+                    this.lookup.set(manifest.name, { manifest, path: filepath });
+                }
+            }
+        }
 
-    //         return Status.InRegistry;
-    //     }
+        return this.lookup;
+    }
 
-    //     return Status.New;
-    // }
+    private normalizePattern(pattern: string): string
+    {
+        if (pattern.endsWith("package.json"))
+        {
+            return pattern;
+        }
+
+        return `${pattern.replace(/\/$/, "")}/package.json`;
+    }
+
+    private normalizePatterns(packages?: string[]): string[] | undefined
+    {
+        if (packages)
+        {
+            return packages.map(this.normalizePattern);
+        }
+
+        return undefined;
+    }
 
     private async update(manifest: Manifest, releaseType: ReleaseType | CustomVersion, version: string | undefined, identifier: string | undefined): Promise<void>
     {
@@ -119,9 +129,11 @@ export default class Publisher
 
     private async updateDependents(manifest: Manifest, releaseType: ReleaseType | CustomVersion, version: string | undefined, identifier: string | undefined, dependencyType?: "dependencies" | "devDependencies" | "peerDependencies"): Promise<void>
     {
+        const lookup = await this.getLookup();
+
         if (dependencyType)
         {
-            const dependentPackages = Array.from(this.lookup.values())
+            const dependentPackages = Array.from(lookup.values())
                 .map(x => x.manifest)
                 .filter(x => !!x[dependencyType]?.[manifest.name] && x[dependencyType]?.[manifest.name] != manifest.version);
 
@@ -149,8 +161,23 @@ export default class Publisher
         return releaseType.startsWith("pre");
     }
 
+    /**
+     * Bump discoreved packages using provided custom version.
+     * @param releaseType Type 'custom'
+     * @param version Custom version.
+     */
     public async bump(releaseType: CustomVersion, version: string): Promise<void>;
+
+    /**
+     * Bump discoreved packages using provided release type.
+     * @param releaseType Type of release.
+     */
     public async bump(releaseType: ReleaseType): Promise<void>;
+
+    /**
+     * Bump discoreved packages using provided pre-release type.
+     * @param releaseType Type of pre-release.
+     */
     public async bump(releaseType: Exclude<ReleaseType, "major" | "minor" | "patch">, identifier: string): Promise<void>;
     public async bump(releaseType: ReleaseType | CustomVersion, identifierOrVersion?: string): Promise<void>
     {
@@ -166,32 +193,22 @@ export default class Publisher
             identifier = identifierOrVersion;
         }
 
-        for await (const filepath of enumeratePaths(this.options.packages))
-        {
-            const filename = filepath.endsWith("package.json") ? filepath : path.join(filepath, "package.json");
+        const lookup = await this.getLookup();
 
-            if (existsSync(filename))
-            {
-                const manifest = JSON.parse((await readFile(filename)).toString()) as object as Manifest;
-
-                this.lookup.set(manifest.name, { manifest, path: filename });
-            }
-        }
-
-        if (this.lookup.size == 0)
+        if (lookup.size == 0)
         {
             this.logger.info("No packages found");
         }
         else
         {
-            for (const entry of this.lookup.values())
+            for (const entry of lookup.values())
             {
                 await this.update(entry.manifest, releaseType, version, identifier);
             }
 
             if (this.errors.length == 0)
             {
-                for (const entry of this.lookup.values())
+                for (const entry of lookup.values())
                 {
                     await writeFile(entry.path, JSON.stringify(entry.manifest, null, 4));
                 }
@@ -202,6 +219,64 @@ export default class Publisher
             {
                 throw new AggregateError(this.errors, "Failed to bump some packages.");
             }
+        }
+    }
+
+    /**
+     * Publish discovered packages.
+     * @param filter Optional filter.
+     */
+    public async publish(filter?: string[]): Promise<void>
+    {
+        const lookup = await this.getLookup();
+
+        const packages = filter ? filter.map(x => lookup.get(x)!) : lookup.values();
+
+        for (const $package of packages)
+        {
+            if (this.published.has($package.manifest.name) || await this.repository.getStatus($package.manifest) == Status.InRegistry)
+            {
+                this.logger.info(`${$package.manifest.name} is updated`);
+
+                this.published.add($package.manifest.name);
+            }
+            else if (!this.published.has($package.manifest.name))
+            {
+                if ($package.manifest.dependencies)
+                {
+                    const dependencies = Object.keys($package.manifest.dependencies)
+                        .filter(x => lookup.has(x));
+
+                    if (dependencies.length > 0)
+                    {
+                        await this.publish(dependencies);
+                    }
+                }
+
+                const buffer = await pack($package.path);
+
+                this.logger.info(`Publishing ${$package.manifest.name}`);
+
+                if (!this.options.dry)
+                {
+                    const tag = semver.prerelease($package.manifest.version)
+                        ? "next"
+                        : "latest";
+
+                    await this.repository.publish($package.manifest, buffer, tag);
+                }
+
+                this.published.add($package.manifest.name);
+            }
+        }
+    }
+
+    /** Undo bumped packages. */
+    public async undo(): Promise<void>
+    {
+        for (const entry of this.backup.values())
+        {
+            await writeFile(entry.path, entry.content);
         }
     }
 }
