@@ -1,7 +1,3 @@
-#!/usr/bin/env node
+import Publisher from "./internal/publisher.js";
 
-import { Command } from "commander";
-
-const program = new Command();
-
-program.parse();
+export default Publisher;

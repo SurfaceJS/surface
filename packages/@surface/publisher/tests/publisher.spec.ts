@@ -22,6 +22,16 @@ import
     type PublishScenario,
     validScenarios as publishValidScenarios,
 } from "./publisher.publish.scn.js";
+import
+{
+    type UndoBumpScenario,
+    validScenarios as undoBumpScenarios,
+} from "./publisher.undo-bump.scn.js";
+import
+{
+    type UnpublishScenario,
+    validScenarios as unpublishValidScenarios,
+} from "./publisher.unpublish.scn.js";
 import type VirtualDirectory from "./types/virtual-directory";
 
 chai.use(chaiAsPromised);
@@ -51,7 +61,7 @@ export default class SuiteSpec
 
     private createFile(filepath: string, content: string): void
     {
-        statMock.call(filepath).resolve({ isDirectory: () => false } as Stats);
+        statMock.call(filepath).resolve({ isFile: () => true, isDirectory: () => false } as Stats);
         existsSyncMock.call(filepath).returns(true);
 
         const buffer = Buffer.from(content);
@@ -70,7 +80,7 @@ export default class SuiteSpec
         {
             this.directoryTree.set(parent, entries = new Set());
 
-            statMock.call(parent).resolve({ isDirectory: () => true } as Stats);
+            statMock.call(parent).resolve({ isFile: () => false, isFIFO: () => false, isDirectory: () => true } as Stats);
             readdirMock.call(parent).returnsFactory(async () => Promise.resolve(Array.from(entries!)));
 
             this.resolveFileTree(parent);
@@ -186,9 +196,74 @@ export default class SuiteSpec
             .callback(x => actual.push(x.name))
             .resolve();
 
-        await chai.assert.isFulfilled(new Publisher(scenario.options).publish());
+        await chai.assert.isFulfilled(new Publisher(scenario.options).publish("latest"));
 
         chai.assert.deepEqual(actual, scenario.expected.published);
+    }
+
+    @batchTest(undoBumpScenarios, x => x.message, x => x.skip)
+    @shouldPass
+    public async undoBumpScenarios(scenario: UndoBumpScenario): Promise<void>
+    {
+        this.setupVirtualDirectory(scenario.directory);
+
+        const actual:   Manifest[] = [];
+        const expected: Manifest[] = [];
+
+        writeFileMock.call(It.any(), It.any())
+            .callback
+            (
+                (_, data) =>
+                {
+                    const manifest = JSON.parse(data as string) as Manifest;
+
+                    actual.push(manifest);
+                    expected.push(scenario.expected.bumped[manifest.name] as Manifest);
+                },
+            );
+
+        const publisher = new Publisher(scenario.options);
+
+        await chai.assert.isFulfilled(publisher.bump(...scenario.bumpArgs as Parameters<Publisher["bump"]>));
+
+        chai.assert.deepEqual(actual, expected);
+
+        actual.length = 0;
+        expected.length = 0;
+
+        writeFileMock.call(It.any(), It.any())
+            .callback
+            (
+                (_, data) =>
+                {
+                    const manifest = JSON.parse(data as string) as Manifest;
+
+                    actual.push(manifest);
+                    expected.push(scenario.expected.undo[manifest.name] as Manifest);
+                },
+            );
+
+        await chai.assert.isFulfilled(publisher.undoBump());
+
+        chai.assert.deepEqual(actual, expected);
+    }
+
+    @batchTest(unpublishValidScenarios, x => x.message, x => x.skip)
+    @shouldPass
+    public async unpublishValidScenarios(scenario: UnpublishScenario): Promise<void>
+    {
+        this.setupVirtualDirectory(scenario.directory);
+        this.setupVirtualRegistry(scenario.registry);
+
+        const actual: string[] = [];
+
+        npmRepositoryMock.setup("unpublish").call(It.any(), It.any())
+            .callback(x => actual.push(x.name))
+            .resolve();
+
+        await chai.assert.isFulfilled(new Publisher(scenario.options).unpublish("latest"));
+
+        chai.assert.deepEqual(actual, scenario.expected.unpublished);
     }
 
     @batchTest(bumpInvalidScenarios, x => x.message, x => x.skip)

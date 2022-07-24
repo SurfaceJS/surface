@@ -6,32 +6,32 @@ import type VirtualDirectory from "./types/virtual-directory";
 
 const skip = false;
 
-export type PublishScenario =
+export type UnpublishScenario =
 {
     message:   string,
     options:   Options,
     directory: VirtualDirectory,
     registry:  Record<string, Status>,
     skip:      boolean,
-    expected:  { published: string[] },
+    expected:  { unpublished: string[] },
 };
 
-export const validScenarios: PublishScenario[] =
+export const validScenarios: UnpublishScenario[] =
 [
     {
-        message:   "Publish with no packages",
+        message:   "Unpublish with no packages",
         options:   { },
         registry:  { },
         directory: { },
-        expected:  { published: [] },
+        expected:  { unpublished: [] },
         skip,
     },
     {
-        message:   "Publish package already in registry",
+        message:   "Unpublish package not in registry",
         options:   { },
         registry:
         {
-            "package-a": Status.InRegistry,
+            "package-a": Status.New,
         },
         directory:
         {
@@ -46,7 +46,7 @@ export const validScenarios: PublishScenario[] =
                 ),
             },
         },
-        expected:  { published: [] },
+        expected:  { unpublished: [] },
         skip,
     },
     {
@@ -61,8 +61,8 @@ export const validScenarios: PublishScenario[] =
         },
         registry:
         {
-            "package-a": Status.New,
-            "package-b": Status.New,
+            "package-a": Status.InRegistry,
+            "package-b": Status.InRegistry,
         },
         directory:
         {
@@ -85,11 +85,11 @@ export const validScenarios: PublishScenario[] =
                 ),
             },
         },
-        expected:  { published: ["package-a"] },
+        expected:  { unpublished: ["package-a"] },
         skip,
     },
     {
-        message:   "Publish multiples packages",
+        message:   "Unpublish multiples packages",
         options:
         {
             logLevel: LogLevel.Trace,
@@ -98,7 +98,11 @@ export const validScenarios: PublishScenario[] =
                 "packages/*",
             ],
         },
-        registry:  { },
+        registry:
+        {
+            "package-a": Status.InRegistry,
+            "package-b": Status.InRegistry,
+        },
         directory:
         {
             "./packages":
@@ -121,7 +125,7 @@ export const validScenarios: PublishScenario[] =
         },
         expected:
         {
-            published:
+            unpublished:
             [
                 "package-a",
                 "package-b",
@@ -130,7 +134,7 @@ export const validScenarios: PublishScenario[] =
         skip,
     },
     {
-        message:   "Publish multiples packages with dependency",
+        message:   "Unpublish multiples packages with dependency",
         options:
         {
             logLevel: LogLevel.Trace,
@@ -139,7 +143,11 @@ export const validScenarios: PublishScenario[] =
                 "packages/*",
             ],
         },
-        registry:  { },
+        registry:
+        {
+            "package-a": Status.InRegistry,
+            "package-b": Status.InRegistry,
+        },
         directory:
         {
             "./packages":
@@ -166,7 +174,7 @@ export const validScenarios: PublishScenario[] =
         },
         expected:
         {
-            published:
+            unpublished:
             [
                 "package-a",
                 "package-b",

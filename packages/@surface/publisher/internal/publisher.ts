@@ -24,10 +24,9 @@ export type Options =
 export default class Publisher
 {
     private readonly backup: Map<string, { content: string, path: string }> = new Map();
-    private readonly errors: Error[]                                         = [];
+    private readonly errors: Error[]                                        = [];
     private readonly logger: Logger;
     private readonly options: Options;
-    private readonly published: Set<string> = new Set();
     private readonly repository: NpmRepository;
     private readonly updated = new Set<string>();
     private lookup?: Map<string, { manifest: Manifest, path: string }>;
@@ -60,6 +59,93 @@ export default class Publisher
         }
 
         return this.lookup;
+    }
+
+    private async internalPublish(tag: string, filter?: string[], resolved: Set<string> = new Set()): Promise<void>
+    {
+        const lookup = await this.getLookup();
+
+        const packages = filter ? filter.map(x => lookup.get(x)!) : lookup.values();
+
+        for (const $package of packages)
+        {
+            if (!$package.manifest.private)
+            {
+                if (resolved.has($package.manifest.name) || await this.repository.getStatus($package.manifest) == Status.InRegistry)
+                {
+                    resolved.add($package.manifest.name);
+                }
+                else
+                {
+                    if ($package.manifest.dependencies)
+                    {
+                        const dependencies = Object.keys($package.manifest.dependencies)
+                            .filter(x => lookup.has(x));
+
+                        if (dependencies.length > 0)
+                        {
+                            await this.internalPublish(tag, dependencies, resolved);
+                        }
+                    }
+
+                    const buffer = await pack($package.path);
+
+                    this.logger.info(`Publishing ${$package.manifest.name}`);
+
+                    if (!this.options.dry)
+                    {
+                        await this.repository.publish($package.manifest, buffer, tag);
+                    }
+
+                    resolved.add($package.manifest.name);
+                }
+            }
+        }
+    }
+
+    private async internalUnpublish(tag: string, filter?: string[], resolved: Set<string> = new Set()): Promise<void>
+    {
+        const lookup = await this.getLookup();
+
+        const packages = filter ? filter.map(x => lookup.get(x)!) : lookup.values();
+
+        for (const $package of packages)
+        {
+            if (!$package.manifest.private)
+            {
+                if (resolved.has($package.manifest.name) || await this.repository.getStatus($package.manifest) != Status.InRegistry)
+                {
+                    resolved.add($package.manifest.name);
+                }
+                else
+                {
+                    if ($package.manifest.dependencies)
+                    {
+                        const dependencies = Object.keys($package.manifest.dependencies)
+                            .filter(x => lookup.has(x));
+
+                        if (dependencies.length > 0)
+                        {
+                            await this.internalUnpublish(tag, dependencies, resolved);
+                        }
+                    }
+
+                    this.logger.info(`Unpublishing ${$package.manifest.name}`);
+
+                    if (!this.options.dry)
+                    {
+                        await this.repository.unpublish($package.manifest, tag);
+                    }
+
+                    resolved.add($package.manifest.name);
+                }
+            }
+        }
+    }
+
+    private isPrerelease(releaseType: ReleaseType | "custom"): releaseType is Exclude<ReleaseType, "major" | "minor" | "patch">
+    {
+        return releaseType.startsWith("pre");
     }
 
     private normalizePattern(pattern: string): string
@@ -156,11 +242,6 @@ export default class Publisher
         }
     }
 
-    private isPrerelease(releaseType: ReleaseType | "custom"): releaseType is Exclude<ReleaseType, "major" | "minor" | "patch">
-    {
-        return releaseType.startsWith("pre");
-    }
-
     /**
      * Bump discoreved packages using provided custom version.
      * @param releaseType Type 'custom'
@@ -224,59 +305,33 @@ export default class Publisher
 
     /**
      * Publish discovered packages.
+     * @param tag Tag to publish.
      * @param filter Optional filter.
      */
-    public async publish(filter?: string[]): Promise<void>
+    public async publish(tag: string): Promise<void>
     {
-        const lookup = await this.getLookup();
+        await this.internalPublish(tag);
 
-        const packages = filter ? filter.map(x => lookup.get(x)!) : lookup.values();
-
-        for (const $package of packages)
-        {
-            if (this.published.has($package.manifest.name) || await this.repository.getStatus($package.manifest) == Status.InRegistry)
-            {
-                this.logger.info(`${$package.manifest.name} is updated`);
-
-                this.published.add($package.manifest.name);
-            }
-            else if (!this.published.has($package.manifest.name))
-            {
-                if ($package.manifest.dependencies)
-                {
-                    const dependencies = Object.keys($package.manifest.dependencies)
-                        .filter(x => lookup.has(x));
-
-                    if (dependencies.length > 0)
-                    {
-                        await this.publish(dependencies);
-                    }
-                }
-
-                const buffer = await pack($package.path);
-
-                this.logger.info(`Publishing ${$package.manifest.name}`);
-
-                if (!this.options.dry)
-                {
-                    const tag = semver.prerelease($package.manifest.version)
-                        ? "next"
-                        : "latest";
-
-                    await this.repository.publish($package.manifest, buffer, tag);
-                }
-
-                this.published.add($package.manifest.name);
-            }
-        }
+        this.logger.info("Publishing Done");
     }
 
     /** Undo bumped packages. */
-    public async undo(): Promise<void>
+    public async undoBump(): Promise<void>
     {
         for (const entry of this.backup.values())
         {
             await writeFile(entry.path, entry.content);
         }
+    }
+
+    /**
+     * Unpublish discovered packages.
+     * @param tag Tag to unpublish.
+     */
+    public async unpublish(tag: string): Promise<void>
+    {
+        await this.internalUnpublish(tag);
+
+        this.logger.info("Unpublishing Done");
     }
 }

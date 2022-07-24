@@ -124,9 +124,16 @@ export async function *enumeratePaths(patterns: string | string[], options: Opti
 
     for (const path of resolved.paths)
     {
-        for await (const iterator of internalEnumeratePaths(path, resolved.matcher))
+        if (await isFile(path))
         {
-            yield iterator;
+            yield path;
+        }
+        else
+        {
+            for await (const iterator of internalEnumeratePaths(path, resolved.matcher))
+            {
+                yield iterator;
+            }
         }
     }
 }
@@ -142,9 +149,16 @@ export function *enumeratePathsSync(patterns: string | string[], options: Option
 
     for (const path of resolved.paths)
     {
-        for (const iterator of internalEnumeratePathsSync(path, resolved.matcher))
+        if (isFileSync(path))
         {
-            yield iterator;
+            yield path;
+        }
+        else
+        {
+            for (const iterator of internalEnumeratePathsSync(path, resolved.matcher))
+            {
+                yield iterator;
+            }
         }
     }
 }

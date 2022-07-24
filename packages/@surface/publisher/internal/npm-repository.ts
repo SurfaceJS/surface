@@ -23,7 +23,7 @@ export default class NpmRepository
 
     public async getStatus(manifest: Manifest): Promise<Status>
     {
-        const latest = await this.get(`${manifest.name}@latest`);
+        const latest = await this.get(`${manifest.name}@${manifest.version}`);
 
         if (latest)
         {
@@ -44,7 +44,17 @@ export default class NpmRepository
 
         if (!response.ok)
         {
-            throw new Error(`Error publishing package ${manifest.name}`);
+            throw new Error(`Failed to publish package ${manifest.name}`);
+        }
+    }
+
+    public async unpublish(manifest: Manifest, tag: string = "latest"): Promise<void>
+    {
+        const response = await libnpmpublish.unpublish(manifest, { registry: this.registry, access: "public", defaultTag: tag, forceAuth: { token: this.token } });
+
+        if (!response)
+        {
+            throw new Error(`Failed to unpublish package ${manifest.name}`);
         }
     }
 }

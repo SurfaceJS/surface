@@ -159,6 +159,7 @@ export type IndexesOf<T extends any[]>                                       = V
 export type Intersect<T extends any[]>                                       = UnionToIntersection<T[number]>;
 export type KeysOfType<T extends object, U>                                  = { [K in keyof T]: T[K] extends U ? K : never }[keyof T];
 export type KeyValue<T, K extends keyof T = keyof T>                         = [K, T[K]];
+export type RequiredProperties<T extends object, K extends keyof T>                = Omit<T, K> & { [P in K]-?: Exclude<T[P], null | undefined> };
 export type Merge<T extends object, U extends object>                        = { [K in keyof (T & U)]: (K extends keyof T ? T[K] : never) | (K extends keyof U ? U[K] : never) };
 export type MethodsOf<T extends object>                                      = KeysOfType<T, Function>;
 export type Mix<A extends ((superClass: Constructor<any>) => Constructor)[]> = Constructor<UnionToIntersection<InstanceType<ReturnType<A[number]>>>>;
