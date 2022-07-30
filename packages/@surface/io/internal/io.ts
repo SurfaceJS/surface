@@ -55,16 +55,19 @@ async function *internalEnumeratePaths(context: string, matcher: PathMatcher): A
     {
         const path = join(context, entry);
 
-        if (await isDirectory(path))
+        if (!matcher.negatedPaths.has(path))
         {
-            for await (const file of internalEnumeratePaths(path, matcher))
+            if (await isDirectory(path))
             {
-                yield file;
+                for await (const file of internalEnumeratePaths(path, matcher))
+                {
+                    yield file;
+                }
             }
-        }
-        else if (matcher.isMatch(path))
-        {
-            yield path;
+            else if (matcher.isMatch(path))
+            {
+                yield path;
+            }
         }
     }
 }
@@ -75,16 +78,19 @@ function *internalEnumeratePathsSync(context: string, matcher: PathMatcher): Gen
     {
         const path = join(context, entry);
 
-        if (isDirectorySync(path))
+        if (!matcher.negatedPaths.has(path))
         {
-            for (const file of internalEnumeratePathsSync(path, matcher))
+            if (isDirectorySync(path))
             {
-                yield file;
+                for (const file of internalEnumeratePathsSync(path, matcher))
+                {
+                    yield file;
+                }
             }
-        }
-        else if (matcher.isMatch(path))
-        {
-            yield path;
+            else if (matcher.isMatch(path))
+            {
+                yield path;
+            }
         }
     }
 }

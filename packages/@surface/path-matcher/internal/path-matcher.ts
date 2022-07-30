@@ -1,5 +1,5 @@
 
-import { parse, resolve, sep }         from "path";
+import { resolve, sep }         from "path";
 import { ESCAPABLE_CHARACTERS } from "./characters.js";
 import Parser, { type Options } from "./parser.js";
 
@@ -17,8 +17,11 @@ export default class PathMatcher
     private readonly include: RegExp[] = [];
     private readonly exclude: RegExp[] = [];
 
-    /** Path part extract from the provided patterns. Paths from negated patterns will be excluded. */
-    public readonly paths: Set<string> = new Set();
+    /** Path part extract from the provided patterns. */
+    public readonly paths:        Set<string> = new Set();
+
+    /** Negated path part extract from the provided patterns. */
+    public readonly negatedPaths: Set<string> = new Set();
 
     public constructor(patterns: string | string[], options?: Options)
     {
@@ -28,11 +31,11 @@ export default class PathMatcher
                 ? PathMatcher.resolve(options.base, pattern, options)
                 : { ...PathMatcher.split(pattern, options), fullPattern: pattern };
 
-            const [expressions, path] = pattern.startsWith("!")
-                ? [this.exclude, parse(resolved.path).dir]
-                : [this.include, resolved.path];
+            const [expressions, paths] = pattern.startsWith("!")
+                ? [this.exclude, this.negatedPaths]
+                : [this.include, this.paths];
 
-            this.paths.add(path);
+            paths.add(resolved.path);
 
             expressions.push(PathMatcher.makeRegex(resolved.fullPattern, options));
         }

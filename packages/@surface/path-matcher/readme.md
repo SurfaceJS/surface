@@ -25,7 +25,8 @@ import PathMatcher from "@surface/path-matcher";
 
 const matcher = new PathMatcher("/packages/**/*.{ts,js}", "/modules", "!/packages/node_modules");
 
-console.log(matcher.paths) // ["/packages", "/modules"];
+console.log(matcher.paths)        // ["/packages", "/modules"];
+console.log(matcher.negatedPaths) // ["/packages/node_modules"];
 console.log(matcher.isMatch("/packages/foo/index.js"));                  // true
 console.log(matcher.isMatch("/packages/foo/bar/index.ts"));              // true
 console.log(matcher.isMatch("/modules/index.js"));                       // true
