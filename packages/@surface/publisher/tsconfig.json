@@ -8,6 +8,7 @@
     },
     "files":
     [
+        "./cli.ts",
         "./index.ts"
     ],
     "include":

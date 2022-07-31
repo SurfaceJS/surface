@@ -5,6 +5,7 @@ import Logger, { LogLevel }         from "@surface/logger";
 import pack                         from "libnpmpack";
 import type { Manifest }            from "pacote";
 import semver, { type ReleaseType } from "semver";
+import { isPrerelease }             from "./common.js";
 import Status                       from "./enums/status.js";
 import NpmRepository                from "./npm-repository.js";
 
@@ -143,14 +144,9 @@ export default class Publisher
         }
     }
 
-    private isPrerelease(releaseType: ReleaseType | "custom"): releaseType is Exclude<ReleaseType, "major" | "minor" | "patch">
-    {
-        return releaseType.startsWith("pre");
-    }
-
     private normalizePattern(pattern: string): string
     {
-        if (pattern.endsWith("package.json"))
+        if (pattern.startsWith("!") || pattern.endsWith("package.json"))
         {
             return pattern;
         }
@@ -243,23 +239,23 @@ export default class Publisher
     }
 
     /**
-     * Bump discoreved packages using provided custom version.
+     * Bump discovered packages using provided custom version.
      * @param releaseType Type 'custom'
      * @param version Custom version.
      */
-    public async bump(releaseType: CustomVersion, version: string): Promise<void>;
+    public async bump(releaseType: CustomVersion, version?: string): Promise<void>;
 
     /**
-     * Bump discoreved packages using provided release type.
+     * Bump discovered packages using provided release type.
      * @param releaseType Type of release.
      */
     public async bump(releaseType: ReleaseType): Promise<void>;
 
     /**
-     * Bump discoreved packages using provided pre-release type.
+     * Bump discovered packages using provided pre-release type.
      * @param releaseType Type of pre-release.
      */
-    public async bump(releaseType: Exclude<ReleaseType, "major" | "minor" | "patch">, identifier: string): Promise<void>;
+    public async bump(releaseType: Exclude<ReleaseType, "major" | "minor" | "patch">, identifier?: string): Promise<void>;
     public async bump(releaseType: ReleaseType | CustomVersion, identifierOrVersion?: string): Promise<void>
     {
         let version:    string | undefined;
@@ -269,7 +265,7 @@ export default class Publisher
         {
             version = identifierOrVersion;
         }
-        else if (this.isPrerelease(releaseType))
+        else if (isPrerelease(releaseType))
         {
             identifier = identifierOrVersion;
         }
@@ -289,9 +285,12 @@ export default class Publisher
 
             if (this.errors.length == 0)
             {
-                for (const entry of lookup.values())
+                if (!this.options.dry)
                 {
-                    await writeFile(entry.path, JSON.stringify(entry.manifest, null, 4));
+                    for (const entry of lookup.values())
+                    {
+                        await writeFile(entry.path, JSON.stringify(entry.manifest, null, 4));
+                    }
                 }
 
                 this.logger.info("Bump done!");

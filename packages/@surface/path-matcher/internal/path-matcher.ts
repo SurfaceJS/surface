@@ -84,7 +84,7 @@ export default class PathMatcher
 
     /**
      * Splits base path from the pattern.
-     * @param pattern Pattern to be splited.
+     * @param pattern Pattern to be splitted.
      */
     public static split(pattern: string, options?: Options): { path: string, pattern: string }
     {

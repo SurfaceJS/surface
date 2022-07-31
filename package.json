@@ -27,6 +27,7 @@
         "url": "git+https://github.com/SurfaceJS/surface.git"
     },
     "scripts": {
+        "toolbox:bump": "toolbox bump patch --log-level=info --dry --packages=packages/@surface/*",
         "build": "npm run ts:build",
         "cover": "c8 --check-coverage npm test",
         "cover-summary": "c8 --reporter=text-summary --check-coverage npm run test-summary",

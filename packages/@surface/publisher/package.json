@@ -1,5 +1,8 @@
 {
     "author": "HitalloExiled",
+    "bin": {
+        "toolbox": "cli.js"
+    },
     "bugs": {
         "url": "https://github.com/SurfaceJS/surface/issues"
     },
