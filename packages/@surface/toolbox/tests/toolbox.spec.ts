@@ -10,28 +10,28 @@ import pack                                                                from 
 import type { Manifest }                                                   from "pacote";
 import Status                                                              from "../internal/enums/status.js";
 import NpmRepository                                                       from "../internal/npm-repository.js";
-import Publisher                                                           from "../internal/publisher.js";
+import Toolbox                                                             from "../internal/toolbox.js";
 import
 {
     type BumpScenario,
     invalidScenarios as bumpInvalidScenarios,
     validScenarios as bumpValidScenarios,
-} from "./publisher.bump.scn.js";
+} from "./toolbox.bump.scn.js";
 import
 {
     type PublishScenario,
     validScenarios as publishValidScenarios,
-} from "./publisher.publish.scn.js";
+} from "./toolbox.publish.scn.js";
 import
 {
     type UndoBumpScenario,
     validScenarios as undoBumpScenarios,
-} from "./publisher.undo-bump.scn.js";
+} from "./toolbox.undo-bump.scn.js";
 import
 {
     type UnpublishScenario,
     validScenarios as unpublishValidScenarios,
-} from "./publisher.unpublish.scn.js";
+} from "./toolbox.unpublish.scn.js";
 import type VirtualDirectory from "./types/virtual-directory";
 
 chai.use(chaiAsPromised);
@@ -55,7 +55,7 @@ loggerMock.setup("trace").call(It.any());
 loggerMock.setup("warn").call(It.any());
 
 @suite
-export default class SuiteSpec
+export default class ToolboxSpec
 {
     private readonly directoryTree = new Map<string, Set<string>>();
 
@@ -178,7 +178,7 @@ export default class SuiteSpec
                 },
             );
 
-        await chai.assert.isFulfilled(new Publisher(scenario.options).bump(...scenario.bumpArgs as Parameters<Publisher["bump"]>));
+        await chai.assert.isFulfilled(new Toolbox(scenario.options).bump(...scenario.bumpArgs as Parameters<Toolbox["bump"]>));
 
         chai.assert.deepEqual(actual, expected);
     }
@@ -196,7 +196,7 @@ export default class SuiteSpec
             .callback(x => actual.push(x.name))
             .resolve();
 
-        await chai.assert.isFulfilled(new Publisher(scenario.options).publish("latest"));
+        await chai.assert.isFulfilled(new Toolbox(scenario.options).publish("latest"));
 
         chai.assert.deepEqual(actual, scenario.expected.published);
     }
@@ -222,9 +222,9 @@ export default class SuiteSpec
                 },
             );
 
-        const publisher = new Publisher(scenario.options);
+        const toolbox = new Toolbox(scenario.options);
 
-        await chai.assert.isFulfilled(publisher.bump(...scenario.bumpArgs as Parameters<Publisher["bump"]>));
+        await chai.assert.isFulfilled(toolbox.bump(...scenario.bumpArgs as Parameters<Toolbox["bump"]>));
 
         chai.assert.deepEqual(actual, expected);
 
@@ -243,7 +243,7 @@ export default class SuiteSpec
                 },
             );
 
-        await chai.assert.isFulfilled(publisher.undoBump());
+        await chai.assert.isFulfilled(toolbox.undoBump());
 
         chai.assert.deepEqual(actual, expected);
     }
@@ -261,7 +261,7 @@ export default class SuiteSpec
             .callback(x => actual.push(x.name))
             .resolve();
 
-        await chai.assert.isFulfilled(new Publisher(scenario.options).unpublish("latest"));
+        await chai.assert.isFulfilled(new Toolbox(scenario.options).unpublish("latest"));
 
         chai.assert.deepEqual(actual, scenario.expected.unpublished);
     }
@@ -272,6 +272,6 @@ export default class SuiteSpec
     {
         this.setupVirtualDirectory(scenario.directory);
 
-        await chai.assert.isRejected(new Publisher(scenario.options).bump(...scenario.bumpArgs as Parameters<Publisher["bump"]>));
+        await chai.assert.isRejected(new Toolbox(scenario.options).bump(...scenario.bumpArgs as Parameters<Toolbox["bump"]>));
     }
 }

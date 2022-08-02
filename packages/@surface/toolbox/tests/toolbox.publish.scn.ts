@@ -1,7 +1,7 @@
 import { LogLevel }          from "@surface/logger";
 import type { Manifest }     from "pacote";
 import Status                from "../internal/enums/status.js";
-import type { Options }      from "../internal/publisher.js";
+import type { Options }      from "../internal/toolbox.js";
 import type VirtualDirectory from "./types/virtual-directory";
 
 const skip = false;

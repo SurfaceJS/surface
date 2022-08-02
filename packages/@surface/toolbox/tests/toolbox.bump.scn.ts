@@ -1,8 +1,8 @@
 import type { ParameterOverloads } from "@surface/core";
 import { LogLevel }                from "@surface/logger";
 import type { Manifest }           from "pacote";
-import type { Options }            from "../internal/publisher.js";
-import type Publisher              from "../internal/publisher.js";
+import type { Options }            from "../internal/toolbox.js";
+import type Toolbox                from "../internal/toolbox.js";
 import type VirtualDirectory       from "./types/virtual-directory";
 
 const skip = false;
@@ -13,7 +13,7 @@ export type BumpScenario =
     options:   Options,
     directory: VirtualDirectory,
     expected:  Record<string, Partial<Manifest>>,
-    bumpArgs:  ParameterOverloads<Publisher["bump"]>,
+    bumpArgs:  ParameterOverloads<Toolbox["bump"]>,
     skip:      boolean,
 };
 

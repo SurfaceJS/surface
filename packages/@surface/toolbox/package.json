@@ -21,7 +21,7 @@
         "semver": "^7.3.7",
         "tslib": "~2.4.0"
     },
-    "description": "Provides publish capability.",
+    "description": "Provides monorepo utilities.",
     "devDependencies": {
         "@surface/mock": "file:../mock",
         "@surface/test-suite": "file:../test-suite",
@@ -37,7 +37,7 @@
     ],
     "license": "MIT",
     "main": "index.js",
-    "name": "@surface/publisher",
+    "name": "@surface/toolbox",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/surface.git"

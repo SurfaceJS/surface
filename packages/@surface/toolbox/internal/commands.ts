@@ -1,6 +1,6 @@
-import type { ReleaseType }        from "semver";
-import { isPrerelease }            from "./common.js";
-import Publisher, { type Options } from "./publisher.js";
+import type { ReleaseType }      from "semver";
+import { isPrerelease }          from "./common.js";
+import Toolbox, { type Options } from "./toolbox.js";
 
 type TestOptions = { };
 
@@ -8,7 +8,7 @@ export default class Commands
 {
     public static async bump(releaseType: ReleaseType | "custom", identifierOrVersion?: string, options: Options = { }): Promise<void>
     {
-        const publisher = new Publisher(options);
+        const publisher = new Toolbox(options);
 
         if (releaseType == "custom")
         {

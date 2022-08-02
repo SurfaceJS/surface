@@ -22,7 +22,7 @@ export type Options =
     token?:    string,
 };
 
-export default class Publisher
+export default class Toolbox
 {
     private readonly backup: Map<string, { content: string, path: string }> = new Map();
     private readonly errors: Error[]                                        = [];

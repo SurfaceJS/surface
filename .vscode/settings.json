@@ -1,8 +1,5 @@
 {
     "breadcrumbs.enabled": true,
-    "cSpell.ignoreRegExpList": [
-        "CStyleComment",
-    ],
     "cSpell.words": [
         "abiword",
         "allman",
