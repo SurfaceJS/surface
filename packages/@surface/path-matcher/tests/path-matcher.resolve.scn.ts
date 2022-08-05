@@ -2,13 +2,13 @@ import { resolve } from "path";
 
 const skip = false;
 
-const root = resolve("/").replaceAll("\\", "/");
+const root = resolve("/").replace(/\\/g, "/");
 
 export type ResolveScenario =
 {
-    skip: boolean,
-    base: string,
-    pattern: string,
+    skip:     boolean,
+    base:     string,
+    pattern:  string,
     expected: string,
 };
 

@@ -9,9 +9,9 @@ type GetFormatContext = { format: string };
 type GetSourceContext = { format: string };
 type GetSourceResult  = { source: string };
 type ResolveContext   = { conditions: string[], parentURL?: string };
-type ResolveResult    = { url: string };
+type ResolveResult    = { url: string, shortCircuit?: boolean };
 type LoadContext      = { format: string };
-type LoadResult       = { format: string, source: string };
+type LoadResult       = { format: string, source: string, shortCircuit?: boolean };
 
 const MOCK       = "mock";
 const PROXY      = "proxy";
@@ -70,7 +70,7 @@ async function internalGetSource(url: URL): Promise<GetSourceResult | null>
     return null;
 }
 
-export async function resolve(specifier: string, context: ResolveContext, defaultResolve: (specifier: string, context: ResolveContext) => Promise<ResolveResult>): Promise<ResolveResult>
+export async function resolve(specifier: string, context: ResolveContext, next: (specifier: string, context: ResolveContext) => Promise<ResolveResult>): Promise<ResolveResult>
 {
     let resolved = specifier;
 
@@ -81,13 +81,13 @@ export async function resolve(specifier: string, context: ResolveContext, defaul
 
         if (isRelativePath)
         {
-            resolved = (await defaultResolve(specifier, proxyContext)).url;
+            resolved = (await next(specifier, proxyContext)).url;
         }
         else
         {
             const searchParams = paramsPattern.exec(specifier)?.[0] ?? "";
 
-            resolved = (await defaultResolve(specifier.replace(paramsPattern, ""), proxyContext)).url + searchParams;
+            resolved = (await next(specifier.replace(paramsPattern, ""), proxyContext)).url + searchParams;
         }
     }
 
@@ -115,7 +115,7 @@ export async function resolve(specifier: string, context: ResolveContext, defaul
 
     if (proxyFile)
     {
-        return { url: proxyFile };
+        return { url: proxyFile, shortCircuit: true };
     }
 
     const url = new URL(resolved);
@@ -140,36 +140,36 @@ export async function resolve(specifier: string, context: ResolveContext, defaul
 
         proxyFiles.set(url.href, resolved);
 
-        return { url: resolved };
+        return { url: resolved, shortCircuit: true };
     }
 
     url.searchParams.delete(MOCK);
 
     if (url.href.startsWith(PROXY_PATH))
     {
-        return { url: url.href.replace(PROXY_PATH, "node:") };
+        return { url: url.href.replace(PROXY_PATH, "node:"), shortCircuit: true };
     }
 
-    return { url: url.href };
+    return { url: url.href, shortCircuit: true };
 }
 
 /* c8 ignore start */
-export async function getSource(specifier: string, context: GetSourceContext, defaultGetSource: (specifier: string, context: GetSourceContext) => Promise<GetSourceResult>): Promise<GetSourceResult>
+export async function getSource(specifier: string, context: GetSourceContext, next: (specifier: string, context: GetSourceContext) => Promise<GetSourceResult>): Promise<GetSourceResult>
 {
     const url = new URL(specifier);
 
-    return await internalGetSource(url) ?? defaultGetSource(url.href, context);
+    return await internalGetSource(url) ?? next(url.href, context);
 }
 /* c8 ignore stop */
 
 /* c8 ignore start */
-export async function getFormat(specifier: string, context: GetFormatContext, defaultGetFormat: (specifier: string, context: GetFormatContext) => Promise<GetFormatResult>): Promise<GetFormatResult>
+export async function getFormat(specifier: string, context: GetFormatContext, next: (specifier: string, context: GetFormatContext) => Promise<GetFormatResult>): Promise<GetFormatResult>
 {
-    return internalGetFormat(specifier) ?? defaultGetFormat(specifier, context);
+    return internalGetFormat(specifier) ?? next(specifier, context);
 }
 /* c8 ignore stop */
 
-export async function load(specifier: string, context: LoadContext, defaultLoad: (specifier: string, context: LoadContext) => Promise<LoadResult>): Promise<LoadResult>
+export async function load(specifier: string, context: LoadContext, next: (specifier: string, context: LoadContext) => Promise<LoadResult>): Promise<LoadResult>
 {
     // console.log(`- load: ${specifier}`);
 
@@ -177,7 +177,7 @@ export async function load(specifier: string, context: LoadContext, defaultLoad:
 
     if (source)
     {
-        return { format: "module", source };
+        return { format: "module", source, shortCircuit: true };
     }
 
     /* c8 ignore start */
@@ -185,9 +185,9 @@ export async function load(specifier: string, context: LoadContext, defaultLoad:
 
     if (format)
     {
-        return { format, source: String(await readFile(new URL(specifier))) };
+        return { format, source: String(await readFile(new URL(specifier))), shortCircuit: true };
     }
     /* c8 ignore stop */
 
-    return defaultLoad(specifier, context);
+    return next(specifier, context);
 }

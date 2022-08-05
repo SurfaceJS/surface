@@ -113,6 +113,31 @@ if (!Promise.prototype.finally)
     );
 }
 
+if (!String.prototype.replaceAll)
+{
+    Object.defineProperty
+    (
+        String.prototype,
+        "replaceAll",
+        {
+            configurable: true,
+            value:
+            {
+                replaceAll: function (this: string, searchValue: string | RegExp, replaceValue: string): string
+                {
+                    if (searchValue instanceof RegExp)
+                    {
+                        return this.replace(searchValue, replaceValue);
+                    }
+
+                    return this.replace(new RegExp(searchValue, "g"), replaceValue);
+                },
+            }.replaceAll,
+            writable: true,
+        },
+    );
+}
+
 if (!global.AggregateError)
 {
     Object.defineProperty
