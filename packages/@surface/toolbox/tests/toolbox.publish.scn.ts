@@ -50,7 +50,7 @@ export const validScenarios: PublishScenario[] =
         skip,
     },
     {
-        message:   "Unpublish private package",
+        message:   "Publish private package",
         options:
         {
             logLevel: LogLevel.Trace,
@@ -89,9 +89,10 @@ export const validScenarios: PublishScenario[] =
         skip,
     },
     {
-        message:   "Publish multiples packages",
+        message:   "Run multiple dry publications",
         options:
         {
+            dry:      true,
             logLevel: LogLevel.Trace,
             packages:
             [
@@ -121,10 +122,46 @@ export const validScenarios: PublishScenario[] =
         },
         expected:
         {
+            published: [],
+        },
+        skip,
+    },
+    {
+        message:   "Publish multiples packages",
+        options:
+        {
+            logLevel: LogLevel.Trace,
+            packages:
+            [
+                "packages/*",
+            ],
+        },
+        registry:  { "package-b": Status.InRegistry },
+        directory:
+        {
+            "./packages":
+            {
+                "./package-a/package.json": JSON.stringify
+                (
+                    {
+                        name:    "package-a",
+                        version: "0.0.1",
+                    } as Partial<Manifest>,
+                ),
+                "./package-b/package.json": JSON.stringify
+                (
+                    {
+                        name:    "package-b",
+                        version: "0.1.0",
+                    } as Partial<Manifest>,
+                ),
+            },
+        },
+        expected:
+        {
             published:
             [
                 "package-a",
-                "package-b",
             ],
         },
         skip,
@@ -138,6 +175,52 @@ export const validScenarios: PublishScenario[] =
             [
                 "packages/*",
             ],
+        },
+        registry:  { },
+        directory:
+        {
+            "./packages":
+            {
+                "./package-a/package.json": JSON.stringify
+                (
+                    {
+                        name:    "package-a",
+                        version: "0.0.1",
+                    } as Partial<Manifest>,
+                ),
+                "./package-b/package.json": JSON.stringify
+                (
+                    {
+                        name:         "package-b",
+                        dependencies:
+                        {
+                            "package-a": "0.0.1",
+                        },
+                        version: "0.1.0",
+                    } as Partial<Manifest>,
+                ),
+            },
+        },
+        expected:
+        {
+            published:
+            [
+                "package-a",
+                "package-b",
+            ],
+        },
+        skip,
+    },
+    {
+        message:   "Publish canary",
+        options:
+        {
+            logLevel: LogLevel.Trace,
+            packages:
+            [
+                "packages/*",
+            ],
+            canary: true,
         },
         registry:  { },
         directory:

@@ -508,6 +508,11 @@ export function setValue(value: unknown, root: object, ...path: [string, ...stri
     }
 }
 
+export function timestamp(): string
+{
+    return new Date().toISOString().replace(/[-T:]/g, "").substring(0, 12);
+}
+
 export function *enumerateKeys(target: object): IterableIterator<PropertyKey>
 {
     const set = new Set<PropertyKey>();

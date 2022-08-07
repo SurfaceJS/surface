@@ -1,5 +1,7 @@
 import { existsSync }               from "fs";
 import { readFile, writeFile }      from "fs/promises";
+import { parse }                    from "path";
+import { timestamp }                from "@surface/core";
 import { enumeratePaths }           from "@surface/io";
 import Logger, { LogLevel }         from "@surface/logger";
 import pack                         from "libnpmpack";
@@ -15,11 +17,30 @@ const GLOB_PRERELEASE = /^\*-(.*)/;
 
 export type Options =
 {
-    dry?:      boolean,
-    packages?: string[],
-    logLevel?: LogLevel,
-    registry?: string,
-    token?:    string,
+
+    /** Enables canary release */
+    canary?:    boolean,
+
+    /** Enables dry run */
+    dry?:       boolean,
+
+    logLevel?:  LogLevel,
+
+    /** Packages to bump or publish */
+    packages?:  string[],
+
+    /** Npm registry where packages will be published */
+    registry?:  string,
+
+    /** Sync file references when bumping */
+    syncFileReferences?: boolean,
+
+    /** Timestamp used by canary release */
+    timestamp?: string,
+
+    /** Npm token used to publish */
+    token?:     string,
+
 };
 
 export default class Toolbox
@@ -72,11 +93,15 @@ export default class Toolbox
         {
             if (!$package.manifest.private)
             {
-                if (resolved.has($package.manifest.name) || await this.repository.getStatus($package.manifest) == Status.InRegistry)
+                const versionedName = `${$package.manifest.name}@${$package.manifest.version}`;
+
+                if (await this.repository.getStatus($package.manifest) == Status.InRegistry)
                 {
+                    this.logger.trace(`${versionedName} already in registry, ignoring...`);
+
                     resolved.add($package.manifest.name);
                 }
-                else
+                else if (!resolved.has($package.manifest.name))
                 {
                     if ($package.manifest.dependencies)
                     {
@@ -89,17 +114,27 @@ export default class Toolbox
                         }
                     }
 
-                    const buffer = await pack($package.path);
+                    const buffer = await pack(parse($package.path).dir);
 
-                    this.logger.info(`Publishing ${$package.manifest.name}`);
+                    this.logger.trace(`Publishing ${versionedName}`);
 
                     if (!this.options.dry)
                     {
                         await this.repository.publish($package.manifest, buffer, tag);
+
+                        this.logger.info(`${versionedName} was published`);
+                    }
+                    else
+                    {
+                        this.logger.info(`${versionedName} will be published`);
                     }
 
                     resolved.add($package.manifest.name);
                 }
+            }
+            else
+            {
+                this.logger.trace(`Package ${$package.manifest.name} is private, ignoring...`);
             }
         }
     }
@@ -114,11 +149,15 @@ export default class Toolbox
         {
             if (!$package.manifest.private)
             {
-                if (resolved.has($package.manifest.name) || await this.repository.getStatus($package.manifest) != Status.InRegistry)
+                const versionedName = `${$package.manifest.name}@${$package.manifest.version}`;
+
+                if (await this.repository.getStatus($package.manifest) != Status.InRegistry)
                 {
+                    this.logger.trace(`${versionedName} not in registry, ignoring...`);
+
                     resolved.add($package.manifest.name);
                 }
-                else
+                else if (!resolved.has($package.manifest.name))
                 {
                     if ($package.manifest.dependencies)
                     {
@@ -131,11 +170,17 @@ export default class Toolbox
                         }
                     }
 
-                    this.logger.info(`Unpublishing ${$package.manifest.name}`);
+                    this.logger.trace(`Unpublishing ${versionedName}`);
 
                     if (!this.options.dry)
                     {
                         await this.repository.unpublish($package.manifest, tag);
+
+                        this.logger.info(`${versionedName} was unpublished`);
+                    }
+                    else
+                    {
+                        this.logger.info(`${versionedName} will be unpublished`);
                     }
 
                     resolved.add($package.manifest.name);
@@ -164,6 +209,56 @@ export default class Toolbox
         return undefined;
     }
 
+    private async restorePackages(): Promise<void>
+    {
+        for (const entry of this.backup.values())
+        {
+            await writeFile(entry.path, entry.content);
+        }
+    }
+
+    private async syncPackages(): Promise<void>
+    {
+        for (const entry of (await this.getLookup()).values())
+        {
+            await this.syncDependents(entry.manifest, true, undefined, undefined, undefined, undefined);
+        }
+    }
+
+    // eslint-disable-next-line max-len
+    private async syncDependents(manifest: Manifest, updateFileReference: boolean, releaseType: ReleaseType | CustomVersion | undefined, version: string | undefined, identifier: string | undefined, dependencyType?: "dependencies" | "devDependencies" | "peerDependencies"): Promise<void>
+    {
+        if (dependencyType)
+        {
+            const lookup = await this.getLookup();
+
+            for (const { manifest: dependent } of lookup.values())
+            {
+                const dependencies = dependent[dependencyType];
+
+                const currentVersion  = dependencies?.[manifest.name];
+
+                if (currentVersion && (currentVersion != manifest.version && (updateFileReference || !currentVersion.startsWith("file:"))))
+                {
+                    dependencies[manifest.name] = `~${manifest.version}`;
+
+                    this.logger.trace(`${manifest.name} in ${dependent.name} ${dependencyType} updated from ${currentVersion} to ${manifest.version}`);
+
+                    if (releaseType)
+                    {
+                        await this.update(dependent, releaseType, version, identifier);
+                    }
+                }
+            }
+        }
+        else
+        {
+            await this.syncDependents(manifest, updateFileReference, releaseType, version, identifier, "dependencies");
+            await this.syncDependents(manifest, updateFileReference, releaseType, version, identifier, "devDependencies");
+            await this.syncDependents(manifest, updateFileReference, releaseType, version, identifier, "peerDependencies");
+        }
+    }
+
     private async update(manifest: Manifest, releaseType: ReleaseType | CustomVersion, version: string | undefined, identifier: string | undefined): Promise<void>
     {
         if (!this.updated.has(manifest.name))
@@ -185,7 +280,7 @@ export default class Toolbox
             }
             else
             {
-                updated = semver.inc(manifest.version, releaseType, { loose: true }, identifier);
+                updated = semver.inc(manifest.version, releaseType, { loose: true, includePrerelease: true }, identifier);
             }
 
             if (!updated)
@@ -205,36 +300,7 @@ export default class Toolbox
 
             this.updated.add(manifest.name);
 
-            await this.updateDependents(manifest, releaseType, version, identifier);
-        }
-    }
-
-    private async updateDependents(manifest: Manifest, releaseType: ReleaseType | CustomVersion, version: string | undefined, identifier: string | undefined, dependencyType?: "dependencies" | "devDependencies" | "peerDependencies"): Promise<void>
-    {
-        const lookup = await this.getLookup();
-
-        if (dependencyType)
-        {
-            const dependentPackages = Array.from(lookup.values())
-                .map(x => x.manifest)
-                .filter(x => !!x[dependencyType]?.[manifest.name] && x[dependencyType]?.[manifest.name] != manifest.version);
-
-            for (const dependent of dependentPackages)
-            {
-                const dependencyVersion = dependent[dependencyType]![manifest.name];
-
-                dependent[dependencyType]![manifest.name] = `~${manifest.version}`;
-
-                this.logger.trace(`${manifest.name} in ${dependent.name} ${dependencyType} updated from ${dependencyVersion} to ${manifest.version}`);
-
-                await this.update(dependent, releaseType, version, identifier);
-            }
-        }
-        else
-        {
-            await this.updateDependents(manifest, releaseType, version, identifier, "dependencies");
-            await this.updateDependents(manifest, releaseType, version, identifier, "devDependencies");
-            await this.updateDependents(manifest, releaseType, version, identifier, "peerDependencies");
+            await this.syncDependents(manifest, !!(this.options.syncFileReferences ?? this.options.canary), releaseType, version, identifier);
         }
     }
 
@@ -256,6 +322,7 @@ export default class Toolbox
      * @param releaseType Type of pre-release.
      */
     public async bump(releaseType: Exclude<ReleaseType, "major" | "minor" | "patch">, identifier?: string): Promise<void>;
+    public async bump(releaseType: ReleaseType | CustomVersion, identifierOrVersion?: string): Promise<void>;
     public async bump(releaseType: ReleaseType | CustomVersion, identifierOrVersion?: string): Promise<void>
     {
         let version:    string | undefined;
@@ -305,22 +372,26 @@ export default class Toolbox
     /**
      * Publish discovered packages.
      * @param tag Tag to publish.
-     * @param filter Optional filter.
      */
     public async publish(tag: string): Promise<void>
     {
-        await this.internalPublish(tag);
-
-        this.logger.info("Publishing Done");
-    }
-
-    /** Undo bumped packages. */
-    public async undoBump(): Promise<void>
-    {
-        for (const entry of this.backup.values())
+        if (this.options.canary)
         {
-            await writeFile(entry.path, entry.content);
+            await this.bump("custom", `*-dev.${this.options.timestamp ?? timestamp()}`);
         }
+        else
+        {
+            await this.syncPackages();
+        }
+
+        await this.internalPublish(this.options.canary ? "next" : tag);
+
+        if (this.options.canary && !this.options.dry)
+        {
+            await this.restorePackages();
+        }
+
+        this.logger.info("Publishing Done!");
     }
 
     /**
@@ -331,6 +402,6 @@ export default class Toolbox
     {
         await this.internalUnpublish(tag);
 
-        this.logger.info("Unpublishing Done");
+        this.logger.info("Unpublishing Done!");
     }
 }

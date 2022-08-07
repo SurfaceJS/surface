@@ -89,9 +89,10 @@ export const validScenarios: UnpublishScenario[] =
         skip,
     },
     {
-        message:   "Unpublish multiples packages",
+        message:   "Run multiple dry unpublications",
         options:
         {
+            dry:      true,
             logLevel: LogLevel.Trace,
             packages:
             [
@@ -125,10 +126,50 @@ export const validScenarios: UnpublishScenario[] =
         },
         expected:
         {
+            unpublished: [],
+        },
+        skip,
+    },
+    {
+        message:   "Unpublish multiples packages",
+        options:
+        {
+            logLevel: LogLevel.Trace,
+            packages:
+            [
+                "packages/*",
+            ],
+        },
+        registry:
+        {
+            "package-a": Status.InRegistry,
+            "package-b": Status.New,
+        },
+        directory:
+        {
+            "./packages":
+            {
+                "./package-a/package.json": JSON.stringify
+                (
+                    {
+                        name:    "package-a",
+                        version: "0.0.1",
+                    } as Partial<Manifest>,
+                ),
+                "./package-b/package.json": JSON.stringify
+                (
+                    {
+                        name:    "package-b",
+                        version: "0.1.0",
+                    } as Partial<Manifest>,
+                ),
+            },
+        },
+        expected:
+        {
             unpublished:
             [
                 "package-a",
-                "package-b",
             ],
         },
         skip,

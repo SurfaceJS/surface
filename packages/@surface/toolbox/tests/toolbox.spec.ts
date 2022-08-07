@@ -24,11 +24,6 @@ import
 } from "./toolbox.publish.scn.js";
 import
 {
-    type UndoBumpScenario,
-    validScenarios as undoBumpScenarios,
-} from "./toolbox.undo-bump.scn.js";
-import
-{
     type UnpublishScenario,
     validScenarios as unpublishValidScenarios,
 } from "./toolbox.unpublish.scn.js";
@@ -192,6 +187,8 @@ export default class ToolboxSpec
 
         const actual: string[] = [];
 
+        writeFileMock.call(It.any(), It.any()).resolve();
+
         npmRepositoryMock.setup("publish").call(It.any(), It.any(), It.any())
             .callback(x => actual.push(x.name))
             .resolve();
@@ -199,53 +196,6 @@ export default class ToolboxSpec
         await chai.assert.isFulfilled(new Toolbox(scenario.options).publish("latest"));
 
         chai.assert.deepEqual(actual, scenario.expected.published);
-    }
-
-    @batchTest(undoBumpScenarios, x => x.message, x => x.skip)
-    @shouldPass
-    public async undoBumpScenarios(scenario: UndoBumpScenario): Promise<void>
-    {
-        this.setupVirtualDirectory(scenario.directory);
-
-        const actual:   Manifest[] = [];
-        const expected: Manifest[] = [];
-
-        writeFileMock.call(It.any(), It.any())
-            .callback
-            (
-                (_, data) =>
-                {
-                    const manifest = JSON.parse(data as string) as Manifest;
-
-                    actual.push(manifest);
-                    expected.push(scenario.expected.bumped[manifest.name] as Manifest);
-                },
-            );
-
-        const toolbox = new Toolbox(scenario.options);
-
-        await chai.assert.isFulfilled(toolbox.bump(...scenario.bumpArgs as Parameters<Toolbox["bump"]>));
-
-        chai.assert.deepEqual(actual, expected);
-
-        actual.length = 0;
-        expected.length = 0;
-
-        writeFileMock.call(It.any(), It.any())
-            .callback
-            (
-                (_, data) =>
-                {
-                    const manifest = JSON.parse(data as string) as Manifest;
-
-                    actual.push(manifest);
-                    expected.push(scenario.expected.undo[manifest.name] as Manifest);
-                },
-            );
-
-        await chai.assert.isFulfilled(toolbox.undoBump());
-
-        chai.assert.deepEqual(actual, expected);
     }
 
     @batchTest(unpublishValidScenarios, x => x.message, x => x.skip)

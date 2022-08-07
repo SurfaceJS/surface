@@ -25,32 +25,31 @@ program
     .argument("<release-type>")
     .argument("[identifier-or-version]")
     .requiredOption("--packages  <n...>", "Packages to bump")
-    .option("--dry       [n]", "Dry run", toBoolean)
+    .option("--dry       [n]", "Enables dry run", toBoolean)
     .option("--log-level <n>", "Log level", toEnum(...Object.entries(LogLevel)), LogLevel.Info)
     .action(Commands.bump);
 
-// program
-//     .command("publish <registry>")
-//     .requiredOption("--token <n>", "NPM token")
-//     .option("--mode          <n>", "Configuration mode", toEnum("nightly", "release"))
-//     .option("--dry           [n]", "Dry run", toBoolean)
-//     .option("--timestamp     [n]", "Timestamp")
-//     .action(Commands.canary);
+program
+    .command("publish")
+    .description("Publish discovered packages")
+    .argument("[tag]")
+    .requiredOption("--packages  <n...>", "Packages to publish")
+    .option("--dry       [n]", "Enables dry run", toBoolean)
+    .option("--log-level <n>", "Log level", toEnum(...Object.entries(LogLevel)), LogLevel.Info)
+    .option("--registry  <n>", "Npm registry where packages will be published")
+    .option("--token     <n>", "Npm token used to publish")
+    .option("--canary    [n]", "Enables canary release", toBoolean)
+    .action(Commands.publish);
 
-// program
-//     .command("publish <registry>")
-//     .requiredOption("--token <n>", "NPM token")
-//     .option("--mode          <n>", "Configuration mode", toEnum("nightly", "release"))
-//     .option("--dry           [n]", "Dry run", toBoolean)
-//     .option("--timestamp     [n]", "Timestamp")
-//     .action(Commands.publish);
-
-// program
-//     .command("publish <registry>")
-//     .requiredOption("--token <n>", "NPM token")
-//     .option("--mode          <n>", "Configuration mode", toEnum("nightly", "release"))
-//     .option("--dry           [n]", "Dry run", toBoolean)
-//     .option("--timestamp     [n]", "Timestamp")
-//     .action(Commands.release);
+program
+    .command("unpublish")
+    .description("Unpublish discovered packages")
+    .argument("[tag]")
+    .requiredOption("--packages  <n...>", "Packages to publish")
+    .option("--dry       [n]", "Enables dry run", toBoolean)
+    .option("--log-level <n>", "Log level", toEnum(...Object.entries(LogLevel)), LogLevel.Info)
+    .option("--registry  <n>", "Npm registry where packages will be published")
+    .option("--token     <n>", "Npm token used to publish")
+    .action(Commands.unpublish);
 
 program.parse();
