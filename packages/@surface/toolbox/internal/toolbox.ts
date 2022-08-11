@@ -1,17 +1,21 @@
-import { existsSync }               from "fs";
-import { readFile, writeFile }      from "fs/promises";
-import { parse }                    from "path";
-import { timestamp }                from "@surface/core";
-import { enumeratePaths }           from "@surface/io";
-import Logger, { LogLevel }         from "@surface/logger";
-import pack                         from "libnpmpack";
-import type { Manifest }            from "pacote";
-import semver, { type ReleaseType } from "semver";
-import { isPrerelease }             from "./common.js";
-import Status                       from "./enums/status.js";
-import NpmRepository                from "./npm-repository.js";
+import { existsSync }                               from "fs";
+import { readFile, writeFile }                      from "fs/promises";
+import os                                           from "os";
+import { dirname }                                  from "path";
+import { Lazy, type RequiredProperties, timestamp } from "@surface/core";
+import { enumeratePaths }                           from "@surface/io";
+import Logger, { LogLevel }                         from "@surface/logger";
+import pack                                         from "libnpmpack";
+import type { Manifest }                            from "pacote";
+import semver, { type ReleaseType }                 from "semver";
+import { isPrerelease }                             from "./common.js";
+import Status                                       from "./enums/status.js";
+import type { Auth }                                from "./npm-config.js";
+import NpmConfig                                    from "./npm-config.js";
+import NpmRepository                                from "./npm-repository.js";
 
 type CustomVersion = "custom";
+type Package = { manifest: Manifest, path: string };
 
 const GLOB_PRERELEASE = /^\*-(.*)/;
 
@@ -20,6 +24,9 @@ export type Options =
 
     /** Enables canary release */
     canary?:    boolean,
+
+    /** Working dir */
+    cwd?: string,
 
     /** Enables dry run */
     dry?:       boolean,
@@ -45,29 +52,37 @@ export type Options =
 
 export default class Toolbox
 {
+
     private readonly backup: Map<string, { content: string, path: string }> = new Map();
+    private readonly config: Lazy<Promise<NpmConfig | null>> = new Lazy(async () => this.loadConfig());
     private readonly errors: Error[]                                        = [];
     private readonly logger: Logger;
-    private readonly options: Options;
+    private readonly options: RequiredProperties<Options, "cwd" | "packages">;
     private readonly repository: NpmRepository;
     private readonly updated = new Set<string>();
-    private lookup?: Map<string, { manifest: Manifest, path: string }>;
+    private lookup?: Map<string, Package>;
 
     public constructor(options: Options)
     {
-        this.repository = new NpmRepository(options.registry, options.token);
+        this.repository = new NpmRepository();
         this.logger     = new Logger(options.logLevel ?? LogLevel.Info);
 
-        this.options = { ...options, packages: this.normalizePatterns(options.packages) };
+        this.options = { cwd: process.cwd(), ...options, packages: this.normalizePatterns(options.packages) };
     }
 
-    private async getLookup(): Promise<Map<string, { manifest: Manifest, path: string }>>
+    private async loadConfig(): Promise<NpmConfig | null>
+    {
+        return await NpmConfig.load(this.options.cwd, process.env as Record<string, string>)
+        ?? await NpmConfig.load(os.homedir(), process.env as Record<string, string>);
+    }
+
+    private async getLookup(): Promise<Map<string, Package>>
     {
         if (!this.lookup)
         {
             this.lookup = new Map();
 
-            for await (const filepath of enumeratePaths(this.options.packages ?? []))
+            for await (const filepath of enumeratePaths(this.options.packages, { base: this.options.cwd }))
             {
                 if (existsSync(filepath))
                 {
@@ -83,6 +98,34 @@ export default class Toolbox
         return this.lookup;
     }
 
+    private async getAuth($package: Package): Promise<Auth | undefined>
+    {
+        if (this.options.registry)
+        {
+            return { registry: this.options.registry, token: this.options.token };
+        }
+
+        const env = process.env as Record<string, string>;
+
+        const config = await NpmConfig.load(dirname($package.path), env) ?? await this.config.value;
+
+        if (config)
+        {
+            const auth = config.registry ? { registry: config.registry, token: config.authToken } : undefined;
+
+            if ($package.manifest.name.startsWith("@"))
+            {
+                const [scope] = $package.manifest.name.split("/");
+
+                return config.getScopedAuth(scope!) ?? auth;
+            }
+
+            return auth;
+        }
+
+        return undefined;
+    }
+
     private async internalPublish(tag: string, filter?: string[], resolved: Set<string> = new Set()): Promise<void>
     {
         const lookup = await this.getLookup();
@@ -93,9 +136,11 @@ export default class Toolbox
         {
             if (!$package.manifest.private)
             {
+                const auth = await this.getAuth($package);
+
                 const versionedName = `${$package.manifest.name}@${$package.manifest.version}`;
 
-                if (await this.repository.getStatus($package.manifest) == Status.InRegistry)
+                if (await this.repository.getStatus($package.manifest, auth?.registry) == Status.InRegistry)
                 {
                     this.logger.trace(`${versionedName} already in registry, ignoring...`);
 
@@ -114,13 +159,13 @@ export default class Toolbox
                         }
                     }
 
-                    const buffer = await pack(parse($package.path).dir);
+                    const buffer = await pack(dirname($package.path));
 
                     this.logger.trace(`Publishing ${versionedName}`);
 
                     if (!this.options.dry)
                     {
-                        await this.repository.publish($package.manifest, buffer, tag);
+                        await this.repository.publish($package.manifest, buffer, auth, tag);
 
                         this.logger.info(`${versionedName} was published`);
                     }
@@ -149,9 +194,11 @@ export default class Toolbox
         {
             if (!$package.manifest.private)
             {
+                const auth = await this.getAuth($package);
+
                 const versionedName = `${$package.manifest.name}@${$package.manifest.version}`;
 
-                if (await this.repository.getStatus($package.manifest) != Status.InRegistry)
+                if (await this.repository.getStatus($package.manifest, auth?.registry) != Status.InRegistry)
                 {
                     this.logger.trace(`${versionedName} not in registry, ignoring...`);
 
@@ -174,7 +221,7 @@ export default class Toolbox
 
                     if (!this.options.dry)
                     {
-                        await this.repository.unpublish($package.manifest, tag);
+                        await this.repository.unpublish($package.manifest, auth, tag);
 
                         this.logger.info(`${versionedName} was unpublished`);
                     }
@@ -199,14 +246,14 @@ export default class Toolbox
         return `${pattern.replace(/\/$/, "")}/package.json`;
     }
 
-    private normalizePatterns(packages?: string[]): string[] | undefined
+    private normalizePatterns(packages?: string[]): string[]
     {
         if (packages)
         {
             return packages.map(this.normalizePattern);
         }
 
-        return undefined;
+        return [];
     }
 
     private async restorePackages(): Promise<void>
@@ -384,11 +431,16 @@ export default class Toolbox
             await this.syncPackages();
         }
 
-        await this.internalPublish(this.options.canary ? "next" : tag);
-
-        if (this.options.canary && !this.options.dry)
+        try
         {
-            await this.restorePackages();
+            await this.internalPublish(this.options.canary ? "next" : tag);
+        }
+        finally
+        {
+            if (this.options.canary && !this.options.dry)
+            {
+                await this.restorePackages();
+            }
         }
 
         this.logger.info("Publishing Done!");

@@ -31,7 +31,6 @@ import chai           from "chai";
 import chaiAsPromised from "chai-as-promised";
 import
 {
-    bottomUp,
     isDirectory,
     isDirectorySync,
     isFile,
@@ -40,6 +39,7 @@ import
     listPathsSync,
     lookup,
     lookupSync,
+    searchAbove,
 } from "../internal/io.js";
 
 chai.use(chaiAsPromised);
@@ -94,19 +94,6 @@ export default class IoSpec
         statSyncMock.release();
         unlinkMock.release();
         unlinkSyncMock.release();
-    }
-
-    @test @shouldPass
-    public bottomUp(): void
-    {
-        const PATH_TO_LOOKUP = path.join(PATH, "to", "lookup");
-        const PATH_FILE      = path.join(PATH, "file.txt");
-        const expected       = PATH_FILE;
-
-        existsSyncMock.call(PATH_FILE).returns(true);
-
-        chai.assert.equal(bottomUp(PATH_TO_LOOKUP, "empty.txt"), null);
-        chai.assert.equal(bottomUp(PATH_TO_LOOKUP, "file.txt"), expected);
     }
 
     @test @shouldPass
@@ -329,6 +316,19 @@ export default class IoSpec
 
         chai.assert.equal(lookupSync(relativePaths), expected);
         chai.assert.equal(lookupSync(absolutePaths), expected);
+    }
+
+    @test @shouldPass
+    public searchAbove(): void
+    {
+        const PATH_TO_LOOKUP = path.join(PATH, "to", "lookup");
+        const PATH_FILE      = path.join(PATH, "file.txt");
+        const expected       = PATH_FILE;
+
+        existsSyncMock.call(PATH_FILE).returns(true);
+
+        chai.assert.equal(searchAbove(PATH_TO_LOOKUP, "empty.txt"), null);
+        chai.assert.equal(searchAbove(PATH_TO_LOOKUP, "file.txt"), expected);
     }
 
     @test @shouldFail

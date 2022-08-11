@@ -96,30 +96,6 @@ function *internalEnumeratePathsSync(context: string, matcher: PathMatcher): Gen
 }
 
 /**
- * Looks from bottom to up for the target file/directory.
- * @param startPath Path to start resolution. If a URL is provided, it must use the `file:` protocol.
- * @param target Target file/directory.
- */
-export function bottomUp(startPath: string, target: string): string | null
-{
-    const path = join(startPath, target);
-
-    if (existsSync(path))
-    {
-        return path;
-    }
-
-    const parent = dirname(startPath);
-
-    if (parent != startPath)
-    {
-        return bottomUp(parent, target);
-    }
-
-    return null;
-}
-
-/**
  * Asynchronous enumerate paths using given patterns.
  * @param patterns Patterns to match. Strings prefixed with "!" will be negated.
  * @param options  Options to parse patterns.
@@ -297,6 +273,30 @@ export function lookupSync(files: string[], context: string = process.cwd()): st
         {
             return resolved;
         }
+    }
+
+    return null;
+}
+
+/**
+ * Looks from bottom to up for the target file/directory.
+ * @param startPath Path to start resolution. If a URL is provided, it must use the `file:` protocol.
+ * @param target Target file/directory.
+ */
+export function searchAbove(startPath: string, target: string): string | null
+{
+    const path = join(startPath, target);
+
+    if (existsSync(path))
+    {
+        return path;
+    }
+
+    const parent = dirname(startPath);
+
+    if (parent != startPath)
+    {
+        return searchAbove(parent, target);
     }
 
     return null;

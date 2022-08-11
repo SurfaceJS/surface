@@ -91,7 +91,7 @@ export default class ToolboxSpec
     {
         npmRepositoryMock
             .setup("getStatus")
-            .call(It.any())
+            .call(It.any(), It.any())
             .returnsFactory(async x => Promise.resolve(registry[x.name] ?? Status.New));
     }
 
@@ -122,7 +122,7 @@ export default class ToolboxSpec
     public beforeEach(): void
     {
         LoggerMock.new(It.any()).returns(loggerMock.proxy);
-        NpmRepositoryMock.new(It.any(), It.any()).returns(npmRepositoryMock.proxy);
+        NpmRepositoryMock.new().returns(npmRepositoryMock.proxy);
         packMock.call(It.any()).resolve(Buffer.from([]));
 
         LoggerMock.lock();
@@ -189,7 +189,7 @@ export default class ToolboxSpec
 
         writeFileMock.call(It.any(), It.any()).resolve();
 
-        npmRepositoryMock.setup("publish").call(It.any(), It.any(), It.any())
+        npmRepositoryMock.setup("publish").call(It.any(), It.any(), It.any(), It.any())
             .callback(x => actual.push(x.name))
             .resolve();
 
@@ -207,7 +207,7 @@ export default class ToolboxSpec
 
         const actual: string[] = [];
 
-        npmRepositoryMock.setup("unpublish").call(It.any(), It.any())
+        npmRepositoryMock.setup("unpublish").call(It.any(), It.any(), It.any())
             .callback(x => actual.push(x.name))
             .resolve();
 

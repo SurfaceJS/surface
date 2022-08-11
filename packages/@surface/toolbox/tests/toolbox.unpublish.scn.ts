@@ -1,3 +1,4 @@
+import { join }              from "path";
 import { LogLevel }          from "@surface/logger";
 import type { Manifest }     from "pacote";
 import Status                from "../internal/enums/status.js";
@@ -147,6 +148,51 @@ export const validScenarios: UnpublishScenario[] =
         },
         directory:
         {
+            "./packages":
+            {
+                "./package-a/package.json": JSON.stringify
+                (
+                    {
+                        name:    "package-a",
+                        version: "0.0.1",
+                    } as Partial<Manifest>,
+                ),
+                "./package-b/package.json": JSON.stringify
+                (
+                    {
+                        name:    "package-b",
+                        version: "0.1.0",
+                    } as Partial<Manifest>,
+                ),
+            },
+        },
+        expected:
+        {
+            unpublished:
+            [
+                "package-a",
+            ],
+        },
+        skip,
+    },
+    {
+        message:   "Unpublish multiples packages with npmrc authentication",
+        options:
+        {
+            logLevel: LogLevel.Trace,
+            packages:
+            [
+                "packages/*",
+            ],
+        },
+        registry:
+        {
+            "package-a": Status.InRegistry,
+            "package-b": Status.New,
+        },
+        directory:
+        {
+            [join(process.cwd(), ".npmrc")]: "registry=https://test.com\n_authToken=123",
             "./packages":
             {
                 "./package-a/package.json": JSON.stringify
