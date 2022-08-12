@@ -57,10 +57,10 @@ export default class Toolbox
     private readonly config: Lazy<Promise<NpmConfig | null>> = new Lazy(async () => this.loadConfig());
     private readonly errors: Error[]                                        = [];
     private readonly logger: Logger;
+    private readonly lookup: Lazy<Promise<Map<string, Package>>> = new Lazy(async () => this.getLookup());
     private readonly options: RequiredProperties<Options, "cwd" | "packages">;
     private readonly repository: NpmRepository;
     private readonly updated = new Set<string>();
-    private lookup?: Map<string, Package>;
 
     public constructor(options: Options)
     {
@@ -78,24 +78,21 @@ export default class Toolbox
 
     private async getLookup(): Promise<Map<string, Package>>
     {
-        if (!this.lookup)
+        const lookup = new Map();
+
+        for await (const filepath of enumeratePaths(this.options.packages, { base: this.options.cwd }))
         {
-            this.lookup = new Map();
-
-            for await (const filepath of enumeratePaths(this.options.packages, { base: this.options.cwd }))
+            if (existsSync(filepath))
             {
-                if (existsSync(filepath))
-                {
-                    const content = (await readFile(filepath)).toString();
-                    const manifest = JSON.parse(content) as object as Manifest;
+                const content = (await readFile(filepath)).toString();
+                const manifest = JSON.parse(content) as object as Manifest;
 
-                    this.backup.set(manifest.name, { content, path: filepath });
-                    this.lookup.set(manifest.name, { manifest, path: filepath });
-                }
+                this.backup.set(manifest.name, { content, path: filepath });
+                lookup.set(manifest.name, { manifest, path: filepath });
             }
         }
 
-        return this.lookup;
+        return lookup;
     }
 
     private async getAuth($package: Package): Promise<Auth | undefined>
@@ -128,7 +125,7 @@ export default class Toolbox
 
     private async internalPublish(tag: string, filter?: string[], resolved: Set<string> = new Set()): Promise<void>
     {
-        const lookup = await this.getLookup();
+        const lookup = await this.lookup.value;
 
         const packages = filter ? filter.map(x => lookup.get(x)!) : lookup.values();
 
@@ -186,7 +183,7 @@ export default class Toolbox
 
     private async internalUnpublish(tag: string, filter?: string[], resolved: Set<string> = new Set()): Promise<void>
     {
-        const lookup = await this.getLookup();
+        const lookup = await this.lookup.value;
 
         const packages = filter ? filter.map(x => lookup.get(x)!) : lookup.values();
 
@@ -266,7 +263,7 @@ export default class Toolbox
 
     private async syncPackages(): Promise<void>
     {
-        for (const entry of (await this.getLookup()).values())
+        for (const entry of (await this.lookup.value).values())
         {
             await this.syncDependents(entry.manifest, true, undefined, undefined, undefined, undefined);
         }
@@ -277,7 +274,7 @@ export default class Toolbox
     {
         if (dependencyType)
         {
-            const lookup = await this.getLookup();
+            const lookup = await this.lookup.value;
 
             for (const { manifest: dependent } of lookup.values())
             {
@@ -384,7 +381,7 @@ export default class Toolbox
             identifier = identifierOrVersion;
         }
 
-        const lookup = await this.getLookup();
+        const lookup = await this.lookup.value;
 
         if (lookup.size == 0)
         {
@@ -411,6 +408,8 @@ export default class Toolbox
             }
             else
             {
+                await this.restorePackages();
+
                 throw new AggregateError(this.errors, "Failed to bump some packages.");
             }
         }
@@ -435,15 +434,26 @@ export default class Toolbox
         {
             await this.internalPublish(this.options.canary ? "next" : tag);
         }
+        catch (e)
+        {
+            this.errors.push(e as Error);
+        }
         finally
         {
-            if (this.options.canary && !this.options.dry)
+            if (this.errors.length > 0 || this.options.canary && !this.options.dry)
             {
                 await this.restorePackages();
             }
         }
 
-        this.logger.info("Publishing Done!");
+        if (this.errors.length > 0)
+        {
+            throw new AggregateError(this.errors);
+        }
+        else
+        {
+            this.logger.info("Publishing Done!");
+        }
     }
 
     /**

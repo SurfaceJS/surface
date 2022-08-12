@@ -3,7 +3,7 @@ import { readFile, readdir, stat, writeFile }                              from 
 import path                                                                from "path";
 import Logger                                                              from "@surface/logger";
 import Mock, { It }                                                        from "@surface/mock";
-import { afterEach, batchTest, beforeEach, shouldFail, shouldPass, suite } from "@surface/test-suite";
+import { afterEach, batchTest, beforeEach, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                                                from "chai";
 import chaiAsPromised                                                      from "chai-as-promised";
 import pack                                                                from "libnpmpack";
@@ -216,11 +216,48 @@ export default class ToolboxSpec
         chai.assert.deepEqual(actual, scenario.expected.unpublished);
     }
 
+    @test
+    @shouldFail
+    public async errorPublishing(): Promise<void>
+    {
+        const directory: VirtualDirectory =
+        {
+            "./packages/package-a/package.json": "{ }",
+        };
+
+        this.setupVirtualDirectory(directory);
+
+        npmRepositoryMock.setup("publish").call(It.any(), It.any(), It.any(), It.any()).reject();
+
+        writeFileMock.call(It.any(), It.any()).resolve();
+
+        await chai.assert.isRejected(new Toolbox({ packages: ["packages/*"] }).publish("latest"));
+    }
+
+    @test
+    @shouldFail
+    public async errorUnpublishing(): Promise<void>
+    {
+        const directory: VirtualDirectory =
+        {
+            "./packages/package-a/package.json": "{ \"name\": \"package-a\" }",
+        };
+
+        this.setupVirtualDirectory(directory);
+        this.setupVirtualRegistry({ "package-a": Status.InRegistry });
+
+        npmRepositoryMock.setup("unpublish").call(It.any(), It.any(), It.any()).reject();
+
+        await chai.assert.isRejected(new Toolbox({ packages: ["packages/*"] }).unpublish("latest"));
+    }
+
     @batchTest(bumpInvalidScenarios, x => x.message, x => x.skip)
     @shouldFail
     public async bumpInvalidScenarios(scenario: BumpScenario): Promise<void>
     {
         this.setupVirtualDirectory(scenario.directory);
+
+        writeFileMock.call(It.any(), It.any()).resolve();
 
         await chai.assert.isRejected(new Toolbox(scenario.options).bump(...scenario.bumpArgs as Parameters<Toolbox["bump"]>));
     }
