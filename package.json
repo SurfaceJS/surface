@@ -27,10 +27,10 @@
         "url": "git+https://github.com/SurfaceJS/surface.git"
     },
     "scripts": {
-        "toolbox:bump": "toolbox bump patch --log-level=info --dry --packages=packages/@surface/*",
-        "toolbox:publish": "toolbox publish --log-level=trace --dry --packages=packages/@surface/*",
-        "toolbox:publish-canary": "toolbox publish next --canary --log-level=trace --packages=packages/@surface/*",
-        "toolbox:unpublish": "toolbox unpublish --log-level=trace --dry --packages=packages/@surface/*",
+        "publisher:bump": "publisher bump patch --log-level=info --dry --packages=packages/@surface/*",
+        "publisher:publish": "publisher publish --log-level=trace --dry --packages=packages/@surface/*",
+        "publisher:publish-canary": "publisher publish next --canary --log-level=trace --packages=packages/@surface/*",
+        "publisher:unpublish": "publisher unpublish --log-level=trace --dry --packages=packages/@surface/*",
         "build": "npm run ts:build",
         "cover": "c8 --check-coverage npm test",
         "cover-summary": "c8 --reporter=text-summary --check-coverage npm run test-summary",

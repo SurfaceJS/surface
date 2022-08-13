@@ -5,7 +5,7 @@ import Commands from "./internal/commands.js";
 import { toBoolean, toEnum } from "./internal/common.js";
 const program = new Command();
 program
-    .name("toolbox")
+    .name("publisher")
     .version("1.0.0");
 // program
 //     .command("cover <n>")

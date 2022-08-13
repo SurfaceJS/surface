@@ -1,3 +1,3 @@
-# Toolbox
+# publisher
 
 Provides monorepo utilities.

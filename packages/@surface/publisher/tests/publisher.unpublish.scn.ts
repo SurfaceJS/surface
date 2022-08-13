@@ -1,43 +1,38 @@
-import os                    from "os";
 import { join }              from "path";
 import { LogLevel }          from "@surface/logger";
 import type { Manifest }     from "pacote";
 import Status                from "../internal/enums/status.js";
-import type { Options }      from "../internal/toolbox.js";
+import type { Options }      from "../internal/publisher.js";
 import type VirtualDirectory from "./types/virtual-directory";
 
 const skip = false;
 
-export type PublishScenario =
+export type UnpublishScenario =
 {
     message:   string,
     options:   Options,
     directory: VirtualDirectory,
     registry:  Record<string, Status>,
     skip:      boolean,
-    expected:  { published: string[] },
+    expected:  { unpublished: string[] },
 };
 
-export const validScenarios: PublishScenario[] =
+export const validScenarios: UnpublishScenario[] =
 [
     {
-        message:   "Publish with no packages",
+        message:   "Unpublish with no packages",
         options:   { },
         registry:  { },
         directory: { },
-        expected:  { published: [] },
+        expected:  { unpublished: [] },
         skip,
     },
     {
-        message:   "Publish package already in registry",
-        options:
-        {
-            registry: "https://test.com",
-            packages: ["packages/*"],
-        },
+        message:   "Unpublish package not in registry",
+        options:   { },
         registry:
         {
-            "package-a": Status.InRegistry,
+            "package-a": Status.New,
         },
         directory:
         {
@@ -52,11 +47,11 @@ export const validScenarios: PublishScenario[] =
                 ),
             },
         },
-        expected:  { published: [] },
+        expected:  { unpublished: [] },
         skip,
     },
     {
-        message:   "Publish private package",
+        message:   "Unpublish private package",
         options:
         {
             logLevel: LogLevel.Trace,
@@ -67,8 +62,8 @@ export const validScenarios: PublishScenario[] =
         },
         registry:
         {
-            "package-a": Status.New,
-            "package-b": Status.New,
+            "package-a": Status.InRegistry,
+            "package-b": Status.InRegistry,
         },
         directory:
         {
@@ -91,11 +86,11 @@ export const validScenarios: PublishScenario[] =
                 ),
             },
         },
-        expected:  { published: ["package-a"] },
+        expected:  { unpublished: ["package-a"] },
         skip,
     },
     {
-        message:   "Run multiple dry publications",
+        message:   "Run multiple dry unpublications",
         options:
         {
             dry:      true,
@@ -105,7 +100,11 @@ export const validScenarios: PublishScenario[] =
                 "packages/*",
             ],
         },
-        registry:  { },
+        registry:
+        {
+            "package-a": Status.InRegistry,
+            "package-b": Status.InRegistry,
+        },
         directory:
         {
             "./packages":
@@ -128,12 +127,12 @@ export const validScenarios: PublishScenario[] =
         },
         expected:
         {
-            published: [],
+            unpublished: [],
         },
         skip,
     },
     {
-        message:   "Publish multiples packages",
+        message:   "Unpublish multiples packages",
         options:
         {
             logLevel: LogLevel.Trace,
@@ -142,7 +141,11 @@ export const validScenarios: PublishScenario[] =
                 "packages/*",
             ],
         },
-        registry:  { "package-b": Status.InRegistry },
+        registry:
+        {
+            "package-a": Status.InRegistry,
+            "package-b": Status.New,
+        },
         directory:
         {
             "./packages":
@@ -165,7 +168,7 @@ export const validScenarios: PublishScenario[] =
         },
         expected:
         {
-            published:
+            unpublished:
             [
                 "package-a",
             ],
@@ -173,7 +176,7 @@ export const validScenarios: PublishScenario[] =
         skip,
     },
     {
-        message:   "Publish multiples packages with npmrc authentication",
+        message:   "Unpublish multiples packages with npmrc authentication",
         options:
         {
             logLevel: LogLevel.Trace,
@@ -182,46 +185,27 @@ export const validScenarios: PublishScenario[] =
                 "packages/*",
             ],
         },
-        registry:  { "package-b": Status.InRegistry },
+        registry:
+        {
+            "package-a": Status.InRegistry,
+            "package-b": Status.New,
+        },
         directory:
         {
+            [join(process.cwd(), ".npmrc")]: "registry=https://test.com\n_authToken=123",
             "./packages":
             {
-                [join(os.homedir(), ".npmrc")]: "@lib:registry=https://test.com\n//test.com:_authToken=123",
-                "./package-a/package.json":     JSON.stringify
+                "./package-a/package.json": JSON.stringify
                 (
                     {
                         name:    "package-a",
                         version: "0.0.1",
                     } as Partial<Manifest>,
                 ),
-                "./package-a/.npmrc":       "registry=https://test.com\n_authToken=123",
                 "./package-b/package.json": JSON.stringify
                 (
                     {
-                        name:    "@lib/package-b",
-                        version: "0.1.0",
-                    } as Partial<Manifest>,
-                ),
-                "./package-b/.npmrc":       "@lib:registry=https://test.com\n//test.com:_authToken=123",
-                "./package-c/package.json": JSON.stringify
-                (
-                    {
-                        name:    "package-c",
-                        version: "0.1.0",
-                    } as Partial<Manifest>,
-                ),
-                "./package-d/package.json": JSON.stringify
-                (
-                    {
-                        name:    "@lib/package-d",
-                        version: "0.1.0",
-                    } as Partial<Manifest>,
-                ),
-                "./package-e/package.json": JSON.stringify
-                (
-                    {
-                        name:    "@other-lib/package-e",
+                        name:    "package-b",
                         version: "0.1.0",
                     } as Partial<Manifest>,
                 ),
@@ -229,19 +213,15 @@ export const validScenarios: PublishScenario[] =
         },
         expected:
         {
-            published:
+            unpublished:
             [
                 "package-a",
-                "@lib/package-b",
-                "package-c",
-                "@lib/package-d",
-                "@other-lib/package-e",
             ],
         },
         skip,
     },
     {
-        message:   "Publish multiples packages with dependency",
+        message:   "Unpublish multiples packages with dependency",
         options:
         {
             logLevel: LogLevel.Trace,
@@ -250,7 +230,11 @@ export const validScenarios: PublishScenario[] =
                 "packages/*",
             ],
         },
-        registry:  { },
+        registry:
+        {
+            "package-a": Status.InRegistry,
+            "package-b": Status.InRegistry,
+        },
         directory:
         {
             "./packages":
@@ -277,53 +261,7 @@ export const validScenarios: PublishScenario[] =
         },
         expected:
         {
-            published:
-            [
-                "package-a",
-                "package-b",
-            ],
-        },
-        skip,
-    },
-    {
-        message:   "Publish canary",
-        options:
-        {
-            logLevel: LogLevel.Trace,
-            packages:
-            [
-                "packages/*",
-            ],
-            canary: true,
-        },
-        registry:  { },
-        directory:
-        {
-            "./packages":
-            {
-                "./package-a/package.json": JSON.stringify
-                (
-                    {
-                        name:    "package-a",
-                        version: "0.0.1",
-                    } as Partial<Manifest>,
-                ),
-                "./package-b/package.json": JSON.stringify
-                (
-                    {
-                        name:         "package-b",
-                        dependencies:
-                        {
-                            "package-a": "0.0.1",
-                        },
-                        version: "0.1.0",
-                    } as Partial<Manifest>,
-                ),
-            },
-        },
-        expected:
-        {
-            published:
+            unpublished:
             [
                 "package-a",
                 "package-b",

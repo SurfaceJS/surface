@@ -1,7 +1,7 @@
 {
     "author": "HitalloExiled",
     "bin": {
-        "toolbox": "cli.js"
+        "publisher": "cli.js"
     },
     "bugs": {
         "url": "https://github.com/SurfaceJS/surface/issues"
@@ -37,7 +37,7 @@
     ],
     "license": "MIT",
     "main": "index.js",
-    "name": "@surface/toolbox",
+    "name": "@surface/publisher",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/surface.git"

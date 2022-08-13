@@ -50,9 +50,8 @@ export type Options =
 
 };
 
-export default class Toolbox
+export default class Publisher
 {
-
     private readonly backup: Map<string, { content: string, path: string }> = new Map();
     private readonly config: Lazy<Promise<NpmConfig | null>> = new Lazy(async () => this.loadConfig());
     private readonly errors: Error[]                                        = [];
