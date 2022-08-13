@@ -7,11 +7,14 @@ import type { Auth }     from "./npm-config.js";
 
 export default class NpmRepository
 {
-    public async get(spec: string, registry?: string): Promise<Manifest | null>
+    public constructor(private readonly auth: Auth = { })
+    { }
+
+    public async get(spec: string): Promise<Manifest | null>
     {
         try
         {
-            return await pacote.manifest(spec, { registry, alwaysAuth: true });
+            return await pacote.manifest(spec, { registry: this.auth.registry, alwaysAuth: true });
         }
         catch (error)
         {
@@ -19,9 +22,9 @@ export default class NpmRepository
         }
     }
 
-    public async getStatus(manifest: Manifest, registry?: string): Promise<Status>
+    public async getStatus(manifest: Manifest): Promise<Status>
     {
-        const latest = await this.get(`${manifest.name}@${manifest.version}`, registry);
+        const latest = await this.get(`${manifest.name}@${manifest.version}`);
 
         if (latest)
         {
@@ -36,9 +39,9 @@ export default class NpmRepository
         return Status.New;
     }
 
-    public async publish(manifest: Manifest, buffer: Buffer, auth?: Auth, tag: string = "latest"): Promise<void>
+    public async publish(manifest: Manifest, buffer: Buffer, tag: string = "latest"): Promise<void>
     {
-        const response = await libnpmpublish.publish(manifest, buffer, { registry: auth?.registry, access: "public", defaultTag: tag, forceAuth: { token: auth?.token } });
+        const response = await libnpmpublish.publish(manifest, buffer, { registry: this.auth?.registry, access: "public", defaultTag: tag, forceAuth: { token: this.auth?.token } });
 
         if (!response.ok)
         {
@@ -46,9 +49,9 @@ export default class NpmRepository
         }
     }
 
-    public async unpublish(manifest: Manifest, auth?: Auth, tag: string = "latest"): Promise<void>
+    public async unpublish(manifest: Manifest, tag: string = "latest"): Promise<void>
     {
-        const response = await libnpmpublish.unpublish(manifest, { registry: auth?.registry, access: "public", defaultTag: tag, forceAuth: { token: auth?.token } });
+        const response = await libnpmpublish.unpublish(manifest, { registry: this.auth?.registry, access: "public", defaultTag: tag, forceAuth: { token: this.auth?.token } });
 
         if (!response)
         {

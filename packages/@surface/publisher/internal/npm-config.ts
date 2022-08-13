@@ -6,7 +6,7 @@ const ENV_PATTERN   = /\$\{([A-Z][A-Z0-9_]+)\}/gi;
 const HTTPS_PATTERN = /^https?:/i;
 const COMMENT_PATTERN = /^\s*[#;]/i;
 
-export type Auth = { registry: string, token?: string };
+export type Auth = { registry?: string, token?: string };
 
 export default class NpmConfig
 {

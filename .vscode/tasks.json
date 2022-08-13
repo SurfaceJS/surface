@@ -81,15 +81,6 @@
             "type": "shell"
         },
         {
-            "command": "node ${workspaceFolder}/tasks/cli publish https://registry.npmjs.org --token=${env:NPM_AUTH_TOKEN} --mode=nightly --dry=${input:dry} --timestamp=${input:timestamp}",
-            "label": "publish-nightly",
-            "presentation": {
-                "reveal": "always"
-            },
-            "problemMatcher": [],
-            "type": "shell"
-        },
-        {
             "command": "npm run test",
             "label": "test-all",
             "presentation": {

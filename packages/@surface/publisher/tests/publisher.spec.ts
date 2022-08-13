@@ -91,7 +91,7 @@ export default class PublisherSpec
     {
         npmRepositoryMock
             .setup("getStatus")
-            .call(It.any(), It.any())
+            .call(It.any())
             .returnsFactory(async x => Promise.resolve(registry[x.name] ?? Status.New));
     }
 
@@ -122,7 +122,7 @@ export default class PublisherSpec
     public beforeEach(): void
     {
         LoggerMock.new(It.any()).returns(loggerMock.proxy);
-        NpmRepositoryMock.new().returns(npmRepositoryMock.proxy);
+        NpmRepositoryMock.new(It.any()).returns(npmRepositoryMock.proxy);
         packMock.call(It.any()).resolve(Buffer.from([]));
 
         LoggerMock.lock();
@@ -189,7 +189,7 @@ export default class PublisherSpec
 
         writeFileMock.call(It.any(), It.any()).resolve();
 
-        npmRepositoryMock.setup("publish").call(It.any(), It.any(), It.any(), It.any())
+        npmRepositoryMock.setup("publish").call(It.any(), It.any(), It.any())
             .callback(x => actual.push(x.name))
             .resolve();
 
@@ -207,7 +207,7 @@ export default class PublisherSpec
 
         const actual: string[] = [];
 
-        npmRepositoryMock.setup("unpublish").call(It.any(), It.any(), It.any())
+        npmRepositoryMock.setup("unpublish").call(It.any(), It.any())
             .callback(x => actual.push(x.name))
             .resolve();
 
@@ -227,7 +227,7 @@ export default class PublisherSpec
 
         this.setupVirtualDirectory(directory);
 
-        npmRepositoryMock.setup("publish").call(It.any(), It.any(), It.any(), It.any()).reject();
+        npmRepositoryMock.setup("publish").call(It.any(), It.any(), It.any()).reject();
 
         writeFileMock.call(It.any(), It.any()).resolve();
 
@@ -246,7 +246,7 @@ export default class PublisherSpec
         this.setupVirtualDirectory(directory);
         this.setupVirtualRegistry({ "package-a": Status.InRegistry });
 
-        npmRepositoryMock.setup("unpublish").call(It.any(), It.any(), It.any()).reject();
+        npmRepositoryMock.setup("unpublish").call(It.any(), It.any()).reject();
 
         await chai.assert.isRejected(new Publisher({ packages: ["packages/*"] }).unpublish("latest"));
     }

@@ -1,10 +1,12 @@
 {
     "author": "HitalloExiled",
+    "bin": {
+        "tasks": "./cli.js"
+    },
     "dependencies": {
         "@surface/core": "file:../packages/@surface/core",
         "@surface/io": "file:../packages/@surface/io",
-        "@surface/mock": "file:../packages/@surface/mock",
-        "@surface/test-suite": "file:../packages/@surface/test-suite",
+        "@surface/logger": "file:../packages/@surface/logger",
         "@types/chai": "^4.3.0",
         "@types/libnpmpublish": "^4.0.2",
         "@types/minipass": "^3.1.2",
@@ -29,7 +31,7 @@
     ],
     "license": "MIT",
     "main": "cli.js",
-    "name": "modules-tasks",
+    "name": "tasks",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/surface.git"

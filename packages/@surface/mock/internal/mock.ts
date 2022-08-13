@@ -68,7 +68,7 @@ export default class Mock<T extends object | Function>
             throw new Error("Target is not a proxy mock");
         }
 
-        return mock;
+        return mock as object as Mock<T>;
     }
 
     private createProxy(target: T): T

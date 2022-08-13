@@ -58,14 +58,10 @@ export default class Publisher
     private readonly logger: Logger;
     private readonly lookup: Lazy<Promise<Map<string, Package>>> = new Lazy(async () => this.getLookup());
     private readonly options: RequiredProperties<Options, "cwd" | "packages">;
-    private readonly repository: NpmRepository;
-    private readonly updated = new Set<string>();
 
     public constructor(options: Options)
     {
-        this.repository = new NpmRepository();
-        this.logger     = new Logger(options.logLevel ?? LogLevel.Info);
-
+        this.logger  = new Logger(options.logLevel ?? LogLevel.Info);
         this.options = { cwd: process.cwd(), ...options, packages: this.normalizePatterns(options.packages) };
     }
 
@@ -96,140 +92,26 @@ export default class Publisher
 
     private async getAuth($package: Package): Promise<Auth | undefined>
     {
-        if (this.options.registry)
-        {
-            return { registry: this.options.registry, token: this.options.token };
-        }
+        const config = await NpmConfig.load(dirname($package.path), process.env as Record<string, string>) ?? await this.config.value;
 
-        const env = process.env as Record<string, string>;
-
-        const config = await NpmConfig.load(dirname($package.path), env) ?? await this.config.value;
+        let auth: Auth = { };
 
         if (config)
         {
-            const auth = config.registry ? { registry: config.registry, token: config.authToken } : undefined;
+            auth = { registry: config.registry, token: config.authToken };
 
             if ($package.manifest.name.startsWith("@"))
             {
                 const [scope] = $package.manifest.name.split("/");
 
-                return config.getScopedAuth(scope!) ?? auth;
-            }
-
-            return auth;
-        }
-
-        return undefined;
-    }
-
-    private async internalPublish(tag: string, filter?: string[], resolved: Set<string> = new Set()): Promise<void>
-    {
-        const lookup = await this.lookup.value;
-
-        const packages = filter ? filter.map(x => lookup.get(x)!) : lookup.values();
-
-        for (const $package of packages)
-        {
-            if (!$package.manifest.private)
-            {
-                const auth = await this.getAuth($package);
-
-                const versionedName = `${$package.manifest.name}@${$package.manifest.version}`;
-
-                if (await this.repository.getStatus($package.manifest, auth?.registry) == Status.InRegistry)
-                {
-                    this.logger.trace(`${versionedName} already in registry, ignoring...`);
-
-                    resolved.add($package.manifest.name);
-                }
-                else if (!resolved.has($package.manifest.name))
-                {
-                    if ($package.manifest.dependencies)
-                    {
-                        const dependencies = Object.keys($package.manifest.dependencies)
-                            .filter(x => lookup.has(x));
-
-                        if (dependencies.length > 0)
-                        {
-                            await this.internalPublish(tag, dependencies, resolved);
-                        }
-                    }
-
-                    const buffer = await pack(dirname($package.path));
-
-                    this.logger.trace(`Publishing ${versionedName}`);
-
-                    if (!this.options.dry)
-                    {
-                        await this.repository.publish($package.manifest, buffer, auth, tag);
-
-                        this.logger.info(`${versionedName} was published`);
-                    }
-                    else
-                    {
-                        this.logger.info(`${versionedName} will be published`);
-                    }
-
-                    resolved.add($package.manifest.name);
-                }
-            }
-            else
-            {
-                this.logger.trace(`Package ${$package.manifest.name} is private, ignoring...`);
+                auth = config.getScopedAuth(scope!) ?? auth;
             }
         }
-    }
 
-    private async internalUnpublish(tag: string, filter?: string[], resolved: Set<string> = new Set()): Promise<void>
-    {
-        const lookup = await this.lookup.value;
-
-        const packages = filter ? filter.map(x => lookup.get(x)!) : lookup.values();
-
-        for (const $package of packages)
-        {
-            if (!$package.manifest.private)
-            {
-                const auth = await this.getAuth($package);
-
-                const versionedName = `${$package.manifest.name}@${$package.manifest.version}`;
-
-                if (await this.repository.getStatus($package.manifest, auth?.registry) != Status.InRegistry)
-                {
-                    this.logger.trace(`${versionedName} not in registry, ignoring...`);
-
-                    resolved.add($package.manifest.name);
-                }
-                else if (!resolved.has($package.manifest.name))
-                {
-                    if ($package.manifest.dependencies)
-                    {
-                        const dependencies = Object.keys($package.manifest.dependencies)
-                            .filter(x => lookup.has(x));
-
-                        if (dependencies.length > 0)
-                        {
-                            await this.internalUnpublish(tag, dependencies, resolved);
-                        }
-                    }
-
-                    this.logger.trace(`Unpublishing ${versionedName}`);
-
-                    if (!this.options.dry)
-                    {
-                        await this.repository.unpublish($package.manifest, auth, tag);
-
-                        this.logger.info(`${versionedName} was unpublished`);
-                    }
-                    else
-                    {
-                        this.logger.info(`${versionedName} will be unpublished`);
-                    }
-
-                    resolved.add($package.manifest.name);
-                }
-            }
-        }
+        return {
+            registry: this.options.registry ?? auth.registry,
+            token:    this.options.token    ?? auth.token,
+        };
     }
 
     private normalizePattern(pattern: string): string
@@ -254,9 +136,11 @@ export default class Publisher
 
     private async restorePackages(): Promise<void>
     {
-        for (const entry of this.backup.values())
+        for (const [key, value] of this.backup)
         {
-            await writeFile(entry.path, entry.content);
+            await writeFile(value.path, value.content);
+
+            this.logger.trace(`Package ${key} restored!`);
         }
     }
 
@@ -286,11 +170,6 @@ export default class Publisher
                     dependencies[manifest.name] = `~${manifest.version}`;
 
                     this.logger.trace(`${manifest.name} in ${dependent.name} ${dependencyType} updated from ${currentVersion} to ${manifest.version}`);
-
-                    if (releaseType)
-                    {
-                        await this.update(dependent, releaseType, version, identifier);
-                    }
                 }
             }
         }
@@ -304,47 +183,42 @@ export default class Publisher
 
     private async update(manifest: Manifest, releaseType: ReleaseType | CustomVersion, version: string | undefined, identifier: string | undefined): Promise<void>
     {
-        if (!this.updated.has(manifest.name))
+        const actual = manifest.version;
+
+        let updated: string | null;
+
+        if (releaseType == "custom")
         {
-            const actual = manifest.version;
-
-            let updated: string | null;
-
-            if (releaseType == "custom")
+            if (GLOB_PRERELEASE.test(version!))
             {
-                if (GLOB_PRERELEASE.test(version!))
-                {
-                    updated = `${manifest.version.split("-")[0]}-${version!.split("-")[1]}`;
-                }
-                else
-                {
-                    updated = version!;
-                }
+                updated = `${manifest.version.split("-")[0]}-${version!.split("-")[1]}`;
             }
             else
             {
-                updated = semver.inc(manifest.version, releaseType, { loose: true, includePrerelease: true }, identifier);
+                updated = version!;
             }
-
-            if (!updated)
-            {
-                const message = `Packaged ${manifest.name} has invalid version ${manifest.version}`;
-
-                this.logger.error(message);
-
-                this.errors.push(new Error(message));
-            }
-            else
-            {
-                manifest.version = updated;
-
-                this.logger.trace(`${manifest.name} version updated from ${actual} to ${manifest.version}`);
-            }
-
-            this.updated.add(manifest.name);
-
-            await this.syncDependents(manifest, !!(this.options.syncFileReferences ?? this.options.canary), releaseType, version, identifier);
         }
+        else
+        {
+            updated = semver.inc(manifest.version, releaseType, { loose: true, includePrerelease: true }, identifier);
+        }
+
+        if (!updated)
+        {
+            const message = `Packaged ${manifest.name} has invalid version ${manifest.version}`;
+
+            this.logger.error(message);
+
+            this.errors.push(new Error(message));
+        }
+        else
+        {
+            manifest.version = updated;
+
+            this.logger.trace(`${manifest.name} version updated from ${actual} to ${manifest.version}`);
+        }
+
+        await this.syncDependents(manifest, !!(this.options.syncFileReferences ?? this.options.canary), releaseType, version, identifier);
     }
 
     /**
@@ -431,7 +305,40 @@ export default class Publisher
 
         try
         {
-            await this.internalPublish(this.options.canary ? "next" : tag);
+            for (const $package of (await this.lookup.value).values())
+            {
+                if (!$package.manifest.private)
+                {
+                    const auth = await this.getAuth($package);
+
+                    const repository = new NpmRepository(auth);
+
+                    const versionedName = `${$package.manifest.name}@${$package.manifest.version}`;
+
+                    if (await repository.getStatus($package.manifest) == Status.InRegistry)
+                    {
+                        this.logger.trace(`${versionedName} already in registry, ignoring...`);
+                    }
+                    else if (!this.options.dry)
+                    {
+                        const buffer = await pack(dirname($package.path));
+
+                        this.logger.trace(`Publishing ${versionedName}`);
+
+                        await repository.publish($package.manifest, buffer, tag);
+
+                        this.logger.info(`${versionedName} was published`);
+                    }
+                    else
+                    {
+                        this.logger.info(`${versionedName} will be published`);
+                    }
+                }
+                else
+                {
+                    this.logger.trace(`Package ${$package.manifest.name} is private, ignoring...`);
+                }
+            }
         }
         catch (e)
         {
@@ -461,7 +368,34 @@ export default class Publisher
      */
     public async unpublish(tag: string): Promise<void>
     {
-        await this.internalUnpublish(tag);
+        for (const $package of (await this.lookup.value).values())
+        {
+            if (!$package.manifest.private)
+            {
+                const auth = await this.getAuth($package);
+
+                const repository = new NpmRepository(auth);
+
+                const versionedName = `${$package.manifest.name}@${$package.manifest.version}`;
+
+                if (await repository.getStatus($package.manifest) != Status.InRegistry)
+                {
+                    this.logger.trace(`${versionedName} not in registry, ignoring...`);
+                }
+                else if (!this.options.dry)
+                {
+                    this.logger.trace(`Unpublishing ${versionedName}`);
+
+                    await repository.unpublish($package.manifest, tag);
+
+                    this.logger.info(`${versionedName} was unpublished`);
+                }
+                else
+                {
+                    this.logger.info(`${versionedName} will be unpublished`);
+                }
+            }
+        }
 
         this.logger.info("Unpublishing Done!");
     }
