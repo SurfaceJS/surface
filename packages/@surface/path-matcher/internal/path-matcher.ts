@@ -18,7 +18,7 @@ export default class PathMatcher
     private readonly exclude: RegExp[] = [];
 
     /** Path part extract from the provided patterns. */
-    public readonly paths:        Set<string> = new Set();
+    public readonly paths: Set<string> = new Set();
 
     /** Negated path part extract from the provided patterns. */
     public readonly negatedPaths: Set<string> = new Set();
@@ -31,11 +31,24 @@ export default class PathMatcher
                 ? PathMatcher.resolve(options.base, pattern, options)
                 : { ...PathMatcher.split(pattern, options), fullPattern: pattern };
 
-            const [expressions, paths] = pattern.startsWith("!")
-                ? [this.exclude, this.negatedPaths]
-                : [this.include, this.paths];
+            let expressions: RegExp[];
 
-            paths.add(resolved.path);
+            if (pattern.startsWith("!"))
+            {
+                expressions = this.exclude;
+
+                if (!this.paths.has(resolved.path))
+                {
+                    this.negatedPaths.add(resolved.path);
+                }
+            }
+            else
+            {
+                expressions = this.include;
+
+                this.paths.add(resolved.path);
+                this.negatedPaths.delete(resolved.path);
+            }
 
             expressions.push(PathMatcher.makeRegex(resolved.fullPattern, options));
         }

@@ -110,7 +110,7 @@ export async function *enumeratePaths(patterns: string | string[], options: Opti
         {
             yield path;
         }
-        else
+        else if (await isDirectory(path))
         {
             for await (const iterator of internalEnumeratePaths(path, resolved.matcher))
             {
@@ -135,7 +135,7 @@ export function *enumeratePathsSync(patterns: string | string[], options: Option
         {
             yield path;
         }
-        else
+        else if (isDirectorySync(path))
         {
             for (const iterator of internalEnumeratePathsSync(path, resolved.matcher))
             {

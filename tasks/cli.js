@@ -15,3 +15,4 @@ program
     .command("test <n>")
     .action(Commands.test);
 program.parse();
+//# sourceMappingURL=cli.js.map

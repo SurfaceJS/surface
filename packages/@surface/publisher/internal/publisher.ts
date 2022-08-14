@@ -1,21 +1,26 @@
-import { existsSync }                               from "fs";
-import { readFile, writeFile }                      from "fs/promises";
-import os                                           from "os";
-import { dirname }                                  from "path";
-import { Lazy, type RequiredProperties, timestamp } from "@surface/core";
-import { enumeratePaths }                           from "@surface/io";
-import Logger, { LogLevel }                         from "@surface/logger";
-import pack                                         from "libnpmpack";
-import type { Manifest }                            from "pacote";
-import semver, { type ReleaseType }                 from "semver";
-import { isPrerelease }                             from "./common.js";
-import Status                                       from "./enums/status.js";
-import type { Auth }                                from "./npm-config.js";
-import NpmConfig                                    from "./npm-config.js";
-import NpmRepository                                from "./npm-repository.js";
+import { readFile, writeFile }                from "fs/promises";
+import os                                     from "os";
+import { dirname }                            from "path";
+import { type RequiredProperties, timestamp } from "@surface/core";
+import { enumeratePaths }                     from "@surface/io";
+import Logger, { LogLevel }                   from "@surface/logger";
+import pack                                   from "libnpmpack";
+import type { Manifest }                      from "pacote";
+import semver, { type ReleaseType }           from "semver";
+import { isPrerelease }                       from "./common.js";
+import Status                                 from "./enums/status.js";
+import type { Auth }                          from "./npm-config.js";
+import NpmConfig                              from "./npm-config.js";
+import NpmRepository                          from "./npm-repository.js";
 
 type CustomVersion = "custom";
-type Package = { manifest: Manifest, path: string };
+type Metadata =
+{
+    manifest:   Manifest,
+    path:       string,
+    config:     NpmConfig | null,
+    workspace?: Metadata[],
+};
 
 const GLOB_PRERELEASE = /^\*-(.*)/;
 
@@ -23,21 +28,30 @@ export type Options =
 {
 
     /** Enables canary release */
-    canary?:    boolean,
+    canary?: boolean,
 
     /** Working dir */
     cwd?: string,
 
     /** Enables dry run */
-    dry?:       boolean,
+    dry?: boolean,
 
-    logLevel?:  LogLevel,
+    /** Include private packages when bumping or publishing. */
+    includePrivates?: boolean,
+
+    /** Include workspaces root when bumping or publishing. */
+    includeWorkspacesRoot?: boolean,
+
+    /** Ignore workspace version and bump itself. */
+    independentVersion?: boolean,
+
+    logLevel?: LogLevel,
 
     /** Packages to bump or publish */
-    packages?:  string[],
+    packages?: string[],
 
     /** Npm registry where packages will be published */
-    registry?:  string,
+    registry?: string,
 
     /** Sync file references when bumping */
     syncFileReferences?: boolean,
@@ -46,53 +60,79 @@ export type Options =
     timestamp?: string,
 
     /** Npm token used to publish */
-    token?:     string,
-
+    token?: string,
 };
 
 export default class Publisher
 {
-    private readonly backup: Map<string, { content: string, path: string }> = new Map();
-    private readonly config: Lazy<Promise<NpmConfig | null>> = new Lazy(async () => this.loadConfig());
+    private readonly backup: Map<string, string> = new Map();
     private readonly errors: Error[]                                        = [];
     private readonly logger: Logger;
-    private readonly lookup: Lazy<Promise<Map<string, Package>>> = new Lazy(async () => this.getLookup());
     private readonly options: RequiredProperties<Options, "cwd" | "packages">;
+
+    private config: NpmConfig | null = null;
+    private workspace: Metadata[] = [];
 
     public constructor(options: Options)
     {
         this.logger  = new Logger(options.logLevel ?? LogLevel.Info);
-        this.options = { cwd: process.cwd(), ...options, packages: this.normalizePatterns(options.packages) };
-    }
-
-    private async loadConfig(): Promise<NpmConfig | null>
-    {
-        return await NpmConfig.load(this.options.cwd, process.env as Record<string, string>)
-        ?? await NpmConfig.load(os.homedir(), process.env as Record<string, string>);
-    }
-
-    private async getLookup(): Promise<Map<string, Package>>
-    {
-        const lookup = new Map();
-
-        for await (const filepath of enumeratePaths(this.options.packages, { base: this.options.cwd }))
+        this.options =
         {
-            if (existsSync(filepath))
+            cwd:      process.cwd(),
+            ...options,
+            packages: this.normalizePatterns(options.packages) ?? ["package.json"],
+        };
+    }
+
+    private async loadConfig(): Promise<void>
+    {
+        this.config = await NpmConfig.load(os.homedir(), process.env as Record<string, string>);
+    }
+
+    private async loadMetadata(): Promise<void>;
+    private async loadMetadata(packages: string[], cwd: string): Promise<Metadata[]>;
+    private async loadMetadata(packages?: string[], cwd?: string): Promise<void | Metadata[]>
+    {
+        if (packages && cwd)
+        {
+            const lookup: Metadata[] = [];
+
+            for await (const path of enumeratePaths(packages, { base: cwd }))
             {
-                const content = (await readFile(filepath)).toString();
+                const content  = (await readFile(path)).toString();
                 const manifest = JSON.parse(content) as object as Manifest;
 
-                this.backup.set(manifest.name, { content, path: filepath });
-                lookup.set(manifest.name, { manifest, path: filepath });
+                this.backup.set(path, content);
+
+                let workspace: Metadata[] | undefined;
+
+                const parentPath = dirname(path);
+
+                if (Array.isArray(manifest.workspaces))
+                {
+                    workspace = await this.loadMetadata(manifest.workspaces, parentPath);
+                }
+
+                const metadata: Metadata =
+                {
+                    config: await NpmConfig.load(parentPath, process.env),
+                    manifest,
+                    path,
+                    workspace,
+                };
+
+                lookup.push(metadata);
             }
+
+            return lookup;
         }
 
-        return lookup;
+        this.workspace = await this.loadMetadata(this.options.packages, this.options.cwd);
     }
 
-    private async getAuth($package: Package): Promise<Auth | undefined>
+    private getAuth(metadata: Metadata, fallback: NpmConfig | null): Auth
     {
-        const config = await NpmConfig.load(dirname($package.path), process.env as Record<string, string>) ?? await this.config.value;
+        const config = metadata.config ?? fallback;
 
         let auth: Auth = { };
 
@@ -100,9 +140,9 @@ export default class Publisher
         {
             auth = { registry: config.registry, token: config.authToken };
 
-            if ($package.manifest.name.startsWith("@"))
+            if (metadata.manifest.name.startsWith("@"))
             {
-                const [scope] = $package.manifest.name.split("/");
+                const [scope] = metadata.manifest.name.split("/");
 
                 auth = config.getScopedAuth(scope!) ?? auth;
             }
@@ -124,48 +164,108 @@ export default class Publisher
         return `${pattern.replace(/\/$/, "")}/package.json`;
     }
 
-    private normalizePatterns(packages?: string[]): string[]
+    private normalizePatterns(packages?: string[]): string[] | undefined
     {
         if (packages)
         {
             return packages.map(this.normalizePattern);
         }
 
-        return [];
+        return undefined;
+    }
+
+    private async publishEntries(tag: string, entries: Metadata[], config: NpmConfig | null): Promise<void>
+    {
+        for (const metadata of entries.values())
+        {
+            if ((this.options.includePrivates || !metadata.manifest.private) && (this.options.includeWorkspacesRoot || !metadata.workspace))
+            {
+                const auth = this.getAuth(metadata, config);
+
+                const repository = new NpmRepository(auth);
+
+                const versionedName = `${metadata.manifest.name}@${metadata.manifest.version}`;
+
+                if (await repository.getStatus(metadata.manifest) == Status.InRegistry)
+                {
+                    this.logger.trace(`${versionedName} already in registry, ignoring...`);
+                }
+                else if (!this.options.dry)
+                {
+                    try
+                    {
+                        const buffer = await pack(dirname(metadata.path));
+
+                        this.logger.trace(`Publishing ${versionedName}`);
+
+                        await repository.publish(metadata.manifest, buffer, tag);
+
+                        this.logger.info(`${versionedName} was published.`);
+                    }
+                    catch (error)
+                    {
+                        this.logger.error(`Failed to publish package ${versionedName}.`);
+
+                        this.errors.push(error as Error);
+                    }
+                }
+                else
+                {
+                    this.logger.info(`${versionedName} will be published.`);
+                }
+            }
+            else
+            {
+                this.logger.trace(`Package ${metadata.manifest.name} is ${metadata.workspace ? "an workspace" : "private"}, ignoring...`);
+            }
+
+            if (metadata.workspace)
+            {
+                await this.publishEntries(tag, metadata.workspace, metadata.config ?? config);
+            }
+        }
     }
 
     private async restorePackages(): Promise<void>
     {
         for (const [key, value] of this.backup)
         {
-            await writeFile(value.path, value.content);
+            await writeFile(key, value);
 
             this.logger.trace(`Package ${key} restored!`);
         }
     }
 
-    private async syncPackages(): Promise<void>
+    private syncPackages(workspace: Metadata[] = this.workspace): void
     {
-        for (const entry of (await this.lookup.value).values())
+        for (const entry of workspace.values())
         {
-            await this.syncDependents(entry.manifest, true, undefined, undefined, undefined, undefined);
+            if (this.options.includeWorkspacesRoot || !entry.workspace)
+            {
+                this.syncDependents(workspace, entry, true);
+            }
+
+            if (entry.workspace)
+            {
+                this.syncPackages(entry.workspace);
+            }
         }
     }
 
     // eslint-disable-next-line max-len
-    private async syncDependents(manifest: Manifest, updateFileReference: boolean, releaseType: ReleaseType | CustomVersion | undefined, version: string | undefined, identifier: string | undefined, dependencyType?: "dependencies" | "devDependencies" | "peerDependencies"): Promise<void>
+    private syncDependents(workspace: Metadata[], metadata: Metadata, syncFileReferences: boolean, dependencyType?: "dependencies" | "devDependencies" | "peerDependencies"): void
     {
         if (dependencyType)
         {
-            const lookup = await this.lookup.value;
+            const manifest = metadata.manifest;
 
-            for (const { manifest: dependent } of lookup.values())
+            for (const { manifest: dependent } of workspace)
             {
                 const dependencies = dependent[dependencyType];
 
                 const currentVersion  = dependencies?.[manifest.name];
 
-                if (currentVersion && (currentVersion != manifest.version && (updateFileReference || !currentVersion.startsWith("file:"))))
+                if (currentVersion && (currentVersion != manifest.version && (syncFileReferences || !currentVersion.startsWith("file:"))))
                 {
                     dependencies[manifest.name] = `~${manifest.version}`;
 
@@ -175,50 +275,136 @@ export default class Publisher
         }
         else
         {
-            await this.syncDependents(manifest, updateFileReference, releaseType, version, identifier, "dependencies");
-            await this.syncDependents(manifest, updateFileReference, releaseType, version, identifier, "devDependencies");
-            await this.syncDependents(manifest, updateFileReference, releaseType, version, identifier, "peerDependencies");
+            this.syncDependents(workspace, metadata, syncFileReferences, "dependencies");
+            this.syncDependents(workspace, metadata, syncFileReferences, "devDependencies");
+            this.syncDependents(workspace, metadata, syncFileReferences, "peerDependencies");
         }
     }
 
-    private async update(manifest: Manifest, releaseType: ReleaseType | CustomVersion, version: string | undefined, identifier: string | undefined): Promise<void>
+    private update(workspace: Metadata[], releaseType: ReleaseType | CustomVersion, version: string | undefined, identifier: string | undefined): void
     {
-        const actual = manifest.version;
-
-        let updated: string | null;
-
-        if (releaseType == "custom")
+        for (const metadata of workspace)
         {
-            if (GLOB_PRERELEASE.test(version!))
+            const manifest = metadata.manifest;
+            const actual   = manifest.version;
+
+            let updated: string | null;
+
+            if (releaseType == "custom")
             {
-                updated = `${manifest.version.split("-")[0]}-${version!.split("-")[1]}`;
+                if (GLOB_PRERELEASE.test(version!))
+                {
+                    updated = `${manifest.version.split("-")[0]}-${version!.split("-")[1]}`;
+                }
+                else
+                {
+                    updated = version!;
+                }
             }
             else
             {
-                updated = version!;
+                updated = semver.inc(manifest.version, releaseType, { loose: true, includePrerelease: true }, identifier);
+            }
+
+            if (!updated)
+            {
+                const message = `Packaged ${manifest.name} has invalid version ${manifest.version}`;
+
+                this.logger.error(message);
+
+                this.errors.push(new Error(message));
+            }
+            else
+            {
+                manifest.version = updated;
+
+                this.logger.trace(`${manifest.name} version updated from ${actual} to ${manifest.version}`);
+            }
+
+            if (this.options.includeWorkspacesRoot || !metadata.workspace)
+            {
+                this.syncDependents(workspace, metadata, !!(this.options.syncFileReferences ?? this.options.canary));
+            }
+
+            if (metadata.workspace)
+            {
+                const [$releaseType, $version] = this.options.independentVersion
+                    ? [releaseType, version]
+                    : ["custom" as const, metadata.manifest.version];
+
+                this.update(metadata.workspace, $releaseType, $version, identifier);
             }
         }
-        else
+    }
+
+    private async unpublishEntries(tag: string, workspace: Metadata[], config: NpmConfig | null): Promise<void>
+    {
+        for (const metadata of workspace.values())
         {
-            updated = semver.inc(manifest.version, releaseType, { loose: true, includePrerelease: true }, identifier);
-        }
+            if ((this.options.includePrivates || !metadata.manifest.private) && (this.options.includeWorkspacesRoot || !metadata.workspace))
+            {
+                const auth = this.getAuth(metadata, config);
 
-        if (!updated)
+                const repository = new NpmRepository(auth);
+
+                const versionedName = `${metadata.manifest.name}@${metadata.manifest.version}`;
+
+                if (await repository.getStatus(metadata.manifest) != Status.InRegistry)
+                {
+                    this.logger.trace(`${versionedName} not in registry, ignoring...`);
+                }
+                else if (!this.options.dry)
+                {
+                    try
+                    {
+                        this.logger.trace(`Unpublishing ${versionedName}.`);
+
+                        await repository.unpublish(metadata.manifest, tag);
+
+                        this.logger.info(`${versionedName} was unpublished.`);
+                    }
+                    catch (error)
+                    {
+                        this.logger.error(`Failed to unpublish package ${versionedName}!`);
+
+                        this.errors.push(error as Error);
+                    }
+                }
+                else
+                {
+                    this.logger.info(`${versionedName} will be unpublished.`);
+                }
+            }
+            else
+            {
+                this.logger.trace(`Package ${metadata.manifest.name} is ${metadata.workspace ? "an workspace" : "private"}, ignoring...`);
+            }
+
+            if (metadata.workspace)
+            {
+                await this.unpublishEntries(tag, metadata.workspace, metadata.config ?? config);
+            }
+        }
+    }
+
+    private async writePackages(entries: Metadata[]): Promise<void>
+    {
+        for (const metadata of entries)
         {
-            const message = `Packaged ${manifest.name} has invalid version ${manifest.version}`;
+            try
+            {
+                await writeFile(metadata.path, JSON.stringify(metadata.manifest, null, 4));
+            }
+            catch (error)
+            {
+                this.logger.error(`Failed to write on the path ${metadata.path}`);
+            }
 
-            this.logger.error(message);
-
-            this.errors.push(new Error(message));
+            if (metadata.workspace)
+            {
+                await this.writePackages(metadata.workspace);
+            }
         }
-        else
-        {
-            manifest.version = updated;
-
-            this.logger.trace(`${manifest.name} version updated from ${actual} to ${manifest.version}`);
-        }
-
-        await this.syncDependents(manifest, !!(this.options.syncFileReferences ?? this.options.canary), releaseType, version, identifier);
     }
 
     /**
@@ -254,36 +440,32 @@ export default class Publisher
             identifier = identifierOrVersion;
         }
 
-        const lookup = await this.lookup.value;
+        await this.loadMetadata();
 
-        if (lookup.size == 0)
+        if (this.workspace.length == 0)
         {
             this.logger.info("No packages found");
         }
         else
         {
-            for (const entry of lookup.values())
+            this.update(this.workspace, releaseType, version, identifier);
+
+            if (this.errors.length == 0 && !this.options.dry)
             {
-                await this.update(entry.manifest, releaseType, version, identifier);
+                await this.writePackages(this.workspace);
             }
 
-            if (this.errors.length == 0)
-            {
-                if (!this.options.dry)
-                {
-                    for (const entry of lookup.values())
-                    {
-                        await writeFile(entry.path, JSON.stringify(entry.manifest, null, 4));
-                    }
-                }
-
-                this.logger.info("Bump done!");
-            }
-            else
+            if (this.errors.length > 0)
             {
                 await this.restorePackages();
 
-                throw new AggregateError(this.errors, "Failed to bump some packages.");
+                this.logger.warn("Failed to bump some packages.");
+
+                throw new AggregateError(this.errors);
+            }
+            else
+            {
+                this.logger.info("Bump done!");
             }
         }
     }
@@ -294,66 +476,29 @@ export default class Publisher
      */
     public async publish(tag: string): Promise<void>
     {
+        await this.loadConfig();
+        await this.loadMetadata();
+
         if (this.options.canary)
         {
             await this.bump("custom", `*-dev.${this.options.timestamp ?? timestamp()}`);
         }
         else
         {
-            await this.syncPackages();
+            this.syncPackages();
         }
 
-        try
+        await this.publishEntries(tag, this.workspace, this.config);
+
+        if (this.errors.length > 0 || this.options.canary && !this.options.dry)
         {
-            for (const $package of (await this.lookup.value).values())
-            {
-                if (!$package.manifest.private)
-                {
-                    const auth = await this.getAuth($package);
-
-                    const repository = new NpmRepository(auth);
-
-                    const versionedName = `${$package.manifest.name}@${$package.manifest.version}`;
-
-                    if (await repository.getStatus($package.manifest) == Status.InRegistry)
-                    {
-                        this.logger.trace(`${versionedName} already in registry, ignoring...`);
-                    }
-                    else if (!this.options.dry)
-                    {
-                        const buffer = await pack(dirname($package.path));
-
-                        this.logger.trace(`Publishing ${versionedName}`);
-
-                        await repository.publish($package.manifest, buffer, tag);
-
-                        this.logger.info(`${versionedName} was published`);
-                    }
-                    else
-                    {
-                        this.logger.info(`${versionedName} will be published`);
-                    }
-                }
-                else
-                {
-                    this.logger.trace(`Package ${$package.manifest.name} is private, ignoring...`);
-                }
-            }
-        }
-        catch (e)
-        {
-            this.errors.push(e as Error);
-        }
-        finally
-        {
-            if (this.errors.length > 0 || this.options.canary && !this.options.dry)
-            {
-                await this.restorePackages();
-            }
+            await this.restorePackages();
         }
 
         if (this.errors.length > 0)
         {
+            this.logger.warn("Publishing done with errors!");
+
             throw new AggregateError(this.errors);
         }
         else
@@ -368,35 +513,20 @@ export default class Publisher
      */
     public async unpublish(tag: string): Promise<void>
     {
-        for (const $package of (await this.lookup.value).values())
+        await this.loadConfig();
+        await this.loadMetadata();
+
+        await this.unpublishEntries(tag, this.workspace, this.config);
+
+        if (this.errors.length > 0)
         {
-            if (!$package.manifest.private)
-            {
-                const auth = await this.getAuth($package);
+            this.logger.warn("Unpublishing done with errors!");
 
-                const repository = new NpmRepository(auth);
-
-                const versionedName = `${$package.manifest.name}@${$package.manifest.version}`;
-
-                if (await repository.getStatus($package.manifest) != Status.InRegistry)
-                {
-                    this.logger.trace(`${versionedName} not in registry, ignoring...`);
-                }
-                else if (!this.options.dry)
-                {
-                    this.logger.trace(`Unpublishing ${versionedName}`);
-
-                    await repository.unpublish($package.manifest, tag);
-
-                    this.logger.info(`${versionedName} was unpublished`);
-                }
-                else
-                {
-                    this.logger.info(`${versionedName} will be unpublished`);
-                }
-            }
+            throw new AggregateError(this.errors);
         }
-
-        this.logger.info("Unpublishing Done!");
+        else
+        {
+            this.logger.info("Unpublishing Done!");
+        }
     }
 }

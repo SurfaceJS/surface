@@ -39,3 +39,4 @@ program
     .option("--token     <n>", "Token used to authenticate.")
     .action(Commands.unpublish);
 program.parse();
+//# sourceMappingURL=cli.js.map

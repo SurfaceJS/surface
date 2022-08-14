@@ -6,6 +6,8 @@ const ENV_PATTERN   = /\$\{([A-Z][A-Z0-9_]+)\}/gi;
 const HTTPS_PATTERN = /^https?:/i;
 const COMMENT_PATTERN = /^\s*[#;]/i;
 
+type Env = NodeJS.ProcessEnv | Record<string, string>;
+
 export type Auth = { registry?: string, token?: string };
 
 export default class NpmConfig
@@ -23,7 +25,7 @@ export default class NpmConfig
         return this.entries.get("_authToken");
     }
 
-    public constructor(source: string, env: Record<string, string>)
+    public constructor(source: string, env: Env)
     {
         for (const line of source.split("\n"))
         {
@@ -42,7 +44,7 @@ export default class NpmConfig
         }
     }
 
-    public static async load(path: string, env: Record<string, string>): Promise<NpmConfig | null>
+    public static async load(path: string, env: Env): Promise<NpmConfig | null>
     {
         const npmrc = join(path, ".npmrc");
 

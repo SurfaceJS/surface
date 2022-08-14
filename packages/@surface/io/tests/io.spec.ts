@@ -59,7 +59,7 @@ const statSyncMock     = Mock.of(statSync)!;
 const unlinkMock       = Mock.of(unlink)!;
 const unlinkSyncMock   = Mock.of(unlinkSync)!;
 
-const PATH = process.cwd();
+const CWD = process.cwd();
 
 @suite
 export default class IoSpec
@@ -103,17 +103,18 @@ export default class IoSpec
         const EXCLUDE             = "exclude";
         const FILE_A              = "file.a";
         const FILE_B              = "file.b";
-        const PATH_INCLUDE        = path.join(PATH, INCLUDE) as `~/${typeof INCLUDE}`;
-        const PATH_EXCLUDE        = path.join(PATH, EXCLUDE) as `~/${typeof INCLUDE}`;
+        const PATH_INCLUDE        = path.join(CWD, INCLUDE) as `~/${typeof INCLUDE}`;
+        const PATH_EXCLUDE        = path.join(CWD, EXCLUDE) as `~/${typeof INCLUDE}`;
         const PATH_INCLUDE_FILE_A = path.join(PATH_INCLUDE, FILE_A) as `${typeof PATH_INCLUDE}/${typeof FILE_A}`;
         const PATH_INCLUDE_FILE_B = path.join(PATH_INCLUDE, FILE_B) as `${typeof PATH_INCLUDE}/${typeof FILE_B}`;
         const PATH_EXCLUDE_FILE_A = path.join(PATH_EXCLUDE, FILE_A) as `${typeof PATH_EXCLUDE}/${typeof FILE_A}`;
         const PATH_EXCLUDE_FILE_B = path.join(PATH_EXCLUDE, FILE_B) as `${typeof PATH_EXCLUDE}/${typeof FILE_B}`;
 
-        readdirMock.call(PATH).resolve([INCLUDE, EXCLUDE]);
+        readdirMock.call(CWD).resolve([INCLUDE, EXCLUDE]);
         readdirMock.call(PATH_INCLUDE).resolve([FILE_A, FILE_B]);
         readdirMock.call(PATH_EXCLUDE).resolve([FILE_A, FILE_B]);
 
+        statMock.call(CWD).resolve({ isDirectory: () => true, isFile: () => false, isFIFO: () => false } as Stats);
         statMock.call(PATH_INCLUDE).resolve({ isDirectory: () => true } as Stats);
         statMock.call(PATH_EXCLUDE).resolve({ isDirectory: () => true } as Stats);
 
@@ -130,23 +131,24 @@ export default class IoSpec
     }
 
     @test @shouldPass
-    public async listPathsSync(): Promise<void>
+    public async enumeratePathsSync(): Promise<void>
     {
         const INCLUDE             = "include";
         const EXCLUDE             = "exclude";
         const FILE_A              = "file.a";
         const FILE_B              = "file.b";
-        const PATH_INCLUDE        = path.join(PATH, INCLUDE) as `~/${typeof INCLUDE}`;
-        const PATH_EXCLUDE        = path.join(PATH, EXCLUDE) as `~/${typeof INCLUDE}`;
+        const PATH_INCLUDE        = path.join(CWD, INCLUDE) as `~/${typeof INCLUDE}`;
+        const PATH_EXCLUDE        = path.join(CWD, EXCLUDE) as `~/${typeof INCLUDE}`;
         const PATH_INCLUDE_FILE_A = path.join(PATH_INCLUDE, FILE_A) as `${typeof PATH_INCLUDE}/${typeof FILE_A}`;
         const PATH_INCLUDE_FILE_B = path.join(PATH_INCLUDE, FILE_B) as `${typeof PATH_INCLUDE}/${typeof FILE_B}`;
         const PATH_EXCLUDE_FILE_A = path.join(PATH_EXCLUDE, FILE_A) as `${typeof PATH_EXCLUDE}/${typeof FILE_A}`;
         const PATH_EXCLUDE_FILE_B = path.join(PATH_EXCLUDE, FILE_B) as `${typeof PATH_EXCLUDE}/${typeof FILE_B}`;
 
-        readdirSyncMock.call(PATH).returns([INCLUDE, EXCLUDE]);
+        readdirSyncMock.call(CWD).returns([INCLUDE, EXCLUDE]);
         readdirSyncMock.call(PATH_INCLUDE).returns([FILE_A, FILE_B]);
         readdirSyncMock.call(PATH_EXCLUDE).returns([FILE_A, FILE_B]);
 
+        statSyncMock.call(CWD).returns({ isDirectory: () => true, isFile: () => false, isFIFO: () => false } as Stats);
         statSyncMock.call(PATH_INCLUDE).returns({ isDirectory: () => true } as Stats);
         statSyncMock.call(PATH_EXCLUDE).returns({ isDirectory: () => true } as Stats);
 
@@ -165,10 +167,10 @@ export default class IoSpec
     @test @shouldPass
     public async isDirectory(): Promise<void>
     {
-        const PATH_TO_FILE      = path.join(PATH, "to", "file");
-        const PATH_TO_DIRECTORY = path.join(PATH, "to", "directory");
-        const PATH_TO_ENOENT    = path.join(PATH, "to", "ENOENT");
-        const PATH_TO_ENOTDIR   = path.join(PATH, "to", "ENOTDIR");
+        const PATH_TO_FILE      = path.join(CWD, "to", "file");
+        const PATH_TO_DIRECTORY = path.join(CWD, "to", "directory");
+        const PATH_TO_ENOENT    = path.join(CWD, "to", "ENOENT");
+        const PATH_TO_ENOTDIR   = path.join(CWD, "to", "ENOTDIR");
 
         statMock.call(PATH_TO_DIRECTORY).resolve({ isDirectory: () => true } as Stats);
         statMock.call(PATH_TO_ENOENT).reject({ code: "ENOENT" } as unknown as Error);
@@ -184,10 +186,10 @@ export default class IoSpec
     @test @shouldPass
     public isDirectorySync(): void
     {
-        const PATH_TO_FILE      = path.join(PATH, "to", "file");
-        const PATH_TO_DIRECTORY = path.join(PATH, "to", "directory");
-        const PATH_TO_ENOENT    = path.join(PATH, "to", "ENOENT");
-        const PATH_TO_ENOTDIR   = path.join(PATH, "to", "ENOTDIR");
+        const PATH_TO_FILE      = path.join(CWD, "to", "file");
+        const PATH_TO_DIRECTORY = path.join(CWD, "to", "directory");
+        const PATH_TO_ENOENT    = path.join(CWD, "to", "ENOENT");
+        const PATH_TO_ENOTDIR   = path.join(CWD, "to", "ENOTDIR");
 
         statSyncMock.call(PATH_TO_DIRECTORY).returns({ isDirectory: () => true } as Stats);
         statSyncMock.call(PATH_TO_ENOENT).throws({ code: "ENOENT" } as unknown as Error);
@@ -203,11 +205,11 @@ export default class IoSpec
     @test @shouldPass
     public async isFile(): Promise<void>
     {
-        const PATH_TO_FILE      = path.join(PATH, "to", "file");
-        const PATH_TO_FIFO      = path.join(PATH, "to", "fifo");
-        const PATH_TO_DIRECTORY = path.join(PATH, "to", "directory");
-        const PATH_TO_ENOENT    = path.join(PATH, "to", "ENOENT");
-        const PATH_TO_ENOTDIR   = path.join(PATH, "to", "ENOTDIR");
+        const PATH_TO_FILE      = path.join(CWD, "to", "file");
+        const PATH_TO_FIFO      = path.join(CWD, "to", "fifo");
+        const PATH_TO_DIRECTORY = path.join(CWD, "to", "directory");
+        const PATH_TO_ENOENT    = path.join(CWD, "to", "ENOENT");
+        const PATH_TO_ENOTDIR   = path.join(CWD, "to", "ENOTDIR");
 
         statMock.call(PATH_TO_FILE).resolve({ isFIFO: () => false, isFile: () => true } as Stats);
         statMock.call(PATH_TO_FIFO).resolve({ isFIFO: () => true, isFile: () => false } as Stats);
@@ -225,11 +227,11 @@ export default class IoSpec
     @test @shouldPass
     public isFileSync(): void
     {
-        const PATH_TO_FILE      = path.join(PATH, "to", "file");
-        const PATH_TO_FIFO      = path.join(PATH, "to", "fifo");
-        const PATH_TO_DIRECTORY = path.join(PATH, "to", "directory");
-        const PATH_TO_ENOENT    = path.join(PATH, "to", "ENOENT");
-        const PATH_TO_ENOTDIR   = path.join(PATH, "to", "ENOTDIR");
+        const PATH_TO_FILE      = path.join(CWD, "to", "file");
+        const PATH_TO_FIFO      = path.join(CWD, "to", "fifo");
+        const PATH_TO_DIRECTORY = path.join(CWD, "to", "directory");
+        const PATH_TO_ENOENT    = path.join(CWD, "to", "ENOENT");
+        const PATH_TO_ENOTDIR   = path.join(CWD, "to", "ENOTDIR");
 
         statSyncMock.call(PATH_TO_FILE).returns({ isFIFO: () => false, isFile: () => true } as Stats);
         statSyncMock.call(PATH_TO_FIFO).returns({ isFIFO: () => true, isFile: () => false } as Stats);
@@ -247,7 +249,7 @@ export default class IoSpec
     @test @shouldPass
     public async lookup(): Promise<void>
     {
-        const expected = path.join(PATH, "resolve-3", "file.txt");
+        const expected = path.join(CWD, "resolve-3", "file.txt");
 
         const TO_RESOLVE_1_FILE = "./resolve-1/file.txt";
         const TO_RESOLVE_2_FILE = "./resolve-2/file.txt";
@@ -262,9 +264,9 @@ export default class IoSpec
 
         const absolutePaths =
         [
-            path.join(PATH, TO_RESOLVE_1_FILE),
-            path.join(PATH, TO_RESOLVE_2_FILE),
-            path.join(PATH, TO_RESOLVE_3_FILE),
+            path.join(CWD, TO_RESOLVE_1_FILE),
+            path.join(CWD, TO_RESOLVE_2_FILE),
+            path.join(CWD, TO_RESOLVE_3_FILE),
         ];
 
         statMock.call(It.any()).resolve({ isFIFO: () => false, isFile: () => false } as Stats);
@@ -273,9 +275,9 @@ export default class IoSpec
 
         statMock.clear();
 
-        statMock.call(path.join(PATH, TO_RESOLVE_1_FILE)).resolve({ isFIFO: () => false, isFile: () => false } as Stats);
-        statMock.call(path.join(PATH, TO_RESOLVE_2_FILE)).resolve({ isFIFO: () => false, isFile: () => false } as Stats);
-        statMock.call(path.join(PATH, TO_RESOLVE_3_FILE)).resolve({ isFIFO: () => true, isFile: () => false } as Stats);
+        statMock.call(path.join(CWD, TO_RESOLVE_1_FILE)).resolve({ isFIFO: () => false, isFile: () => false } as Stats);
+        statMock.call(path.join(CWD, TO_RESOLVE_2_FILE)).resolve({ isFIFO: () => false, isFile: () => false } as Stats);
+        statMock.call(path.join(CWD, TO_RESOLVE_3_FILE)).resolve({ isFIFO: () => true, isFile: () => false } as Stats);
 
         chai.assert.equal(await lookup(relativePaths), expected);
         chai.assert.equal(await lookup(absolutePaths), expected);
@@ -284,7 +286,7 @@ export default class IoSpec
     @test @shouldPass
     public lookupSync(): void
     {
-        const expected = path.join(PATH, "resolve-3", "file.txt");
+        const expected = path.join(CWD, "resolve-3", "file.txt");
 
         const TO_RESOLVE_1_FILE = "./resolve-1/file.txt";
         const TO_RESOLVE_2_FILE = "./resolve-2/file.txt";
@@ -299,9 +301,9 @@ export default class IoSpec
 
         const absolutePaths =
         [
-            path.join(PATH, TO_RESOLVE_1_FILE),
-            path.join(PATH, TO_RESOLVE_2_FILE),
-            path.join(PATH, TO_RESOLVE_3_FILE),
+            path.join(CWD, TO_RESOLVE_1_FILE),
+            path.join(CWD, TO_RESOLVE_2_FILE),
+            path.join(CWD, TO_RESOLVE_3_FILE),
         ];
 
         statSyncMock.call(It.any()).returns({ isFIFO: () => false, isFile: () => false } as Stats);
@@ -310,9 +312,9 @@ export default class IoSpec
 
         statSyncMock.clear();
 
-        statSyncMock.call(path.join(PATH, TO_RESOLVE_1_FILE)).returns({ isFIFO: () => false, isFile: () => false } as Stats);
-        statSyncMock.call(path.join(PATH, TO_RESOLVE_2_FILE)).returns({ isFIFO: () => false, isFile: () => false } as Stats);
-        statSyncMock.call(path.join(PATH, TO_RESOLVE_3_FILE)).returns({ isFIFO: () => true, isFile: () => false } as Stats);
+        statSyncMock.call(path.join(CWD, TO_RESOLVE_1_FILE)).returns({ isFIFO: () => false, isFile: () => false } as Stats);
+        statSyncMock.call(path.join(CWD, TO_RESOLVE_2_FILE)).returns({ isFIFO: () => false, isFile: () => false } as Stats);
+        statSyncMock.call(path.join(CWD, TO_RESOLVE_3_FILE)).returns({ isFIFO: () => true, isFile: () => false } as Stats);
 
         chai.assert.equal(lookupSync(relativePaths), expected);
         chai.assert.equal(lookupSync(absolutePaths), expected);
@@ -321,8 +323,8 @@ export default class IoSpec
     @test @shouldPass
     public searchAbove(): void
     {
-        const PATH_TO_LOOKUP = path.join(PATH, "to", "lookup");
-        const PATH_FILE      = path.join(PATH, "file.txt");
+        const PATH_TO_LOOKUP = path.join(CWD, "to", "lookup");
+        const PATH_FILE      = path.join(CWD, "file.txt");
         const expected       = PATH_FILE;
 
         existsSyncMock.call(PATH_FILE).returns(true);
@@ -336,7 +338,7 @@ export default class IoSpec
     {
         statMock.call(It.any()).reject(new Error());
 
-        await chai.assert.isRejected(isDirectory(PATH));
+        await chai.assert.isRejected(isDirectory(CWD));
     }
 
     @test @shouldFail
@@ -344,7 +346,7 @@ export default class IoSpec
     {
         statMock.call(It.any()).reject(new Error());
 
-        await chai.assert.isRejected(isFile(PATH));
+        await chai.assert.isRejected(isFile(CWD));
     }
 
     @test @shouldFail
@@ -352,7 +354,7 @@ export default class IoSpec
     {
         statSyncMock.call(It.any()).throws(new Error());
 
-        chai.assert.throws(() => isDirectorySync(PATH));
+        chai.assert.throws(() => isDirectorySync(CWD));
     }
 
     @test @shouldFail
@@ -360,6 +362,6 @@ export default class IoSpec
     {
         statSyncMock.call(It.any()).throws(new Error());
 
-        chai.assert.throws(() => isFileSync(PATH));
+        chai.assert.throws(() => isFileSync(CWD));
     }
 }
