@@ -7,11 +7,13 @@ import Logger, { LogLevel }                   from "@surface/logger";
 import pack                                   from "libnpmpack";
 import type { Manifest }                      from "pacote";
 import semver, { type ReleaseType }           from "semver";
-import { isPrerelease }                       from "./common.js";
+import { execute, isPrerelease }              from "./common.js";
 import Status                                 from "./enums/status.js";
 import type { Auth }                          from "./npm-config.js";
 import NpmConfig                              from "./npm-config.js";
 import NpmRepository                          from "./npm-repository.js";
+
+/* cSpell:ignore postpack, postpublish */
 
 type CustomVersion = "custom";
 type Metadata =
@@ -21,6 +23,17 @@ type Metadata =
     config:     NpmConfig | null,
     workspace?: Metadata[],
 };
+
+type ScriptType =
+    | "prepublishworkspace"
+    | "prepublish"
+    | "prepublishOnly"
+    | "prepack"
+    | "prepare"
+    | "postpack"
+    | "publish"
+    | "postpublish"
+    | "postpublishworkspace";
 
 const GLOB_PRERELEASE = /^\*-(.*)/;
 
@@ -70,7 +83,8 @@ export default class Publisher
     private readonly logger: Logger;
     private readonly options: RequiredProperties<Options, "cwd" | "packages">;
 
-    private config: NpmConfig | null = null;
+    private config:    NpmConfig | null = null;
+    private loaded:    boolean = false;
     private workspace: Metadata[] = [];
 
     public constructor(options: Options)
@@ -80,7 +94,7 @@ export default class Publisher
         {
             cwd:      process.cwd(),
             ...options,
-            packages: this.normalizePatterns(options.packages) ?? ["package.json"],
+            packages: options.packages ?? ["package.json"],
         };
     }
 
@@ -89,9 +103,9 @@ export default class Publisher
         this.config = await NpmConfig.load(os.homedir(), process.env as Record<string, string>);
     }
 
-    private async loadMetadata(): Promise<void>;
+    private async loadMetadata(): Promise<boolean>;
     private async loadMetadata(packages: string[], cwd: string): Promise<Metadata[]>;
-    private async loadMetadata(packages?: string[], cwd?: string): Promise<void | Metadata[]>
+    private async loadMetadata(packages?: string[], cwd?: string): Promise<boolean | Metadata[]>
     {
         if (packages && cwd)
         {
@@ -110,7 +124,7 @@ export default class Publisher
 
                 if (Array.isArray(manifest.workspaces))
                 {
-                    workspace = await this.loadMetadata(manifest.workspaces, parentPath);
+                    workspace = await this.loadMetadata(manifest.workspaces.map(this.normalizePattern), parentPath);
                 }
 
                 const metadata: Metadata =
@@ -127,7 +141,19 @@ export default class Publisher
             return lookup;
         }
 
-        this.workspace = await this.loadMetadata(this.options.packages, this.options.cwd);
+        if (!this.loaded)
+        {
+            this.workspace = await this.loadMetadata(this.options.packages.map(this.normalizePattern), this.options.cwd);
+
+            if (this.workspace.length == 0)
+            {
+                this.logger.warn("No packages found.");
+            }
+
+            this.loaded = true;
+        }
+
+        return this.workspace.length > 0;
     }
 
     private getAuth(metadata: Metadata, fallback: NpmConfig | null): Auth
@@ -154,6 +180,20 @@ export default class Publisher
         };
     }
 
+    private async runScript(script: ScriptType, cwd: string): Promise<void>
+    {
+        if (!this.options.dry)
+        {
+            this.logger.trace(`Running ${script} script in ${cwd}...`);
+
+            await execute(`npm run ${script} --if-present --color`, cwd);
+        }
+        else
+        {
+            this.logger.trace(`Will run ${script} script in ${cwd}...`);
+        }
+    }
+
     private normalizePattern(pattern: string): string
     {
         if (pattern.startsWith("!") || pattern.endsWith("package.json"))
@@ -164,20 +204,19 @@ export default class Publisher
         return `${pattern.replace(/\/$/, "")}/package.json`;
     }
 
-    private normalizePatterns(packages?: string[]): string[] | undefined
-    {
-        if (packages)
-        {
-            return packages.map(this.normalizePattern);
-        }
-
-        return undefined;
-    }
-
     private async publishEntries(tag: string, entries: Metadata[], config: NpmConfig | null): Promise<void>
     {
         for (const metadata of entries.values())
         {
+            const parentPath = dirname(metadata.path);
+
+            if (metadata.workspace)
+            {
+                await this.runScript("prepublishworkspace", parentPath);
+
+                await this.publishEntries(tag, metadata.workspace, metadata.config ?? config);
+            }
+
             if ((this.options.includePrivates || !metadata.manifest.private) && (this.options.includeWorkspacesRoot || !metadata.workspace))
             {
                 const auth = this.getAuth(metadata, config);
@@ -194,11 +233,20 @@ export default class Publisher
                 {
                     try
                     {
-                        const buffer = await pack(dirname(metadata.path));
+                        await this.runScript("prepublish", parentPath);
+                        await this.runScript("prepublishOnly", parentPath);
+                        await this.runScript("prepack", parentPath);
+                        await this.runScript("prepare", parentPath);
+
+                        const buffer = await pack(parentPath);
+
+                        await this.runScript("postpack", parentPath);
 
                         this.logger.trace(`Publishing ${versionedName}`);
 
                         await repository.publish(metadata.manifest, buffer, tag);
+
+                        await this.runScript("postpublish", parentPath);
 
                         this.logger.info(`${versionedName} was published.`);
                     }
@@ -216,12 +264,12 @@ export default class Publisher
             }
             else
             {
-                this.logger.trace(`Package ${metadata.manifest.name} is ${metadata.workspace ? "an workspace" : "private"}, ignoring...`);
+                this.logger.trace(`Package ${metadata.manifest.name} is ${metadata.workspace ? "an workspace" : "private"}, publishing ignored...`);
             }
 
             if (metadata.workspace)
             {
-                await this.publishEntries(tag, metadata.workspace, metadata.config ?? config);
+                await this.runScript("postpublishworkspace", parentPath);
             }
         }
     }
@@ -281,44 +329,61 @@ export default class Publisher
         }
     }
 
-    private update(workspace: Metadata[], releaseType: ReleaseType | CustomVersion, version: string | undefined, identifier: string | undefined): void
+    private async update(workspace: Metadata[], releaseType: ReleaseType | CustomVersion, version: string | undefined, identifier: string | undefined): Promise<void>
     {
         for (const metadata of workspace)
         {
             const manifest = metadata.manifest;
             const actual   = manifest.version;
 
-            let updated: string | null;
-
-            if (releaseType == "custom")
+            if (this.options.includePrivates || !manifest.private)
             {
-                if (GLOB_PRERELEASE.test(version!))
+
+                let updated: string | null;
+
+                if (releaseType == "custom")
                 {
-                    updated = `${manifest.version.split("-")[0]}-${version!.split("-")[1]}`;
+                    if (GLOB_PRERELEASE.test(version!))
+                    {
+                        updated = `${manifest.version.split("-")[0]}-${version!.split("-")[1]}`;
+                    }
+                    else
+                    {
+                        updated = version!;
+                    }
                 }
                 else
                 {
-                    updated = version!;
+                    updated = semver.inc(manifest.version, releaseType, { loose: true, includePrerelease: true }, identifier);
+                }
+
+                if (!updated)
+                {
+                    const message = `Packaged ${manifest.name} has invalid version ${manifest.version}`;
+
+                    this.logger.error(message);
+
+                    this.errors.push(new Error(message));
+                }
+                else
+                {
+                    manifest.version = updated;
+
+                    this.logger.trace(`${manifest.name} version updated from ${actual} to ${manifest.version}`);
+
+                    if (!this.options.dry)
+                    {
+                        await writeFile(metadata.path, JSON.stringify(metadata.manifest, null, 4));
+                    }
+                    else
+                    {
+                        this.logger.info(`Version ${metadata.manifest.name}@${metadata.manifest.version} will be written in ${metadata.path}...`);
+                    }
                 }
             }
             else
             {
-                updated = semver.inc(manifest.version, releaseType, { loose: true, includePrerelease: true }, identifier);
-            }
-
-            if (!updated)
-            {
-                const message = `Packaged ${manifest.name} has invalid version ${manifest.version}`;
-
-                this.logger.error(message);
-
-                this.errors.push(new Error(message));
-            }
-            else
-            {
-                manifest.version = updated;
-
-                this.logger.trace(`${manifest.name} version updated from ${actual} to ${manifest.version}`);
+                this.logger.trace(`Package ${metadata.manifest.name} is private, bump ignored...`);
             }
 
             if (this.options.includeWorkspacesRoot || !metadata.workspace)
@@ -332,7 +397,7 @@ export default class Publisher
                     ? [releaseType, version]
                     : ["custom" as const, metadata.manifest.version];
 
-                this.update(metadata.workspace, $releaseType, $version, identifier);
+                await this.update(metadata.workspace, $releaseType, $version, identifier);
             }
         }
     }
@@ -377,32 +442,12 @@ export default class Publisher
             }
             else
             {
-                this.logger.trace(`Package ${metadata.manifest.name} is ${metadata.workspace ? "an workspace" : "private"}, ignoring...`);
+                this.logger.trace(`Package ${metadata.manifest.name} is ${metadata.workspace ? "an workspace" : "private"}, unpublishing ignored...`);
             }
 
             if (metadata.workspace)
             {
                 await this.unpublishEntries(tag, metadata.workspace, metadata.config ?? config);
-            }
-        }
-    }
-
-    private async writePackages(entries: Metadata[]): Promise<void>
-    {
-        for (const metadata of entries)
-        {
-            try
-            {
-                await writeFile(metadata.path, JSON.stringify(metadata.manifest, null, 4));
-            }
-            catch (error)
-            {
-                this.logger.error(`Failed to write on the path ${metadata.path}`);
-            }
-
-            if (metadata.workspace)
-            {
-                await this.writePackages(metadata.workspace);
             }
         }
     }
@@ -440,20 +485,9 @@ export default class Publisher
             identifier = identifierOrVersion;
         }
 
-        await this.loadMetadata();
-
-        if (this.workspace.length == 0)
+        if (await this.loadMetadata())
         {
-            this.logger.info("No packages found");
-        }
-        else
-        {
-            this.update(this.workspace, releaseType, version, identifier);
-
-            if (this.errors.length == 0 && !this.options.dry)
-            {
-                await this.writePackages(this.workspace);
-            }
+            await this.update(this.workspace, releaseType, version, identifier);
 
             if (this.errors.length > 0)
             {
@@ -477,33 +511,35 @@ export default class Publisher
     public async publish(tag: string): Promise<void>
     {
         await this.loadConfig();
-        await this.loadMetadata();
 
-        if (this.options.canary)
+        if (await this.loadMetadata())
         {
-            await this.bump("custom", `*-dev.${this.options.timestamp ?? timestamp()}`);
-        }
-        else
-        {
-            this.syncPackages();
-        }
+            if (this.options.canary)
+            {
+                await this.bump("custom", `*-dev.${this.options.timestamp ?? timestamp()}`);
+            }
+            else
+            {
+                this.syncPackages();
+            }
 
-        await this.publishEntries(tag, this.workspace, this.config);
+            await this.publishEntries(tag, this.workspace, this.config);
 
-        if (this.errors.length > 0 || this.options.canary && !this.options.dry)
-        {
-            await this.restorePackages();
-        }
+            if (this.errors.length > 0 || this.options.canary && !this.options.dry)
+            {
+                await this.restorePackages();
+            }
 
-        if (this.errors.length > 0)
-        {
-            this.logger.warn("Publishing done with errors!");
+            if (this.errors.length > 0)
+            {
+                this.logger.warn("Publishing done with errors!");
 
-            throw new AggregateError(this.errors);
-        }
-        else
-        {
-            this.logger.info("Publishing Done!");
+                throw new AggregateError(this.errors);
+            }
+            else
+            {
+                this.logger.info("Publishing Done!");
+            }
         }
     }
 
@@ -514,19 +550,21 @@ export default class Publisher
     public async unpublish(tag: string): Promise<void>
     {
         await this.loadConfig();
-        await this.loadMetadata();
 
-        await this.unpublishEntries(tag, this.workspace, this.config);
-
-        if (this.errors.length > 0)
+        if (await this.loadMetadata())
         {
-            this.logger.warn("Unpublishing done with errors!");
+            await this.unpublishEntries(tag, this.workspace, this.config);
 
-            throw new AggregateError(this.errors);
-        }
-        else
-        {
-            this.logger.info("Unpublishing Done!");
+            if (this.errors.length > 0)
+            {
+                this.logger.warn("Unpublishing done with errors!");
+
+                throw new AggregateError(this.errors);
+            }
+            else
+            {
+                this.logger.info("Unpublishing Done!");
+            }
         }
     }
 }

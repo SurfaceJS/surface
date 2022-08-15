@@ -21,7 +21,7 @@ type TsConfig =
 
 const logger = new Logger(LogLevel.Trace);
 
-export async function execute(command: string, color: boolean = false): Promise<void>
+async function execute(command: string, color: boolean = false): Promise<void>
 {
     await new Promise<void>
     (

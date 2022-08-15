@@ -1,16 +1,17 @@
-import { type Stats, existsSync }                                          from "fs";
-import { readFile, readdir, stat, writeFile }                              from "fs/promises";
-import path                                                                from "path";
-import Logger                                                              from "@surface/logger";
-import Mock, { It }                                                        from "@surface/mock";
+import { type Stats, existsSync }                                                from "fs";
+import { readFile, readdir, stat, writeFile }                                    from "fs/promises";
+import path                                                                      from "path";
+import Logger                                                                    from "@surface/logger";
+import Mock, { It }                                                              from "@surface/mock";
 import { afterEach, batchTest, beforeEach, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import chai                                                                from "chai";
-import chaiAsPromised                                                      from "chai-as-promised";
-import pack                                                                from "libnpmpack";
-import type { Manifest }                                                   from "pacote";
-import Status                                                              from "../internal/enums/status.js";
-import NpmRepository                                                       from "../internal/npm-repository.js";
-import Publisher                                                           from "../internal/publisher.js";
+import chai                                                                      from "chai";
+import chaiAsPromised                                                            from "chai-as-promised";
+import pack                                                                      from "libnpmpack";
+import type { Manifest }                                                         from "pacote";
+import { execute }                                                               from "../internal/common.js";
+import Status                                                                    from "../internal/enums/status.js";
+import NpmRepository                                                             from "../internal/npm-repository.js";
+import Publisher                                                                 from "../internal/publisher.js";
 import
 {
     type BumpScenario,
@@ -31,6 +32,7 @@ import type VirtualDirectory from "./types/virtual-directory";
 
 chai.use(chaiAsPromised);
 
+const executeMock       = Mock.of(execute);
 const existsSyncMock    = Mock.of(existsSync);
 const loggerMock        = Mock.instance<Logger>();
 const LoggerMock        = Mock.of(Logger);
@@ -41,6 +43,8 @@ const readdirMock       = Mock.of(readdir);
 const readFileMock      = Mock.of(readFile);
 const statMock          = Mock.of(stat);
 const writeFileMock     = Mock.of(writeFile);
+
+executeMock.call(It.any(), It.any()).resolve();
 
 loggerMock.setup("debug").call(It.any());
 loggerMock.setup("error").call(It.any());

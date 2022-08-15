@@ -33,10 +33,11 @@
         "lint": "eslint . --cache --ext .ts",
         "postinstall": "npm run ts:build",
         "prepare": "husky install .husky",
+        "prepublishworkspace":      "tasks build-release",
         "publisher:bump":           "publisher bump patch --packages=packages/@surface/* --log-level=trace --dry",
-        "publisher:publish":        "tasks build-release && publisher publish   --packages=packages/@surface/* --log-level=trace --dry",
-        "publisher:publish-canary": "tasks build-release && publisher publish   --packages=packages/@surface/* --log-level=trace --dry --canary",
-        "publisher:unpublish":      "publisher unpublish --packages=packages/@surface/* --log-level=trace --dry",
+        "publisher:publish":        "publisher publish    --packages=packages/@surface/* --log-level=trace --dry",
+        "publisher:publish-canary": "publisher publish    --log-level=trace --dry --canary",
+        "publisher:unpublish":      "publisher unpublish  --packages=packages/@surface/* --log-level=trace --dry",
         "reinstall": "npm run clean && npm i",
         "test": "mocha --loader=@surface/mock-loader --require=./tasks/polyfill.js **/packages/@surface/*/tests/**/*.spec.js",
         "test-summary": "npm test -- --reporter=progress",
@@ -47,7 +48,7 @@
         "ts:watch": "tsc --build --watch"
     },
     "type": "module",
-    "version": "1.0.0",
+    "version": "0.0.0",
     "workspaces": [
         "./packages/@surface/*",
         "./tasks"

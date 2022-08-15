@@ -31,7 +31,8 @@
     ],
     "license": "MIT",
     "main": "cli.js",
-    "name": "tasks",
+    "name": "@private/tasks",
+    "private": true,
     "repository": {
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/surface.git"
