@@ -29,102 +29,21 @@ export const validScenarios: PublishScenario[] =
         skip,
     },
     {
-        message:   "Publish package already in registry",
+        message:   "Dry run publish single package",
         options:
         {
-            registry: "https://test.com",
-            packages: ["packages/*"],
-        },
-        registry:
-        {
-            "package-a": Status.InRegistry,
-        },
-        directory:
-        {
-            "./packages":
-            {
-                "./package-a/package.json": JSON.stringify
-                (
-                    {
-                        name:    "package-a",
-                        version: "0.0.1",
-                    } as Partial<Manifest>,
-                ),
-            },
-        },
-        expected:  { published: [] },
-        skip,
-    },
-    {
-        message:   "Publish private package",
-        options:
-        {
-            logLevel: LogLevel.Trace,
-            packages:
-            [
-                "packages/*",
-            ],
-        },
-        registry:
-        {
-            "package-a": Status.New,
-            "package-b": Status.New,
-        },
-        directory:
-        {
-            "./packages":
-            {
-                "./package-a/package.json": JSON.stringify
-                (
-                    {
-                        name:    "package-a",
-                        version: "0.0.1",
-                    } as Partial<Manifest>,
-                ),
-                "./package-b/package.json": JSON.stringify
-                (
-                    {
-                        private: true,
-                        name:    "package-b",
-                        version: "0.0.1",
-                    } as Partial<Manifest>,
-                ),
-            },
-        },
-        expected:  { published: ["package-a"] },
-        skip,
-    },
-    {
-        message:   "Run multiple dry publications",
-        options:
-        {
-            dry:      true,
-            logLevel: LogLevel.Trace,
-            packages:
-            [
-                "packages/*",
-            ],
+            dry: true,
         },
         registry:  { },
         directory:
         {
-            "./packages":
-            {
-                "./package-a/package.json": JSON.stringify
-                (
-                    {
-                        name:    "package-a",
-                        version: "0.0.1",
-                    } as Partial<Manifest>,
-                ),
-                "./package-b/package.json": JSON.stringify
-                (
-                    {
-                        name:    "package-b",
-                        version: "0.1.0",
-                    } as Partial<Manifest>,
-                ),
-            },
+            "./package.json": JSON.stringify
+            (
+                {
+                    name:    "package-a",
+                    version: "1.0.0",
+                } as Partial<Manifest>,
+            ),
         },
         expected:
         {
@@ -133,18 +52,87 @@ export const validScenarios: PublishScenario[] =
         skip,
     },
     {
-        message:   "Publish multiples packages",
+        message:   "Dry run publish workspaces",
         options:
         {
-            logLevel: LogLevel.Trace,
-            packages:
-            [
-                "packages/*",
-            ],
+            dry: true,
         },
+        registry:  { },
+        directory:
+        {
+            "./package.json": JSON.stringify
+            (
+                {
+                    name:       "package-root",
+                    version:    "1.0.0",
+                    workspaces: [],
+                } as Partial<Manifest>,
+            ),
+        },
+        expected:
+        {
+            published: [],
+        },
+        skip,
+    },
+    {
+        message:  "Publish private package",
+        options:  { },
+        registry:
+        {
+            "package-a": Status.InRegistry,
+        },
+        directory:
+        {
+            "./package.json": JSON.stringify
+            (
+                {
+                    private: true,
+                    name:    "package-a",
+                    version: "0.0.1",
+                } as Partial<Manifest>,
+            ),
+        },
+        expected:  { published: [] },
+        skip,
+    },
+    {
+        message:   "Publish package already in registry",
+        options:
+        {
+            registry: "https://test.com",
+        },
+        registry:
+        {
+            "package-a": Status.InRegistry,
+        },
+        directory:
+        {
+            "./package.json": JSON.stringify
+            (
+                {
+                    name:    "package-a",
+                    version: "0.0.1",
+                } as Partial<Manifest>,
+            ),
+        },
+        expected:  { published: [] },
+        skip,
+    },
+    {
+        message:   "Publish workspaces packages",
+        options:   { },
         registry:  { "package-b": Status.InRegistry },
         directory:
         {
+            "./package.json": JSON.stringify
+            (
+                {
+                    name:       "package-root",
+                    version:    "1.0.0",
+                    workspaces: ["packages/*"],
+                } as Partial<Manifest>,
+            ),
             "./packages":
             {
                 "./package-a/package.json": JSON.stringify
@@ -168,6 +156,48 @@ export const validScenarios: PublishScenario[] =
             published:
             [
                 "package-a",
+            ],
+        },
+        skip,
+    },
+    {
+        message:   "Publish workspaces packages and include workspaces root",
+        options:   { includeWorkspacesRoot: true },
+        registry:  { "package-b": Status.InRegistry },
+        directory:
+        {
+            "./package.json": JSON.stringify
+            (
+                {
+                    name:       "package-root",
+                    version:    "1.0.0",
+                    workspaces: ["packages/*"],
+                } as Partial<Manifest>,
+            ),
+            "./packages":
+            {
+                "./package-a/package.json": JSON.stringify
+                (
+                    {
+                        name:    "package-a",
+                        version: "0.0.1",
+                    } as Partial<Manifest>,
+                ),
+                "./package-b/package.json": JSON.stringify
+                (
+                    {
+                        name:    "package-b",
+                        version: "0.1.0",
+                    } as Partial<Manifest>,
+                ),
+            },
+        },
+        expected:
+        {
+            published:
+            [
+                "package-a",
+                "package-root",
             ],
         },
         skip,

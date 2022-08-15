@@ -67,7 +67,7 @@ export type Options =
     registry?: string,
 
     /** Sync file references when bumping */
-    syncFileReferences?: boolean,
+    updateFileReferences?: boolean,
 
     /** Timestamp used by canary release */
     timestamp?: string,
@@ -109,7 +109,7 @@ export default class Publisher
     {
         if (packages && cwd)
         {
-            const lookup: Metadata[] = [];
+            const workspaces: Metadata[] = [];
 
             for await (const path of enumeratePaths(packages, { base: cwd }))
             {
@@ -118,27 +118,27 @@ export default class Publisher
 
                 this.backup.set(path, content);
 
-                let workspace: Metadata[] | undefined;
+                let packageWorkspaces: Metadata[] | undefined;
 
                 const parentPath = dirname(path);
 
                 if (Array.isArray(manifest.workspaces))
                 {
-                    workspace = await this.loadMetadata(manifest.workspaces.map(this.normalizePattern), parentPath);
+                    packageWorkspaces = await this.loadMetadata(manifest.workspaces.map(this.normalizePattern), parentPath);
                 }
 
                 const metadata: Metadata =
                 {
-                    config: await NpmConfig.load(parentPath, process.env),
+                    config:    await NpmConfig.load(parentPath, process.env),
                     manifest,
                     path,
-                    workspace,
+                    workspace: packageWorkspaces,
                 };
 
-                lookup.push(metadata);
+                workspaces.push(metadata);
             }
 
-            return lookup;
+            return workspaces;
         }
 
         if (!this.loaded)
@@ -264,7 +264,7 @@ export default class Publisher
             }
             else
             {
-                this.logger.trace(`Package ${metadata.manifest.name} is ${metadata.workspace ? "an workspace" : "private"}, publishing ignored...`);
+                this.logger.trace(`Package ${metadata.manifest.name} is ${metadata.manifest.private ? "private" : "an workspace"}, publishing ignored...`);
             }
 
             if (metadata.workspace)
@@ -290,7 +290,7 @@ export default class Publisher
         {
             if (this.options.includeWorkspacesRoot || !entry.workspace)
             {
-                this.syncDependents(workspace, entry, true);
+                this.syncWorkspace(workspace, entry, true);
             }
 
             if (entry.workspace)
@@ -300,8 +300,7 @@ export default class Publisher
         }
     }
 
-    // eslint-disable-next-line max-len
-    private syncDependents(workspace: Metadata[], metadata: Metadata, syncFileReferences: boolean, dependencyType?: "dependencies" | "devDependencies" | "peerDependencies"): void
+    private syncWorkspace(workspace: Metadata[], metadata: Metadata, syncFileReferences: boolean, dependencyType?: "dependencies" | "devDependencies" | "peerDependencies"): void
     {
         if (dependencyType)
         {
@@ -323,9 +322,9 @@ export default class Publisher
         }
         else
         {
-            this.syncDependents(workspace, metadata, syncFileReferences, "dependencies");
-            this.syncDependents(workspace, metadata, syncFileReferences, "devDependencies");
-            this.syncDependents(workspace, metadata, syncFileReferences, "peerDependencies");
+            this.syncWorkspace(workspace, metadata, syncFileReferences, "dependencies");
+            this.syncWorkspace(workspace, metadata, syncFileReferences, "devDependencies");
+            this.syncWorkspace(workspace, metadata, syncFileReferences, "peerDependencies");
         }
     }
 
@@ -386,9 +385,9 @@ export default class Publisher
                 this.logger.trace(`Package ${metadata.manifest.name} is private, bump ignored...`);
             }
 
-            if (this.options.includeWorkspacesRoot || !metadata.workspace)
+            if (workspace != this.workspace && (this.options.includeWorkspacesRoot || !metadata.workspace))
             {
-                this.syncDependents(workspace, metadata, !!(this.options.syncFileReferences ?? this.options.canary));
+                this.syncWorkspace(workspace, metadata, !!(this.options.updateFileReferences ?? this.options.canary));
             }
 
             if (metadata.workspace)
@@ -442,7 +441,7 @@ export default class Publisher
             }
             else
             {
-                this.logger.trace(`Package ${metadata.manifest.name} is ${metadata.workspace ? "an workspace" : "private"}, unpublishing ignored...`);
+                this.logger.trace(`Package ${metadata.manifest.name} is ${metadata.manifest.private ? "private" : "an workspace"}, unpublishing ignored...`);
             }
 
             if (metadata.workspace)

@@ -1,5 +1,3 @@
-import { join }              from "path";
-import { LogLevel }          from "@surface/logger";
 import type { Manifest }     from "pacote";
 import Status                from "../internal/enums/status.js";
 import type { Options }      from "../internal/publisher.js";
@@ -28,102 +26,21 @@ export const validScenarios: UnpublishScenario[] =
         skip,
     },
     {
-        message:   "Unpublish package not in registry",
-        options:   { },
-        registry:
-        {
-            "package-a": Status.New,
-        },
-        directory:
-        {
-            "./packages":
-            {
-                "./package-a/package.json": JSON.stringify
-                (
-                    {
-                        name:    "package-a",
-                        version: "0.0.1",
-                    } as Partial<Manifest>,
-                ),
-            },
-        },
-        expected:  { unpublished: [] },
-        skip,
-    },
-    {
-        message:   "Unpublish private package",
-        options:
-        {
-            logLevel: LogLevel.Trace,
-            packages:
-            [
-                "packages/*",
-            ],
-        },
+        message:  "Dry run",
+        options:  { dry: true },
         registry:
         {
             "package-a": Status.InRegistry,
-            "package-b": Status.InRegistry,
         },
         directory:
         {
-            "./packages":
-            {
-                "./package-a/package.json": JSON.stringify
-                (
-                    {
-                        name:    "package-a",
-                        version: "0.0.1",
-                    } as Partial<Manifest>,
-                ),
-                "./package-b/package.json": JSON.stringify
-                (
-                    {
-                        private: true,
-                        name:    "package-b",
-                        version: "0.0.1",
-                    } as Partial<Manifest>,
-                ),
-            },
-        },
-        expected:  { unpublished: ["package-a"] },
-        skip,
-    },
-    {
-        message:   "Run multiple dry unpublications",
-        options:
-        {
-            dry:      true,
-            logLevel: LogLevel.Trace,
-            packages:
-            [
-                "packages/*",
-            ],
-        },
-        registry:
-        {
-            "package-a": Status.InRegistry,
-            "package-b": Status.InRegistry,
-        },
-        directory:
-        {
-            "./packages":
-            {
-                "./package-a/package.json": JSON.stringify
-                (
-                    {
-                        name:    "package-a",
-                        version: "0.0.1",
-                    } as Partial<Manifest>,
-                ),
-                "./package-b/package.json": JSON.stringify
-                (
-                    {
-                        name:    "package-b",
-                        version: "0.1.0",
-                    } as Partial<Manifest>,
-                ),
-            },
+            "./package.json": JSON.stringify
+            (
+                {
+                    name:    "package-a",
+                    version: "1.0.0",
+                } as Partial<Manifest>,
+            ),
         },
         expected:
         {
@@ -132,104 +49,49 @@ export const validScenarios: UnpublishScenario[] =
         skip,
     },
     {
-        message:   "Unpublish multiples packages",
-        options:
-        {
-            logLevel: LogLevel.Trace,
-            packages:
-            [
-                "packages/*",
-            ],
-        },
+        message:  "Unpublish private package",
+        options:  { },
         registry:
         {
             "package-a": Status.InRegistry,
-            "package-b": Status.New,
         },
         directory:
         {
-            "./packages":
-            {
-                "./package-a/package.json": JSON.stringify
-                (
-                    {
-                        name:    "package-a",
-                        version: "0.0.1",
-                    } as Partial<Manifest>,
-                ),
-                "./package-b/package.json": JSON.stringify
-                (
-                    {
-                        name:    "package-b",
-                        version: "0.1.0",
-                    } as Partial<Manifest>,
-                ),
-            },
+            "./package.json": JSON.stringify
+            (
+                {
+                    private: true,
+                    name:    "package-a",
+                    version: "0.0.1",
+                } as Partial<Manifest>,
+            ),
         },
-        expected:
-        {
-            unpublished:
-            [
-                "package-a",
-            ],
-        },
+        expected:  { unpublished: [] },
         skip,
     },
     {
-        message:   "Unpublish multiples packages with npmrc authentication",
-        options:
-        {
-            logLevel: LogLevel.Trace,
-            packages:
-            [
-                "packages/*",
-            ],
-        },
+        message:   "Unpublish package not in registry",
+        options:   { },
         registry:
         {
-            "package-a": Status.InRegistry,
-            "package-b": Status.New,
+            "package-a": Status.New,
         },
         directory:
         {
-            [join(process.cwd(), ".npmrc")]: "registry=https://test.com\n_authToken=123",
-            "./packages":
-            {
-                "./package-a/package.json": JSON.stringify
-                (
-                    {
-                        name:    "package-a",
-                        version: "0.0.1",
-                    } as Partial<Manifest>,
-                ),
-                "./package-b/package.json": JSON.stringify
-                (
-                    {
-                        name:    "package-b",
-                        version: "0.1.0",
-                    } as Partial<Manifest>,
-                ),
-            },
+            "./package.json": JSON.stringify
+            (
+                {
+                    name:    "package-a",
+                    version: "0.0.1",
+                } as Partial<Manifest>,
+            ),
         },
-        expected:
-        {
-            unpublished:
-            [
-                "package-a",
-            ],
-        },
+        expected:  { unpublished: [] },
         skip,
     },
     {
-        message:   "Unpublish multiples packages with dependency",
-        options:
-        {
-            logLevel: LogLevel.Trace,
-            packages:
-            [
-                "packages/*",
-            ],
-        },
+        message:  "Unpublish workspaces",
+        options:  { },
         registry:
         {
             "package-a": Status.InRegistry,
@@ -237,6 +99,14 @@ export const validScenarios: UnpublishScenario[] =
         },
         directory:
         {
+            "./package.json": JSON.stringify
+            (
+                {
+                    name:       "package-root",
+                    version:    "1.0.0",
+                    workspaces: ["packages/*"],
+                } as Partial<Manifest>,
+            ),
             "./packages":
             {
                 "./package-a/package.json": JSON.stringify
@@ -249,11 +119,7 @@ export const validScenarios: UnpublishScenario[] =
                 "./package-b/package.json": JSON.stringify
                 (
                     {
-                        name:         "package-b",
-                        dependencies:
-                        {
-                            "package-a": "0.0.1",
-                        },
+                        name:    "package-b",
                         version: "0.1.0",
                     } as Partial<Manifest>,
                 ),
@@ -265,6 +131,52 @@ export const validScenarios: UnpublishScenario[] =
             [
                 "package-a",
                 "package-b",
+            ],
+        },
+        skip,
+    },
+    {
+        message:  "Unpublish workspaces with npmrc authentication",
+        options:  { },
+        registry:
+        {
+            "package-a": Status.InRegistry,
+            "package-b": Status.New,
+        },
+        directory:
+        {
+            "./package.json": JSON.stringify
+            (
+                {
+                    name:       "package-root",
+                    version:    "1.0.0",
+                    workspaces: ["packages/*"],
+                } as Partial<Manifest>,
+            ),
+            "./.npmrc":   "registry=https://test.com\n_authToken=123",
+            "./packages":
+            {
+                "./package-a/package.json": JSON.stringify
+                (
+                    {
+                        name:    "package-a",
+                        version: "0.0.1",
+                    } as Partial<Manifest>,
+                ),
+                "./package-b/package.json": JSON.stringify
+                (
+                    {
+                        name:    "package-b",
+                        version: "0.1.0",
+                    } as Partial<Manifest>,
+                ),
+            },
+        },
+        expected:
+        {
+            unpublished:
+            [
+                "package-a",
             ],
         },
         skip,

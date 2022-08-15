@@ -9,111 +9,237 @@ const skip = false;
 
 export type BumpScenario =
 {
+    skip:      boolean,
     message:   string,
     options:   Options,
     directory: VirtualDirectory,
     expected:  Record<string, Partial<Manifest>>,
     bumpArgs:  ParameterOverloads<Publisher["bump"]>,
-    skip:      boolean,
 };
 
 export const validScenarios: BumpScenario[] =
 [
     {
+
+        skip,
         message:   "Bump with no updates",
         options:   { },
         directory: { },
         expected:  { },
         bumpArgs:  ["major"],
-        skip,
     },
     {
-        message:   "Run multiples dry bumps",
-        options:
-        {
-            dry:      true,
-            logLevel: LogLevel.Trace,
-            packages:
-            [
-                "packages/*",
-            ],
-        },
-        bumpArgs:  ["minor"],
+
+        skip,
+        message:   "Dry run Bump single package",
+        options:   { dry: true },
         directory:
         {
-            "./packages":
-            {
-                "./package-a/package.json": JSON.stringify
-                (
-                    {
-                        name:    "package-a",
-                        version: "0.0.1",
-                    } as Partial<Manifest>,
-                ),
-                "./package-b/package.json": JSON.stringify
-                (
-                    {
-                        name:         "package-b",
-                        dependencies:
-                        {
-                            "package-a": "file:../package-a",
-                        },
-                        version: "0.1.0",
-                    } as Partial<Manifest>,
-                ),
-                "./package-c/package.json": JSON.stringify
-                (
-                    {
-                        name:         "package-c",
-                        dependencies:
-                        {
-                            "package-a": "file:../package-a",
-                        },
-                        devDependencies:
-                        {
-                            "package-b": "file:../package-b",
-                        },
-                        version: "1.0.0",
-                    } as Partial<Manifest>,
-                ),
-                "./package-d/package.json": JSON.stringify
-                (
-                    {
-                        name:         "package-d",
-                        dependencies:
-                        {
-                            "package-a": "file:../package-a",
-                        },
-                        devDependencies:
-                        {
-                            "package-b": "file:../package-b",
-                        },
-                        peerDependencies:
-                        {
-                            "package-c": "file:../package-c",
-                        },
-                        version: "1.0.1",
-                    } as Partial<Manifest>,
-                ),
-            },
+            "./package.json": JSON.stringify
+            (
+                {
+                    name:    "package-a",
+                    version: "0.0.1",
+                } as Partial<Manifest>,
+            ),
         },
         expected: { },
-        skip,
+        bumpArgs: ["major"],
     },
     {
-        message:   "Bump with multiples updates without file references syncing",
+
+        skip,
+        message:   "Dry run Bump workspace",
+        options:   { dry: true },
+        directory:
+        {
+            "./package.json": JSON.stringify
+            (
+                {
+                    name:    "package-root",
+                    version: "1.0.0",
+                } as Partial<Manifest>,
+            ),
+            "./packages/package-a/package.json": JSON.stringify
+            (
+                {
+                    name:    "package-a",
+                    version: "1.0.0",
+                } as Partial<Manifest>,
+            ),
+            "./packages/package-b/package.json": JSON.stringify
+            (
+                {
+                    name:    "package-b",
+                    version: "1.0.0",
+                } as Partial<Manifest>,
+            ),
+        },
+        expected: { },
+        bumpArgs: ["major"],
+    },
+    {
+        skip,
+        message:   "Bump private package",
+        options:   { dry: true },
+        directory:
+        {
+            "./package.json": JSON.stringify
+            (
+                {
+                    private: true,
+                    name:    "package-a",
+                    version: "1.0.0",
+                } as Partial<Manifest>,
+            ),
+        },
+        expected: { },
+        bumpArgs: ["major"],
+    },
+    {
+        skip,
+        message:   "Bump single package",
+        options:   { },
+        directory:
+        {
+            "./package.json": JSON.stringify
+            (
+                {
+                    name:    "package-a",
+                    version: "1.0.0",
+                } as Partial<Manifest>,
+            ),
+        },
+        expected:
+        {
+            "package-a":
+            {
+                name:    "package-a",
+                version: "2.0.0",
+            },
+        },
+        bumpArgs:  ["major"],
+    },
+    {
+
+        skip,
+        message:   "Bump workspaces",
+        options:   { },
+        directory:
+        {
+            "./package.json": JSON.stringify
+            (
+                {
+                    name:       "package-root",
+                    version:    "1.0.0",
+                    workspaces: ["packages/*"],
+                } as Partial<Manifest>,
+            ),
+            "./packages/package-a/package.json": JSON.stringify
+            (
+                {
+                    name:    "package-a",
+                    version: "1.0.0",
+                } as Partial<Manifest>,
+            ),
+            "./packages/package-b/package.json": JSON.stringify
+            (
+                {
+                    name:    "package-b",
+                    version: "1.0.0",
+                } as Partial<Manifest>,
+            ),
+        },
+        expected:
+        {
+            "package-root":
+            {
+                name:       "package-root",
+                version:    "2.0.0",
+                workspaces: ["packages/*"],
+            },
+            "package-a":
+            {
+                name:    "package-a",
+                version: "2.0.0",
+            },
+            "package-b":
+            {
+                name:    "package-b",
+                version: "2.0.0",
+            },
+        },
+        bumpArgs: ["major"],
+    },
+    {
+        skip,
+        message:   "Bump workspace with independent version",
+        options:   { independentVersion: true },
+        directory:
+        {
+            "./package.json": JSON.stringify
+            (
+                {
+                    name:       "package-root",
+                    version:    "1.0.0",
+                    workspaces: ["packages/*"],
+                } as Partial<Manifest>,
+            ),
+            "./packages/package-a/package.json": JSON.stringify
+            (
+                {
+                    name:    "package-a",
+                    version: "2.0.0",
+                } as Partial<Manifest>,
+            ),
+            "./packages/package-b/package.json": JSON.stringify
+            (
+                {
+                    name:    "package-b",
+                    version: "3.0.0",
+                } as Partial<Manifest>,
+            ),
+        },
+        expected:
+        {
+            "package-root":
+            {
+                name:       "package-root",
+                version:    "2.0.0",
+                workspaces: ["packages/*"],
+            },
+            "package-a":
+            {
+                name:    "package-a",
+                version: "3.0.0",
+            },
+            "package-b":
+            {
+                name:    "package-b",
+                version: "4.0.0",
+            },
+        },
+        bumpArgs: ["major"],
+    },
+    {
+        skip,
+        message: "Bump workspace without file reference update",
         options:
         {
-            logLevel: LogLevel.Trace,
-            packages:
-            [
-                "packages/*",
-            ],
-            syncFileReferences: false,
+            logLevel:           LogLevel.Trace,
+            independentVersion: true,
         },
         bumpArgs:  ["minor"],
         directory:
         {
+            "./package.json": JSON.stringify
+            (
+                {
+                    name:       "package-root",
+                    version:    "1.0.0",
+                    workspaces: ["packages/*"],
+                } as Partial<Manifest>,
+            ),
             "./packages":
             {
                 "./package-a/package.json": JSON.stringify
@@ -172,6 +298,12 @@ export const validScenarios: BumpScenario[] =
         },
         expected:
         {
+            "package-root":
+            {
+                name:       "package-root",
+                version:    "1.1.0",
+                workspaces: ["packages/*"],
+            },
             "package-a":
             {
                 name:    "package-a",
@@ -217,22 +349,27 @@ export const validScenarios: BumpScenario[] =
                 version: "1.1.0",
             },
         },
-        skip,
     },
     {
-        message:   "Bump with multiples updates",
+        skip:    false,
+        message: "Bump workspace with file reference update",
         options:
         {
-            logLevel: LogLevel.Trace,
-            packages:
-            [
-                "packages/*",
-            ],
-            syncFileReferences: true,
+            logLevel:             LogLevel.Trace,
+            independentVersion:   true,
+            updateFileReferences: true,
         },
         bumpArgs:  ["minor"],
         directory:
         {
+            "./package.json": JSON.stringify
+            (
+                {
+                    name:       "package-root",
+                    version:    "1.0.0",
+                    workspaces: ["packages/*"],
+                } as Partial<Manifest>,
+            ),
             "./packages":
             {
                 "./package-a/package.json": JSON.stringify
@@ -291,6 +428,12 @@ export const validScenarios: BumpScenario[] =
         },
         expected:
         {
+            "package-root":
+            {
+                name:       "package-root",
+                version:    "1.1.0",
+                workspaces: ["packages/*"],
+            },
             "package-a":
             {
                 name:    "package-a",
@@ -336,77 +479,21 @@ export const validScenarios: BumpScenario[] =
                 version: "1.1.0",
             },
         },
-        skip,
     },
     {
-        message:   "Bump prerelease",
-        options:
-        {
-            logLevel: LogLevel.Trace,
-            packages:
-            [
-                "packages/*",
-            ],
-            syncFileReferences: true,
-        },
+        skip,
+        message:   "Bump prerelease with identifier",
+        options:   { },
         bumpArgs:  ["prerelease", "alpha"],
         directory:
         {
-            "./packages":
-            {
-                "./package-a/package.json": JSON.stringify
-                (
-                    {
-                        name:    "package-a",
-                        version: "0.0.1",
-                    } as Partial<Manifest>,
-                ),
-                "./package-b/package.json": JSON.stringify
-                (
-                    {
-                        name:         "package-b",
-                        dependencies:
-                        {
-                            "package-a": "file:../package-a",
-                        },
-                        version: "0.1.0",
-                    } as Partial<Manifest>,
-                ),
-                "./package-c/package.json": JSON.stringify
-                (
-                    {
-                        name:         "package-c",
-                        dependencies:
-                        {
-                            "package-a": "file:../package-a",
-                        },
-                        devDependencies:
-                        {
-                            "package-b": "file:../package-b",
-                        },
-                        version: "1.0.0",
-                    } as Partial<Manifest>,
-                ),
-                "./package-d/package.json": JSON.stringify
-                (
-                    {
-                        name:         "package-d",
-                        dependencies:
-                        {
-                            "package-a": "file:../package-a",
-                        },
-                        devDependencies:
-                        {
-                            "package-b": "file:../package-b",
-                        },
-                        peerDependencies:
-                        {
-                            "package-c": "file:../package-c",
-                        },
-                        version: "1.0.1",
-                    } as Partial<Manifest>,
-                ),
-            },
+            "./package.json": JSON.stringify
+            (
+                {
+                    name:    "package-a",
+                    version: "0.0.1",
+                } as Partial<Manifest>,
+            ),
         },
         expected:
         {
@@ -415,117 +502,22 @@ export const validScenarios: BumpScenario[] =
                 name:    "package-a",
                 version: "0.0.2-alpha.0",
             },
-            "package-b":
-            {
-                name:         "package-b",
-                dependencies:
-                {
-                    "package-a": "~0.0.2-alpha.0",
-                },
-                version: "0.1.1-alpha.0",
-            },
-            "package-c":
-            {
-                name:         "package-c",
-                dependencies:
-                {
-                    "package-a": "~0.0.2-alpha.0",
-                },
-                devDependencies:
-                {
-                    "package-b": "~0.1.1-alpha.0",
-                },
-                version: "1.0.1-alpha.0",
-            },
-            "package-d":
-            {
-                name:         "package-d",
-                dependencies:
-                {
-                    "package-a": "~0.0.2-alpha.0",
-                },
-                devDependencies:
-                {
-                    "package-b": "~0.1.1-alpha.0",
-                },
-                peerDependencies:
-                {
-                    "package-c": "~1.0.1-alpha.0",
-                },
-                version: "1.0.2-alpha.0",
-            },
         },
-        skip,
     },
     {
-        message:   "Bump prerelease",
-        options:
-        {
-            logLevel: LogLevel.Trace,
-            packages:
-            [
-                "packages/*",
-            ],
-            syncFileReferences: true,
-        },
+        skip,
+        message:   "Bump with custom version",
+        options:   { },
         bumpArgs:  ["custom", "1.0.0-alpha"],
         directory:
         {
-            "./packages":
-            {
-                "./package-a/package.json": JSON.stringify
-                (
-                    {
-                        name:    "package-a",
-                        version: "0.0.1",
-                    } as Partial<Manifest>,
-                ),
-                "./package-b/package.json": JSON.stringify
-                (
-                    {
-                        name:         "package-b",
-                        dependencies:
-                        {
-                            "package-a": "0.0.1",
-                        },
-                        version: "0.1.0",
-                    } as Partial<Manifest>,
-                ),
-                "./package-c/package.json": JSON.stringify
-                (
-                    {
-                        name:         "package-c",
-                        dependencies:
-                        {
-                            "package-a": "file:../package-a",
-                        },
-                        devDependencies:
-                        {
-                            "package-b": "file:../package-b",
-                        },
-                        version: "1.0.0",
-                    } as Partial<Manifest>,
-                ),
-                "./package-d/package.json": JSON.stringify
-                (
-                    {
-                        name:         "package-d",
-                        dependencies:
-                        {
-                            "package-a": "file:../package-a",
-                        },
-                        devDependencies:
-                        {
-                            "package-b": "file:../package-b",
-                        },
-                        peerDependencies:
-                        {
-                            "package-c": "file:../package-c",
-                        },
-                        version: "1.0.1",
-                    } as Partial<Manifest>,
-                ),
-            },
+            "./package.json": JSON.stringify
+            (
+                {
+                    name:    "package-a",
+                    version: "0.0.1",
+                } as Partial<Manifest>,
+            ),
         },
         expected:
         {
@@ -534,117 +526,22 @@ export const validScenarios: BumpScenario[] =
                 name:    "package-a",
                 version: "1.0.0-alpha",
             },
-            "package-b":
-            {
-                name:         "package-b",
-                dependencies:
-                {
-                    "package-a": "~1.0.0-alpha",
-                },
-                version: "1.0.0-alpha",
-            },
-            "package-c":
-            {
-                name:         "package-c",
-                dependencies:
-                {
-                    "package-a": "~1.0.0-alpha",
-                },
-                devDependencies:
-                {
-                    "package-b": "~1.0.0-alpha",
-                },
-                version: "1.0.0-alpha",
-            },
-            "package-d":
-            {
-                name:         "package-d",
-                dependencies:
-                {
-                    "package-a": "~1.0.0-alpha",
-                },
-                devDependencies:
-                {
-                    "package-b": "~1.0.0-alpha",
-                },
-                peerDependencies:
-                {
-                    "package-c": "~1.0.0-alpha",
-                },
-                version: "1.0.0-alpha",
-            },
         },
-        skip,
     },
     {
+        skip,
         message:   "Bump with glob prerelease",
-        options:
-        {
-            logLevel: LogLevel.Trace,
-            packages:
-            [
-                "packages/*",
-            ],
-            syncFileReferences: true,
-        },
+        options:   { },
         bumpArgs:  ["custom", "*-dev+2022.5"],
         directory:
         {
-            "./packages":
-            {
-                "./package-a/package.json": JSON.stringify
-                (
-                    {
-                        name:    "package-a",
-                        version: "0.0.1",
-                    } as Partial<Manifest>,
-                ),
-                "./package-b/package.json": JSON.stringify
-                (
-                    {
-                        name:         "package-b",
-                        dependencies:
-                        {
-                            "package-a": "file:../package-a",
-                        },
-                        version: "0.1.0",
-                    } as Partial<Manifest>,
-                ),
-                "./package-c/package.json": JSON.stringify
-                (
-                    {
-                        name:         "package-c",
-                        dependencies:
-                        {
-                            "package-a": "file:../package-a",
-                        },
-                        devDependencies:
-                        {
-                            "package-b": "file:../package-b",
-                        },
-                        version: "1.0.0",
-                    } as Partial<Manifest>,
-                ),
-                "./package-d/package.json": JSON.stringify
-                (
-                    {
-                        name:         "package-d",
-                        dependencies:
-                        {
-                            "package-a": "file:../package-a",
-                        },
-                        devDependencies:
-                        {
-                            "package-b": "file:../package-b",
-                        },
-                        peerDependencies:
-                        {
-                            "package-c": "file:../package-c",
-                        },
-                        version: "1.0.1",
-                    } as Partial<Manifest>,
-                ),
-            },
+            "./package.json": JSON.stringify
+            (
+                {
+                    name:    "package-a",
+                    version: "0.0.1",
+                } as Partial<Manifest>,
+            ),
         },
         expected:
         {
@@ -653,53 +550,14 @@ export const validScenarios: BumpScenario[] =
                 name:    "package-a",
                 version: "0.0.1-dev+2022.5",
             },
-            "package-b":
-            {
-                name:         "package-b",
-                dependencies:
-                {
-                    "package-a": "~0.0.1-dev+2022.5",
-                },
-                version: "0.1.0-dev+2022.5",
-            },
-            "package-c":
-            {
-                name:         "package-c",
-                dependencies:
-                {
-                    "package-a": "~0.0.1-dev+2022.5",
-                },
-                devDependencies:
-                {
-                    "package-b": "~0.1.0-dev+2022.5",
-                },
-                version: "1.0.0-dev+2022.5",
-            },
-            "package-d":
-            {
-                name:         "package-d",
-                dependencies:
-                {
-                    "package-a": "~0.0.1-dev+2022.5",
-                },
-                devDependencies:
-                {
-                    "package-b": "~0.1.0-dev+2022.5",
-                },
-                peerDependencies:
-                {
-                    "package-c": "~1.0.0-dev+2022.5",
-                },
-                version: "1.0.1-dev+2022.5",
-            },
         },
-        skip,
     },
 ];
 
 export const invalidScenarios: BumpScenario[] =
 [
     {
+        skip,
         message:   "Bump with multiples updates",
         options:
         {
@@ -724,6 +582,5 @@ export const invalidScenarios: BumpScenario[] =
             },
         },
         expected: { },
-        skip,
     },
 ];

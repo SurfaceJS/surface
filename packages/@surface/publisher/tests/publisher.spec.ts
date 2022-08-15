@@ -156,14 +156,13 @@ export default class PublisherSpec
         writeFileMock.release();
     }
 
-    @batchTest(bumpValidScenarios, x => x.message, x => x.skip)
+    @batchTest(bumpValidScenarios, x => `[BUMP]: ${x.message}`, x => x.skip)
     @shouldPass
     public async bumpValidScenarios(scenario: BumpScenario): Promise<void>
     {
         this.setupVirtualDirectory(scenario.directory);
 
-        const actual:   Manifest[] = [];
-        const expected: Manifest[] = [];
+        const actual: Record<string, Manifest> = { };
 
         writeFileMock.call(It.any(), It.any())
             .callback
@@ -172,17 +171,16 @@ export default class PublisherSpec
                 {
                     const manifest = JSON.parse(data as string) as Manifest;
 
-                    actual.push(manifest);
-                    expected.push(scenario.expected[manifest.name] as Manifest);
+                    actual[manifest.name] = manifest;
                 },
             );
 
         await chai.assert.isFulfilled(new Publisher(scenario.options).bump(...scenario.bumpArgs as Parameters<Publisher["bump"]>));
 
-        chai.assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, scenario.expected);
     }
 
-    @batchTest(publishValidScenarios, x => x.message, x => x.skip)
+    @batchTest(publishValidScenarios, x => `[PUBLISH]: ${x.message}`, x => x.skip)
     @shouldPass
     public async publishValidScenarios(scenario: PublishScenario): Promise<void>
     {
@@ -202,7 +200,7 @@ export default class PublisherSpec
         chai.assert.deepEqual(actual, scenario.expected.published);
     }
 
-    @batchTest(unpublishValidScenarios, x => x.message, x => x.skip)
+    @batchTest(unpublishValidScenarios, x => `[UNPUBLISH]: ${x.message}`, x => x.skip)
     @shouldPass
     public async unpublishValidScenarios(scenario: UnpublishScenario): Promise<void>
     {
