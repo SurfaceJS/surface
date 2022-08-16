@@ -172,6 +172,85 @@ export const validScenarios: BumpScenario[] =
         bumpArgs: ["major"],
     },
     {
+
+        skip,
+        message:   "Bump nested workspaces",
+        options:   { },
+        directory:
+        {
+            "./package.json": JSON.stringify
+            (
+                {
+                    name:       "package-root",
+                    version:    "1.0.0",
+                    workspaces: ["packages/*"],
+                } as Partial<Manifest>,
+            ),
+            "./packages/package-a/package.json": JSON.stringify
+            (
+                {
+                    name:    "package-a",
+                    version: "1.0.0",
+                } as Partial<Manifest>,
+            ),
+            "./packages/package-b/package.json": JSON.stringify
+            (
+                {
+                    name:    "package-b",
+                    version: "1.0.0",
+                } as Partial<Manifest>,
+            ),
+            "./packages/nested-root/package.json": JSON.stringify
+            (
+                {
+                    name:       "nested-root",
+                    version:    "1.0.0",
+                    workspaces: ["packages/*"],
+                } as Partial<Manifest>,
+            ),
+            "./packages/packages/nested-package-a/package.json": JSON.stringify
+            (
+                {
+                    name:    "nested-package-a",
+                    version: "1.0.0",
+                } as Partial<Manifest>,
+            ),
+            "./packages/packages/nested-package-b/package.json": JSON.stringify
+            (
+                {
+                    name:    "nested-package-b",
+                    version: "1.0.0",
+                } as Partial<Manifest>,
+            ),
+        },
+        expected:
+        {
+            "package-root":
+            {
+                name:       "package-root",
+                version:    "2.0.0",
+                workspaces: ["packages/*"],
+            },
+            "package-a":
+            {
+                name:    "package-a",
+                version: "2.0.0",
+            },
+            "package-b":
+            {
+                name:    "package-b",
+                version: "2.0.0",
+            },
+            "nested-root":
+            {
+                name:       "nested-root",
+                version:    "2.0.0",
+                workspaces: ["packages/*"],
+            },
+        },
+        bumpArgs: ["major"],
+    },
+    {
         skip,
         message:   "Bump workspace with independent version",
         options:   { independentVersion: true },

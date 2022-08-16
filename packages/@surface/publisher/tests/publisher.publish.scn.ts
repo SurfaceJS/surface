@@ -65,7 +65,14 @@ export const validScenarios: PublishScenario[] =
                 {
                     name:       "package-root",
                     version:    "1.0.0",
-                    workspaces: [],
+                    workspaces: ["package-a"],
+                } as Partial<Manifest>,
+            ),
+            "./package-a/package.json": JSON.stringify
+            (
+                {
+                    name:    "package-a",
+                    version: "1.0.0",
                 } as Partial<Manifest>,
             ),
         },

@@ -21,7 +21,7 @@ type Metadata =
     manifest:   Manifest,
     path:       string,
     config:     NpmConfig | null,
-    workspace?: Metadata[],
+    workspaces?: Metadata[],
 };
 
 type ScriptType =
@@ -85,7 +85,7 @@ export default class Publisher
 
     private config:    NpmConfig | null = null;
     private loaded:    boolean = false;
-    private workspace: Metadata[] = [];
+    private workspaces: Metadata[] = [];
 
     public constructor(options: Options)
     {
@@ -104,8 +104,8 @@ export default class Publisher
     }
 
     private async loadMetadata(): Promise<boolean>;
-    private async loadMetadata(packages: string[], cwd: string): Promise<Metadata[]>;
-    private async loadMetadata(packages?: string[], cwd?: string): Promise<boolean | Metadata[]>
+    private async loadMetadata(packages: string[], cwd: string, level?: number): Promise<Metadata[]>;
+    private async loadMetadata(packages?: string[], cwd?: string, level: number = 1): Promise<boolean | Metadata[]>
     {
         if (packages && cwd)
         {
@@ -124,15 +124,17 @@ export default class Publisher
 
                 if (Array.isArray(manifest.workspaces))
                 {
-                    packageWorkspaces = await this.loadMetadata(manifest.workspaces.map(this.normalizePattern), parentPath);
+                    packageWorkspaces = level < 2
+                        ? await this.loadMetadata(manifest.workspaces.map(this.normalizePattern), parentPath, level + 1)
+                        : [];
                 }
 
                 const metadata: Metadata =
                 {
-                    config:    await NpmConfig.load(parentPath, process.env),
+                    config:     await NpmConfig.load(parentPath, process.env),
                     manifest,
                     path,
-                    workspace: packageWorkspaces,
+                    workspaces: packageWorkspaces,
                 };
 
                 workspaces.push(metadata);
@@ -143,9 +145,9 @@ export default class Publisher
 
         if (!this.loaded)
         {
-            this.workspace = await this.loadMetadata(this.options.packages.map(this.normalizePattern), this.options.cwd);
+            this.workspaces = await this.loadMetadata(this.options.packages.map(this.normalizePattern), this.options.cwd);
 
-            if (this.workspace.length == 0)
+            if (this.workspaces.length == 0)
             {
                 this.logger.warn("No packages found.");
             }
@@ -153,7 +155,7 @@ export default class Publisher
             this.loaded = true;
         }
 
-        return this.workspace.length > 0;
+        return this.workspaces.length > 0;
     }
 
     private getAuth(metadata: Metadata, fallback: NpmConfig | null): Auth
@@ -204,20 +206,20 @@ export default class Publisher
         return `${pattern.replace(/\/$/, "")}/package.json`;
     }
 
-    private async publishEntries(tag: string, entries: Metadata[], config: NpmConfig | null): Promise<void>
+    private async publishWorkspaces(tag: string, workspaces: Metadata[], config: NpmConfig | null): Promise<void>
     {
-        for (const metadata of entries.values())
+        for (const metadata of workspaces)
         {
             const parentPath = dirname(metadata.path);
 
-            if (metadata.workspace)
+            if (metadata.workspaces?.length)
             {
                 await this.runScript("prepublishworkspace", parentPath);
 
-                await this.publishEntries(tag, metadata.workspace, metadata.config ?? config);
+                await this.publishWorkspaces(tag, metadata.workspaces, metadata.config ?? config);
             }
 
-            if ((this.options.includePrivates || !metadata.manifest.private) && (this.options.includeWorkspacesRoot || !metadata.workspace))
+            if ((this.options.includePrivates || !metadata.manifest.private) && (this.options.includeWorkspacesRoot || !metadata.workspaces))
             {
                 const auth = this.getAuth(metadata, config);
 
@@ -267,7 +269,7 @@ export default class Publisher
                 this.logger.trace(`Package ${metadata.manifest.name} is ${metadata.manifest.private ? "private" : "an workspace"}, publishing ignored...`);
             }
 
-            if (metadata.workspace)
+            if (metadata.workspaces?.length)
             {
                 await this.runScript("postpublishworkspace", parentPath);
             }
@@ -284,29 +286,11 @@ export default class Publisher
         }
     }
 
-    private syncPackages(workspace: Metadata[] = this.workspace): void
-    {
-        for (const entry of workspace.values())
-        {
-            if (this.options.includeWorkspacesRoot || !entry.workspace)
-            {
-                this.syncWorkspace(workspace, entry, true);
-            }
-
-            if (entry.workspace)
-            {
-                this.syncPackages(entry.workspace);
-            }
-        }
-    }
-
-    private syncWorkspace(workspace: Metadata[], metadata: Metadata, syncFileReferences: boolean, dependencyType?: "dependencies" | "devDependencies" | "peerDependencies"): void
+    private sync(manifest: Manifest, workspaces: Metadata[], syncFileReferences: boolean, dependencyType?: "dependencies" | "devDependencies" | "peerDependencies"): void
     {
         if (dependencyType)
         {
-            const manifest = metadata.manifest;
-
-            for (const { manifest: dependent } of workspace)
+            for (const { manifest: dependent } of workspaces)
             {
                 const dependencies = dependent[dependencyType];
 
@@ -322,22 +306,37 @@ export default class Publisher
         }
         else
         {
-            this.syncWorkspace(workspace, metadata, syncFileReferences, "dependencies");
-            this.syncWorkspace(workspace, metadata, syncFileReferences, "devDependencies");
-            this.syncWorkspace(workspace, metadata, syncFileReferences, "peerDependencies");
+            this.sync(manifest, workspaces, syncFileReferences, "dependencies");
+            this.sync(manifest, workspaces, syncFileReferences, "devDependencies");
+            this.sync(manifest, workspaces, syncFileReferences, "peerDependencies");
         }
     }
 
-    private async update(workspace: Metadata[], releaseType: ReleaseType | CustomVersion, version: string | undefined, identifier: string | undefined): Promise<void>
+    private syncWorkspaces(workspaces: Metadata[] = this.workspaces): void
     {
-        for (const metadata of workspace)
+        for (const entry of workspaces.values())
+        {
+            if (this.options.includeWorkspacesRoot || !entry.workspaces)
+            {
+                this.sync(entry.manifest, workspaces, true);
+            }
+
+            if (entry.workspaces)
+            {
+                this.syncWorkspaces(entry.workspaces);
+            }
+        }
+    }
+
+    private async update(workspaces: Metadata[], releaseType: ReleaseType | CustomVersion, version: string | undefined, identifier: string | undefined): Promise<void>
+    {
+        for (const metadata of workspaces)
         {
             const manifest = metadata.manifest;
             const actual   = manifest.version;
 
             if (this.options.includePrivates || !manifest.private)
             {
-
                 let updated: string | null;
 
                 if (releaseType == "custom")
@@ -385,27 +384,27 @@ export default class Publisher
                 this.logger.trace(`Package ${metadata.manifest.name} is private, bump ignored...`);
             }
 
-            if (workspace != this.workspace && (this.options.includeWorkspacesRoot || !metadata.workspace))
+            if (workspaces != this.workspaces && (this.options.includeWorkspacesRoot || !metadata.workspaces))
             {
-                this.syncWorkspace(workspace, metadata, !!(this.options.updateFileReferences ?? this.options.canary));
+                this.sync(metadata.manifest, workspaces, !!(this.options.updateFileReferences ?? this.options.canary));
             }
 
-            if (metadata.workspace)
+            if (metadata.workspaces?.length)
             {
                 const [$releaseType, $version] = this.options.independentVersion
                     ? [releaseType, version]
                     : ["custom" as const, metadata.manifest.version];
 
-                await this.update(metadata.workspace, $releaseType, $version, identifier);
+                await this.update(metadata.workspaces, $releaseType, $version, identifier);
             }
         }
     }
 
-    private async unpublishEntries(tag: string, workspace: Metadata[], config: NpmConfig | null): Promise<void>
+    private async unpublishWorkspaces(tag: string, workspaces: Metadata[], config: NpmConfig | null): Promise<void>
     {
-        for (const metadata of workspace.values())
+        for (const metadata of workspaces.values())
         {
-            if ((this.options.includePrivates || !metadata.manifest.private) && (this.options.includeWorkspacesRoot || !metadata.workspace))
+            if ((this.options.includePrivates || !metadata.manifest.private) && (this.options.includeWorkspacesRoot || !metadata.workspaces))
             {
                 const auth = this.getAuth(metadata, config);
 
@@ -444,9 +443,9 @@ export default class Publisher
                 this.logger.trace(`Package ${metadata.manifest.name} is ${metadata.manifest.private ? "private" : "an workspace"}, unpublishing ignored...`);
             }
 
-            if (metadata.workspace)
+            if (metadata.workspaces?.length)
             {
-                await this.unpublishEntries(tag, metadata.workspace, metadata.config ?? config);
+                await this.unpublishWorkspaces(tag, metadata.workspaces, metadata.config ?? config);
             }
         }
     }
@@ -486,7 +485,7 @@ export default class Publisher
 
         if (await this.loadMetadata())
         {
-            await this.update(this.workspace, releaseType, version, identifier);
+            await this.update(this.workspaces, releaseType, version, identifier);
 
             if (this.errors.length > 0)
             {
@@ -519,10 +518,10 @@ export default class Publisher
             }
             else
             {
-                this.syncPackages();
+                this.syncWorkspaces();
             }
 
-            await this.publishEntries(tag, this.workspace, this.config);
+            await this.publishWorkspaces(tag, this.workspaces, this.config);
 
             if (this.errors.length > 0 || this.options.canary && !this.options.dry)
             {
@@ -552,7 +551,7 @@ export default class Publisher
 
         if (await this.loadMetadata())
         {
-            await this.unpublishEntries(tag, this.workspace, this.config);
+            await this.unpublishWorkspaces(tag, this.workspaces, this.config);
 
             if (this.errors.length > 0)
             {
