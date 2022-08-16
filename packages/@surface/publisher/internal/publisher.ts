@@ -66,7 +66,7 @@ export type Options =
     /** Npm registry where packages will be published */
     registry?: string,
 
-    /** Sync file references when bumping */
+    /** Update file references when bumping */
     updateFileReferences?: boolean,
 
     /** Timestamp used by canary release */

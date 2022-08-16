@@ -21,7 +21,7 @@
         "semver": "^7.3.7",
         "tslib": "~2.4.0"
     },
-    "description": "Provides monorepo utilities.",
+    "description": "Tool designed to handles workspaces bumping and publishing.",
     "devDependencies": {
         "@surface/mock": "file:../mock",
         "@surface/test-suite": "file:../test-suite",
