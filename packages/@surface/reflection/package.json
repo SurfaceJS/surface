@@ -10,6 +10,7 @@
     "description": "Provides reflection capability.",
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
+        "@surface/tsconfig": "file:../tsconfig",
         "@types/chai": "~4.3.1",
         "@types/semver": "~7.3.9",
         "chai": "~4.3.6",
@@ -29,5 +30,5 @@
     },
     "sideEffects": false,
     "type": "module",
-    "version": "1.0.0-alpha.1"
+    "version": "1.0.0-beta.0"
 }

@@ -1,11 +1,10 @@
 {
-    "extends": "../../../tsconfig.json",
+    "extends": "@surface/tsconfig/tsconfig.composite.node.json",
     "compilerOptions":
     {
         "outDir":    ".",
         "rootDir":   ".",
         "typeRoots": ["./tests"],
-        "types":     ["node"],
     },
     "files":
     [

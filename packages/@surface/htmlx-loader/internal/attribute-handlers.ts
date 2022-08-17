@@ -1,5 +1,5 @@
-import SrcSetParser              from "./srcset-parser.js";
-import type { AttributeHandler, AttributeHandlers, AttributeResolver, Handler } from "./types";
+import SrcSetParser                                                             from "./srcset-parser.js";
+import type { AttributeHandler, AttributeHandlers, AttributeResolver, Handler } from "./types/index.cjs";
 
 const META_TAG =
 {

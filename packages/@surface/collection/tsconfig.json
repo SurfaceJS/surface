@@ -1,5 +1,5 @@
 {
-    "extends": "../../../tsconfig.json",
+    "extends": "@surface/tsconfig/tsconfig.composite.json",
     "compilerOptions":
     {
         "outDir":  ".",
@@ -13,5 +13,9 @@
     [
         "./internal",
         "./tests"
+    ],
+    "references":
+    [
+        { "path": "../enumerable" }
     ]
 }

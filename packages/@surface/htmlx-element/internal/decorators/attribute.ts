@@ -82,11 +82,15 @@ function patchPrototype(prototype: IHTMLXElement): void
         }
     }
 
-    if (!prototype.constructor.hasOwnProperty("observedAttributes"))
+    const staticMetadata = StaticMetadata.from(prototype.constructor);
+
+    if (!staticMetadata.patched)
     {
+        staticMetadata.patched = true;
+
         function get(this: Constructor): string[]
         {
-            return StaticMetadata.from(this).observedAttributes;
+            return staticMetadata.observedAttributes;
         }
 
         Object.defineProperty(prototype.constructor, "observedAttributes", { get });

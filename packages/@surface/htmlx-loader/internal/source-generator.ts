@@ -7,7 +7,7 @@ import type { AttributeBindDescritor, BranchDescriptor, Descriptor, RawAttribute
 import jsdom                                                                                from "jsdom";
 import { defaultAttributeHandlers }                                                         from "./attribute-handlers.js";
 import ScopeRewriterVisitor                                                                 from "./scope-rewriter-visitor.js";
-import type { AttributeHandlers }                                                           from "./types/index.js";
+import type { AttributeHandlers }                                                           from "./types/index.cjs";
 
 const factoryMap: Record<Descriptor["type"], string> =
 {

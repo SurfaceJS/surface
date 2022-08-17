@@ -15,6 +15,7 @@
     "description": "Provides surface implementation of Material Design.",
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
+        "@surface/tsconfig": "file:../tsconfig",
         "@types/jsdom": "~16.2.14",
         "chai": "~4.3.6"
     },
@@ -38,5 +39,5 @@
     },
     "sideEffects": true,
     "type": "module",
-    "version": "0.1.0-alpha.1"
+    "version": "1.0.0-beta.0"
 }

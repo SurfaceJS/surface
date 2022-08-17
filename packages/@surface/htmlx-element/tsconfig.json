@@ -1,8 +1,7 @@
 {
-    "extends": "../../../tsconfig.json",
+    "extends": "@surface/tsconfig/tsconfig.composite.web.json",
     "compilerOptions":
     {
-        "lib":     ["dom", "esnext"],
         "outDir":  ".",
         "rootDir": ".",
     },

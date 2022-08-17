@@ -9,6 +9,7 @@
     "description": "Provides core functionality of many @surfaces modules.",
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
+        "@surface/tsconfig": "file:../tsconfig",
         "@types/chai": "~4.3.1",
         "@types/chai-as-promised": "~7.1.5",
         "chai": "~4.3.6",
@@ -29,5 +30,5 @@
     },
     "sideEffects": false,
     "type": "module",
-    "version": "0.1.0-alpha.1"
+    "version": "1.0.0-beta.0"
 }

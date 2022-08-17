@@ -18,6 +18,7 @@
     "description": "Provides command line interface for scaffolding surface projects.",
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
+        "@surface/tsconfig": "file:../tsconfig",
         "@types/chai": "~4.3.1",
         "chai": "~4.3.6"
     },
@@ -39,5 +40,5 @@
     },
     "sideEffects": false,
     "type": "module",
-    "version": "0.1.0-alpha.1"
+    "version": "1.0.0-beta.0"
 }

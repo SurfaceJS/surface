@@ -1,0 +1,10 @@
+{
+    "extends": "./tsconfig.composite.json",
+    "compilerOptions":
+    {
+        "composite":   true,
+        "incremental": true,
+        "lib":         ["esnext"],
+        "types":       ["node"],
+    },
+}

@@ -6,8 +6,9 @@ export const STATIC_METADATA = Symbol("htmlx:static-metadata");
 export default class StaticMetadata
 {
     public converters:         Indexer<(target: Indexer, value: string) => void> = { };
-    public shadowRootInit:     ShadowRootInit                                    = { mode: "open" };
     public observedAttributes: string[]                                          = [];
+    public patched:            boolean                                           = false;
+    public shadowRootInit:     ShadowRootInit                                    = { mode: "open" };
     public styles:             CSSStyleSheet[]                                   = [];
 
     public template?: TemplateFactory;

@@ -3,28 +3,28 @@
     "bugs": {
         "url": "https://github.com/SurfaceJS/surface/issues"
     },
-    "dependencies": {
-        "jsdom": "~19.0.0"
-    },
-    "description": "Creates shim for browser tests running on node.",
-    "devDependencies": {
-        "@surface/tsconfig": "file:../tsconfig"
-    },
+    "description": "A base TSConfig with @surface's recommendations",
     "homepage": "https://github.com/SurfaceJS/surface#readme",
     "keywords": [
         "surface",
-        "dom",
-        "shim",
-        "typescript"
+        "typescrypt",
+        "tsconfig"
     ],
     "license": "MIT",
-    "main": "index.js",
-    "name": "@surface/dom-shim",
+    "main": "tsconfig.json",
+    "name": "@surface/tsconfig",
+    "peerDependencies": {
+        "@types/node": "*"
+    },
+    "peerDependenciesMeta": {
+        "@types/node": {
+            "optional": true
+        }
+    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/surface.git"
     },
     "sideEffects": false,
-    "type": "module",
     "version": "1.0.0-beta.0"
 }

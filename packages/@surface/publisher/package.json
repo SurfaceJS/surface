@@ -25,6 +25,7 @@
     "devDependencies": {
         "@surface/mock": "file:../mock",
         "@surface/test-suite": "file:../test-suite",
+        "@surface/tsconfig": "file:../tsconfig",
         "@types/chai": "~4.3.1",
         "chai": "~4.3.6",
         "chai-as-promised": "~7.1.1"
@@ -44,5 +45,5 @@
     },
     "sideEffects": false,
     "type": "module",
-    "version": "1.0.0-alpha"
+    "version": "1.0.0-beta.0"
 }

@@ -279,7 +279,9 @@
             "warn",
             "never",
             {
-                "js": "always"
+                "js": "always",
+                "cjs": "always",
+                "mjs": "always"
             }
         ],
         "import/first":                       "warn",
@@ -289,7 +291,6 @@
         "import/no-absolute-path":            "warn",
         "import/no-amd":                      "warn",
         "import/no-anonymous-default-export": "warn",
-        "import/no-commonjs":                 "warn",
         "import/no-cycle":                    "warn",
         "import/no-deprecated":               "warn",
         "import/no-duplicates":               "warn",

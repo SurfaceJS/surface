@@ -1,14 +1,16 @@
 {
-    "extends": "../../../tsconfig.json",
+    "extends": "@surface/tsconfig/tsconfig.composite.json",
     "compilerOptions":
     {
-        "lib":     ["dom", "esnext"],
-        "outDir":  ".",
-        "rootDir": ".",
+        "outDir":           ".",
+        "rootDir":          ".",
+        "module":           "NodeNext",
+        "moduleResolution": "NodeNext"
     },
     "files":
     [
-        "./index.ts"
+        "./index.ts",
+        "./index.cts",
     ],
     "include":
     [

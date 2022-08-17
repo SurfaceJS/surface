@@ -12,7 +12,8 @@
     "description": "Provides log functionality.",
     "devDependencies": {
         "@surface/mock": "file:../mock",
-        "@surface/test-suite": "file:../test-suite"
+        "@surface/test-suite": "file:../test-suite",
+        "@surface/tsconfig": "file:../tsconfig"
     },
     "homepage": "https://github.com/SurfaceJS/surface#readme",
     "keywords": [
@@ -29,5 +30,5 @@
     },
     "sideEffects": false,
     "type": "module",
-    "version": "1.0.0-alpha"
+    "version": "1.0.0-beta.0"
 }

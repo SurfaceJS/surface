@@ -1,0 +1,10 @@
+{
+    "extends": "./tsconfig.composite.json",
+    "compilerOptions":
+    {
+        "composite":   true,
+        "incremental": true,
+        "lib":         ["DOM", "DOM.Iterable", "ESNext"],
+        "types":       [],
+    },
+}

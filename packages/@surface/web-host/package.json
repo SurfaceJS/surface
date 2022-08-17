@@ -15,6 +15,7 @@
     "description": "Simple web host for @surface projects.",
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
+        "@surface/tsconfig": "file:../tsconfig",
         "@types/chai": "~4.3.1",
         "chai": "~4.3.6"
     },

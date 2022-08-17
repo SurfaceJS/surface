@@ -3,7 +3,7 @@ import path             from "path";
 import type webpack     from "webpack";
 import { mapHandlers }  from "./internal/attribute-handlers.js";
 import SourceGenerator  from "./internal/source-generator.js";
-import type { Handler } from "./internal/types";
+import type { Handler } from "./internal/types/index.cjs";
 
 export type
 {
@@ -13,7 +13,7 @@ export type
     AttributeResolver,
     Handler,
 }
-from "./internal/types";
+from "./internal/types/index.cjs";
 
 export default async function apply(this: webpack.LoaderContext<{ handlers?: Handler[] }>, content: string): Promise<string>
 {
