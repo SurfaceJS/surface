@@ -1,7 +1,7 @@
 /* eslint-disable max-lines-per-function */
 import path                                   from "path";
-import { isDirectory, lookup }                from "@surface/rwx";
 import Mock, { It }                           from "@surface/mock";
+import { isDirectory, lookup }                from "@surface/rwx";
 import { afterEach, beforeEach, suite, test } from "@surface/test-suite";
 import chai                                   from "chai";
 import Builder                                from "../internal/builder.js";

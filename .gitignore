@@ -73,8 +73,6 @@ tsconfig.tsbuildinfo
 !**/@types/**/*.d.cts
 !**/@types/**/*.d.mts
 !**/@types/**/*.d.ts
-!**/cli.js
-!**/cli/index.js
 !**/interfaces/**/*.d.cts
 !**/interfaces/**/*.d.mts
 !**/interfaces/**/*.d.ts

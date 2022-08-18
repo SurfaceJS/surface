@@ -1,17 +1,12 @@
 /* eslint-disable lines-around-comment */
-import { readFile }                             from "fs/promises";
 import path                                     from "path";
 import { URL, fileURLToPath, pathToFileURL }    from "url";
 import { IS_WINDOWS, getExports, getMocksMaps } from "./common.js";
 
-type GetFormatResult  = { format: string };
-type GetFormatContext = { format: string };
-type GetSourceContext = { format: string };
-type GetSourceResult  = { source: string };
-type ResolveContext   = { conditions: string[], parentURL?: string };
-type ResolveResult    = { url: string, shortCircuit?: boolean };
-type LoadContext      = { format: string };
-type LoadResult       = { format: string, source: string, shortCircuit?: boolean };
+type ResolveContext = { conditions: string[], parentURL?: string };
+type ResolveResult  = { url: string, shortCircuit?: boolean };
+type LoadContext    = { format: string };
+type LoadResult     = { format: string, source: string, shortCircuit?: boolean };
 
 const MOCK       = "mock";
 const PROXY      = "proxy";
@@ -27,48 +22,6 @@ const PROXY_PATH          = `${pathToFileURL(path.join(DIRNAME, PROXY)).toString
 const proxyFiles          = new Map<string, string>();
 const parentProxyFiles    = new Map<string, string | undefined>();
 const cache               = new Map<string, string>();
-
-function internalGetFormat(specifier: string): GetFormatResult | null
-{
-    /* c8 ignore start */
-    if (specifier.startsWith(PROXY_PATH) || MOCK_SET.has(new URL(specifier).searchParams.get(MOCK)))
-    {
-        return { format: "module" };
-    }
-    else if (specifier.startsWith("file:") && !path.parse(fileURLToPath(specifier)).ext)
-    {
-        return { format: "commonjs" };
-    }
-
-    return null;
-    /* c8 ignore stop */
-}
-
-async function internalGetSource(url: URL): Promise<GetSourceResult | null>
-{
-    if (MOCK_SET.has(url.searchParams.get(MOCK)))
-    {
-        url.searchParams.set(MOCK, TARGET);
-
-        const targetSpecifier = url.href;
-
-        const module = await import(targetSpecifier);
-
-        const exports = getExports(module);
-
-        const source =
-        [
-            "import createProxy from \"@surface/mock-loader/internal/create-proxy.js\"",
-            `import * as module from \"${targetSpecifier}\";`,
-            "const proxy = createProxy(module);",
-            ...exports,
-        ].join("\n");
-
-        return { source };
-    }
-
-    return null;
-}
 
 export async function resolve(specifier: string, context: ResolveContext, next: (specifier: string, context: ResolveContext) => Promise<ResolveResult>): Promise<ResolveResult>
 {
@@ -90,8 +43,6 @@ export async function resolve(specifier: string, context: ResolveContext, next: 
             resolved = (await next(specifier.replace(paramsPattern, ""), proxyContext)).url + searchParams;
         }
     }
-
-    // console.log(`- resolve: ${parentProxyFiles.get(context.parentURL!) ?? context.parentURL} --> ${specifier} -> ${resolved}`);
 
     /* c8 ignore start */
     if (IS_WINDOWS)
@@ -153,41 +104,30 @@ export async function resolve(specifier: string, context: ResolveContext, next: 
     return { url: url.href, shortCircuit: true };
 }
 
-/* c8 ignore start */
-export async function getSource(specifier: string, context: GetSourceContext, next: (specifier: string, context: GetSourceContext) => Promise<GetSourceResult>): Promise<GetSourceResult>
+export async function load(specifier: string, context: LoadContext, next: (specifier: string, context: LoadContext) => Promise<LoadResult>): Promise<LoadResult>
 {
     const url = new URL(specifier);
 
-    return await internalGetSource(url) ?? next(url.href, context);
-}
-/* c8 ignore stop */
-
-/* c8 ignore start */
-export async function getFormat(specifier: string, context: GetFormatContext, next: (specifier: string, context: GetFormatContext) => Promise<GetFormatResult>): Promise<GetFormatResult>
-{
-    return internalGetFormat(specifier) ?? next(specifier, context);
-}
-/* c8 ignore stop */
-
-export async function load(specifier: string, context: LoadContext, next: (specifier: string, context: LoadContext) => Promise<LoadResult>): Promise<LoadResult>
-{
-    // console.log(`- load: ${specifier}`);
-
-    const source = (await internalGetSource(new URL(specifier)))?.source;
-
-    if (source)
+    if (MOCK_SET.has(url.searchParams.get(MOCK)))
     {
+        url.searchParams.set(MOCK, TARGET);
+
+        const targetSpecifier = url.href;
+
+        const module = await import(targetSpecifier);
+
+        const exports = getExports(module);
+
+        const source =
+        [
+            "import createProxy from \"@surface/mock-loader/internal/create-proxy.js\"",
+            `import * as module from \"${targetSpecifier}\";`,
+            "const proxy = createProxy(module);",
+            ...exports,
+        ].join("\n");
+
         return { format: "module", source, shortCircuit: true };
     }
-
-    /* c8 ignore start */
-    const format = internalGetFormat(specifier)?.format;
-
-    if (format)
-    {
-        return { format, source: String(await readFile(new URL(specifier))), shortCircuit: true };
-    }
-    /* c8 ignore stop */
 
     return next(specifier, context);
 }
