@@ -19,7 +19,7 @@
     "references":
     [
         { "path": "../core" },
-        { "path": "../io" },
+        { "path": "../rwx" },
         { "path": "../test-suite" },
     ]
 }

@@ -1,3 +1,4 @@
+import child_process                                    from "child_process";
 import { existsSync, lstatSync, readdirSync, statSync } from "fs";
 import { lstat, readdir, stat }                         from "fs/promises";
 import { dirname, isAbsolute, join, resolve }           from "path";
@@ -144,6 +145,30 @@ export function *enumeratePathsSync(patterns: string | string[], options: Option
         }
     }
 }
+
+/* c8 ignore start */
+/**
+ * Spawns a shell then executes the command within that shell.
+ * @param command string passed to the exec function and processed directly by the shell and special characters (vary based on shell) need to be dealt with accordingly:
+*/
+export async function execute(command: string, options?: child_process.ExecOptions): Promise<void>
+{
+    await new Promise<void>
+    (
+        (resolve, reject) =>
+        {
+            const childProcess = child_process.exec(command, options);
+
+            childProcess.stdout?.on("data", x => console.log(String(x).trimEnd()));
+            childProcess.stderr?.on("data", x => console.log(String(x).trimEnd()));
+
+            childProcess.on("error", x => (console.log(String(x)), reject));
+            childProcess.on("exit", resolve);
+        },
+    );
+}
+
+/* c8 ignore stop */
 
 /**
  * Asynchronous Verifies if a path is a directory.

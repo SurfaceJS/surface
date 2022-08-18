@@ -1,7 +1,9 @@
-import type { Manifest }     from "pacote";
-import Status                from "../internal/enums/status.js";
-import type { Options }      from "../internal/publisher.js";
-import type VirtualDirectory from "./types/virtual-directory";
+import type { PackageJson as _PackageJson } from "@npm/types";
+import Status                               from "../internal/enums/status.js";
+import type { Options }                     from "../internal/publisher.js";
+import type VirtualDirectory                from "./types/virtual-directory";
+
+type PackageJson = _PackageJson & { workspaces?: string[] };
 
 const skip = false;
 
@@ -39,7 +41,7 @@ export const validScenarios: UnpublishScenario[] =
                 {
                     name:    "package-a",
                     version: "1.0.0",
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
         },
         expected:
@@ -63,7 +65,7 @@ export const validScenarios: UnpublishScenario[] =
                     private: true,
                     name:    "package-a",
                     version: "0.0.1",
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
         },
         expected:  { unpublished: [] },
@@ -83,7 +85,7 @@ export const validScenarios: UnpublishScenario[] =
                 {
                     name:    "package-a",
                     version: "0.0.1",
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
         },
         expected:  { unpublished: [] },
@@ -105,7 +107,7 @@ export const validScenarios: UnpublishScenario[] =
                     name:       "package-root",
                     version:    "1.0.0",
                     workspaces: ["packages/*"],
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
             "./packages":
             {
@@ -114,14 +116,14 @@ export const validScenarios: UnpublishScenario[] =
                     {
                         name:    "package-a",
                         version: "0.0.1",
-                    } as Partial<Manifest>,
+                    } as Partial<PackageJson>,
                 ),
                 "./package-b/package.json": JSON.stringify
                 (
                     {
                         name:    "package-b",
                         version: "0.1.0",
-                    } as Partial<Manifest>,
+                    } as Partial<PackageJson>,
                 ),
             },
         },
@@ -151,7 +153,7 @@ export const validScenarios: UnpublishScenario[] =
                     name:       "package-root",
                     version:    "1.0.0",
                     workspaces: ["packages/*"],
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
             "./.npmrc":   "registry=https://test.com\n_authToken=123",
             "./packages":
@@ -161,14 +163,14 @@ export const validScenarios: UnpublishScenario[] =
                     {
                         name:    "package-a",
                         version: "0.0.1",
-                    } as Partial<Manifest>,
+                    } as Partial<PackageJson>,
                 ),
                 "./package-b/package.json": JSON.stringify
                 (
                     {
                         name:    "package-b",
                         version: "0.1.0",
-                    } as Partial<Manifest>,
+                    } as Partial<PackageJson>,
                 ),
             },
         },

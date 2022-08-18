@@ -1,6 +1,6 @@
 import { readFile } from "fs/promises";
 import { join }     from "path";
-import { isFile }   from "@surface/io";
+import { isFile }   from "@surface/rwx";
 
 const ENV_PATTERN   = /\$\{([A-Z][A-Z0-9_]+)\}/gi;
 const HTTPS_PATTERN = /^https?:/i;

@@ -40,7 +40,7 @@ import
     lookup,
     lookupSync,
     searchAbove,
-} from "../internal/io.js";
+} from "../internal/rwx.js";
 
 chai.use(chaiAsPromised);
 

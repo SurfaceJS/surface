@@ -1,6 +1,6 @@
 import path                                 from "path";
 import { DeepMergeFlags, deepMerge, isEsm } from "@surface/core";
-import { isDirectory, lookup }              from "@surface/io";
+import { isDirectory, lookup }              from "@surface/rwx";
 import Builder                              from "./builder.js";
 import { loadModule }                       from "./common.js";
 import type BuildConfiguration              from "./types/build-configuration.js";

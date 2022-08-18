@@ -1,10 +1,12 @@
-import os                    from "os";
-import { join }              from "path";
-import { LogLevel }          from "@surface/logger";
-import type { Manifest }     from "pacote";
-import Status                from "../internal/enums/status.js";
-import type { Options }      from "../internal/publisher.js";
-import type VirtualDirectory from "./types/virtual-directory";
+import os                                   from "os";
+import { join }                             from "path";
+import type { PackageJson as _PackageJson } from "@npm/types";
+import { LogLevel }                         from "@surface/logger";
+import Status                               from "../internal/enums/status.js";
+import type { Options }                     from "../internal/publisher.js";
+import type VirtualDirectory                from "./types/virtual-directory";
+
+type PackageJson = _PackageJson & { workspaces?: string[] };
 
 const skip = false;
 
@@ -42,7 +44,7 @@ export const validScenarios: PublishScenario[] =
                 {
                     name:    "package-a",
                     version: "1.0.0",
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
         },
         expected:
@@ -66,14 +68,14 @@ export const validScenarios: PublishScenario[] =
                     name:       "package-root",
                     version:    "1.0.0",
                     workspaces: ["package-a"],
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
             "./package-a/package.json": JSON.stringify
             (
                 {
                     name:    "package-a",
                     version: "1.0.0",
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
         },
         expected:
@@ -97,7 +99,7 @@ export const validScenarios: PublishScenario[] =
                     private: true,
                     name:    "package-a",
                     version: "0.0.1",
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
         },
         expected:  { published: [] },
@@ -120,7 +122,7 @@ export const validScenarios: PublishScenario[] =
                 {
                     name:    "package-a",
                     version: "0.0.1",
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
         },
         expected:  { published: [] },
@@ -138,7 +140,7 @@ export const validScenarios: PublishScenario[] =
                     name:       "package-root",
                     version:    "1.0.0",
                     workspaces: ["packages/*"],
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
             "./packages":
             {
@@ -147,14 +149,14 @@ export const validScenarios: PublishScenario[] =
                     {
                         name:    "package-a",
                         version: "0.0.1",
-                    } as Partial<Manifest>,
+                    } as Partial<PackageJson>,
                 ),
                 "./package-b/package.json": JSON.stringify
                 (
                     {
                         name:    "package-b",
                         version: "0.1.0",
-                    } as Partial<Manifest>,
+                    } as Partial<PackageJson>,
                 ),
             },
         },
@@ -179,7 +181,7 @@ export const validScenarios: PublishScenario[] =
                     name:       "package-root",
                     version:    "1.0.0",
                     workspaces: ["packages/*"],
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
             "./packages":
             {
@@ -188,14 +190,14 @@ export const validScenarios: PublishScenario[] =
                     {
                         name:    "package-a",
                         version: "0.0.1",
-                    } as Partial<Manifest>,
+                    } as Partial<PackageJson>,
                 ),
                 "./package-b/package.json": JSON.stringify
                 (
                     {
                         name:    "package-b",
                         version: "0.1.0",
-                    } as Partial<Manifest>,
+                    } as Partial<PackageJson>,
                 ),
             },
         },
@@ -230,7 +232,7 @@ export const validScenarios: PublishScenario[] =
                     {
                         name:    "package-a",
                         version: "0.0.1",
-                    } as Partial<Manifest>,
+                    } as Partial<PackageJson>,
                 ),
                 "./package-a/.npmrc":       "registry=https://test.com\n_authToken=123",
                 "./package-b/package.json": JSON.stringify
@@ -238,7 +240,7 @@ export const validScenarios: PublishScenario[] =
                     {
                         name:    "@lib/package-b",
                         version: "0.1.0",
-                    } as Partial<Manifest>,
+                    } as Partial<PackageJson>,
                 ),
                 "./package-b/.npmrc":       "@lib:registry=https://test.com\n//test.com:_authToken=123",
                 "./package-c/package.json": JSON.stringify
@@ -246,21 +248,21 @@ export const validScenarios: PublishScenario[] =
                     {
                         name:    "package-c",
                         version: "0.1.0",
-                    } as Partial<Manifest>,
+                    } as Partial<PackageJson>,
                 ),
                 "./package-d/package.json": JSON.stringify
                 (
                     {
                         name:    "@lib/package-d",
                         version: "0.1.0",
-                    } as Partial<Manifest>,
+                    } as Partial<PackageJson>,
                 ),
                 "./package-e/package.json": JSON.stringify
                 (
                     {
                         name:    "@other-lib/package-e",
                         version: "0.1.0",
-                    } as Partial<Manifest>,
+                    } as Partial<PackageJson>,
                 ),
             },
         },
@@ -297,7 +299,7 @@ export const validScenarios: PublishScenario[] =
                     {
                         name:    "package-a",
                         version: "0.0.1",
-                    } as Partial<Manifest>,
+                    } as Partial<PackageJson>,
                 ),
                 "./package-b/package.json": JSON.stringify
                 (
@@ -308,7 +310,7 @@ export const validScenarios: PublishScenario[] =
                             "package-a": "0.0.1",
                         },
                         version: "0.1.0",
-                    } as Partial<Manifest>,
+                    } as Partial<PackageJson>,
                 ),
             },
         },
@@ -343,7 +345,7 @@ export const validScenarios: PublishScenario[] =
                     {
                         name:    "package-a",
                         version: "0.0.1",
-                    } as Partial<Manifest>,
+                    } as Partial<PackageJson>,
                 ),
                 "./package-b/package.json": JSON.stringify
                 (
@@ -354,7 +356,7 @@ export const validScenarios: PublishScenario[] =
                             "package-a": "0.0.1",
                         },
                         version: "0.1.0",
-                    } as Partial<Manifest>,
+                    } as Partial<PackageJson>,
                 ),
             },
         },

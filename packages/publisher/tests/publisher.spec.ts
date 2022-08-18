@@ -1,14 +1,14 @@
 import { type Stats, existsSync }                                                from "fs";
 import { readFile, readdir, stat, writeFile }                                    from "fs/promises";
 import path                                                                      from "path";
+import type { PackageJson as _PackageJson }                                      from "@npm/types";
 import Logger                                                                    from "@surface/logger";
 import Mock, { It }                                                              from "@surface/mock";
+import { execute }                                                               from "@surface/rwx";
 import { afterEach, batchTest, beforeEach, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                                                      from "chai";
 import chaiAsPromised                                                            from "chai-as-promised";
 import pack                                                                      from "libnpmpack";
-import type { Manifest }                                                         from "pacote";
-import { execute }                                                               from "../internal/common.js";
 import Status                                                                    from "../internal/enums/status.js";
 import NpmRepository                                                             from "../internal/npm-repository.js";
 import Publisher                                                                 from "../internal/publisher.js";
@@ -29,6 +29,8 @@ import
     validScenarios as unpublishValidScenarios,
 } from "./publisher.unpublish.scn.js";
 import type VirtualDirectory from "./types/virtual-directory";
+
+type PackageJson = _PackageJson & { workspaces?: string[] };
 
 chai.use(chaiAsPromised);
 
@@ -156,20 +158,20 @@ export default class PublisherSpec
         writeFileMock.release();
     }
 
-    @batchTest(bumpValidScenarios, x => `[BUMP]: ${x.message}`, x => x.skip)
+    @batchTest(bumpValidScenarios, x => `[bump]: ${x.message}`, x => x.skip)
     @shouldPass
     public async bumpValidScenarios(scenario: BumpScenario): Promise<void>
     {
         this.setupVirtualDirectory(scenario.directory);
 
-        const actual: Record<string, Manifest> = { };
+        const actual: Record<string, PackageJson> = { };
 
         writeFileMock.call(It.any(), It.any())
             .callback
             (
                 (_, data) =>
                 {
-                    const manifest = JSON.parse(data as string) as Manifest;
+                    const manifest = JSON.parse(data as string) as PackageJson;
 
                     actual[manifest.name] = manifest;
                 },
@@ -180,7 +182,7 @@ export default class PublisherSpec
         chai.assert.deepEqual(actual, scenario.expected);
     }
 
-    @batchTest(publishValidScenarios, x => `[PUBLISH]: ${x.message}`, x => x.skip)
+    @batchTest(publishValidScenarios, x => `[publish]: ${x.message}`, x => x.skip)
     @shouldPass
     public async publishValidScenarios(scenario: PublishScenario): Promise<void>
     {
@@ -200,7 +202,7 @@ export default class PublisherSpec
         chai.assert.deepEqual(actual, scenario.expected.published);
     }
 
-    @batchTest(unpublishValidScenarios, x => `[UNPUBLISH]: ${x.message}`, x => x.skip)
+    @batchTest(unpublishValidScenarios, x => `[unpublish]: ${x.message}`, x => x.skip)
     @shouldPass
     public async unpublishValidScenarios(scenario: UnpublishScenario): Promise<void>
     {

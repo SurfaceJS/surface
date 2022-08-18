@@ -9,7 +9,7 @@
     "dependencies": {
         "@surface/core": "file:../core",
         "@surface/htmlx-loader": "file:../htmlx-loader",
-        "@surface/io": "file:../io",
+        "@surface/rwx": "file:../rwx",
         "@types/copy-webpack-plugin": "~10.1.0",
         "@types/html-webpack-plugin": "~3.2.6",
         "@types/loader-utils": "~2.0.3",

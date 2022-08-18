@@ -1,18 +1,23 @@
+# Surface
+
 ![Build and Testing](https://github.com/SurfaceJS/surface/workflows/Build%20and%20Testing/badge.svg?branch=master)
 ![nycrc config on GitHub](https://img.shields.io/nycrc/SurfaceJS/modules?config=.nycrc.json)
 
 ## Introduction
+
 Surface is an open source fully ESM project that aims to assist web development by providing several client ~~and server~~ tools.
 
 ## Installation and setup
 
 Install the cli
-```
+
+```sh
     npm i -g @surface/cli
 ```
 
 Create a new workspace
-```
+
+```sh
     surface new
 
     ? Choose a template: (Use arrow keys)
@@ -23,6 +28,7 @@ Create a new workspace
 ```
 
 ## Getting Started
+
 * [Htmlx element](packages/%40surface/htmlx-element/readme.md#getting-started)
 * [Working with router](packages/%40surface/web-router/readme.md)
 

@@ -8,7 +8,7 @@
         "libnpmpack",
         "webpack",
         "webpack-dev-server",
-        "@surface/io",
+        "@surface/rwx",
         "@surface/logger",
         "./packages/publisher/internal/common.js",
         "./packages/publisher/internal/npm-repository.js",

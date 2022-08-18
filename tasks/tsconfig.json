@@ -19,7 +19,7 @@
     "references":
     [
         { "path": "../packages/core" },
-        { "path": "../packages/io" },
+        { "path": "../packages/rwx" },
         { "path": "../packages/mock" },
     ]
 }

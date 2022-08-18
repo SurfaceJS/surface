@@ -1,24 +1,6 @@
 /* cSpell:ignore premajor, preminor, prepatch */
 
-import child_process        from "child_process";
 import type { ReleaseType } from "semver";
-
-export async function execute(command: string, cwd: string): Promise<void>
-{
-    await new Promise<void>
-    (
-        (resolve, reject) =>
-        {
-            const childProcess = child_process.exec(command, { cwd });
-
-            childProcess.stdout?.on("data", x => console.log(String(x).trimEnd()));
-            childProcess.stderr?.on("data", x => console.log(String(x).trimEnd()));
-
-            childProcess.on("error", x => (console.log(String(x)), reject));
-            childProcess.on("exit", resolve);
-        },
-    );
-}
 
 export function isPrerelease(releaseType: ReleaseType | "custom"): releaseType is Exclude<ReleaseType, "major" | "minor" | "patch">
 {

@@ -40,6 +40,7 @@
         "jfif",
         "labelable",
         "layoutimage",
+        "lcov",
         "libnpmpack",
         "libnpmpublish",
         "linebreak",
@@ -51,6 +52,7 @@
         "nonblock",
         "npmrc",
         "numbraces",
+        "nycrc",
         "onsearch",
         "opendocument",
         "pacote",
@@ -107,7 +109,10 @@
         "**/CVS": true,
         "**/LICENSE": true,
         "**/coverage": true,
-        "**/node_modules": true
+        "**/node_modules": true,
+        ".husky": true,
+        ".github": true,
+        ".devcontainer": true
     },
     "javascript.format.placeOpenBraceOnNewLineForControlBlocks": true,
     "javascript.format.placeOpenBraceOnNewLineForFunctions": true,

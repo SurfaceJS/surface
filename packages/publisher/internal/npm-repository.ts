@@ -1,16 +1,16 @@
-import libnpmpublish     from "libnpmpublish";
-import type { Manifest } from "pacote";
-import pacote            from "pacote";
-import semver            from "semver";
-import Status            from "./enums/status.js";
-import type { Auth }     from "./npm-config.js";
+import type { PackageJson } from "@npm/types";
+import libnpmpublish        from "libnpmpublish";
+import pacote               from "pacote";
+import semver               from "semver";
+import Status               from "./enums/status.js";
+import type { Auth }        from "./npm-config.js";
 
 export default class NpmRepository
 {
     public constructor(private readonly auth: Auth = { })
     { }
 
-    public async get(spec: string): Promise<Manifest | null>
+    public async get(spec: string): Promise<ReturnType<typeof pacote["manifest"]> | null>
     {
         try
         {
@@ -22,7 +22,7 @@ export default class NpmRepository
         }
     }
 
-    public async getStatus(manifest: Manifest): Promise<Status>
+    public async getStatus(manifest: PackageJson): Promise<Status>
     {
         const latest = await this.get(`${manifest.name}@${manifest.version}`);
 
@@ -39,7 +39,7 @@ export default class NpmRepository
         return Status.New;
     }
 
-    public async publish(manifest: Manifest, buffer: Buffer, tag: string = "latest"): Promise<void>
+    public async publish(manifest: PackageJson, buffer: Buffer, tag: string = "latest"): Promise<void>
     {
         const response = await libnpmpublish.publish(manifest, buffer, { registry: this.auth?.registry, access: "public", defaultTag: tag, forceAuth: { token: this.auth?.token } });
 
@@ -49,7 +49,7 @@ export default class NpmRepository
         }
     }
 
-    public async unpublish(manifest: Manifest, tag: string = "latest"): Promise<void>
+    public async unpublish(manifest: PackageJson, tag: string = "latest"): Promise<void>
     {
         const response = await libnpmpublish.unpublish(manifest, { registry: this.auth?.registry, access: "public", defaultTag: tag, forceAuth: { token: this.auth?.token } });
 

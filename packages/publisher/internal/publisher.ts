@@ -1,13 +1,13 @@
 import { readFile, writeFile }                from "fs/promises";
 import os                                     from "os";
 import { dirname }                            from "path";
+import type { PackageJson as _PackageJson }   from "@npm/types";
 import { type RequiredProperties, timestamp } from "@surface/core";
-import { enumeratePaths }                     from "@surface/io";
 import Logger, { LogLevel }                   from "@surface/logger";
+import { enumeratePaths, execute }            from "@surface/rwx";
 import pack                                   from "libnpmpack";
-import type { Manifest }                      from "pacote";
 import semver, { type ReleaseType }           from "semver";
-import { execute, isPrerelease }              from "./common.js";
+import { isPrerelease }                       from "./common.js";
 import Status                                 from "./enums/status.js";
 import type { Auth }                          from "./npm-config.js";
 import NpmConfig                              from "./npm-config.js";
@@ -15,12 +15,14 @@ import NpmRepository                          from "./npm-repository.js";
 
 /* cSpell:ignore postpack, postpublish */
 
+type PackageJson = _PackageJson & { workspaces?: string[] };
+
 type CustomVersion = "custom";
 type Metadata =
 {
-    manifest:   Manifest,
-    path:       string,
-    config:     NpmConfig | null,
+    manifest:    PackageJson,
+    path:        string,
+    config:      NpmConfig | null,
     workspaces?: Metadata[],
 };
 
@@ -114,7 +116,7 @@ export default class Publisher
             for await (const path of enumeratePaths(packages, { base: cwd }))
             {
                 const content  = (await readFile(path)).toString();
-                const manifest = JSON.parse(content) as object as Manifest;
+                const manifest = JSON.parse(content) as object as PackageJson;
 
                 this.backup.set(path, content);
 
@@ -188,7 +190,7 @@ export default class Publisher
         {
             this.logger.trace(`Running ${script} script in ${cwd}...`);
 
-            await execute(`npm run ${script} --if-present --color`, cwd);
+            await execute(`npm run ${script} --if-present --color`, { cwd });
         }
         else
         {
@@ -286,7 +288,7 @@ export default class Publisher
         }
     }
 
-    private sync(manifest: Manifest, workspaces: Metadata[], syncFileReferences: boolean, dependencyType?: "dependencies" | "devDependencies" | "peerDependencies"): void
+    private sync(manifest: PackageJson, workspaces: Metadata[], syncFileReferences: boolean, dependencyType?: "dependencies" | "devDependencies" | "peerDependencies"): void
     {
         if (dependencyType)
         {
@@ -352,7 +354,7 @@ export default class Publisher
                 }
                 else
                 {
-                    updated = semver.inc(manifest.version, releaseType, { loose: true, includePrerelease: true }, identifier);
+                    updated = semver.inc(manifest.version, releaseType, { loose: true }, identifier);
                 }
 
                 if (!updated)

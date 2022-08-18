@@ -23,8 +23,8 @@
     [
         { "path": "../core" },
         { "path": "../htmlx-loader" },
-        { "path": "../io" },
         { "path": "../mock" },
+        { "path": "../rwx" },
         { "path": "../test-suite" },
     ]
 }

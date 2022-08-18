@@ -1,7 +1,7 @@
 import { readFile }                                                   from "fs/promises";
 import { join }                                                       from "path";
-import { isFile }                                                     from "@surface/io";
 import Mock, { It }                                                   from "@surface/mock";
+import { isFile }                                                     from "@surface/rwx";
 import { afterEach, batchTest, beforeEach, shouldPass, suite }        from "@surface/test-suite";
 import chai                                                           from "chai";
 import NpmConfig                                                      from "../internal/npm-config.js";

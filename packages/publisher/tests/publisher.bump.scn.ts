@@ -1,9 +1,11 @@
-import type { ParameterOverloads } from "@surface/core";
-import { LogLevel }                from "@surface/logger";
-import type { Manifest }           from "pacote";
-import type { Options }            from "../internal/publisher.js";
-import type Publisher              from "../internal/publisher.js";
-import type VirtualDirectory       from "./types/virtual-directory";
+import type { PackageJson as _PackageJson } from "@npm/types";
+import type { ParameterOverloads }          from "@surface/core";
+import { LogLevel }                         from "@surface/logger";
+import type { Options }                     from "../internal/publisher.js";
+import type Publisher                       from "../internal/publisher.js";
+import type VirtualDirectory                from "./types/virtual-directory";
+
+type PackageJson = _PackageJson & { workspaces?: string[] };
 
 const skip = false;
 
@@ -13,7 +15,7 @@ export type BumpScenario =
     message:   string,
     options:   Options,
     directory: VirtualDirectory,
-    expected:  Record<string, Partial<Manifest>>,
+    expected:  Record<string, Partial<PackageJson>>,
     bumpArgs:  ParameterOverloads<Publisher["bump"]>,
 };
 
@@ -40,7 +42,7 @@ export const validScenarios: BumpScenario[] =
                 {
                     name:    "package-a",
                     version: "0.0.1",
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
         },
         expected: { },
@@ -58,21 +60,21 @@ export const validScenarios: BumpScenario[] =
                 {
                     name:    "package-root",
                     version: "1.0.0",
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
             "./packages/package-a/package.json": JSON.stringify
             (
                 {
                     name:    "package-a",
                     version: "1.0.0",
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
             "./packages/package-b/package.json": JSON.stringify
             (
                 {
                     name:    "package-b",
                     version: "1.0.0",
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
         },
         expected: { },
@@ -90,7 +92,7 @@ export const validScenarios: BumpScenario[] =
                     private: true,
                     name:    "package-a",
                     version: "1.0.0",
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
         },
         expected: { },
@@ -107,7 +109,7 @@ export const validScenarios: BumpScenario[] =
                 {
                     name:    "package-a",
                     version: "1.0.0",
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
         },
         expected:
@@ -133,21 +135,21 @@ export const validScenarios: BumpScenario[] =
                     name:       "package-root",
                     version:    "1.0.0",
                     workspaces: ["packages/*"],
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
             "./packages/package-a/package.json": JSON.stringify
             (
                 {
                     name:    "package-a",
                     version: "1.0.0",
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
             "./packages/package-b/package.json": JSON.stringify
             (
                 {
                     name:    "package-b",
                     version: "1.0.0",
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
         },
         expected:
@@ -184,21 +186,21 @@ export const validScenarios: BumpScenario[] =
                     name:       "package-root",
                     version:    "1.0.0",
                     workspaces: ["packages/*"],
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
             "./packages/package-a/package.json": JSON.stringify
             (
                 {
                     name:    "package-a",
                     version: "1.0.0",
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
             "./packages/package-b/package.json": JSON.stringify
             (
                 {
                     name:    "package-b",
                     version: "1.0.0",
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
             "./packages/nested-root/package.json": JSON.stringify
             (
@@ -206,21 +208,21 @@ export const validScenarios: BumpScenario[] =
                     name:       "nested-root",
                     version:    "1.0.0",
                     workspaces: ["packages/*"],
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
             "./packages/packages/nested-package-a/package.json": JSON.stringify
             (
                 {
                     name:    "nested-package-a",
                     version: "1.0.0",
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
             "./packages/packages/nested-package-b/package.json": JSON.stringify
             (
                 {
                     name:    "nested-package-b",
                     version: "1.0.0",
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
         },
         expected:
@@ -262,21 +264,21 @@ export const validScenarios: BumpScenario[] =
                     name:       "package-root",
                     version:    "1.0.0",
                     workspaces: ["packages/*"],
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
             "./packages/package-a/package.json": JSON.stringify
             (
                 {
                     name:    "package-a",
                     version: "2.0.0",
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
             "./packages/package-b/package.json": JSON.stringify
             (
                 {
                     name:    "package-b",
                     version: "3.0.0",
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
         },
         expected:
@@ -317,7 +319,7 @@ export const validScenarios: BumpScenario[] =
                     name:       "package-root",
                     version:    "1.0.0",
                     workspaces: ["packages/*"],
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
             "./packages":
             {
@@ -326,7 +328,7 @@ export const validScenarios: BumpScenario[] =
                     {
                         name:    "package-a",
                         version: "0.0.1",
-                    } as Partial<Manifest>,
+                    } as Partial<PackageJson>,
                 ),
                 "./package-b/package.json": JSON.stringify
                 (
@@ -337,7 +339,7 @@ export const validScenarios: BumpScenario[] =
                             "package-a": "file:../package-a",
                         },
                         version: "0.1.0",
-                    } as Partial<Manifest>,
+                    } as Partial<PackageJson>,
                 ),
                 "./package-c/package.json": JSON.stringify
                 (
@@ -352,7 +354,7 @@ export const validScenarios: BumpScenario[] =
                             "package-b": "file:../package-b",
                         },
                         version: "1.0.0",
-                    } as Partial<Manifest>,
+                    } as Partial<PackageJson>,
                 ),
                 "./package-d/package.json": JSON.stringify
                 (
@@ -371,7 +373,7 @@ export const validScenarios: BumpScenario[] =
                             "package-c": "file:../package-c",
                         },
                         version: "1.0.1",
-                    } as Partial<Manifest>,
+                    } as Partial<PackageJson>,
                 ),
             },
         },
@@ -447,7 +449,7 @@ export const validScenarios: BumpScenario[] =
                     name:       "package-root",
                     version:    "1.0.0",
                     workspaces: ["packages/*"],
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
             "./packages":
             {
@@ -456,7 +458,7 @@ export const validScenarios: BumpScenario[] =
                     {
                         name:    "package-a",
                         version: "0.0.1",
-                    } as Partial<Manifest>,
+                    } as Partial<PackageJson>,
                 ),
                 "./package-b/package.json": JSON.stringify
                 (
@@ -467,7 +469,7 @@ export const validScenarios: BumpScenario[] =
                             "package-a": "file:../package-a",
                         },
                         version: "0.1.0",
-                    } as Partial<Manifest>,
+                    } as Partial<PackageJson>,
                 ),
                 "./package-c/package.json": JSON.stringify
                 (
@@ -482,7 +484,7 @@ export const validScenarios: BumpScenario[] =
                             "package-b": "file:../package-b",
                         },
                         version: "1.0.0",
-                    } as Partial<Manifest>,
+                    } as Partial<PackageJson>,
                 ),
                 "./package-d/package.json": JSON.stringify
                 (
@@ -501,7 +503,7 @@ export const validScenarios: BumpScenario[] =
                             "package-c": "file:../package-c",
                         },
                         version: "1.0.1",
-                    } as Partial<Manifest>,
+                    } as Partial<PackageJson>,
                 ),
             },
         },
@@ -571,7 +573,7 @@ export const validScenarios: BumpScenario[] =
                 {
                     name:    "package-a",
                     version: "0.0.1",
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
         },
         expected:
@@ -595,7 +597,7 @@ export const validScenarios: BumpScenario[] =
                 {
                     name:    "package-a",
                     version: "0.0.1",
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
         },
         expected:
@@ -619,7 +621,7 @@ export const validScenarios: BumpScenario[] =
                 {
                     name:    "package-a",
                     version: "0.0.1",
-                } as Partial<Manifest>,
+                } as Partial<PackageJson>,
             ),
         },
         expected:
@@ -656,7 +658,7 @@ export const invalidScenarios: BumpScenario[] =
                     {
                         name:    "package-a",
                         version: "invalid",
-                    } as Partial<Manifest>,
+                    } as Partial<PackageJson>,
                 ),
             },
         },
