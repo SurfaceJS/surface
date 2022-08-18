@@ -4,9 +4,9 @@
         "tasks": "./cli.js"
     },
     "dependencies": {
-        "@surface/core": "file:../packages/@surface/core",
-        "@surface/io": "file:../packages/@surface/io",
-        "@surface/logger": "file:../packages/@surface/logger",
+        "@surface/core": "file:../packages/core",
+        "@surface/io": "file:../packages/io",
+        "@surface/logger": "file:../packages/logger",
         "@types/chai": "^4.3.0",
         "@types/libnpmpublish": "^4.0.2",
         "@types/minipass": "^3.1.2",

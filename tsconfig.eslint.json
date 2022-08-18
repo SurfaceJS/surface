@@ -1,5 +1,5 @@
 {
-    "extends": "@surface/tsconfig/tsconfig.json",
+    "extends": "@surface/tsconfig",
     "compilerOptions":
     {
         "noEmit": true,

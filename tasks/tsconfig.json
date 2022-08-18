@@ -18,8 +18,8 @@
     ],
     "references":
     [
-        { "path": "../packages/@surface/core" },
-        { "path": "../packages/@surface/io" },
-        { "path": "../packages/@surface/mock" },
+        { "path": "../packages/core" },
+        { "path": "../packages/io" },
+        { "path": "../packages/mock" },
     ]
 }

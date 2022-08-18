@@ -34,12 +34,12 @@
         "postinstall": "npm run ts:build",
         "prepare": "husky install .husky",
         "prepublishworkspace": "tasks build-release",
-        "publisher:bump": "publisher bump patch --packages=packages/@surface/* --log-level=trace --dry",
-        "publisher:publish": "publisher publish    --packages=packages/@surface/* --log-level=trace --dry",
-        "publisher:publish-canary": "publisher publish    --log-level=trace --dry --canary",
-        "publisher:unpublish": "publisher unpublish  --packages=packages/@surface/* --log-level=trace --dry",
+        "publisher:bump": "publisher bump patch --log-level=trace --dry",
+        "publisher:publish": "publisher publish --log-level=trace --dry",
+        "publisher:publish-canary": "publisher publish --log-level=trace --dry --canary",
+        "publisher:unpublish": "publisher unpublish --log-level=trace --dry",
         "reinstall": "npm run clean && npm i",
-        "test": "mocha --loader=@surface/mock-loader --require=./tasks/polyfill.js **/packages/@surface/*/tests/**/*.spec.js",
+        "test": "mocha --loader=@surface/mock-loader --require=./tasks/polyfill.js **/packages/*/tests/**/*.spec.js",
         "test-summary": "npm test -- --reporter=progress",
         "ts:build": "tsc --build",
         "ts:clean": "tsc --build --clean",
@@ -50,7 +50,7 @@
     "type": "module",
     "version": "1.0.0-beta.0",
     "workspaces": [
-        "./packages/@surface/*",
+        "./packages/*",
         "./tasks"
     ]
 }

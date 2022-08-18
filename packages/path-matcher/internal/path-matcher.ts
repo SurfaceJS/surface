@@ -109,8 +109,8 @@ export default class PathMatcher
      * @param base Base pattern.
      * @param pattern Pattern to resolve relative to base.
      */
-    public static resolve(base: string, pattern: string, options?: Options): ResolvedPattern;
-    public static resolve(base: string, pattern: string[], options?: Options): ResolvedPattern[];
+    public static resolve(base: string, pattern: string, options?: Omit<Options, "base">): ResolvedPattern;
+    public static resolve(base: string, pattern: string[], options?: Omit<Options, "base">): ResolvedPattern[];
     public static resolve(base: string, patterns: string | string[], options?: Options): ResolvedPattern | ResolvedPattern[]
     {
         const resolved = toArray(patterns).map(x => PathMatcher.internalResolve(base, x, options));

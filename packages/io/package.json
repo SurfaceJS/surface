@@ -5,10 +5,11 @@
     },
     "dependencies": {
         "@surface/core": "file:../core",
+        "@surface/path-matcher": "file:../path-matcher",
         "@types/node": "~17.0.27",
         "tslib": "~2.4.0"
     },
-    "description": "Provides io functionality.",
+    "description": "Provides io capabilities.",
     "devDependencies": {
         "@surface/mock": "file:../mock",
         "@surface/test-suite": "file:../test-suite",
@@ -20,14 +21,13 @@
     },
     "homepage": "https://github.com/SurfaceJS/surface#readme",
     "keywords": [
-        "path",
-        "pattern",
+        "io",
         "surface",
         "typescrypt"
     ],
     "license": "MIT",
     "main": "index.js",
-    "name": "@surface/path-matcher",
+    "name": "@surface/io",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/surface.git"

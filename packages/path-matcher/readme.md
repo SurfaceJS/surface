@@ -1,4 +1,4 @@
-# Provides path matching functionality
+# Provides path matching capabilities
 
 Supported Syntax
 | Pattern            | Description                                                                                                                                                                                                                            |

@@ -10,11 +10,11 @@
         "webpack-dev-server",
         "@surface/io",
         "@surface/logger",
-        "./packages/@surface/publisher/internal/common.js",
-        "./packages/@surface/publisher/internal/npm-repository.js",
-        "./packages/@surface/builder/internal/commands.js",
-        "./packages/@surface/builder/internal/common.js",
-        "./packages/@surface/builder/internal/create-configurations.js",
-        "./packages/@surface/builder/internal/builder.js"
+        "./packages/publisher/internal/common.js",
+        "./packages/publisher/internal/npm-repository.js",
+        "./packages/builder/internal/commands.js",
+        "./packages/builder/internal/common.js",
+        "./packages/builder/internal/create-configurations.js",
+        "./packages/builder/internal/builder.js"
     ]
 }
