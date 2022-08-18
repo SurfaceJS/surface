@@ -3,7 +3,7 @@ import type { ParameterOverloads }          from "@surface/core";
 import { LogLevel }                         from "@surface/logger";
 import type { Options }                     from "../internal/publisher.js";
 import type Publisher                       from "../internal/publisher.js";
-import type VirtualDirectory                from "./types/virtual-directory";
+import type VirtualDirectory                from "./types/virtual-directory.js";
 
 type PackageJson = _PackageJson & { workspaces?: string[] };
 

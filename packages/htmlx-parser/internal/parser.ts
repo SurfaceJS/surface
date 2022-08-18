@@ -26,7 +26,7 @@ import type {
     InjectionStatementDescriptor,
     PlaceholderStatementDescriptor,
 } from "./types/descriptor.js";
-import type StackTrace from "./types/stack-trace";
+import type StackTrace from "./types/stack-trace.js";
 
 const DECOMPOSED = Symbol("htmlx-parser:decomposed");
 

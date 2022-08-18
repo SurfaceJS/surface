@@ -12,7 +12,7 @@ import TemplateParseError                            from "../internal/errors/te
 import { parseDestructuredPattern, parseExpression } from "../internal/expression-parsers.js";
 import SpreadFlags                                   from "../internal/flags/spread-flags.js";
 import Parser                                        from "../internal/parser.js";
-import type Descriptor                               from "../internal/types/descriptor";
+import type Descriptor                               from "../internal/types/descriptor.js";
 
 type RawError = { message: string } | Pick<TemplateParseError, "message" | "stack">;
 

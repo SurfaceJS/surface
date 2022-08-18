@@ -21,7 +21,7 @@ import TemplateLiteral               from "../internal/expressions/template-lite
 import ThisExpression                from "../internal/expressions/this-expression.js";
 import UnaryExpression               from "../internal/expressions/unary-expression.js";
 import UpdateExpression              from "../internal/expressions/update-expression.js";
-import type IExpression              from "../internal/interfaces/expression";
+import type IExpression              from "../internal/interfaces/expression.js";
 import Messages                      from "../internal/messages.js";
 import SyntaxError                   from "../internal/syntax-error.js";
 

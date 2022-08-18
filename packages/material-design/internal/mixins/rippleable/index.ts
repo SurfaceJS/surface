@@ -1,6 +1,6 @@
 import type { Constructor } from "@surface/core";
 import { typeGuard }        from "@surface/core";
-import type HTMLXElement   from "@surface/htmlx-element";
+import type HTMLXElement    from "@surface/htmlx-element";
 import { event, styles }    from "@surface/htmlx-element";
 import style                from "./index.scss";
 

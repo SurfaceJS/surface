@@ -1,7 +1,7 @@
-export type { default as IElement }    from "./internal/interfaces/element";
-export type { default as IExpression } from "./internal/interfaces/expression";
-export type { default as INode }       from "./internal/interfaces/node";
-export type { default as IPattern }    from "./internal/interfaces/pattern";
+export type { default as IElement }    from "./internal/interfaces/element.js";
+export type { default as IExpression } from "./internal/interfaces/expression.js";
+export type { default as INode }       from "./internal/interfaces/node.js";
+export type { default as IPattern }    from "./internal/interfaces/pattern.js";
 
 export { default as AssignmentProperty }        from "./internal/elements/assignment-property.js";
 export { default as Property }                  from "./internal/elements/property.js";

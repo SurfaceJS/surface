@@ -1,5 +1,5 @@
 import type { Indexer }        from "@surface/core";
-import type AssignmentProperty from "../elements/assignment-property";
+import type AssignmentProperty from "../elements/assignment-property.js";
 import type Identifier         from "../expressions/identifier.js";
 import type IPattern           from "../interfaces/pattern.js";
 import NodeType                from "../node-type.js";

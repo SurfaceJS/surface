@@ -1,4 +1,3 @@
-/* eslint-disable max-lines-per-function */
 import { deepMerge, hasFlag }                                                               from "@surface/core";
 import type { IExpression, IPattern }                                                       from "@surface/expression";
 import { TypeGuard }                                                                        from "@surface/expression";

@@ -1,7 +1,7 @@
 import type { Constructor }    from "@surface/core";
 import type Container          from "@surface/dependency-injection";
-import type IRouterInterceptor from "../interfaces/router-interceptor";
-import type RouteConfiguration from "./route-configuration";
+import type IRouterInterceptor from "../interfaces/router-interceptor.js";
+import type RouteConfiguration from "./route-configuration.js";
 
 type WebRouterOptions =
 {

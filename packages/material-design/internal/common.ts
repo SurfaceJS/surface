@@ -3,10 +3,10 @@ import type { Indexer }                       from "@surface/core";
 import { camelToDashed, makePath, typeGuard } from "@surface/core";
 import { hexToHsva, hsvaToHex }               from "./colors/converters.js";
 import { interpolateSwatches, scaleSwatches } from "./colors/swatches.js";
-import type RawPalette                        from "./types/raw-palette";
-import type RawTheme                          from "./types/raw-theme";
-import type Shades                            from "./types/shades";
-import type Swatch                            from "./types/swatch";
+import type RawPalette                        from "./types/raw-palette.js";
+import type RawTheme                          from "./types/raw-theme.js";
+import type Shades                            from "./types/shades.js";
+import type Swatch                            from "./types/swatch.js";
 
 type Theme<T extends RawPalette | RawTheme> =
     T extends RawPalette

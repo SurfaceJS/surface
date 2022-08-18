@@ -22,7 +22,7 @@ import type TemplateLiteral          from "./expressions/template-literal.js";
 import type ThisExpression           from "./expressions/this-expression.js";
 import type UnaryExpression          from "./expressions/unary-expression.js";
 import type UpdateExpression         from "./expressions/update-expression.js";
-import type INode                    from "./interfaces/node";
+import type INode                    from "./interfaces/node.js";
 import NodeType                      from "./node-type.js";
 import type ArrayPattern             from "./patterns/array-pattern.js";
 import type AssignmentPattern        from "./patterns/assignment-pattern.js";

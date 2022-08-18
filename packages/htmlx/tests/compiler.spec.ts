@@ -12,7 +12,7 @@ import LoopDirective                               from "../internal/directives/
 import CustomStackError                            from "../internal/errors/custom-stack-error.js";
 import TemplateEvaluationError                     from "../internal/errors/template-evaluation-error.js";
 import { scheduler }                               from "../internal/singletons.js";
-import type DirectiveEntry                         from "../internal/types/directive-entry";
+import type DirectiveEntry                         from "../internal/types/directive-entry.js";
 import customDirectiveFactory                      from "./fixtures/custom-directive-factory.js";
 import CustomDirective                             from "./fixtures/custom-directive.js";
 

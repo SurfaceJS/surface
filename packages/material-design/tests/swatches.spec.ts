@@ -2,7 +2,7 @@
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                    from "chai";
 import { interpolateSwatches, scaleSwatches }  from "../internal/colors/swatches.js";
-import type Swatch                             from "../internal/types/swatch";
+import type Swatch                             from "../internal/types/swatch.js";
 
 @suite
 export default class SwatchesSpec

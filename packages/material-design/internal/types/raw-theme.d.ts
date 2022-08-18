@@ -1,5 +1,5 @@
-import type RawPalette from "./raw-palette";
-import type Theme      from "./theme";
+import type RawPalette from "./raw-palette.js";
+import type Theme      from "./theme.js";
 
 type RawTheme = Partial<Record<keyof Theme, RawPalette>>;
 

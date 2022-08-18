@@ -1,4 +1,4 @@
-import type { Indexer } from "../types";
+import type { Indexer } from "../types/index.js";
 
 const NO_SLASH_PATTERN_PATTERN = /(^\/)?([^\/]*)(\/$)?/;
 

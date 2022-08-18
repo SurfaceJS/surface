@@ -1,5 +1,5 @@
 import type { IDisposable } from "@surface/core";
-import type StackTrace      from "../../types/stack-trace";
+import type StackTrace      from "../../types/stack-trace.js";
 
 type AttributeFactory = (element: HTMLElement, scope: object, directives: Map<string, DirectiveEntry>, stackTrace?: StackTrace) => IDisposable;
 

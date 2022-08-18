@@ -12,7 +12,7 @@ import
     objectFactory,
     proxyFrom,
 } from "../../internal/common/object.js";
-import type { Indexer } from "../../internal/types";
+import type { Indexer } from "../../internal/types/index.js";
 
 @suite
 export default class CommonObjectSpec

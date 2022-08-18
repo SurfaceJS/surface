@@ -1,7 +1,7 @@
 import type { Constructor, Indexer }                           from "@surface/core";
 import { DisposableMetadata, HookableMetadata, camelToDashed } from "@surface/core";
 import { AsyncObserver, scheduler }                            from "@surface/htmlx";
-import type IHTMLXElement                                     from "../interfaces/htmlx-element";
+import type IHTMLXElement                                     from "../interfaces/htmlx-element.js";
 import Metadata                                                from "../metadata/metadata.js";
 import PrototypeMetadata                                       from "../metadata/prototype-metadata.js";
 import StaticMetadata                                          from "../metadata/static-metadata.js";

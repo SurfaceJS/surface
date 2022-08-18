@@ -17,8 +17,8 @@ import loaders                                        from "./loaders.js";
 import OverrideResolvePlugin                          from "./plugins/override-resolver-plugin.js";
 import PreferTsResolverPlugin                         from "./plugins/prefer-ts-resolver-plugin.js";
 import WebManifestPlugin                              from "./plugins/web-manifest-plugin.js";
-import type Configuration                             from "./types/configuration";
-import type Project                                   from "./types/project";
+import type Configuration                             from "./types/configuration.js";
+import type Project                                   from "./types/project.js";
 
 const PROJECT_DEFAULTS: Project =
 {
@@ -353,6 +353,12 @@ export default async function createConfigurations(type: "analyze" | "build" | "
                     "@surface/htmlx-element": useAotHtmlx ? "@surface/htmlx-element/aot" : "@surface/htmlx-element",
                 },
                 extensions:     [".ts", ".js", ".json", ".wasm"],
+                extensionAlias:
+                {
+                    ".js":  [".ts", ".js"],
+                    ".cjs": [".cts", ".cjs"],
+                    ".mjs": [".mts", ".mjs"],
+                },
                 plugins:        resolvePlugins,
                 preferRelative: true,
             },

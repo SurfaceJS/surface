@@ -1,4 +1,4 @@
-import type RawTheme  from "../types/raw-theme";
+import type RawTheme  from "../types/raw-theme.js";
 import materialColors from "./material-colors.js";
 
 const defaultTheme: RawTheme =

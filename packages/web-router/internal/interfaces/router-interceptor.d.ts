@@ -1,5 +1,5 @@
-import type NamedRoute from "../types/named-route";
-import type Route      from "../types/route";
+import type NamedRoute from "../types/named-route.js";
+import type Route      from "../types/route.js";
 
 export default interface IRouterInterceptor
 {

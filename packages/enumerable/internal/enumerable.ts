@@ -4,9 +4,9 @@ import type { Delegate } from "@surface/core";
 import Comparer          from "./comparer.js";
 import EnumerableSorter  from "./enumerable-sorter.js";
 import HashSet           from "./hash-set.js";
-import type IComparer    from "./interfaces/comparer";
+import type IComparer    from "./interfaces/comparer.js";
 import type IGroup       from "./interfaces/group.js";
-import type ILookup      from "./interfaces/lookup";
+import type ILookup      from "./interfaces/lookup.js";
 import Lookup            from "./lookup.js";
 
 abstract class Enumerable<TSource> implements Iterable<TSource>

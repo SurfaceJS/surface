@@ -7,7 +7,7 @@ import createChoiceFactory         from "../internal/factories/create-choice-fac
 import createElementFactory        from "../internal/factories/create-element-factory.js";
 import createFragmentFactory       from "../internal/factories/create-fragment-factory.js";
 import { scheduler }               from "../internal/singletons.js";
-import type Activator              from "../internal/types/activator";
+import type Activator              from "../internal/types/activator.js";
 import type Evaluator              from "../internal/types/evaluator.js";
 
 @suite

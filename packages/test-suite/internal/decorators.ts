@@ -1,8 +1,8 @@
 /* eslint-disable max-lines-per-function */
 import Metadata        from "./metadata.js";
 import mocha           from "./mocha.js";
-import type Test       from "./types/test";
-import type TestObject from "./types/test-object";
+import type TestObject from "./types/test-object.js";
+import type Test       from "./types/test.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Constructor<T = object>                                = new (...args: any[]) => T;

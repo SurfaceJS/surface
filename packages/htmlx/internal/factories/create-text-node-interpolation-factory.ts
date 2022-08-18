@@ -1,8 +1,8 @@
 import type { ObservablePath, StackTrace } from "@surface/htmlx-parser";
 import { tryEvaluate, tryObserve }         from "../common.js";
-import type Activator                      from "../types/activator";
-import type Evaluator                      from "../types/evaluator";
-import type NodeFactory                    from "../types/node-factory";
+import type Activator                      from "../types/activator.js";
+import type Evaluator                      from "../types/evaluator.js";
+import type NodeFactory                    from "../types/node-factory.js";
 
 export default function createTextNodeInterpolationFactory(evaluator: Evaluator, observables?: ObservablePath[], source?: string, stackTrace?: StackTrace): NodeFactory
 {

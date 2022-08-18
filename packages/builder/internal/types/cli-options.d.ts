@@ -1,5 +1,5 @@
-import type CliProjectOptions from "./cli-project-options";
-import type Configuration     from "./configuration";
+import type CliProjectOptions from "./cli-project-options.js";
+import type Configuration     from "./configuration.js";
 
 type CliOptions =
 {

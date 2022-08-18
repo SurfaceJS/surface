@@ -4,7 +4,7 @@ import type { ObservablePath, StackTrace }                     from "@surface/ht
 import { tryEvaluate, tryEvaluatePattern, tryObserve }         from "../common.js";
 import Metadata                                                from "../metadata.js";
 import { scheduler }                                           from "../singletons.js";
-import type DirectiveEntry                                     from "../types/directive-entry";
+import type DirectiveEntry                                     from "../types/directive-entry.js";
 import type Evaluator                                          from "../types/evaluator.js";
 import type InjectionContext                                   from "../types/injection-context.js";
 import type NodeFactory                                        from "../types/node-factory.js";

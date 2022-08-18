@@ -1,5 +1,5 @@
 import TokenType       from "./enums/token-type.js";
-import type INode      from "./interfaces/node";
+import type INode      from "./interfaces/node.js";
 import AssignmentNode  from "./nodes/assignment-node.js";
 import IdentifierNode  from "./nodes/identifier-node.js";
 import LiteralNode     from "./nodes/literal-node.js";
@@ -9,7 +9,7 @@ import TransformerNode from "./nodes/transformer-node.js";
 import WildcardNode    from "./nodes/wildcard-node.js";
 import Scanner         from "./scanner.js";
 import TypeGuard       from "./type-guard.js";
-import type Token      from "./types/token";
+import type Token      from "./types/token.js";
 
 export default class Parser
 {

@@ -1,5 +1,5 @@
-import type IExpression from "../interfaces/expression";
-import type IPattern    from "../interfaces/pattern";
+import type IExpression from "../interfaces/expression.js";
+import type IPattern    from "../interfaces/pattern.js";
 import Messages         from "../messages.js";
 import NodeType         from "../node-type.js";
 import { PATTERN }      from "../symbols.js";

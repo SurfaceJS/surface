@@ -1,7 +1,7 @@
 import type { Indexer }        from "@surface/core";
-import type IExpression        from "../interfaces/expression";
+import type IExpression        from "../interfaces/expression.js";
 import NodeType                from "../node-type.js";
-import type { BinaryOperator } from "../types/operators";
+import type { BinaryOperator } from "../types/operators.js";
 
 type Operation = (left: IExpression, right: IExpression, scope: Indexer) => unknown;
 

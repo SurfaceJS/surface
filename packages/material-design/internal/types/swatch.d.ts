@@ -1,4 +1,4 @@
-import type HSVA from "./hsva";
+import type HSVA from "./hsva.js";
 
 type Swatch = { index: number, color: HSVA };
 

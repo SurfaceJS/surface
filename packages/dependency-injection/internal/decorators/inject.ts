@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import StaticMetadata from "../metadata.js";
-import type { Key }   from "../types/index";
+import type { Key }   from "../types/index.js";
 
 /**
  * Injects dependecies resolved by active container.

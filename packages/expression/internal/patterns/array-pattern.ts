@@ -1,5 +1,5 @@
 import type { Indexer } from "@surface/core";
-import type IPattern    from "../interfaces/pattern";
+import type IPattern    from "../interfaces/pattern.js";
 import NodeType         from "../node-type.js";
 import { PATTERN }      from "../symbols.js";
 import TypeGuard        from "../type-guard.js";

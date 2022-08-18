@@ -3,17 +3,17 @@
 import "@surface/dom-shim";
 
 import Container, { inject }                   from "@surface/dependency-injection";
-import HTMLXElement, { define, element }      from "@surface/htmlx-element";
+import HTMLXElement, { define, element }       from "@surface/htmlx-element";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                    from "chai";
 import chaiAsPromised                          from "chai-as-promised";
-import type IRouteableElement                  from "../internal/interfaces/routeable-element";
-import type IRouterInterceptor                 from "../internal/interfaces/router-interceptor";
+import type IRouteableElement                  from "../internal/interfaces/routeable-element.js";
+import type IRouterInterceptor                 from "../internal/interfaces/router-interceptor.js";
 import RouterLinkDirective                     from "../internal/router-link-directive.js";
-import type NamedRoute                         from "../internal/types/named-route";
-import type Route                              from "../internal/types/route";
-import type RouteConfiguration                 from "../internal/types/route-configuration";
-import type WebRouterOptions                   from "../internal/types/web-router-options";
+import type NamedRoute                         from "../internal/types/named-route.js";
+import type RouteConfiguration                 from "../internal/types/route-configuration.js";
+import type Route                              from "../internal/types/route.js";
+import type WebRouterOptions                   from "../internal/types/web-router-options.js";
 import WebRouter                               from "../internal/web-router.js";
 
 chai.use(chaiAsPromised);

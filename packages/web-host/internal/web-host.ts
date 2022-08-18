@@ -5,7 +5,7 @@ import type Router            from "@surface/router";
 import type Configuration     from "./configuration.js";
 import FallbackRequestHandler from "./fallback-request-handler.js";
 import HttpContext            from "./http-context.js";
-import type IStartup          from "./interfaces/startup";
+import type IStartup          from "./interfaces/startup.js";
 import MvcRequestHandler      from "./mvc-request-handler.js";
 import type RequestHandler    from "./request-handler.js";
 import StaticRequestHandler   from "./static-request-handler.js";

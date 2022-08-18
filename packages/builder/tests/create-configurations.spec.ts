@@ -2,7 +2,7 @@ import { shouldPass, suite, test } from "@surface/test-suite";
 import chai                        from "chai";
 import chaiAsPromised              from "chai-as-promised";
 import createConfigurations        from "../internal/create-configurations.js";
-import type Configuration          from "../internal/types/configuration";
+import type Configuration          from "../internal/types/configuration.js";
 
 chai.use(chaiAsPromised);
 

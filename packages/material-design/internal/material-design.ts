@@ -1,7 +1,7 @@
 import materialColors  from "./colors/material-colors.js";
 import ThemeProvider   from "./colors/theme-provider.js";
-import type RawPalette from "./types/raw-palette";
-import type RawTheme   from "./types/raw-theme";
+import type RawPalette from "./types/raw-palette.js";
+import type RawTheme   from "./types/raw-theme.js";
 
 export default class MaterialDesign
 {

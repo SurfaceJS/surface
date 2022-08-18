@@ -6,17 +6,17 @@ import { painting }                                     from "@surface/htmlx";
 import { computed }                                     from "@surface/observer";
 import Router                                           from "@surface/router";
 import type { RouteData }                               from "@surface/router";
-import type IRouteableElement                           from "./interfaces/routeable-element";
-import type IRouterMiddleware                           from "./interfaces/router-interceptor";
+import type IRouteableElement                           from "./interfaces/routeable-element.js";
+import type IRouterMiddleware                           from "./interfaces/router-interceptor.js";
 import Metadata                                         from "./metadata.js";
 import RouteConfigurator                                from "./route-configurator.js";
-import type Component                                   from "./types/component";
-import type Module                                      from "./types/module";
-import type NamedRoute                                  from "./types/named-route";
+import type Component                                   from "./types/component.js";
+import type Module                                      from "./types/module.js";
+import type NamedRoute                                  from "./types/named-route.js";
+import type RouteDefinition                             from "./types/route-definition.js";
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
-import type Route                                       from "./types/route";
-import type RouteDefinition                             from "./types/route-definition";
-import type WebRouterOptions                            from "./types/web-router-options";
+import type Route                                       from "./types/route.js";
+import type WebRouterOptions                            from "./types/web-router-options.js";
 
 const LEADING_SLASH_PATTERN = /^\//;
 

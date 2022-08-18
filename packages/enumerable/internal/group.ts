@@ -1,4 +1,4 @@
-import type IGroup from "./interfaces/group";
+import type IGroup from "./interfaces/group.js";
 
 export default class Group<TKey, TElement> implements IGroup<TKey, TElement>
 {

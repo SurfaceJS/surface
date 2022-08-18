@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/indent */
 import HTMLXElement from "./internal/htmlx-element.js";
 
-export type { default as IHTMLXElement } from "./internal/interfaces/htmlx-element";
+export type { default as IHTMLXElement } from "./internal/interfaces/htmlx-element.js";
 
 export type { AttributeOptions } from "./internal/decorators/attribute.js";
 

@@ -4,12 +4,12 @@ import { isDirectory, lookup }              from "@surface/rwx";
 import Builder                              from "./builder.js";
 import { loadModule }                       from "./common.js";
 import type BuildConfiguration              from "./types/build-configuration.js";
-import type CliAnalyzerOptions              from "./types/cli-analyzer-options";
-import type CliBuildOptions                 from "./types/cli-build-options";
-import type CliDevServerOptions             from "./types/cli-dev-serve-options";
-import type CliOptions                      from "./types/cli-options";
+import type CliAnalyzerOptions              from "./types/cli-analyzer-options.js";
+import type CliBuildOptions                 from "./types/cli-build-options.js";
+import type CliDevServerOptions             from "./types/cli-dev-serve-options.js";
+import type CliOptions                      from "./types/cli-options.js";
 import type Configuration                   from "./types/configuration.js";
-import type Project                         from "./types/project";
+import type Project                         from "./types/project.js";
 
 export default class Commands
 {

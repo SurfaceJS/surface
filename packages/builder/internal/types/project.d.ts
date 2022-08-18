@@ -4,7 +4,7 @@ import type { Options as EslintWebpackPluginOptions } from "eslint-webpack-plugi
 import type HtmlWebpackPlugin                         from "html-webpack-plugin";
 import type webpack                                   from "webpack";
 import type { BundleAnalyzerPlugin }                  from "webpack-bundle-analyzer";
-import type BuildConfiguration                        from "./build-configuration";
+import type BuildConfiguration                        from "./build-configuration.js";
 
 type HTMLXOptions =
 {

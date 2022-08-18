@@ -1,7 +1,7 @@
 /* eslint-disable sort-keys */
 /* eslint-disable no-param-reassign */
-import type HSVA   from "../types/hsva";
-import type Swatch from "../types/swatch";
+import type HSVA   from "../types/hsva.js";
+import type Swatch from "../types/swatch.js";
 import Vector4     from "./vector-4.js";
 
 const MAX_DISTANCE = 0.707107;

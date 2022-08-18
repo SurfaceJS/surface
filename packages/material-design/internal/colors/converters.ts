@@ -3,12 +3,12 @@
 /* eslint-disable max-statements-per-line */
 // Reference: https://www.easyrgb.com/en/math.php
 
-import type HSLA from "../types/hsla";
-import type HSVA from "../types/hsva";
-import type LAB  from "../types/lab";
-import type RGB  from "../types/rgb";
-import type RGBA from "../types/rgba";
-import type XYZ  from "../types/xyz";
+import type HSLA from "../types/hsla.js";
+import type HSVA from "../types/hsva.js";
+import type LAB  from "../types/lab.js";
+import type RGB  from "../types/rgb.js";
+import type RGBA from "../types/rgba.js";
+import type XYZ  from "../types/xyz.js";
 
 const ILLUMINANT_D65 = { X: 95.047, Y: 100, Z: 108.883 };
 

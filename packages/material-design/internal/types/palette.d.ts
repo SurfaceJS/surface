@@ -1,4 +1,4 @@
-import type Shades from "./shades";
+import type Shades from "./shades.js";
 
 type Palette =
 {

@@ -5,8 +5,8 @@
     },
     "dependencies": {
         "@surface/core": "file:../core",
-        "@types/node": "~17.0.27",
-        "chalk": "^5.0.0",
+        "@types/node": "~18.7.6",
+        "chalk": "^5.0.1",
         "tslib": "~2.4.0"
     },
     "description": "Provides log functionality.",

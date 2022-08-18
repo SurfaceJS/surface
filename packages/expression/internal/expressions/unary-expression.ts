@@ -1,7 +1,7 @@
 import type { Delegate, Indexer } from "@surface/core";
-import type IExpression           from "../interfaces/expression";
+import type IExpression           from "../interfaces/expression.js";
 import NodeType                   from "../node-type.js";
-import type { UnaryOperator }     from "../types/operators";
+import type { UnaryOperator }     from "../types/operators.js";
 
 type Operation = (value: IExpression, scope: Indexer) => Object;
 

@@ -3,9 +3,9 @@ import { typeGuard }                       from "@surface/core";
 import type { ObservablePath, StackTrace } from "@surface/htmlx-parser";
 import { buildStackTrace }                 from "../common.js";
 import TemplateProcessError                from "../errors/template-process-error.js";
-import type AttributeFactory               from "../types/attribute-factory";
-import type DirectiveContext               from "../types/directive-context";
-import type Evaluator                      from "../types/evaluator";
+import type AttributeFactory               from "../types/attribute-factory.js";
+import type DirectiveContext               from "../types/directive-context.js";
+import type Evaluator                      from "../types/evaluator.js";
 
 type DirectiveFactory = (context: DirectiveContext) => IDisposable;
 

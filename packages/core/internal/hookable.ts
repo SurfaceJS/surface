@@ -1,5 +1,5 @@
 import HookableMetadata     from "./metadata/hookable-metadata.js";
-import type { Constructor } from "./types";
+import type { Constructor } from "./types/index.js";
 
 export default class Hookable
 {

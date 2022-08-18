@@ -1,6 +1,6 @@
-import type IExpression from "../interfaces/expression";
-import type INode       from "../interfaces/node";
-import type IPattern    from "../interfaces/pattern";
+import type IExpression from "../interfaces/expression.js";
+import type INode       from "../interfaces/node.js";
+import type IPattern    from "../interfaces/pattern.js";
 import NodeType         from "../node-type.js";
 import TypeGuard        from "../type-guard.js";
 

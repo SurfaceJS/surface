@@ -3,10 +3,10 @@ import Mock, { It }                           from "@surface/mock";
 import { afterEach, beforeEach, suite, test } from "@surface/test-suite";
 import chai                                   from "chai";
 import Commands                               from "../internal/commands.js";
-import type CliAnalyzerOptions                from "../internal/types/cli-analyzer-options";
-import type CliBuildOptions                   from "../internal/types/cli-build-options";
-import type CliDevServerOptions               from "../internal/types/cli-dev-serve-options";
-import type CliOptions                        from "../internal/types/cli-options";
+import type CliAnalyzerOptions                from "../internal/types/cli-analyzer-options.js";
+import type CliBuildOptions                   from "../internal/types/cli-build-options.js";
+import type CliDevServerOptions               from "../internal/types/cli-dev-serve-options.js";
+import type CliOptions                        from "../internal/types/cli-options.js";
 
 const commandsMock = Mock.of(Commands);
 

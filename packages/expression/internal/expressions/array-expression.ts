@@ -1,5 +1,5 @@
 import type SpreadElement from "../elements/spread-element.js";
-import type IExpression   from "../interfaces/expression";
+import type IExpression   from "../interfaces/expression.js";
 import NodeType           from "../node-type.js";
 import TypeGuard          from "../type-guard.js";
 

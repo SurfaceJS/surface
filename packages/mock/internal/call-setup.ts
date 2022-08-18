@@ -1,7 +1,7 @@
 import type { Callable }  from "@surface/core";
 import BaseSetup          from "./base-setup.js";
-import type ICallSetup    from "./interfaces/call-setup";
-import type IExecutable   from "./interfaces/executable";
+import type ICallSetup    from "./interfaces/call-setup.js";
+import type IExecutable   from "./interfaces/executable.js";
 import type IReturnsSetup from "./interfaces/returns-setup.js";
 import ReturnSetup        from "./return-setup.js";
 

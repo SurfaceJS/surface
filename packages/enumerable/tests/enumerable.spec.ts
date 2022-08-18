@@ -3,7 +3,7 @@ import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                    from "chai";
 import Comparer                                from "../internal/comparer.js";
 import Enumerable                              from "../internal/enumerable.js";
-import type ILookup                            from "../internal/interfaces/lookup";
+import type ILookup                            from "../internal/interfaces/lookup.js";
 import Lookup                                  from "../internal/lookup.js";
 
 @suite

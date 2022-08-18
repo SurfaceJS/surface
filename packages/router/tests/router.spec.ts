@@ -1,7 +1,7 @@
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                    from "chai";
 import Router                                  from "../internal/router.js";
-import type RouterMatch                        from "../internal/types/router-match";
+import type RouterMatch                        from "../internal/types/router-match.js";
 
 @suite
 export default class RouterSpec

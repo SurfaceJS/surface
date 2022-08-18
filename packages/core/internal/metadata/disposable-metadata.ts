@@ -1,4 +1,4 @@
-import type IDisposable from "../interfaces/disposable";
+import type IDisposable from "../interfaces/disposable.js";
 
 const DISPOSABLE_METADATA = Symbol("core:disposable-metadata");
 

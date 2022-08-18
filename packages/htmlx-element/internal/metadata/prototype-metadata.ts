@@ -1,5 +1,5 @@
 
-import type IHTMLXElement from "../interfaces/htmlx-element";
+import type IHTMLXElement from "../interfaces/htmlx-element.js";
 
 export const PROTOTYPE_METADATA = Symbol("htmlx:prototype-metadata");
 

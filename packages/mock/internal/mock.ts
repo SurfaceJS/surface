@@ -9,10 +9,10 @@ import type
     ParameterOverloads,
 } from "@surface/core";
 import CallSetup                  from "./call-setup.js";
-import type ICallSetup            from "./interfaces/call-setup";
-import type IExecutable           from "./interfaces/executable";
-import type IGetSetup             from "./interfaces/get-setup";
-import type IReturnsInstanceSetup from "./interfaces/returns-instance-setup";
+import type ICallSetup            from "./interfaces/call-setup.js";
+import type IExecutable           from "./interfaces/executable.js";
+import type IGetSetup             from "./interfaces/get-setup.js";
+import type IReturnsInstanceSetup from "./interfaces/returns-instance-setup.js";
 import ReturnSetup                from "./return-setup.js";
 import type ResolveSetup          from "./types/resolve-setup.js";
 

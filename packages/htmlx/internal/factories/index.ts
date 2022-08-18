@@ -7,7 +7,7 @@ export { default as createFragmentFactory }              from "./create-fragment
 export { default as createInjectionFactory }             from "./create-injection-factory.js";
 export { default as createInterpolationFactory }         from "./create-interpolation-factory.js";
 export { default as createLoopFactory }                  from "./create-loop-factory.js";
-export { default as createOnewayFactory }                from "./create-one-way-factory.js";
+export { default as createOneWayFactory }                from "./create-one-way-factory.js";
 export { default as createPlaceholderFactory }           from "./create-placeholder-factory.js";
 export { default as createSpreadAttributesFactory }      from "./create-spread-attributes-factory.js";
 export { default as createSpreadBindsFactory }           from "./create-spread-binds-factory.js";

@@ -8,7 +8,7 @@ import createFragmentFactory              from "../internal/factories/create-fra
 import createLoopFactory                  from "../internal/factories/create-loop-factory.js";
 import createTextNodeInterpolationFactory from "../internal/factories/create-text-node-interpolation-factory.js";
 import { scheduler }                      from "../internal/singletons.js";
-import type Activator                     from "../internal/types/activator";
+import type Activator                     from "../internal/types/activator.js";
 import type DestructuredEvaluator         from "../internal/types/destructured-evaluator.js";
 import type Evaluator                     from "../internal/types/evaluator.js";
 

@@ -1,5 +1,5 @@
 import NodeType   from "../enums/node-type.js";
-import type INode from "../interfaces/node";
+import type INode from "../interfaces/node.js";
 
 export default class AssignmentNode implements INode
 {

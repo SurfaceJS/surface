@@ -7,7 +7,7 @@ import createElementFactory               from "../internal/factories/create-ele
 import createPlaceholderFactory           from "../internal/factories/create-placeholder-factory.js";
 import createTextNodeInterpolationFactory from "../internal/factories/create-text-node-interpolation-factory.js";
 import { scheduler }                      from "../internal/singletons.js";
-import type Activator                     from "../internal/types/activator";
+import type Activator                     from "../internal/types/activator.js";
 import type Evaluator                     from "../internal/types/evaluator.js";
 
 @suite

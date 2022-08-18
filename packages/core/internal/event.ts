@@ -1,5 +1,5 @@
-import type { Delegate } from "./types/index";
-import type Subscription from "./types/subscription";
+import type { Delegate } from "./types/index.js";
+import type Subscription from "./types/subscription.js";
 
 export default class Event<TArgs = unknown>
 {

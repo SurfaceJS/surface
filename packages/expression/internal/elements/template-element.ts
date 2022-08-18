@@ -1,4 +1,4 @@
-import type INode from "../interfaces/node";
+import type INode from "../interfaces/node.js";
 import NodeType   from "../node-type.js";
 
 export default class TemplateElement implements INode

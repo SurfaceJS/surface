@@ -10,7 +10,7 @@ import createInterpolationFactory  from "../internal/factories/create-interpolat
 import createOnewayFactory         from "../internal/factories/create-one-way-factory.js";
 import createTwoWayFactory         from "../internal/factories/create-two-way-factory.js";
 import { scheduler }               from "../internal/singletons.js";
-import type Activator              from "../internal/types/activator";
+import type Activator              from "../internal/types/activator.js";
 import type Evaluator              from "../internal/types/evaluator.js";
 import customDirectiveFactory      from "./fixtures/custom-directive-factory.js";
 import CustomDirective             from "./fixtures/custom-directive.js";

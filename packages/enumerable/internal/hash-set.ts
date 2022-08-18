@@ -1,5 +1,5 @@
 import { Hashcode }   from "@surface/core";
-import type IComparer from "./interfaces/comparer";
+import type IComparer from "./interfaces/comparer.js";
 
 type Slot<TElement> =
 {

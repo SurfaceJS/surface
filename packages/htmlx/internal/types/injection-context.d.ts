@@ -1,4 +1,4 @@
-import type StackTrace            from "../../types/stack-trace";
+import type StackTrace            from "../../types/stack-trace.js";
 import type DestructuredEvaluator from "./destructured-evaluator.js";
 import type NodeFactory           from "./node-factory.js";
 import type { DirectiveEntry }    from ".";

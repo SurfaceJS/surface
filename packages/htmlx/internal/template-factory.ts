@@ -1,5 +1,5 @@
 import type { NodeFactory } from "../index.js";
-import type Activator       from "./types/activator";
+import type Activator       from "./types/activator.js";
 
 export default class TemplateFactory
 {

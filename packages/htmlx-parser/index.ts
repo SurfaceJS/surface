@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/indent */
-export type { default as StackTrace }     from "./internal/types/stack-trace";
-export type { default as ObservablePath } from "./internal/types/observable-path";
+export type { default as StackTrace }     from "./internal/types/stack-trace.js";
+export type { default as ObservablePath } from "./internal/types/observable-path.js";
 export type
 {
     AttributeBindDescritor,
@@ -21,7 +21,7 @@ export type
     TextDescriptor,
     TextInterpolationDescriptor,
     TwoWayAttributeDescritor,
-} from "./internal/types/descriptor";
+} from "./internal/types/descriptor.js";
 
 export { default as SpreadFlags }    from "./internal/flags/spread-flags.js";
 export { default as DescriptorType } from "./internal/descriptor-type.js";

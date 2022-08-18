@@ -4,10 +4,10 @@ import type { Delegate, IDisposable, Subscription }    from "@surface/core";
 import type { ObservablePath, StackTrace          }    from "@surface/htmlx-parser";
 import { tryEvaluate, tryEvaluatePattern, tryObserve } from "../common.js";
 import { scheduler }                                   from "../singletons.js";
-import type DestructuredEvaluator                      from "../types/destructured-evaluator";
-import type DirectiveEntry                             from "../types/directive-entry";
-import type Evaluator                                  from "../types/evaluator";
-import type NodeFactory                                from "../types/node-factory";
+import type DestructuredEvaluator                      from "../types/destructured-evaluator.js";
+import type DirectiveEntry                             from "../types/directive-entry.js";
+import type Evaluator                                  from "../types/evaluator.js";
+import type NodeFactory                                from "../types/node-factory.js";
 import Block                                           from "./block.js";
 
 type Context =

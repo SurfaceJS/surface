@@ -1,4 +1,4 @@
-import type HSV from "./hsv";
+import type HSV from "./hsv.js";
 
 type HSVA = HSV & { a: number };
 

@@ -1,5 +1,5 @@
 import type { Delegate } from "@surface/core";
-import type IComparer    from "./interfaces/comparer";
+import type IComparer    from "./interfaces/comparer.js";
 
 export default class EnumerableSorter<TKey, TElement>
 {

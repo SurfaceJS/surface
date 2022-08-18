@@ -1,7 +1,7 @@
 import type { PackageJson as _PackageJson } from "@npm/types";
 import Status                               from "../internal/enums/status.js";
 import type { Options }                     from "../internal/publisher.js";
-import type VirtualDirectory                from "./types/virtual-directory";
+import type VirtualDirectory                from "./types/virtual-directory.js";
 
 type PackageJson = _PackageJson & { workspaces?: string[] };
 

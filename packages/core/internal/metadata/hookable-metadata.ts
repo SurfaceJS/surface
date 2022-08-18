@@ -1,4 +1,4 @@
-import type { Constructor, Delegate } from "../types";
+import type { Constructor, Delegate } from "../types/index.js";
 
 const HOOKABLE_METADATA = Symbol("core:hookable-metadata");
 

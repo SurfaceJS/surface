@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/indent */
-export type { default as IDisposable } from "./internal/interfaces/disposable";
+export type { default as IDisposable } from "./internal/interfaces/disposable.js";
 
 export type
 {
@@ -35,11 +35,11 @@ export type
     RequiredProperties,
     TypesOf,
     UnionToIntersection,
-} from "./internal/types";
+} from "./internal/types/index.js";
 
-export type { default as CancellationToken } from "./internal/types/cancellation-token";
-export type { default as MergeRules }        from "./internal/types/merge-rules";
-export type { default as Subscription }      from "./internal/types/subscription";
+export type { default as CancellationToken } from "./internal/types/cancellation-token.js";
+export type { default as MergeRules }        from "./internal/types/merge-rules.js";
+export type { default as Subscription }      from "./internal/types/subscription.js";
 
 export { default as CancellationTokenSource } from "./internal/cancellation-token-source.js";
 export { default as ArgumentOutOfRangeError } from "./internal/errors/argument-out-of-range-error.js";

@@ -48,8 +48,8 @@ import type
     LogicalOperator,
     UnaryOperator,
     UpdateOperator,
-} from "./types/operators";
-import type Token from "./types/token";
+} from "./types/operators.js";
+import type Token from "./types/token.js";
 
 type DupeCheck = (identifier: Identifier, token: Token) => Identifier;
 

@@ -11,8 +11,8 @@
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
         "@surface/tsconfig": "file:../tsconfig",
-        "@types/chai": "~4.3.1",
-        "@types/semver": "~7.3.9",
+        "@types/chai": "~4.3.3",
+        "@types/semver": "~7.3.12",
         "chai": "~4.3.6",
         "semver": "~7.3.7"
     },

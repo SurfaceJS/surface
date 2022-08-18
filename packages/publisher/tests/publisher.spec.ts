@@ -28,7 +28,7 @@ import
     type UnpublishScenario,
     validScenarios as unpublishValidScenarios,
 } from "./publisher.unpublish.scn.js";
-import type VirtualDirectory from "./types/virtual-directory";
+import type VirtualDirectory from "./types/virtual-directory.js";
 
 type PackageJson = _PackageJson & { workspaces?: string[] };
 

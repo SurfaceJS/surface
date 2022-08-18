@@ -5,10 +5,10 @@ import { tryEvaluate, tryObserve }         from "../common.js";
 import Metadata                            from "../metadata.js";
 import { scheduler }                       from "../singletons.js";
 import type DestructuredEvaluator          from "../types/destructured-evaluator.js";
-import type DirectiveEntry                 from "../types/directive-entry";
+import type DirectiveEntry                 from "../types/directive-entry.js";
 import type Evaluator                      from "../types/evaluator.js";
 import type InjectionContext               from "../types/injection-context.js";
-import type NodeFactory                    from "../types/node-factory";
+import type NodeFactory                    from "../types/node-factory.js";
 import type Block                          from "./block.js";
 
 export type Context =

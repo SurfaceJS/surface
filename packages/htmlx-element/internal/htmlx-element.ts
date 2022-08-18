@@ -4,7 +4,7 @@ import { DisposableMetadata, HookableMetadata }        from "@surface/core";
 import type { DirectiveConstructor, DirectiveFactory } from "@surface/htmlx";
 import { Metadata as HTMLXMetadata }                   from "@surface/htmlx";
 import Observer                                        from "@surface/observer";
-import type IHTMLXElement                              from "./interfaces/htmlx-element";
+import type IHTMLXElement                              from "./interfaces/htmlx-element.js";
 import Metadata                                        from "./metadata/metadata.js";
 import StaticMetadata                                  from "./metadata/static-metadata.js";
 import { directivesRegistry }                          from "./singletons.js";

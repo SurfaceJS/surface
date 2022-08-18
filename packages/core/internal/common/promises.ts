@@ -1,7 +1,7 @@
 /* eslint-disable import/prefer-default-export */
 import TaskCanceledError      from "../errors/task-canceled-error.js";
-import type { Callable }      from "../types";
 import type CancellationToken from "../types/cancellation-token.js";
+import type { Callable }      from "../types/index.js";
 
 type Timer = unknown;
 

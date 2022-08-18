@@ -1,5 +1,5 @@
 import type { Indexer } from "@surface/core";
-import type IExpression from "../interfaces/expression";
+import type IExpression from "../interfaces/expression.js";
 import NodeType         from "../node-type.js";
 
 export default class ThisExpression implements IExpression

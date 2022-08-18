@@ -11,9 +11,9 @@ import type
     Indexer,
     Intersect,
     Mix,
-} from "../types";
-import type MergeRule        from "../types/merge-rule";
-import type MergeRules       from "../types/merge-rules";
+} from "../types/index.js";
+import type MergeRule        from "../types/merge-rule.js";
+import type MergeRules       from "../types/merge-rules.js";
 import { assert, typeGuard } from "./generic.js";
 
 const PRIVATES = Symbol("core:privates");

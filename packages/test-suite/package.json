@@ -9,7 +9,7 @@
     "description": "Provides decorators for testing with mocha using the OOP approach.",
     "devDependencies": {
         "@surface/tsconfig": "file:../tsconfig",
-        "@types/chai": "~4.3.1",
+        "@types/chai": "~4.3.3",
         "chai": "~4.3.6"
     },
     "homepage": "https://github.com/SurfaceJS/surface#readme",

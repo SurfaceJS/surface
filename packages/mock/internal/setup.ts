@@ -3,7 +3,7 @@ import { Hashcode }       from "@surface/core";
 import type { IComparer } from "@surface/enumerable";
 import Enumerable         from "@surface/enumerable";
 import { isIt }           from "./common.js";
-import type Args          from "./types/args";
+import type Args          from "./types/args.js";
 
 const comparer: IComparer<unknown> =
 {

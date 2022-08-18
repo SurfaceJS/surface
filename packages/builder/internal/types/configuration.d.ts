@@ -1,7 +1,7 @@
 
 import type webpack          from "webpack";
 import type WebpackDevServer from "webpack-dev-server";
-import type Project          from "./project";
+import type Project          from "./project.js";
 
 type Configuration =
 {

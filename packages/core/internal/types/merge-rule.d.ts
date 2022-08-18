@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/indent */
-import type MergeRules from "./merge-rules";
+import type MergeRules from "./merge-rules.js";
 
 type MergeRule<T> = ((a: T, b: T) => T) | "protected" |
     (

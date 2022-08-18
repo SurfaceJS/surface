@@ -1,10 +1,10 @@
 import type { Delegate, Indexer }  from "@surface/core";
-import type IExpression            from "../interfaces/expression";
+import type IExpression            from "../interfaces/expression.js";
 import NodeType                    from "../node-type.js";
 import TypeGuard                   from "../type-guard.js";
-import type { AssignmentOperator } from "../types/operators";
-import type Identifier             from "./identifier";
-import type MemberExpression       from "./member-expression";
+import type { AssignmentOperator } from "../types/operators.js";
+import type Identifier             from "./identifier.js";
+import type MemberExpression       from "./member-expression.js";
 
 const assignmentOperations: Record<AssignmentOperator, Delegate<[Indexer, string | number, unknown], unknown>> =
 {

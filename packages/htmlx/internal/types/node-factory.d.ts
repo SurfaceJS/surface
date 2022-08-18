@@ -1,4 +1,4 @@
-import type Activator from "./activator";
+import type Activator from "./activator.js";
 
 type NodeFactory = () => [Node, Activator];
 

@@ -4,7 +4,7 @@ import webpack              from "webpack";
 import WebpackDevServer     from "webpack-dev-server";
 import { log }              from "./common.js";
 import createConfigurations from "./create-configurations.js";
-import type CompilerSignal  from "./types/compiler-signal";
+import type CompilerSignal  from "./types/compiler-signal.js";
 import type Configuration   from "./types/configuration.js";
 
 export default class Builder

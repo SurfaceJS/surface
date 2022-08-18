@@ -1,10 +1,10 @@
 import type { Delegate, Indexer } from "@surface/core";
 import type IConstraint           from "./interfaces/constraint.js";
-import type ITransformer          from "./interfaces/transformer";
+import type ITransformer          from "./interfaces/transformer.js";
 import Route                      from "./route.js";
 import type RouteData             from "./types/route-data.js";
-import type RouteOptions          from "./types/route-options";
-import type RouterMatch           from "./types/router-match";
+import type RouteOptions          from "./types/route-options.js";
+import type RouterMatch           from "./types/router-match.js";
 
 type Entry<T> =
 {

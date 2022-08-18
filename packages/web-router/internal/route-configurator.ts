@@ -1,6 +1,6 @@
-import type Component          from "./types/component";
-import type RouteConfiguration from "./types/route-configuration";
-import type IRouteDefinition   from "./types/route-definition";
+import type Component          from "./types/component.js";
+import type RouteConfiguration from "./types/route-configuration.js";
+import type IRouteDefinition   from "./types/route-definition.js";
 
 const pattern = /(.+)\/.+$/;
 

@@ -1,6 +1,6 @@
 import { format }           from "@surface/core";
 import { getThisArg }       from "../common.js";
-import type IExpression     from "../interfaces/expression";
+import type IExpression     from "../interfaces/expression.js";
 import Messages             from "../messages.js";
 import NodeType             from "../node-type.js";
 import type TemplateLiteral from "./template-literal.js";

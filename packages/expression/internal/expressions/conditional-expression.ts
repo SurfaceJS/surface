@@ -1,4 +1,4 @@
-import type IExpression from "../interfaces/expression";
+import type IExpression from "../interfaces/expression.js";
 import NodeType         from "../node-type.js";
 
 export default class ConditionalExpression implements IExpression

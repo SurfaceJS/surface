@@ -1,9 +1,9 @@
 import { batchTest, shouldFail, shouldPass, suite }            from "@surface/test-suite";
 import chai                                                    from "chai";
-import type IConstraint                                        from "../internal/interfaces/constraint";
-import type ITransformer                                       from "../internal/interfaces/transformer";
+import type IConstraint                                        from "../internal/interfaces/constraint.js";
+import type ITransformer                                       from "../internal/interfaces/transformer.js";
 import Route                                                   from "../internal/route.js";
-import type RouteMatch                                         from "../internal/types/route-match";
+import type RouteMatch                                         from "../internal/types/route-match.js";
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import type { RouteInvalidExpectation, RouteValidExpectation } from "./route-expectations.js";
 import { routeInvalidExpectations, routeValidExpectations }    from "./route-expectations.js";

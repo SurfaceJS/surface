@@ -1,10 +1,10 @@
 import type { ObservablePath, StackTrace } from "@surface/htmlx-parser";
 import Block                               from "../directives/block.js";
 import LoopDirective                       from "../directives/loop-directive.js";
-import type Activator                      from "../types/activator";
+import type Activator                      from "../types/activator.js";
 import type DestructuredEvaluator          from "../types/destructured-evaluator.js";
-import type Evaluator                      from "../types/evaluator";
-import type NodeFactory                    from "../types/node-factory";
+import type Evaluator                      from "../types/evaluator.js";
+import type NodeFactory                    from "../types/node-factory.js";
 
 export default function createLoopFactory(leftEvaluator: DestructuredEvaluator, operator: "in" | "of", rightEvaluator: Evaluator, observables: ObservablePath[], factory: NodeFactory, source?: string, stackTrace?: StackTrace): NodeFactory
 {

@@ -1,4 +1,4 @@
-import type Palette from "./palette";
+import type Palette from "./palette.js";
 
 type Theme =
 {

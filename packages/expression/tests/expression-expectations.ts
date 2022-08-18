@@ -26,7 +26,7 @@ import TemplateLiteral          from "../internal/expressions/template-literal.j
 import ThisExpression           from "../internal/expressions/this-expression.js";
 import UnaryExpression          from "../internal/expressions/unary-expression.js";
 import UpdateExpression         from "../internal/expressions/update-expression.js";
-import type INode               from "../internal/interfaces/node";
+import type INode               from "../internal/interfaces/node.js";
 import Messages                 from "../internal/messages.js";
 import NodeType                 from "../internal/node-type.js";
 import ArrayPattern             from "../internal/patterns/array-pattern.js";

@@ -2,7 +2,7 @@ import type { Delegate }       from "@surface/core";
 import type { ObservablePath } from "@surface/htmlx-parser";
 import type { Evaluator }      from "../index.js";
 import ReactiveMap             from "./reactive-map.js";
-import type InjectionContext   from "./types/injection-context";
+import type InjectionContext   from "./types/injection-context.js";
 
 const METADATA = Symbol("htmlx:metadata");
 

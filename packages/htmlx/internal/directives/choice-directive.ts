@@ -2,8 +2,8 @@ import { CancellationTokenSource }        from "@surface/core";
 import type { IDisposable, Subscription } from "@surface/core";
 import { tryEvaluate, tryObserve }        from "../common.js";
 import { scheduler }                      from "../singletons.js";
-import type ChoiceBranch                  from "../types/choice-branch";
-import type DirectiveEntry                from "../types/directive-entry";
+import type ChoiceBranch                  from "../types/choice-branch.js";
+import type DirectiveEntry                from "../types/directive-entry.js";
 import type Block                         from "./block.js";
 
 type Context =

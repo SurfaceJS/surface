@@ -1,4 +1,4 @@
-import type NodeFactory from "../types/node-factory";
+import type NodeFactory from "../types/node-factory.js";
 
 export default function createTextNodeFactory(content: string): NodeFactory
 {

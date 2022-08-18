@@ -1,5 +1,5 @@
 import TemplateParseError       from "./errors/template-parse-error.js";
-import type StackTrace          from "./types/stack-trace";
+import type StackTrace          from "./types/stack-trace.js";
 
 export function buildStackTrace(stackTrace: StackTrace): string
 {

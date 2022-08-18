@@ -1,4 +1,4 @@
-import type CancellationToken from "./types/cancellation-token";
+import type CancellationToken from "./types/cancellation-token.js";
 
 export default class CancellationTokenSource
 {

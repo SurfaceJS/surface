@@ -1,4 +1,4 @@
-import type INode from "./node";
+import type INode from "./node.js";
 
 export default interface IExpression extends INode
 {

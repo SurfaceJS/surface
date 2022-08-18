@@ -1,6 +1,6 @@
 import type IExpression      from "../interfaces/expression.js";
 import NodeType              from "../node-type.js";
-import type { LiteralValue } from "../types/operators";
+import type { LiteralValue } from "../types/operators.js";
 
 export default class Literal implements IExpression
 {

@@ -1,6 +1,6 @@
 import type { Indexer }                   from "@surface/core";
 import type { IConstraint, ITransformer } from "@surface/router";
-import type Component                     from "./component";
+import type Component                     from "./component.js";
 
 type RouteDefinition =
 {

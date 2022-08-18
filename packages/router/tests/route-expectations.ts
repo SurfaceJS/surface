@@ -1,7 +1,7 @@
 // cSpell:ignore pathpathpath, pathpathpathpathpathpathpathpath, pathpath
 
 import type { Indexer } from "@surface/core";
-import type RouteMatch  from "../internal/types/route-match";
+import type RouteMatch  from "../internal/types/route-match.js";
 
 export type RouteValidExpectation =
 {

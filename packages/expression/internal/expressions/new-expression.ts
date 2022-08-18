@@ -1,6 +1,6 @@
 import { format }         from "@surface/core";
-import type SpreadElement from "../elements/spread-element";
-import type IExpression   from "../interfaces/expression";
+import type SpreadElement from "../elements/spread-element.js";
+import type IExpression   from "../interfaces/expression.js";
 import Messages           from "../messages.js";
 import NodeType           from "../node-type.js";
 import TypeGuard          from "../type-guard.js";
