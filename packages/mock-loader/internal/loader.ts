@@ -1,4 +1,6 @@
 /* eslint-disable lines-around-comment */
+import { existsSync }                           from "fs";
+import { readFile, stat }                       from "fs/promises";
 import path                                     from "path";
 import { URL, fileURLToPath, pathToFileURL }    from "url";
 import { IS_WINDOWS, getExports, getMocksMaps } from "./common.js";
@@ -22,6 +24,28 @@ const PROXY_PATH          = `${pathToFileURL(path.join(DIRNAME, PROXY)).toString
 const proxyFiles          = new Map<string, string>();
 const parentProxyFiles    = new Map<string, string | undefined>();
 const cache               = new Map<string, string>();
+
+async function getFormat(specifier: string): Promise<string | null>
+{
+    /* c8 ignore start */
+    if (specifier.startsWith(PROXY_PATH) || MOCK_SET.has(new URL(specifier).searchParams.get(MOCK)))
+    {
+        return "module";
+    }
+
+    if (specifier.startsWith("file:"))
+    {
+        const filepath = fileURLToPath(specifier);
+
+        if (!path.parse(filepath).ext && existsSync(filepath) && (await stat(filepath)).isFile())
+        {
+            return "commonjs";
+        }
+    }
+
+    return null;
+    /* c8 ignore stop */
+}
 
 export async function resolve(specifier: string, context: ResolveContext, next: (specifier: string, context: ResolveContext) => Promise<ResolveResult>): Promise<ResolveResult>
 {
@@ -128,6 +152,15 @@ export async function load(specifier: string, context: LoadContext, next: (speci
 
         return { format: "module", source, shortCircuit: true };
     }
+
+    const format = await getFormat(specifier);
+
+    /* c8 ignore start */
+    if (format)
+    {
+        return { format, source: String(await readFile(new URL(specifier))), shortCircuit: true };
+    }
+    /* c8 ignore end */
 
     return next(specifier, context);
 }
