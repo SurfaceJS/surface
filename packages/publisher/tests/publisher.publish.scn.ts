@@ -1,9 +1,11 @@
 import os                                   from "os";
 import { join }                             from "path";
 import type { PackageJson as _PackageJson } from "@npm/types";
+import type { ParameterOverloads }          from "@surface/core";
 import { LogLevel }                         from "@surface/logger";
 import Status                               from "../internal/enums/status.js";
 import type { Options }                     from "../internal/publisher.js";
+import type Publisher                       from "../internal/publisher.js";
 import type VirtualDirectory                from "./types/virtual-directory.js";
 
 type PackageJson = _PackageJson & { workspaces?: string[] };
@@ -12,30 +14,34 @@ const skip = false;
 
 export type PublishScenario =
 {
+    skip:      boolean,
     message:   string,
+    args:      ParameterOverloads<Publisher["publish"]>,
     options:   Options,
     directory: VirtualDirectory,
     registry:  Record<string, Status>,
-    skip:      boolean,
     expected:  { published: string[] },
 };
 
 export const validScenarios: PublishScenario[] =
 [
     {
+        skip,
         message:   "Publish with no packages",
         options:   { },
+        args:      ["latest"],
         registry:  { },
         directory: { },
         expected:  { published: [] },
-        skip,
     },
     {
+        skip,
         message:   "Dry run publish single package",
         options:
         {
             dry: true,
         },
+        args:      ["latest"],
         registry:  { },
         directory:
         {
@@ -51,14 +57,15 @@ export const validScenarios: PublishScenario[] =
         {
             published: [],
         },
-        skip,
     },
     {
+        skip,
         message:   "Dry run publish workspaces",
         options:
         {
             dry: true,
         },
+        args:      ["latest"],
         registry:  { },
         directory:
         {
@@ -82,11 +89,12 @@ export const validScenarios: PublishScenario[] =
         {
             published: [],
         },
-        skip,
     },
     {
+        skip,
         message:  "Publish private package",
         options:  { },
+        args:     ["latest"],
         registry:
         {
             "package-a": Status.InRegistry,
@@ -103,14 +111,15 @@ export const validScenarios: PublishScenario[] =
             ),
         },
         expected:  { published: [] },
-        skip,
     },
     {
+        skip,
         message:   "Publish package already in registry",
         options:
         {
             registry: "https://test.com",
         },
+        args:      ["latest"],
         registry:
         {
             "package-a": Status.InRegistry,
@@ -126,11 +135,12 @@ export const validScenarios: PublishScenario[] =
             ),
         },
         expected:  { published: [] },
-        skip,
     },
     {
+        skip,
         message:   "Publish workspaces packages",
         options:   { },
+        args:      ["latest"],
         registry:  { "package-b": Status.InRegistry },
         directory:
         {
@@ -167,11 +177,12 @@ export const validScenarios: PublishScenario[] =
                 "package-a",
             ],
         },
-        skip,
     },
     {
+        skip,
         message:   "Publish workspaces packages and include workspaces root",
-        options:   { includeWorkspacesRoot: true },
+        options:   { includeWorkspaceRoot: true },
+        args:      ["latest"],
         registry:  { "package-b": Status.InRegistry },
         directory:
         {
@@ -209,9 +220,9 @@ export const validScenarios: PublishScenario[] =
                 "package-root",
             ],
         },
-        skip,
     },
     {
+        skip,
         message:   "Publish multiples packages with npmrc authentication",
         options:
         {
@@ -221,6 +232,7 @@ export const validScenarios: PublishScenario[] =
                 "packages/*",
             ],
         },
+        args:      ["latest"],
         registry:  { "package-b": Status.InRegistry },
         directory:
         {
@@ -277,9 +289,9 @@ export const validScenarios: PublishScenario[] =
                 "@other-lib/package-e",
             ],
         },
-        skip,
     },
     {
+        skip,
         message:   "Publish multiples packages with dependency",
         options:
         {
@@ -289,6 +301,7 @@ export const validScenarios: PublishScenario[] =
                 "packages/*",
             ],
         },
+        args:      ["latest"],
         registry:  { },
         directory:
         {
@@ -322,9 +335,9 @@ export const validScenarios: PublishScenario[] =
                 "package-b",
             ],
         },
-        skip,
     },
     {
+        skip,
         message:   "Publish canary",
         options:
         {
@@ -333,8 +346,8 @@ export const validScenarios: PublishScenario[] =
             [
                 "packages/*",
             ],
-            canary: true,
         },
+        args:      ["latest"],
         registry:  { },
         directory:
         {
@@ -368,6 +381,5 @@ export const validScenarios: PublishScenario[] =
                 "package-b",
             ],
         },
-        skip,
     },
 ];

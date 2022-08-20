@@ -7,16 +7,16 @@ import type VirtualDirectory                from "./types/virtual-directory.js";
 
 type PackageJson = _PackageJson & { workspaces?: string[] };
 
-const skip = false;
+const skip = true;
 
 export type BumpScenario =
 {
     skip:      boolean,
     message:   string,
+    args:      ParameterOverloads<Publisher["bump"]>,
     options:   Options,
     directory: VirtualDirectory,
     expected:  Record<string, Partial<PackageJson>>,
-    bumpArgs:  ParameterOverloads<Publisher["bump"]>,
 };
 
 export const validScenarios: BumpScenario[] =
@@ -28,7 +28,7 @@ export const validScenarios: BumpScenario[] =
         options:   { },
         directory: { },
         expected:  { },
-        bumpArgs:  ["major"],
+        args:      ["major"],
     },
     {
 
@@ -46,7 +46,7 @@ export const validScenarios: BumpScenario[] =
             ),
         },
         expected: { },
-        bumpArgs: ["major"],
+        args:     ["major"],
     },
     {
 
@@ -78,7 +78,7 @@ export const validScenarios: BumpScenario[] =
             ),
         },
         expected: { },
-        bumpArgs: ["major"],
+        args:     ["major"],
     },
     {
         skip,
@@ -96,7 +96,7 @@ export const validScenarios: BumpScenario[] =
             ),
         },
         expected: { },
-        bumpArgs: ["major"],
+        args:     ["major"],
     },
     {
         skip,
@@ -120,7 +120,7 @@ export const validScenarios: BumpScenario[] =
                 version: "2.0.0",
             },
         },
-        bumpArgs:  ["major"],
+        args:  ["major"],
     },
     {
 
@@ -171,7 +171,7 @@ export const validScenarios: BumpScenario[] =
                 version: "2.0.0",
             },
         },
-        bumpArgs: ["major"],
+        args: ["major"],
     },
     {
 
@@ -250,12 +250,13 @@ export const validScenarios: BumpScenario[] =
                 workspaces: ["packages/*"],
             },
         },
-        bumpArgs: ["major"],
+        args: ["major"],
     },
     {
         skip,
         message:   "Bump workspace with independent version",
-        options:   { independentVersion: true },
+        options:   { },
+        args:      ["major", undefined, { independent: true }],
         directory:
         {
             "./package.json": JSON.stringify
@@ -300,17 +301,15 @@ export const validScenarios: BumpScenario[] =
                 version: "4.0.0",
             },
         },
-        bumpArgs: ["major"],
     },
     {
         skip,
         message: "Bump workspace without file reference update",
         options:
         {
-            logLevel:           LogLevel.Trace,
-            independentVersion: true,
+            logLevel: LogLevel.Trace,
         },
-        bumpArgs:  ["minor"],
+        args:      ["minor", undefined, { independent: true }],
         directory:
         {
             "./package.json": JSON.stringify
@@ -436,11 +435,9 @@ export const validScenarios: BumpScenario[] =
         message: "Bump workspace with file reference update",
         options:
         {
-            logLevel:             LogLevel.Trace,
-            independentVersion:   true,
-            updateFileReferences: true,
+            logLevel: LogLevel.Trace,
         },
-        bumpArgs:  ["minor"],
+        args:      ["minor", undefined, { independent: true, synchronize: true, updateFileReferences: true }],
         directory:
         {
             "./package.json": JSON.stringify
@@ -509,12 +506,6 @@ export const validScenarios: BumpScenario[] =
         },
         expected:
         {
-            "package-root":
-            {
-                name:       "package-root",
-                version:    "1.1.0",
-                workspaces: ["packages/*"],
-            },
             "package-a":
             {
                 name:    "package-a",
@@ -565,7 +556,7 @@ export const validScenarios: BumpScenario[] =
         skip,
         message:   "Bump prerelease with identifier",
         options:   { },
-        bumpArgs:  ["prerelease", "alpha"],
+        args:      ["prerelease", "alpha"],
         directory:
         {
             "./package.json": JSON.stringify
@@ -589,7 +580,7 @@ export const validScenarios: BumpScenario[] =
         skip,
         message:   "Bump with custom version",
         options:   { },
-        bumpArgs:  ["custom", "1.0.0-alpha"],
+        args:      ["1.0.0-alpha"],
         directory:
         {
             "./package.json": JSON.stringify
@@ -613,7 +604,7 @@ export const validScenarios: BumpScenario[] =
         skip,
         message:   "Bump with glob prerelease",
         options:   { },
-        bumpArgs:  ["custom", "*-dev+2022.5"],
+        args:      ["*-dev+2022.5"],
         directory:
         {
             "./package.json": JSON.stringify
@@ -648,7 +639,7 @@ export const invalidScenarios: BumpScenario[] =
                 "packages/package-a/package.json",
             ],
         },
-        bumpArgs:  ["minor"],
+        args:      ["minor"],
         directory:
         {
             "./packages":

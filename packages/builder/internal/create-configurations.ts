@@ -7,7 +7,7 @@ import CopyPlugin                                     from "copy-webpack-plugin"
 import EslintWebpackPlugin                            from "eslint-webpack-plugin";
 import type { Options as EslintWebpackPluginOptions } from "eslint-webpack-plugin";
 import ForkTsCheckerWebpackPlugin                     from "fork-ts-checker-webpack-plugin";
-import type { ForkTsCheckerWebpackPluginOptions }     from "fork-ts-checker-webpack-plugin/lib/plugin-options";
+import type { ForkTsCheckerWebpackPluginOptions }     from "fork-ts-checker-webpack-plugin/lib/plugin-options.js";
 import HtmlWebpackPlugin                              from "html-webpack-plugin";
 import TerserWebpackPlugin                            from "terser-webpack-plugin";
 import webpack                                        from "webpack";

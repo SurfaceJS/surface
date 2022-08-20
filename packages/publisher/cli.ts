@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-import { LogLevel }          from "@surface/logger";
-import { Command }           from "commander";
-import Commands              from "./internal/commands.js";
-import { toBoolean, toEnum } from "./internal/common.js";
+import { LogLevel }                    from "@surface/logger";
+import { Command }                     from "commander";
+import Commands                        from "./internal/commands.js";
+import { toBoolean, toEnum, toSemver } from "./internal/common.js";
 
-/* cSpell:ignore premajor, preminor, prepatch */
+/* cSpell:ignore preid, premajor, preminor, prepatch */
 
 const program = new Command();
 
@@ -15,13 +15,14 @@ program
 program
     .command("bump")
     .description("Bump discovered packages or workspaces using provided custom version")
-    .argument("<release-type>", "Type of release", toEnum("major", "minor", "patch", "premajor", "preminor", "prepatch", "prerelease", "custom"))
-    .argument("[identifier-or-version]", "When release type is an prerelease, the value is used as identifier, When release type is custom, the value is used as version")
+    .argument("<version>", "An semantic version or an release type: major, minor, patch, premajor, preminor, prepatch, prerelease", toSemver)
+    .argument("[preid]", "The 'prerelease identifier' to use as a prefix for the 'prerelease' part of a semver. Like the rc in 1.2.0-rc.8")
     .option("--packages                <n...>", "Packages or workspaces to bump")
-    .option("--include-privates        <n>", "Include private packages when bumping or publishing", toBoolean)
-    .option("--include-workspaces-root <n>", "Include workspaces root when bumping or publishing", toBoolean)
-    .option("--independent-version     <n>", "Ignore workspace version and bump itself", toBoolean)
-    .option("--update-file-references  <n>", "Update file references when bumping", toBoolean)
+    .option("--include-private         [n]", "Include private packages when bumping or publishing", toBoolean)
+    .option("--include-workspace-root  [n]", "Include workspaces root when bumping or publishing", toBoolean)
+    .option("--independent             [n]", "Ignore workspace version and bump itself", toBoolean)
+    .option("--synchronize             [n]", "Synchronize bumped versions of the dependents package in the workspace", toBoolean)
+    .option("--update-file-references  [n]", "Update file references when bumping", toBoolean)
     .option("--cwd                     <n>", "Working dir")
     .option("--dry                     [n]", "Enables dry run", toBoolean)
     .option("--log-level               <n>", "Log level", toEnum(...Object.entries(LogLevel)), "info")

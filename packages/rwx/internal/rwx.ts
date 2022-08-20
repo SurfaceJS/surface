@@ -153,16 +153,18 @@ export function *enumeratePathsSync(patterns: string | string[], options: Option
 */
 export async function execute(command: string, options?: child_process.ExecOptions): Promise<void>
 {
+    const print = (buffer: unknown): void => console.log(String(buffer).trimEnd());
+
     await new Promise<void>
     (
         (resolve, reject) =>
         {
             const childProcess = child_process.exec(command, options);
 
-            childProcess.stdout?.on("data", x => console.log(String(x).trimEnd()));
-            childProcess.stderr?.on("data", x => console.log(String(x).trimEnd()));
+            childProcess.stdout?.on("data", print);
+            childProcess.stderr?.on("data", print);
 
-            childProcess.on("error", x => (console.log(String(x)), reject));
+            childProcess.on("error", x => (print(x), reject));
             childProcess.on("exit", resolve);
         },
     );

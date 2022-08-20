@@ -34,7 +34,7 @@
         "postinstall": "npm run ts:build",
         "prepare": "husky install .husky",
         "prepublishworkspace": "tasks build-release",
-        "publisher:bump": "publisher bump patch --log-level=trace --dry",
+        "publisher:bump": "publisher bump patch --log-level=trace --dry --synchronize",
         "publisher:publish": "publisher publish --log-level=trace --dry",
         "publisher:publish-canary": "publisher publish --log-level=trace --dry --canary",
         "publisher:unpublish": "publisher unpublish --log-level=trace --dry",

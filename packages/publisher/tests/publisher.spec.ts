@@ -177,7 +177,7 @@ export default class PublisherSpec
                 },
             );
 
-        await chai.assert.isFulfilled(new Publisher(scenario.options).bump(...scenario.bumpArgs as Parameters<Publisher["bump"]>));
+        await chai.assert.isFulfilled(new Publisher(scenario.options).bump(...scenario.args as Parameters<Publisher["bump"]>));
 
         chai.assert.deepEqual(actual, scenario.expected);
     }
@@ -263,6 +263,6 @@ export default class PublisherSpec
 
         writeFileMock.call(It.any(), It.any()).resolve();
 
-        await chai.assert.isRejected(new Publisher(scenario.options).bump(...scenario.bumpArgs as Parameters<Publisher["bump"]>));
+        await chai.assert.isRejected(new Publisher(scenario.options).bump(...scenario.args as Parameters<Publisher["bump"]>));
     }
 }

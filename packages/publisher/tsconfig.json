@@ -8,7 +8,7 @@
     "files":
     [
         "./cli.ts",
-        "./index.ts"
+        "./index.ts",
     ],
     "include":
     [
