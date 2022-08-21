@@ -7,7 +7,7 @@ import path                                                        from "path";
 import { fileURLToPath }                                           from "url";
 import util                                                        from "util";
 import { assert }                                                  from "@surface/core";
-import inquirer, { QuestionCollection }                            from "inquirer";
+import inquirer, { type QuestionCollection }                       from "inquirer";
 
 type TemplateIndex = typeof import("./templates/index.json");
 type Package       = { author: string, name: string };

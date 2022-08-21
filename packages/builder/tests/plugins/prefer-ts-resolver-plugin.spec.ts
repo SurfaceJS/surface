@@ -1,4 +1,4 @@
-import fs                                                 from "fs";
+import { existsSync }                                     from "fs";
 import path                                               from "path";
 import Mock                                               from "@surface/mock";
 import { afterEach, beforeEach, shouldPass, suite, test } from "@surface/test-suite";
@@ -22,7 +22,7 @@ const PATH2_FOO_TS = path.join(CWD, "path-2", "foo.ts");
 
 type Resolver = Parameters<PreferTsResolverPlugin["apply"]>[0];
 
-const fsMock = Mock.of(fs);
+const existsSyncMock = Mock.of(existsSync);
 
 @suite
 export default class PreferTsResolverPluginSpec
@@ -30,24 +30,20 @@ export default class PreferTsResolverPluginSpec
     @beforeEach
     public beforeEach(): void
     {
-        fsMock.lock();
+        existsSyncMock.lock();
     }
 
     @afterEach
     public afterEach(): void
     {
-        fsMock.clear();
+        existsSyncMock.clear();
     }
 
     @test @shouldPass
     public apply(): void
     {
-        const existsSyncMock = Mock.callable<typeof fs.existsSync>();
-
         existsSyncMock.call(PATH1_FOO_TS).returns(true);
         existsSyncMock.call(PATH2_FOO_TS).returns(true);
-
-        fsMock.setupGet("existsSync").returns(existsSyncMock.proxy);
 
         let actual: string[] = [];
 

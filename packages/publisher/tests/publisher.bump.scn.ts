@@ -1,5 +1,4 @@
 import type { PackageJson as _PackageJson } from "@npm/types";
-import type { ParameterOverloads }          from "@surface/core";
 import { LogLevel }                         from "@surface/logger";
 import type { Options }                     from "../internal/publisher.js";
 import type Publisher                       from "../internal/publisher.js";
@@ -7,13 +6,13 @@ import type VirtualDirectory                from "./types/virtual-directory.js";
 
 type PackageJson = _PackageJson & { workspaces?: string[] };
 
-const skip = true;
+const skip = false;
 
 export type BumpScenario =
 {
     skip:      boolean,
     message:   string,
-    args:      ParameterOverloads<Publisher["bump"]>,
+    args:      Parameters<Publisher["bump"]>,
     options:   Options,
     directory: VirtualDirectory,
     expected:  Record<string, Partial<PackageJson>>,
@@ -431,7 +430,7 @@ export const validScenarios: BumpScenario[] =
         },
     },
     {
-        skip:    false,
+        skip,
         message: "Bump workspace with file reference update",
         options:
         {
@@ -506,6 +505,12 @@ export const validScenarios: BumpScenario[] =
         },
         expected:
         {
+            "package-root":
+            {
+                name:       "package-root",
+                version:    "1.1.0",
+                workspaces: ["packages/*"],
+            },
             "package-a":
             {
                 name:    "package-a",
@@ -630,7 +635,7 @@ export const invalidScenarios: BumpScenario[] =
 [
     {
         skip,
-        message:   "Bump with multiples updates",
+        message:   "[bump]: bump with invalid updates",
         options:
         {
             logLevel: LogLevel.Trace,

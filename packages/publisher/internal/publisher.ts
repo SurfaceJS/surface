@@ -16,6 +16,8 @@ import type { GlobPrerelease, SemanticVersion }                    from "./types
 
 /* cSpell:ignore preid, premajor, preminor, prepatch, postpack, postpublish */
 
+type Pre<T extends string> = T extends `pre${string}` ? T : never;
+
 type PackageJson = _PackageJson & { workspaces?: string[] };
 
 type Metadata =
@@ -49,25 +51,10 @@ export type Options =
     /** Include private packages when bumping or publishing. */
     includePrivate?: boolean,
 
-    /** Include workspace root when bumping or publishing. */
-    includeWorkspaceRoot?: boolean,
-
     logLevel?: LogLevel,
 
     /** Packages to bump or publish */
     packages?: string[],
-
-    /** Npm registry where packages will be published */
-    registry?: string,
-
-    /** Update file references when bumping */
-    updateFileReferences?: boolean,
-
-    /** Timestamp used by canary release */
-    timestamp?: string,
-
-    /** Npm token used to publish */
-    token?: string,
 };
 
 export type BumpOptions =
@@ -81,6 +68,35 @@ export type BumpOptions =
 
     /** Update file references when bumping. */
     updateFileReferences?: boolean,
+};
+
+export type PublishOptions = UnpublishOptions &
+{
+
+    /** Enables canary release. */
+    canary?: boolean,
+
+    /** Identifier used to generate canary prerelease. */
+    identifier?: string,
+
+    /** The "prerelease identifier" to use as a prefix for the "prerelease" part of a semver. Like the rc in 1.2.0-rc.8. */
+    prereleaseType?: Pre<ReleaseType>,
+
+    /** Sequence used to compose the prerelease. */
+    sequence?: string,
+};
+
+export type UnpublishOptions =
+{
+
+    /** Include workspace root when bumping or publishing. */
+    includeWorkspaceRoot?: boolean,
+
+    /** Npm registry where packages will be published */
+    registry?: string,
+
+    /** Npm token used to publish */
+    token?: string,
 };
 
 export type Version = SemanticVersion | GlobPrerelease | ReleaseType;
@@ -167,28 +183,28 @@ export default class Publisher
         return this.workspaces.size > 0;
     }
 
-    private getAuth(metadata: Metadata, fallback: NpmConfig | null): Auth
+    private getRepository(metadata: Metadata, auth: Auth, fallback: NpmConfig | null): NpmRepository
     {
-        const config = metadata.config ?? fallback;
+        let localAuth: Auth = { };
 
-        let auth: Auth = { };
-
-        if (config)
+        if (!auth.registry && !auth.token)
         {
-            auth = { registry: config.registry, token: config.authToken };
+            const config = metadata.config ?? fallback;
 
-            if (metadata.manifest.name.startsWith("@"))
+            if (config)
             {
-                const [scope] = metadata.manifest.name.split("/");
+                localAuth = { registry: config.registry, token: config.authToken };
 
-                auth = config.getScopedAuth(scope!) ?? auth;
+                if (metadata.manifest.name.startsWith("@"))
+                {
+                    const [scope] = metadata.manifest.name.split("/");
+
+                    localAuth = config.getScopedAuth(scope!) ?? localAuth;
+                }
             }
         }
 
-        return {
-            registry: this.options.registry ?? auth.registry,
-            token:    this.options.token    ?? auth.token,
-        };
+        return new NpmRepository(auth.registry ?? localAuth.registry, auth.token ?? localAuth.token);
     }
 
     private async runScript(script: ScriptType, cwd: string): Promise<void>
@@ -215,7 +231,7 @@ export default class Publisher
         return `${pattern.replace(/\/$/, "")}/package.json`;
     }
 
-    private async publishWorkspaces(tag: string, workspaces: Map<string, Metadata>, config: NpmConfig | null): Promise<void>
+    private async publishWorkspaces(tag: string, options: PublishOptions, workspaces: Map<string, Metadata>, config: NpmConfig | null): Promise<void>
     {
         for (const metadata of workspaces.values())
         {
@@ -225,14 +241,12 @@ export default class Publisher
             {
                 await this.runScript("prepublishworkspace", parentPath);
 
-                await this.publishWorkspaces(tag, metadata.workspaces, metadata.config ?? config);
+                await this.publishWorkspaces(tag, options, metadata.workspaces, metadata.config ?? config);
             }
 
-            if ((this.options.includePrivate || !metadata.manifest.private) && (this.options.includeWorkspaceRoot || !metadata.workspaces))
+            if ((this.options.includePrivate || !metadata.manifest.private) && (options.includeWorkspaceRoot || !metadata.workspaces))
             {
-                const auth = this.getAuth(metadata, config);
-
-                const repository = new NpmRepository(auth);
+                const repository = this.getRepository(metadata, options, config);
 
                 const versionedName = `${metadata.manifest.name}@${metadata.manifest.version}`;
 
@@ -313,7 +327,7 @@ export default class Publisher
                         {
                             dependencies[name] = `~${dependency.version}`;
 
-                            this.logger.trace(`${dependencyType}:${name} in ${manifest.name} updated from ${version} to ${dependency.version}`);
+                            this.logger.trace(`${dependencyType}:${name} in ${manifest.name} updated from '${version}' to '${dependency.version}'`);
                         }
                     }
                 }
@@ -331,21 +345,18 @@ export default class Publisher
     {
         for (const entry of workspaces.values())
         {
-            if (this.options.includeWorkspaceRoot || !entry.workspaces)
+            if (options.synchronize)
             {
-                if (options.synchronize)
-                {
-                    this.sync(entry.manifest, workspaces, options);
-                }
+                this.sync(entry.manifest, workspaces, options);
+            }
 
-                if (!this.options.dry)
-                {
-                    await writeFile(entry.path, JSON.stringify(entry.manifest, null, 4));
-                }
-                else
-                {
-                    this.logger.info(`Version ${entry.manifest.name}@${entry.manifest.version} will be written in ${entry.path}...`);
-                }
+            if (!this.options.dry)
+            {
+                await writeFile(entry.path, JSON.stringify(entry.manifest, null, 4));
+            }
+            else
+            {
+                this.logger.info(`Version ${entry.manifest.name}@${entry.manifest.version} will be written in ${entry.path}...`);
             }
 
             if (entry.workspaces)
@@ -397,15 +408,13 @@ export default class Publisher
         }
     }
 
-    private async unpublishWorkspaces(tag: string, workspaces: Map<string, Metadata>, config: NpmConfig | null): Promise<void>
+    private async unpublishWorkspaces(tag: string, options: UnpublishOptions, workspaces: Map<string, Metadata>, config: NpmConfig | null): Promise<void>
     {
         for (const metadata of workspaces.values())
         {
-            if ((this.options.includePrivate || !metadata.manifest.private) && (this.options.includeWorkspaceRoot || !metadata.workspaces))
+            if ((this.options.includePrivate || !metadata.manifest.private) && (options.includeWorkspaceRoot || !metadata.workspaces))
             {
-                const auth = this.getAuth(metadata, config);
-
-                const repository = new NpmRepository(auth);
+                const repository = this.getRepository(metadata, options, config);
 
                 const versionedName = `${metadata.manifest.name}@${metadata.manifest.version}`;
 
@@ -442,7 +451,7 @@ export default class Publisher
 
             if (metadata.workspaces?.size)
             {
-                await this.unpublishWorkspaces(tag, metadata.workspaces, metadata.config ?? config);
+                await this.unpublishWorkspaces(tag, options, metadata.workspaces, metadata.config ?? config);
             }
         }
     }
@@ -459,10 +468,7 @@ export default class Publisher
         {
             await this.update(this.workspaces, version, identifier, options);
 
-            if (options.synchronize)
-            {
-                await this.writeWorkspaces(options);
-            }
+            await this.writeWorkspaces(options);
 
             if (this.errors.length > 0)
             {
@@ -482,41 +488,40 @@ export default class Publisher
     /**
      * Publish discovered packages.
      * @param tag Tag to publish.
+     * @param options Publish options.
      */
-    public async publish(tag: string): Promise<void>;
-
-    /**
-     * Publish discovered packages.
-     * @param tag Tag to publish.
-     * @param canary Enables canary release.
-     * @param releaseType Identifier used to generate canary prerelease.
-     * @param identifier The "prerelease identifier" to use as a prefix for the "prerelease" part of a semver. Like the rc in 1.2.0-rc.8.
-     * @param sequence Sequence used to compose the prerelease.
-     */
-
-    public async publish(tag: string, canary?: boolean, releaseType?: ReleaseType, identifier?: string, sequence?: string): Promise<void>;
-    public async publish(tag: string, canary?: boolean, releaseType?: ReleaseType, identifier?: string, sequence?: string): Promise<void>
+    public async publish(tag: string, options: PublishOptions = { }): Promise<void>
     {
         await this.loadConfig();
 
         if (await this.loadMetadata())
         {
-            if (canary)
+            if (options.canary)
             {
-                const options: BumpOptions = { synchronize: true };
+                const bumpOptions: BumpOptions = { synchronize: true, updateFileReferences: true };
 
-                releaseType
-                    ? await this.bump(releaseType, identifier + (sequence ? `.${sequence}` : ""), options)
-                    : await this.bump(`*-${identifier ?? "dev"}.${sequence ?? timestamp()}`, undefined, options);
+                options.prereleaseType
+                    ? await this.bump(options.prereleaseType, options.identifier ? options.identifier + (options.sequence ? `.${options.sequence}` : "") : undefined, bumpOptions)
+                    : await this.bump(`*-${options.identifier ?? "dev"}.${options.sequence ?? timestamp()}`, undefined, bumpOptions);
             }
             else
             {
+                const keys: (keyof PublishOptions)[] = ["identifier", "prereleaseType", "sequence"];
+
+                for (const key of keys)
+                {
+                    if (options[key])
+                    {
+                        this.logger.warn(`Canary option is disabled, option ${key} will be ignored`);
+                    }
+                }
+
                 await this.writeWorkspaces({ updateFileReferences: true });
             }
 
-            await this.publishWorkspaces(tag, this.workspaces, this.config);
+            await this.publishWorkspaces(tag, options, this.workspaces, this.config);
 
-            if (this.errors.length > 0 || canary && !this.options.dry)
+            if (this.errors.length > 0 || options.canary && !this.options.dry)
             {
                 await this.restorePackages();
             }
@@ -537,14 +542,15 @@ export default class Publisher
     /**
      * Unpublish discovered packages.
      * @param tag Tag to unpublish.
+     * @param options Unpublish options.
      */
-    public async unpublish(tag: string): Promise<void>
+    public async unpublish(tag: string, options: UnpublishOptions = { }): Promise<void>
     {
         await this.loadConfig();
 
         if (await this.loadMetadata())
         {
-            await this.unpublishWorkspaces(tag, this.workspaces, this.config);
+            await this.unpublishWorkspaces(tag, options, this.workspaces, this.config);
 
             if (this.errors.length > 0)
             {

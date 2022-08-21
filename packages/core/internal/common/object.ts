@@ -14,7 +14,7 @@ import type
 } from "../types/index.js";
 import type MergeRule        from "../types/merge-rule.js";
 import type MergeRules       from "../types/merge-rules.js";
-import { assert, typeGuard } from "./generic.js";
+import { assert, isIterable, typeGuard } from "./generic.js";
 
 const PRIVATES = Symbol("core:privates");
 
@@ -164,17 +164,72 @@ export function clone(source: Indexer): Indexer
     return prototype;
 }
 
-export function deepEqual<T>(left: T, right: T): boolean
+export function deepEqual<T>(left: T, right: T, compare?: (left: unknown, right: unknown) => boolean): boolean
 {
-    if (Object.is(left, right))
+    if (Object.is(left, right) || compare?.(left, right))
     {
         return true;
     }
+    else if (left instanceof Function && right instanceof Function)
+    {
+        return left == right;
+    }
+    else if (left instanceof Date && right instanceof Date)
+    {
+        return left.getTime() == right.getTime();
+    }
+    else if (Array.isArray(left) && Array.isArray(right) && left.length != right.length)
+    {
+        return false;
+    }
+    else if (left instanceof Set && right instanceof Set && left.size != right.size)
+    {
+        return false;
+    }
+    else if (left instanceof Map && right instanceof Map)
+    {
+        if (left.size == right.size)
+        {
+            for (const key of left.keys())
+            {
+                if (!deepEqual(left.get(key), right.get(key), compare))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
     else if (typeGuard<Indexer>(left, left instanceof Object) && typeGuard<Indexer>(right, right instanceof left.constructor))
     {
-        for (const key of enumerateKeys(left))
+        if (isIterable(left) && isIterable(right))
         {
-            if (!deepEqual(left[key as string], right[key as string]))
+            const leftIterator  = left[Symbol.iterator]();
+            const rightIterator = right[Symbol.iterator]();
+
+            let nextLeft  = leftIterator.next();
+            let nextRight = rightIterator.next();
+
+            while (!nextLeft.done && !nextRight.done)
+            {
+                if (!deepEqual(nextLeft.value, nextRight?.value, compare))
+                {
+                    return false;
+                }
+
+                nextLeft  = leftIterator.next();
+                nextRight = rightIterator.next();
+            }
+
+            return true;
+        }
+
+        const keys = new Set([...enumerateKeys(left), ...enumerateKeys(right)]);
+
+        for (const key of keys)
+        {
+            if (!(key in left && key in right) && !deepEqual(left[key], right[key], compare))
             {
                 return false;
             }
@@ -506,11 +561,6 @@ export function setValue(value: unknown, root: object, ...path: [string, ...stri
     {
         (root as Indexer)[key] = value;
     }
-}
-
-export function timestamp(): string
-{
-    return new Date().toISOString().replace(/[-T:]/g, "").substring(0, 12);
 }
 
 export function *enumerateKeys(target: object): IterableIterator<PropertyKey>

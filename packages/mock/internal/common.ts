@@ -1,19 +1,34 @@
-import { Hashcode } from "@surface/core";
+import { deepEqual } from "@surface/core";
 
-export const IT = Symbol("mock:it");
+const IT = Symbol("mock:it");
 
-export function isIt(it: unknown): it is (value: unknown) => boolean
+type ItFunction<T = unknown> = ((value: T) => boolean) & { [IT]?: { name: string, args: unknown[] } };
+
+export { IT };
+
+export function checkIt(it: unknown, value: unknown): boolean
+{
+    if (isIt(it))
+    {
+        return it(value);
+    }
+
+    return false;
+}
+
+export function isIt(it: unknown): it is ItFunction
 {
     return typeof it == "function" && !!(it as { [IT]?: boolean })[IT];
 }
 
-export function makeIt<T>(fn: Function & { [IT]?: boolean }): T
+export function makeIt<T>(name: string, args: unknown[], fn: ItFunction<T>): T
 {
-    fn[IT] = true;
+    fn[IT] = { name, args };
+
     return fn as unknown as T;
 }
 
-export function equals(left: unknown, right: unknown): boolean
+export function sameIt(left: unknown, right: unknown): boolean
 {
-    return Object.is(left, right) || typeof left == typeof right && Hashcode.encode(left) == Hashcode.encode(right);
+    return isIt(left) && isIt(right) && deepEqual(left[IT], right[IT]);
 }

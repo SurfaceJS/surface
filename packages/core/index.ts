@@ -52,6 +52,7 @@ export { default as DisposableMetadata }      from "./internal/metadata/disposab
 export { default as HookableMetadata }        from "./internal/metadata/hookable-metadata.js";
 
 export * from "./internal/common/array.js";
+export * from "./internal/common/date-time.js";
 export * from "./internal/common/generic.js";
 export * from "./internal/common/object.js";
 export * from "./internal/common/promises.js";

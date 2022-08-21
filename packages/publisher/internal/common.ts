@@ -24,11 +24,6 @@ export function isReleaseType(value: string): value is ReleaseType
     return RELEASE_TYPES.has(value.toLowerCase());
 }
 
-export function isPrerelease(releaseType: ReleaseType | "custom"): releaseType is Exclude<ReleaseType, "major" | "minor" | "patch">
-{
-    return releaseType.startsWith("pre");
-}
-
 export function overridePrerelease(version: string, glob: string): string
 {
     return `${VERSION_SPLIT_PATTERN.exec(version)?.[1]}${VERSION_SPLIT_PATTERN.exec(glob)?.[2] ?? ""}`;

@@ -1,7 +1,7 @@
-import fs              from "fs";
-import path            from "path";
-import PathMatcher     from "@surface/path-matcher";
-import type webpack    from "webpack";
+import { existsSync } from "fs";
+import path           from "path";
+import PathMatcher    from "@surface/path-matcher";
+import type webpack   from "webpack";
 
 type ResolverPluginInstance = Exclude<Exclude<webpack.ResolveOptions["plugins"], undefined>[number], "...">;
 type Resolver               = Parameters<ResolverPluginInstance["apply"]>[0];
@@ -30,7 +30,7 @@ export default class PreferTsResolverPlugin implements ResolverPluginInstance
                     {
                         const sibling = path.join(target.dir, `${target.name}.ts`);
 
-                        if (fs.existsSync(sibling))
+                        if (existsSync(sibling))
                         {
                             request.path = sibling;
                         }

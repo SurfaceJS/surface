@@ -1,15 +1,6 @@
-import type { Delegate }  from "@surface/core";
-import { Hashcode }       from "@surface/core";
-import type { IComparer } from "@surface/enumerable";
-import Enumerable         from "@surface/enumerable";
-import { isIt }           from "./common.js";
-import type Args          from "./types/args.js";
-
-const comparer: IComparer<unknown> =
-{
-    compare: () => 0,
-    equals:  (left, right) => Object.is(left, right) || typeof left == typeof right && Hashcode.encode(left) == Hashcode.encode(right),
-};
+import { type Delegate, deepEqual } from "@surface/core";
+import { checkIt, sameIt }          from "./common.js";
+import type Args                    from "./types/args.js";
 
 export default class Setup<TResult>
 {
@@ -20,44 +11,24 @@ export default class Setup<TResult>
     private readonly rejected:  Map<Args, Promise<TResult>> = new Map();
     private readonly throws:    Map<Args, unknown> = new Map();
 
-    private all(source: Args, args: Args): boolean
+    private getKey<T>(source: Map<Args, T>, args: Args): Args
     {
-        if (source.length != args.length)
+        for (const key of source.keys())
         {
-            return false;
-        }
-
-        for (let index = 0; index < source.length; index++)
-        {
-            const sourceElement = source[index];
-            const argsElement   = args[index];
-
-            const isEqual = this.checkIt(sourceElement, argsElement) || comparer.equals(sourceElement, argsElement);
-
-            if (!isEqual)
+            if (deepEqual(key, args, sameIt))
             {
-                return false;
+                return key;
             }
         }
 
-        return true;
+        return args;
     }
 
-    private checkIt(it: unknown, value: unknown): boolean
-    {
-        if (isIt(it))
-        {
-            return it(value);
-        }
-
-        return false;
-    }
-
-    private getFrom<T>(source: Map<Args, T>, args: Args): T | null
+    private getValue<T>(source: Map<Args, T>, args: Args): T | null
     {
         for (const [keys, value] of source)
         {
-            if (this.all(keys, args))
+            if (deepEqual(keys, args, checkIt))
             {
                 return value;
             }
@@ -66,17 +37,9 @@ export default class Setup<TResult>
         return null;
     }
 
-    private getKey<T>(source: Map<Args, T>, args: Args): Args
-    {
-        const sequence = Enumerable.from(args);
-
-        return Enumerable.from(source.keys())
-            .firstOrDefault(x => sequence.sequenceEqual(Enumerable.from(x), comparer)) ?? args;
-    }
-
     public get(args: Args = []): Promise<TResult> | TResult | null
     {
-        const error = this.getFrom(this.throws, args);
+        const error = this.getValue(this.throws, args);
 
         if (error)
         {
@@ -84,35 +47,35 @@ export default class Setup<TResult>
             throw error;
         }
 
-        const callback = this.getFrom(this.callbacks, args);
+        const callback = this.getValue(this.callbacks, args);
 
         if (callback)
         {
             callback(...args);
         }
 
-        const factory = this.getFrom(this.factories, args);
+        const factory = this.getValue(this.factories, args);
 
         if (factory)
         {
             return factory(...args);
         }
 
-        const rejected = this.getFrom(this.rejected, args);
+        const rejected = this.getValue(this.rejected, args);
 
         if (rejected)
         {
             return rejected;
         }
 
-        const resolved = this.getFrom(this.resolved, args);
+        const resolved = this.getValue(this.resolved, args);
 
         if (resolved)
         {
             return resolved;
         }
 
-        return this.getFrom(this.results, args);
+        return this.getValue(this.results, args);
     }
 
     public setCallbacks(args: Args, action: Function): void

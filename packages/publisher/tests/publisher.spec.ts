@@ -128,7 +128,7 @@ export default class PublisherSpec
     public beforeEach(): void
     {
         LoggerMock.new(It.any()).returns(loggerMock.proxy);
-        NpmRepositoryMock.new(It.any()).returns(npmRepositoryMock.proxy);
+        NpmRepositoryMock.new(It.any(), It.any()).returns(npmRepositoryMock.proxy);
         packMock.call(It.any()).resolve(Buffer.from([]));
 
         LoggerMock.lock();
@@ -194,10 +194,10 @@ export default class PublisherSpec
         writeFileMock.call(It.any(), It.any()).resolve();
 
         npmRepositoryMock.setup("publish").call(It.any(), It.any(), It.any())
-            .callback(x => actual.push(x.name))
+            .callback(x => actual.push(`${x.name}@${x.version}`))
             .resolve();
 
-        await chai.assert.isFulfilled(new Publisher(scenario.options).publish("latest"));
+        await chai.assert.isFulfilled(new Publisher(scenario.options).publish(...scenario.args));
 
         chai.assert.deepEqual(actual, scenario.expected.published);
     }
@@ -263,6 +263,6 @@ export default class PublisherSpec
 
         writeFileMock.call(It.any(), It.any()).resolve();
 
-        await chai.assert.isRejected(new Publisher(scenario.options).bump(...scenario.args as Parameters<Publisher["bump"]>));
+        await chai.assert.isRejected(new Publisher(scenario.options).bump(...scenario.args));
     }
 }

@@ -35,7 +35,7 @@ export default class Commands
 
         const tsconfig = JSON5.parse(content) as TsConfig;
 
-        tsconfig.compilerOptions.sourceMap = false;
+        tsconfig.compilerOptions = { ...tsconfig.compilerOptions, sourceMap: false };
 
         await writeFile(TSCONFIG_PATH, JSON.stringify(tsconfig, null, 4));
 

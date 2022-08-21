@@ -1,21 +1,17 @@
-import type { ReleaseType }                      from "semver";
-import type { BumpOptions }                      from "./publisher.js";
-import Publisher, { type Options, type Version } from "./publisher.js";
-
-type CliBumpOptions    = Options & BumpOptions;
-type CliPublishOptions = Options &
+import Publisher,
 {
-    canary?:      boolean,
-    preid?:       string,
-    releaseType?: ReleaseType,
-    sequence?:    string,
-};
+    type BumpOptions,
+    type Options,
+    type PublishOptions,
+    type UnpublishOptions,
+    type Version,
+} from "./publisher.js";
 
 export default class Commands
 {
-    public static async bump(version: Version, identifier?: string, options: CliBumpOptions = { }): Promise<void>
+    public static async bump(version: Version, identifier?: string, options: Options & BumpOptions = { }): Promise<void>
     {
-        const bumpOptions =
+        const bumpOptions: BumpOptions =
         {
             independent:          options.independent,
             synchronize:          options.synchronize,
@@ -25,13 +21,29 @@ export default class Commands
         await new Publisher(options).bump(version, identifier, bumpOptions);
     }
 
-    public static async publish(tag: string = "latest", options: CliPublishOptions = { }): Promise<void>
+    public static async publish(tag: string = "latest", options: Options & PublishOptions = { }): Promise<void>
     {
-        await new Publisher(options).publish(tag, options.canary, options.releaseType, options.preid, options.sequence);
+        const publishOptions: PublishOptions =
+        {
+            canary:         options.canary,
+            identifier:     options.identifier,
+            registry:       options.registry,
+            prereleaseType: options.prereleaseType,
+            sequence:       options.sequence,
+            token:          options.token,
+        };
+
+        await new Publisher(options).publish(tag, publishOptions);
     }
 
-    public static async unpublish(tag: string = "latest", options: Options = { }): Promise<void>
+    public static async unpublish(tag: string = "latest", options: Options & UnpublishOptions = { }): Promise<void>
     {
-        await new Publisher(options).unpublish(tag);
+        const unpublishOptions: UnpublishOptions =
+        {
+            registry: options.registry,
+            token:    options.token,
+        };
+
+        await new Publisher(options).unpublish(tag, unpublishOptions);
     }
 }

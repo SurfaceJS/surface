@@ -1,3 +1,4 @@
+/* eslint-disable max-statements */
 /* eslint-disable array-bracket-spacing */
 /* eslint-disable sort-keys */
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
@@ -23,8 +24,8 @@ export default class CommonObjectSpec
         chai.assert.isTrue(deepEqual(1, 1), "deepEqual(1, 1) isTrue");
         chai.assert.isFalse(deepEqual(null, undefined), "deepEqual(null, undefined) isFalse");
 
-        const objectLeft  = { value: 1 };
-        const objectRight = { value: 1 };
+        const objectLeft  = { value: 1, regex: /abc/g, date: new Date(0) };
+        const objectRight = { value: 1, regex: /abc/g, date: new Date(0) };
 
         chai.assert.isTrue(deepEqual(objectLeft, objectLeft), "deepEqual(objectLeft, objectLeft) isTrue");
         chai.assert.isTrue(deepEqual(objectLeft, objectRight), "deepEqual(objectLeft, objectRight) isTrue");
@@ -42,10 +43,20 @@ export default class CommonObjectSpec
 
         chai.assert.isTrue(deepEqual(nestedObjectLeft, nestedObjectRight), "deepEqual(nestedObjectLeft, nestedObjectRight) isTrue");
 
-        const arrayLeft  = [1];
-        const arrayRight = [1];
+        const arrayLeft  = [1, 2, 3];
+        const arrayRight = [1, 2, 3];
 
         chai.assert.isTrue(deepEqual(arrayLeft, arrayRight), "deepEqual(arrayLeft, arrayRight) isTrue");
+
+        const setLeft  = new Set([1, 2, 3]);
+        const setRight = new Set([1, 2, 3]);
+
+        chai.assert.isTrue(deepEqual(setLeft, setRight), "deepEqual(setLeft, setRight) isTrue");
+
+        const mapLeft  = new Map([[1, 1], [2, 2], [3, 3]]);
+        const mapRight = new Map([[1, 1], [2, 2], [3, 3]]);
+
+        chai.assert.isTrue(deepEqual(mapLeft, mapRight), "deepEqual(mapLeft, mapRight) isTrue");
 
         const nestedArrayLeft  = [[1]];
         const nestedArrayRight = [[1]];
@@ -66,6 +77,41 @@ export default class CommonObjectSpec
         const complexRight = [1, true, "string", undefined, null, { a: "a", b: { value: [{ value: "1" }] } }];
 
         chai.assert.isTrue(deepEqual(complexLeft, complexRight), "deepEqual(complexLeft, complexRight) isTrue");
+
+        const notObjectLeft: object  = { value: 1 };
+        const notObjectRight: object = { value1: 1 };
+
+        chai.assert.isFalse(deepEqual(notObjectLeft, notObjectRight), "deepEqual(notObjectLeft, notObjectRight) isFalse");
+
+        const arrayWithDifferentValuesLeft  = [1, 2, 3];
+        const arrayWithDifferentValuesRight = [1, 3, 3];
+
+        chai.assert.isFalse(deepEqual(arrayWithDifferentValuesLeft, arrayWithDifferentValuesRight), "deepEqual(arrayWithDifferentValuesLeft, arrayWithDifferentValuesRight) isFalse");
+
+        const arrayWithDifferentSizeLeft  = [1, 2];
+        const arrayWithDifferentSizeRight = [1, 2, 3];
+
+        chai.assert.isFalse(deepEqual(arrayWithDifferentSizeLeft, arrayWithDifferentSizeRight), "deepEqual(arrayWithDifferentSizeLeft, arrayWithDifferentSizeRight) isFalse");
+
+        const setWithDifferentValuesLeft  = new Set([1, 2, 3]);
+        const setWithDifferentValuesRight = new Set([1, 3, 3]);
+
+        chai.assert.isFalse(deepEqual(setWithDifferentValuesLeft, setWithDifferentValuesRight), "deepEqual(setWithDifferentValuesLeft, setWithDifferentValuesRight) isFalse");
+
+        const setWithDifferentSizeLeft  = new Set([1, 2]);
+        const setWithDifferentSizeRight = new Set([1, 2, 3]);
+
+        chai.assert.isFalse(deepEqual(setWithDifferentSizeLeft, setWithDifferentSizeRight), "deepEqual(setWithDifferentSizeLeft, setWithDifferentSizeRight) isFalse");
+
+        const mapWithDifferentValuesLeft  = new Map([[1, 1], [2, 2], [3, 3]]);
+        const mapWithDifferentValuesRight = new Map([[1, 1], [2, 2], [4, 3]]);
+
+        chai.assert.isFalse(deepEqual(mapWithDifferentValuesLeft, mapWithDifferentValuesRight), "deepEqual(mapWithDifferentValuesLeft, mapWithDifferentValuesRight) isFalse");
+
+        const mapWithDifferentSizeLeft  = new Map([[1, 1], [2, 2]]);
+        const mapWithDifferentSizeRight = new Map([[1, 1], [2, 2], [3, 3]]);
+
+        chai.assert.isFalse(deepEqual(mapWithDifferentSizeLeft, mapWithDifferentSizeRight), "deepEqual(mapWithDifferentSizeLeft, mapWithDifferentSizeRight) isFalse");
     }
 
     @test @shouldPass

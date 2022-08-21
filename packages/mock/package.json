@@ -5,7 +5,6 @@
     },
     "dependencies": {
         "@surface/core": "file:../core",
-        "@surface/enumerable": "file:../enumerable",
         "tslib": "~2.4.0"
     },
     "description": "Provides mocking capability.",

@@ -3,18 +3,17 @@ import libnpmpublish        from "libnpmpublish";
 import pacote               from "pacote";
 import semver               from "semver";
 import Status               from "./enums/status.js";
-import type { Auth }        from "./npm-config.js";
 
 export default class NpmRepository
 {
-    public constructor(private readonly auth: Auth = { })
+    public constructor(private readonly registry?: string, private readonly token?: string)
     { }
 
     public async get(spec: string): Promise<ReturnType<typeof pacote["manifest"]> | null>
     {
         try
         {
-            return await pacote.manifest(spec, { registry: this.auth.registry, alwaysAuth: true });
+            return await pacote.manifest(spec, { registry: this.registry, alwaysAuth: true });
         }
         catch (error)
         {
@@ -41,7 +40,7 @@ export default class NpmRepository
 
     public async publish(manifest: PackageJson, buffer: Buffer, tag: string = "latest"): Promise<void>
     {
-        const response = await libnpmpublish.publish(manifest, buffer, { registry: this.auth?.registry, access: "public", defaultTag: tag, forceAuth: { token: this.auth?.token } });
+        const response = await libnpmpublish.publish(manifest, buffer, { registry: this.registry, access: "public", defaultTag: tag, forceAuth: { token: this.token } });
 
         if (!response.ok)
         {
@@ -51,7 +50,7 @@ export default class NpmRepository
 
     public async unpublish(manifest: PackageJson, tag: string = "latest"): Promise<void>
     {
-        const response = await libnpmpublish.unpublish(manifest, { registry: this.auth?.registry, access: "public", defaultTag: tag, forceAuth: { token: this.auth?.token } });
+        const response = await libnpmpublish.unpublish(manifest, { registry: this.registry, access: "public", defaultTag: tag, forceAuth: { token: this.token } });
 
         if (!response)
         {

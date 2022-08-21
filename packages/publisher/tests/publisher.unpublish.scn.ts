@@ -9,11 +9,11 @@ const skip = false;
 
 export type UnpublishScenario =
 {
+    skip:      boolean,
     message:   string,
     options:   Options,
     directory: VirtualDirectory,
     registry:  Record<string, Status>,
-    skip:      boolean,
     expected:  { unpublished: string[] },
 };
 

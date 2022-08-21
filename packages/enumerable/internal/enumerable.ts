@@ -305,7 +305,7 @@ abstract class Enumerable<TSource> implements Iterable<TSource>
     }
 
     /**
-     * Return all elements when there is a match in either outter or inner sequence. A specified IComparer<T> is used to compare keys.
+     * Return all elements when there is a match in either outer or inner sequence. A specified IComparer<T> is used to compare keys.
      * @param inner             The sequence to join to the source sequence.
      * @param outerKeySelector A function to extract the join key from each element of the source sequence.
      * @param innerKeySelector  A function to extract the join key from each element of the second sequence.
@@ -409,7 +409,7 @@ abstract class Enumerable<TSource> implements Iterable<TSource>
     }
 
     /**
-     * Returns all elements from the inner sequence, and the matched records from the outter sequence. The result is null from the outter element, when there is no match. A specified IComparer<T> is used to compare keys.
+     * Returns all elements from the inner sequence, and the matched records from the outer sequence. The result is null from the outer element, when there is no match. A specified IComparer<T> is used to compare keys.
      * @param inner            The sequence to join to the source sequence.
      * @param outerKeySelector A function to extract the join key from each element of the source sequence.
      * @param innerKeySelector A function to extract the join key from each element of the second sequence.
@@ -523,7 +523,7 @@ abstract class Enumerable<TSource> implements Iterable<TSource>
     }
 
     /**
-     * Returns all elements from the inner sequence, and the matched records from the outter sequence. The result is null from the outter element, when there is no match. A specified IComparer<T> is used to compare keys.
+     * Returns all elements from the inner sequence, and the matched records from the outer sequence. The result is null from the outer element, when there is no match. A specified IComparer<T> is used to compare keys.
      * @param inner            The sequence to join to the source sequence.
      * @param outerKeySelector A function to extract the join key from each element of the source sequence.
      * @param innerKeySelector A function to extract the join key from each element of the second sequence.
@@ -1445,14 +1445,17 @@ class ZipIterator<TSource, TSecond, TResult> extends Enumerable<TResult>
         const sourceIterator     = this.source[Symbol.iterator]();
         const collectionIterator = this.second[Symbol.iterator]();
 
-        let nextSource: IteratorResult<TSource>;
-        let nextSecond: IteratorResult<TSecond>;
+        let nextSource = sourceIterator.next();
+        let nextSecond = collectionIterator.next();
 
         let index = 0;
 
-        while (!(nextSource = sourceIterator.next()).done && !(nextSecond = collectionIterator.next()).done)
+        while (!nextSource.done && !nextSecond.done)
         {
             yield this.resultSelector(nextSource.value, nextSecond.value, index);
+
+            nextSource = sourceIterator.next();
+            nextSecond = collectionIterator.next();
             index++;
         }
     }

@@ -3,18 +3,18 @@
     [
         "fs",
         "fs/promises",
-        "util",
-        "pacote",
         "libnpmpack",
+        "pacote",
+        "util",
         "webpack",
         "webpack-dev-server",
-        "@surface/rwx",
         "@surface/logger",
-        "./packages/publisher/internal/common.js",
-        "./packages/publisher/internal/npm-repository.js",
+        "@surface/rwx",
+        "./packages/builder/internal/builder.js",
         "./packages/builder/internal/commands.js",
         "./packages/builder/internal/common.js",
         "./packages/builder/internal/create-configurations.js",
-        "./packages/builder/internal/builder.js"
+        "./packages/publisher/internal/commands.js",
+        "./packages/publisher/internal/npm-repository.js"
     ]
 }

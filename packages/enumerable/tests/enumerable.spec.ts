@@ -221,7 +221,7 @@ export default class EnumerableSpec
     @test @shouldPass
     public fullJoin(): void
     {
-        const outter =
+        const outer =
         [
             { id: 1, value: 1 },
             { id: 2, value: 2 },
@@ -239,38 +239,38 @@ export default class EnumerableSpec
             { fk: 6, id: 5, value: 5 },
         ];
 
-        const actual = Enumerable.from(outter)
-            .fullJoin(inner, x => x.id, x => x.fk, (inner, outter) => ({ inner, outter }));
+        const actual = Enumerable.from(outer)
+            .fullJoin(inner, x => x.id, x => x.fk, (inner, outer) => ({ inner, outer }));
 
         const expected =
         [
             {
-                inner:  { id: 1, value: 1 },
-                outter: null,
+                inner: { id: 1, value: 1 },
+                outer: null,
             },
             {
-                inner:  { id: 2, value: 2 },
-                outter: { fk: 2, id: 1, value: 1 },
+                inner: { id: 2, value: 2 },
+                outer: { fk: 2, id: 1, value: 1 },
             },
             {
-                inner:  { id: 2, value: 2 },
-                outter: { fk: 2, id: 2, value: 2 },
+                inner: { id: 2, value: 2 },
+                outer: { fk: 2, id: 2, value: 2 },
             },
             {
-                inner:  { id: 3, value: 3 },
-                outter: { fk: 3, id: 3, value: 3 },
+                inner: { id: 3, value: 3 },
+                outer: { fk: 3, id: 3, value: 3 },
             },
             {
-                inner:  { id: 4, value: 4 },
-                outter: { fk: 4, id: 4, value: 4 },
+                inner: { id: 4, value: 4 },
+                outer: { fk: 4, id: 4, value: 4 },
             },
             {
-                inner:  { id: 5, value: 5 },
-                outter: null,
+                inner: { id: 5, value: 5 },
+                outer: null,
             },
             {
-                inner:  null,
-                outter: { fk: 6, id: 5, value: 5 },
+                inner: null,
+                outer: { fk: 6, id: 5, value: 5 },
             },
         ];
 
@@ -350,7 +350,7 @@ export default class EnumerableSpec
     @test @shouldPass
     public groupByJoin(): void
     {
-        const outter =
+        const outer =
         [
             { id: 1, value: 1 },
             { id: 2, value: 2 },
@@ -368,29 +368,29 @@ export default class EnumerableSpec
             { fk: 6, id: 5, value: 5 },
         ];
 
-        const actual = Enumerable.from(outter).groupJoin(inner, x => x.id, x => x.fk, (inner, outter) => ({ inner, outter }));
+        const actual = Enumerable.from(outer).groupJoin(inner, x => x.id, x => x.fk, (inner, outer) => ({ inner, outer }));
 
         const expected =
         [
             {
-                inner:  { id: 1, value: 1 },
-                outter: [],
+                inner: { id: 1, value: 1 },
+                outer: [],
             },
             {
-                inner:  { id: 2, value: 2 },
-                outter: [{ fk: 2, id: 1, value: 1 }, { fk: 2, id: 2, value: 2 }],
+                inner: { id: 2, value: 2 },
+                outer: [{ fk: 2, id: 1, value: 1 }, { fk: 2, id: 2, value: 2 }],
             },
             {
-                inner:  { id: 3, value: 3 },
-                outter: [{ fk: 3, id: 3, value: 3 }],
+                inner: { id: 3, value: 3 },
+                outer: [{ fk: 3, id: 3, value: 3 }],
             },
             {
-                inner:  { id: 4, value: 4 },
-                outter: [{ fk: 4, id: 4, value: 4 }],
+                inner: { id: 4, value: 4 },
+                outer: [{ fk: 4, id: 4, value: 4 }],
             },
             {
-                inner:  { id: 5, value: 5 },
-                outter: [],
+                inner: { id: 5, value: 5 },
+                outer: [],
             },
         ];
 
@@ -406,7 +406,7 @@ export default class EnumerableSpec
     @test @shouldPass
     public join(): void
     {
-        const outter =
+        const outer =
         [
             { id: 1, value: 1 },
             { id: 2, value: 2 },
@@ -424,25 +424,25 @@ export default class EnumerableSpec
             { fk: 6, id: 5, value: 5 },
         ];
 
-        const actual = Enumerable.from(outter).join(inner, x => x.id, x => x.fk, (inner, outter) => ({ inner, outter }));
+        const actual = Enumerable.from(outer).join(inner, x => x.id, x => x.fk, (inner, outer) => ({ inner, outer }));
 
         const expected =
         [
             {
-                inner:  { id: 2, value: 2 },
-                outter: { fk: 2, id: 1, value: 1 },
+                inner: { id: 2, value: 2 },
+                outer: { fk: 2, id: 1, value: 1 },
             },
             {
-                inner:  { id: 2, value: 2 },
-                outter: { fk: 2, id: 2, value: 2 },
+                inner: { id: 2, value: 2 },
+                outer: { fk: 2, id: 2, value: 2 },
             },
             {
-                inner:  { id: 3, value: 3 },
-                outter: { fk: 3, id: 3, value: 3 },
+                inner: { id: 3, value: 3 },
+                outer: { fk: 3, id: 3, value: 3 },
             },
             {
-                inner:  { id: 4, value: 4 },
-                outter: { fk: 4, id: 4, value: 4 },
+                inner: { id: 4, value: 4 },
+                outer: { fk: 4, id: 4, value: 4 },
             },
         ];
 
@@ -482,7 +482,7 @@ export default class EnumerableSpec
     @test @shouldPass
     public leftJoin(): void
     {
-        const outter =
+        const outer =
         [
             { id: 1, value: 1 },
             { id: 2, value: 2 },
@@ -500,34 +500,34 @@ export default class EnumerableSpec
             { fk: 6, id: 5, value: 5 },
         ];
 
-        const actual = Enumerable.from(outter)
-            .leftJoin(inner, x => x.id, x => x.fk, (inner, outter) => ({ inner, outter }));
+        const actual = Enumerable.from(outer)
+            .leftJoin(inner, x => x.id, x => x.fk, (inner, outer) => ({ inner, outer }));
 
         const expected =
         [
             {
-                inner:  { id: 1, value: 1 },
-                outter: null,
+                inner: { id: 1, value: 1 },
+                outer: null,
             },
             {
-                inner:  { id: 2, value: 2 },
-                outter: { fk: 2, id: 1, value: 1 },
+                inner: { id: 2, value: 2 },
+                outer: { fk: 2, id: 1, value: 1 },
             },
             {
-                inner:  { id: 2, value: 2 },
-                outter: { fk: 2, id: 2, value: 2 },
+                inner: { id: 2, value: 2 },
+                outer: { fk: 2, id: 2, value: 2 },
             },
             {
-                inner:  { id: 3, value: 3 },
-                outter: { fk: 3, id: 3, value: 3 },
+                inner: { id: 3, value: 3 },
+                outer: { fk: 3, id: 3, value: 3 },
             },
             {
-                inner:  { id: 4, value: 4 },
-                outter: { fk: 4, id: 4, value: 4 },
+                inner: { id: 4, value: 4 },
+                outer: { fk: 4, id: 4, value: 4 },
             },
             {
                 inner:  { id: 5, value: 5 },
-                outter: null,
+                outer: null,
             },
         ];
 
@@ -609,7 +609,7 @@ export default class EnumerableSpec
     @test @shouldPass
     public rightJoin(): void
     {
-        const outter =
+        const outer =
         [
             { id: 1, value: 1 },
             { id: 2, value: 2 },
@@ -627,30 +627,30 @@ export default class EnumerableSpec
             { fk: 6, id: 5, value: 5 },
         ];
 
-        const actual = Enumerable.from(outter)
-            .rightJoin(inner, x => x.id, x => x.fk, (inner, outter) => ({ inner, outter }));
+        const actual = Enumerable.from(outer)
+            .rightJoin(inner, x => x.id, x => x.fk, (inner, outer) => ({ inner, outer }));
 
         const expected =
         [
             {
-                inner:  { id: 2, value: 2 },
-                outter: { fk: 2, id: 1, value: 1 },
+                inner: { id: 2, value: 2 },
+                outer: { fk: 2, id: 1, value: 1 },
             },
             {
-                inner:  { id: 2, value: 2 },
-                outter: { fk: 2, id: 2, value: 2 },
+                inner: { id: 2, value: 2 },
+                outer: { fk: 2, id: 2, value: 2 },
             },
             {
-                inner:  { id: 3, value: 3 },
-                outter: { fk: 3, id: 3, value: 3 },
+                inner: { id: 3, value: 3 },
+                outer: { fk: 3, id: 3, value: 3 },
             },
             {
-                inner:  { id: 4, value: 4 },
-                outter: { fk: 4, id: 4, value: 4 },
+                inner: { id: 4, value: 4 },
+                outer: { fk: 4, id: 4, value: 4 },
             },
             {
-                inner:  null,
-                outter: { fk: 6, id: 5, value: 5 },
+                inner: null,
+                outer: { fk: 6, id: 5, value: 5 },
             },
         ];
 
