@@ -48,9 +48,6 @@ export type Options =
     /** Enables dry run */
     dry?: boolean,
 
-    /** Include private packages when bumping or publishing. */
-    includePrivate?: boolean,
-
     logLevel?: LogLevel,
 
     /** Packages to bump or publish */
@@ -59,6 +56,9 @@ export type Options =
 
 export type BumpOptions =
 {
+
+    /** Include private packages. */
+    includePrivate?: boolean,
 
     /** Ignore workspace version and bump itself. */
     independent?: boolean,
@@ -79,6 +79,9 @@ export type PublishOptions = UnpublishOptions &
     /** Identifier used to generate canary prerelease. */
     identifier?: string,
 
+    /** Include private packages. */
+    includePrivate?: boolean,
+
     /** The "prerelease identifier" to use as a prefix for the "prerelease" part of a semver. Like the rc in 1.2.0-rc.8. */
     prereleaseType?: Pre<ReleaseType>,
 
@@ -91,6 +94,9 @@ export type PublishOptions = UnpublishOptions &
 
 export type UnpublishOptions =
 {
+
+    /** Include private packages. */
+    includePrivate?: boolean,
 
     /** Include workspace root when bumping or publishing. */
     includeWorkspaceRoot?: boolean,
@@ -248,7 +254,7 @@ export default class Publisher
             await this.publishWorkspaces(tag, options, metadata.workspaces, metadata.config ?? config);
         }
 
-        if ((this.options.includePrivate || !metadata.manifest.private) && (options.includeWorkspaceRoot || !metadata.workspaces))
+        if ((options.includePrivate || !metadata.manifest.private) && (options.includeWorkspaceRoot || !metadata.workspaces))
         {
             const repository = this.getRepository(metadata, options, config);
 
@@ -390,7 +396,7 @@ export default class Publisher
             const manifest = metadata.manifest;
             const actual   = manifest.version;
 
-            if (this.options.includePrivate || !manifest.private)
+            if (options.includePrivate || !manifest.private)
             {
                 const updated: string | null = isSemanticVersion(version)
                     ? version
@@ -427,7 +433,7 @@ export default class Publisher
 
     private async unpublishPackage(tag: string, metadata: Metadata, config: NpmConfig | null, options: UnpublishOptions): Promise<void>
     {
-        if ((this.options.includePrivate || !metadata.manifest.private) && (options.includeWorkspaceRoot || !metadata.workspaces))
+        if ((options.includePrivate || !metadata.manifest.private) && (options.includeWorkspaceRoot || !metadata.workspaces))
         {
             const repository = this.getRepository(metadata, options, config);
 

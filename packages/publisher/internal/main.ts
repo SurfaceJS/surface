@@ -21,8 +21,8 @@ function apply(action: AsyncCallable, program: Command, ...configs: Delegate<[Co
 function globalOptions(program: Command): Command
 {
     return program
-        .option("--packages               <n...>", "Packages or workspaces to bump")
-        .option("--include-private        <n>", "Include private packages when bumping or publishing", toBoolean)
+        .option("--packages               <n...>", "Packages or workspaces to include")
+        .option("--include-private        <n>", "Include private packages", toBoolean)
         .option("--cwd                    <n>", "Working dir")
         .option("--dry                    [n]", "Enables dry run", toBoolean)
         .option("--log-level              <n>", "Log level", toEnum(...Object.entries(LogLevel)), "info");
@@ -33,7 +33,7 @@ function registryOptions(program: Command): Command
     return program
         .option("--registry               <n>", "Registry from where packages will be unpublished")
         .option("--token                  <n>", "Token used to authenticate")
-        .option("--include-workspace-root [n]", "Include workspaces root when bumping or publishing", toBoolean);
+        .option("--include-workspace-root [n]", "Includes workspaces root", toBoolean);
 }
 
 export default async function main(args: string[]): Promise<void>

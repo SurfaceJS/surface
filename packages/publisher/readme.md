@@ -40,11 +40,11 @@ Arguments:
   preid                            The 'prerelease identifier' to use as a prefix for the 'prerelease' part of a semver. Like the rc in 1.2.0-rc.8
 
 Options:
-  --synchronize            [n]    Synchronize dependencies between workspace packages after bumping
-  --independent            [n]    Ignore workspace version and bump itself
-  --update-file-references [n]    Update file references when bumping
-  --packages               <n...>  Packages or workspaces to bump
-  --include-private        <n>     Include private packages when bumping or publishing
+  --synchronize            [n]     Synchronize dependencies between workspace packages after bumping
+  --independent            [n]     Ignore workspace version and bump itself
+  --update-file-references [n]     Update file references when bumping
+  --packages               <n...>  Packages or workspaces to include
+  --include-private        <n>     Include private packages
   --cwd                    <n>     Working dir
   --dry                    [n]     Enables dry run
   --log-level              <n>     Log level (default: "info")
@@ -69,9 +69,9 @@ Options:
   --sequence               <n>     Sequence used to compose the prerelease
   --registry               <n>     Registry from where packages will be unpublished
   --token                  <n>     Token used to authenticate
-  --include-workspace-root [n]     Include workspaces root when bumping or publishing
-  --packages               <n...>  Packages or workspaces to bump
-  --include-private        <n>     Include private packages when bumping or publishing
+  --include-workspace-root [n]     Includes workspaces root
+  --packages               <n...>  Packages or workspaces to include
+  --include-private        <n>     Include private packages
   --cwd                    <n>     Working dir
   --dry                    [n]     Enables dry run
   --log-level              <n>     Log level (default: "info")
@@ -91,9 +91,9 @@ Arguments:
 Options:
   --registry               <n>     Registry from where packages will be unpublished
   --token                  <n>     Token used to authenticate
-  --include-workspace-root [n]     Include workspaces root when bumping or publishing
-  --packages               <n...>  Packages or workspaces to bump
-  --include-private        <n>     Include private packages when bumping or publishing
+  --include-workspace-root [n]     Includes workspaces root
+  --packages               <n...>  Packages or workspaces to include
+  --include-private        <n>     Include private packages
   --cwd                    <n>     Working dir
   --dry                    [n]     Enables dry run
   --log-level              <n>     Log level (default: "info")
