@@ -8,7 +8,7 @@ import type { Options }                     from "../internal/publisher.js";
 import type Publisher                       from "../internal/publisher.js";
 import type VirtualDirectory                from "./types/virtual-directory.js";
 
-/* cSpell:ignore premajor */
+/* cSpell:ignore premajor, postpack */
 
 type PackageJson = _PackageJson & { workspaces?: string[] };
 
@@ -58,6 +58,53 @@ export const validScenarios: PublishScenario[] =
         expected:
         {
             published: [],
+        },
+    },
+    {
+        skip,
+        message:   "Dry run publish single package with script",
+        options:
+        {
+            dry: true,
+        },
+        args:      ["latest"],
+        registry:  { },
+        directory:
+        {
+            "./package.json": JSON.stringify
+            (
+                {
+                    name:    "package-a",
+                    scripts: { "postpack": "echo hello world!!!" },
+                    version: "1.0.0",
+                } as Partial<PackageJson>,
+            ),
+        },
+        expected:
+        {
+            published: [],
+        },
+    },
+    {
+        skip,
+        message:   "Publish single package with script",
+        options:   { },
+        args:      ["latest"],
+        registry:  { },
+        directory:
+        {
+            "./package.json": JSON.stringify
+            (
+                {
+                    name:    "package-a",
+                    scripts: { "postpack": "echo hello world!!!" },
+                    version: "1.0.0",
+                } as Partial<PackageJson>,
+            ),
+        },
+        expected:
+        {
+            published: ["package-a@1.0.0"],
         },
     },
     {

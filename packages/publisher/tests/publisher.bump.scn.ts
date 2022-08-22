@@ -175,6 +175,57 @@ export const validScenarios: BumpScenario[] =
     {
 
         skip,
+        message:   "Bump workspaces with synchronization",
+        options:   {  },
+        directory:
+        {
+            "./package.json": JSON.stringify
+            (
+                {
+                    name:       "package-root",
+                    version:    "1.0.0",
+                    workspaces: ["packages/*"],
+                } as Partial<PackageJson>,
+            ),
+            "./packages/package-a/package.json": JSON.stringify
+            (
+                {
+                    name:    "package-a",
+                    version: "1.0.0",
+                } as Partial<PackageJson>,
+            ),
+            "./packages/package-b/package.json": JSON.stringify
+            (
+                {
+                    name:    "package-b",
+                    version: "1.0.0",
+                } as Partial<PackageJson>,
+            ),
+        },
+        expected:
+        {
+            "package-root":
+            {
+                name:       "package-root",
+                version:    "2.0.0",
+                workspaces: ["packages/*"],
+            },
+            "package-a":
+            {
+                name:    "package-a",
+                version: "2.0.0",
+            },
+            "package-b":
+            {
+                name:    "package-b",
+                version: "2.0.0",
+            },
+        },
+        args: ["major"],
+    },
+    {
+
+        skip,
         message:   "Bump nested workspaces",
         options:   { },
         directory:
@@ -276,8 +327,12 @@ export const validScenarios: BumpScenario[] =
             "./packages/package-b/package.json": JSON.stringify
             (
                 {
-                    name:    "package-b",
-                    version: "3.0.0",
+                    name:         "package-b",
+                    version:      "3.0.0",
+                    dependencies:
+                    {
+                        "package-a": "1.0.0",
+                    },
                 } as Partial<PackageJson>,
             ),
         },
@@ -296,8 +351,70 @@ export const validScenarios: BumpScenario[] =
             },
             "package-b":
             {
-                name:    "package-b",
-                version: "4.0.0",
+                name:         "package-b",
+                version:      "4.0.0",
+                dependencies:
+                {
+                    "package-a": "1.0.0",
+                },
+            },
+        },
+    },
+    {
+        skip,
+        message:   "Bump workspace with independent version and dependencies synchronization",
+        options:   { },
+        args:      ["major", undefined, { independent: true, synchronize: true }],
+        directory:
+        {
+            "./package.json": JSON.stringify
+            (
+                {
+                    name:       "package-root",
+                    version:    "1.0.0",
+                    workspaces: ["packages/*"],
+                } as Partial<PackageJson>,
+            ),
+            "./packages/package-a/package.json": JSON.stringify
+            (
+                {
+                    name:    "package-a",
+                    version: "2.0.0",
+                } as Partial<PackageJson>,
+            ),
+            "./packages/package-b/package.json": JSON.stringify
+            (
+                {
+                    name:         "package-b",
+                    version:      "3.0.0",
+                    dependencies:
+                    {
+                        "package-a": "1.0.0",
+                    },
+                } as Partial<PackageJson>,
+            ),
+        },
+        expected:
+        {
+            "package-root":
+            {
+                name:       "package-root",
+                version:    "2.0.0",
+                workspaces: ["packages/*"],
+            },
+            "package-a":
+            {
+                name:    "package-a",
+                version: "3.0.0",
+            },
+            "package-b":
+            {
+                name:         "package-b",
+                version:      "4.0.0",
+                dependencies:
+                {
+                    "package-a": "~3.0.0",
+                },
             },
         },
     },
@@ -436,7 +553,7 @@ export const validScenarios: BumpScenario[] =
         {
             logLevel: LogLevel.Trace,
         },
-        args:      ["minor", undefined, { independent: true, synchronize: true, updateFileReferences: true }],
+        args:      ["minor", undefined, { independent: true, updateFileReferences: true }],
         directory:
         {
             "./package.json": JSON.stringify
@@ -635,7 +752,7 @@ export const invalidScenarios: BumpScenario[] =
 [
     {
         skip,
-        message:   "[bump]: bump with invalid updates",
+        message:   "[bump]: Bump with invalid version",
         options:
         {
             logLevel: LogLevel.Trace,

@@ -30,24 +30,25 @@ Currently only npm automation tokens are supported when publishing on the `https
 ### Bump
 
 ```txt
-Usage: publisher bump [options] <release-type> [identifier-or-version]
+Usage: publisher bump [options] <version> [preid]
 
 Bump discovered packages or workspaces using provided custom version
 
 Arguments:
-  release-type                      Type of release
-  identifier-or-version             When release type is an prerelease, the value is used as identifier, When release type is custom, the value is used as version
+  version                          An semantic version or an release type: major, minor, patch, premajor, preminor, prepatch, prerelease. Also can accept an glob prerelease '*-dev+123' to override just the prerelease part of the version. Useful for
+                                   canary builds.
+  preid                            The 'prerelease identifier' to use as a prefix for the 'prerelease' part of a semver. Like the rc in 1.2.0-rc.8
 
 Options:
-  --packages                <n...>  Packages or workspaces to bump
-  --include-privates        <n>     Include private packages when bumping or publishing
-  --include-workspaces-root <n>     Include workspaces root when bumping or publishing
-  --independent-version     <n>     Ignore workspace version and bump itself
-  --update-file-references  <n>     Update file references when bumping
-  --cwd                     <n>     Working dir
-  --dry                     [n]     Enables dry run
-  --log-level               <n>     Log level (default: "info")
-  -h, --help                        display help for command
+  --synchronize            [n]    Synchronize dependencies between workspace packages after bumping
+  --independent            [n]    Ignore workspace version and bump itself
+  --update-file-references [n]    Update file references when bumping
+  --packages               <n...>  Packages or workspaces to bump
+  --include-private        <n>     Include private packages when bumping or publishing
+  --cwd                    <n>     Working dir
+  --dry                    [n]     Enables dry run
+  --log-level              <n>     Log level (default: "info")
+  -h, --help                       display help for command
 ```
 
 ### Publish
@@ -58,21 +59,23 @@ Usage: publisher publish [options] [tag]
 Publish packages or workspaces packages
 
 Arguments:
-  tag                               Tag that will to publish
+  tag                              Tag that will to publish
 
 Options:
-  --packages                <n...>  Packages or workspaces to publish
-  --registry                <n>     Registry where packages will be published
-  --token                   <n>     Token used to authenticate
-  --canary                  [n]     Enables canary release
-  --include-privates        <n>     Include private packages when bumping or publishing
-  --include-workspaces-root <n>     Include workspaces root when bumping or publishing
-  --independent-version     <n>     Ignore workspace version and bump itself
-  --update-file-references  <n>     Update file references when bumping
-  --cwd                     <n>     Working dir
-  --dry                     [n]     Enables dry run
-  --log-level               <n>     Log level (default: "info")
-  -h, --help                        display help for command
+  --synchronize            [n]     Synchronize dependencies between workspace packages before publishing
+  --canary                 [n]     Enables canary release
+  --prerelease-type        <n>     An prerelease type: premajor, preminor, prepatch, prerelease
+  --identifier             <n>     Identifier used to generate canary prerelease
+  --sequence               <n>     Sequence used to compose the prerelease
+  --registry               <n>     Registry from where packages will be unpublished
+  --token                  <n>     Token used to authenticate
+  --include-workspace-root [n]     Include workspaces root when bumping or publishing
+  --packages               <n...>  Packages or workspaces to bump
+  --include-private        <n>     Include private packages when bumping or publishing
+  --cwd                    <n>     Working dir
+  --dry                    [n]     Enables dry run
+  --log-level              <n>     Log level (default: "info")
+  -h, --help                       display help for command
 ```
 
 ### Unpublish
@@ -83,20 +86,16 @@ Usage: publisher unpublish [options] [tag]
 Unpublish packages or workspaces packages
 
 Arguments:
-  tag                               Tag that will to unpublish
+  tag                              Tag that will to unpublish
 
 Options:
-  --packages                <n...>  Packages or workspaces to unpublish
-  --registry                <n>     Registry from where packages will be unpublished
-  --token                   <n>     Token used to authenticate
-  --include-privates        <n>     Include private packages when bumping or publishing
-  --include-workspaces-root <n>     Include workspaces root when bumping or publishing
-  --independent-version     <n>     Ignore workspace version and bump itself
-  --update-file-references  <n>     Update file references when bumping
-  --cwd                     <n>     Working dir
-  --dry                     [n]     Enables dry run
-  --log-level               <n>     Log level (default: "info")
-  -h, --help                        display help for command
+  --registry               <n>     Registry from where packages will be unpublished
+  --token                  <n>     Token used to authenticate
+  --include-workspace-root [n]     Include workspaces root when bumping or publishing
+  --packages               <n...>  Packages or workspaces to bump
+  --include-private        <n>     Include private packages when bumping or publishing
+  --cwd                    <n>     Working dir
+  --dry                    [n]     Enables dry run
+  --log-level              <n>     Log level (default: "info")
+  -h, --help                       display help for command
 ```
-
-

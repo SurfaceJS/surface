@@ -177,7 +177,7 @@ export default class PublisherSpec
                 },
             );
 
-        await chai.assert.isFulfilled(new Publisher(scenario.options).bump(...scenario.args as Parameters<Publisher["bump"]>));
+        await chai.assert.isFulfilled(new Publisher(scenario.options).bump(...scenario.args));
 
         chai.assert.deepEqual(actual, scenario.expected);
     }
@@ -220,9 +220,20 @@ export default class PublisherSpec
         chai.assert.deepEqual(actual, scenario.expected.unpublished);
     }
 
-    @test
+    @batchTest(bumpInvalidScenarios, x => x.message, x => x.skip)
     @shouldFail
-    public async errorPublishing(): Promise<void>
+    public async bumpInvalidScenarios(scenario: BumpScenario): Promise<void>
+    {
+        this.setupVirtualDirectory(scenario.directory);
+
+        writeFileMock.call(It.any(), It.any()).resolve();
+
+        await chai.assert.isRejected(new Publisher(scenario.options).bump(...scenario.args));
+    }
+
+    @test("[publishing]: Publishing should fail")
+    @shouldFail
+    public async publishingShouldFail(): Promise<void>
     {
         const directory: VirtualDirectory =
         {
@@ -238,9 +249,9 @@ export default class PublisherSpec
         await chai.assert.isRejected(new Publisher({ packages: ["packages/*"] }).publish("latest"));
     }
 
-    @test
+    @test("[unpublishing]: Unpublishing should fail")
     @shouldFail
-    public async errorUnpublishing(): Promise<void>
+    public async unpublishingShouldFail(): Promise<void>
     {
         const directory: VirtualDirectory =
         {
@@ -253,16 +264,5 @@ export default class PublisherSpec
         npmRepositoryMock.setup("unpublish").call(It.any(), It.any()).reject();
 
         await chai.assert.isRejected(new Publisher({ packages: ["packages/*"] }).unpublish("latest"));
-    }
-
-    @batchTest(bumpInvalidScenarios, x => x.message, x => x.skip)
-    @shouldFail
-    public async bumpInvalidScenarios(scenario: BumpScenario): Promise<void>
-    {
-        this.setupVirtualDirectory(scenario.directory);
-
-        writeFileMock.call(It.any(), It.any()).resolve();
-
-        await chai.assert.isRejected(new Publisher(scenario.options).bump(...scenario.args));
     }
 }

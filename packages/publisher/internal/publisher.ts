@@ -63,11 +63,11 @@ export type BumpOptions =
     /** Ignore workspace version and bump itself. */
     independent?: boolean,
 
-    /** Synchronize bumped versions of the dependents package in the workspace. */
-    synchronize?: boolean,
-
     /** Update file references when bumping. */
     updateFileReferences?: boolean,
+
+    /** Synchronize dependencies between workspace packages after bumping. */
+    synchronize?: boolean,
 };
 
 export type PublishOptions = UnpublishOptions &
@@ -84,6 +84,9 @@ export type PublishOptions = UnpublishOptions &
 
     /** Sequence used to compose the prerelease. */
     sequence?: string,
+
+    /** Synchronize dependencies between workspace packages before publishing. */
+    synchronize?: boolean,
 };
 
 export type UnpublishOptions =
@@ -207,17 +210,17 @@ export default class Publisher
         return new NpmRepository(auth.registry ?? localAuth.registry, auth.token ?? localAuth.token);
     }
 
-    private async runScript(script: ScriptType, cwd: string): Promise<void>
+    private async runScript(manifest: PackageJson, script: ScriptType, cwd: string): Promise<void>
     {
-        if (!this.options.dry)
+        if (manifest.scripts?.[script])
         {
-            this.logger.trace(`Running ${script} script in ${cwd}...`);
+            this.logger.trace(`Running ${script} script in ${manifest.name}...`);
 
             await execute(`npm run ${script} --if-present --color`, { cwd });
         }
         else
         {
-            this.logger.trace(`Will run ${script} script in ${cwd}...`);
+            this.logger.trace(`Script ${script} does not exists in ${manifest.name}, ignoring...`);
         }
     }
 
@@ -231,72 +234,84 @@ export default class Publisher
         return `${pattern.replace(/\/$/, "")}/package.json`;
     }
 
-    private async publishWorkspaces(tag: string, options: PublishOptions, workspaces: Map<string, Metadata>, config: NpmConfig | null): Promise<void>
+    private async publishPackage(tag: string, metadata: Metadata, config: NpmConfig | null, options: PublishOptions): Promise<void>
     {
-        for (const metadata of workspaces.values())
+        const parentPath = dirname(metadata.path);
+
+        if (metadata.workspaces?.size)
         {
-            const parentPath = dirname(metadata.path);
-
-            if (metadata.workspaces?.size)
+            if (!this.options.dry)
             {
-                await this.runScript("prepublishworkspace", parentPath);
-
-                await this.publishWorkspaces(tag, options, metadata.workspaces, metadata.config ?? config);
+                await this.runScript(metadata.manifest, "prepublishworkspace", parentPath);
             }
 
-            if ((this.options.includePrivate || !metadata.manifest.private) && (options.includeWorkspaceRoot || !metadata.workspaces))
+            await this.publishWorkspaces(tag, options, metadata.workspaces, metadata.config ?? config);
+        }
+
+        if ((this.options.includePrivate || !metadata.manifest.private) && (options.includeWorkspaceRoot || !metadata.workspaces))
+        {
+            const repository = this.getRepository(metadata, options, config);
+
+            const versionedName = `${metadata.manifest.name}@${metadata.manifest.version}`;
+
+            if (await repository.getStatus(metadata.manifest) == Status.InRegistry)
             {
-                const repository = this.getRepository(metadata, options, config);
-
-                const versionedName = `${metadata.manifest.name}@${metadata.manifest.version}`;
-
-                if (await repository.getStatus(metadata.manifest) == Status.InRegistry)
+                this.logger.trace(`${versionedName} already in registry, ignoring...`);
+            }
+            else if (!this.options.dry)
+            {
+                try
                 {
-                    this.logger.trace(`${versionedName} already in registry, ignoring...`);
+                    await this.runScript(metadata.manifest, "prepublish", parentPath);
+                    await this.runScript(metadata.manifest, "prepublishOnly", parentPath);
+                    await this.runScript(metadata.manifest, "prepack", parentPath);
+                    await this.runScript(metadata.manifest, "prepare", parentPath);
+
+                    const buffer = await pack(parentPath);
+
+                    await this.runScript(metadata.manifest, "postpack", parentPath);
+
+                    this.logger.trace(`Publishing ${versionedName}`);
+
+                    await repository.publish(metadata.manifest, buffer, tag);
+
+                    await this.runScript(metadata.manifest, "postpublish", parentPath);
+
+                    this.logger.info(`${versionedName} was published.`);
                 }
-                else if (!this.options.dry)
+                catch (error)
                 {
-                    try
-                    {
-                        await this.runScript("prepublish", parentPath);
-                        await this.runScript("prepublishOnly", parentPath);
-                        await this.runScript("prepack", parentPath);
-                        await this.runScript("prepare", parentPath);
+                    this.logger.error(`Failed to publish package ${versionedName}.`);
 
-                        const buffer = await pack(parentPath);
-
-                        await this.runScript("postpack", parentPath);
-
-                        this.logger.trace(`Publishing ${versionedName}`);
-
-                        await repository.publish(metadata.manifest, buffer, tag);
-
-                        await this.runScript("postpublish", parentPath);
-
-                        this.logger.info(`${versionedName} was published.`);
-                    }
-                    catch (error)
-                    {
-                        this.logger.error(`Failed to publish package ${versionedName}.`);
-
-                        this.errors.push(error as Error);
-                    }
-                }
-                else
-                {
-                    this.logger.info(`${versionedName} will be published.`);
+                    this.errors.push(error as Error);
                 }
             }
             else
             {
-                this.logger.trace(`Package ${metadata.manifest.name} is ${metadata.manifest.private ? "private" : "an workspace"}, publishing ignored...`);
-            }
-
-            if (metadata.workspaces?.size)
-            {
-                await this.runScript("postpublishworkspace", parentPath);
+                this.logger.info(`${versionedName} will be published.`);
             }
         }
+        else
+        {
+            this.logger.trace(`Package ${metadata.manifest.name} is ${metadata.manifest.private ? "private" : "an workspace"}, publishing ignored...`);
+        }
+
+        if (!this.options.dry && metadata.workspaces?.size)
+        {
+            await this.runScript(metadata.manifest, "postpublishworkspace", parentPath);
+        }
+    }
+
+    private async publishWorkspaces(tag: string, options: PublishOptions, workspaces: Map<string, Metadata>, config: NpmConfig | null): Promise<void>
+    {
+        const promises: Promise<void>[] = [];
+
+        for (const metadata of workspaces.values())
+        {
+            promises.push(this.publishPackage(tag, metadata, config, options));
+        }
+
+        await Promise.all(promises);
     }
 
     private async restorePackages(): Promise<void>
@@ -319,11 +334,13 @@ export default class Publisher
             {
                 for (const [name, version] of Object.entries(dependencies))
                 {
-                    if (options.updateFileReferences || !version.startsWith("file:"))
-                    {
-                        const dependency = workspaces.get(name)?.manifest;
+                    const dependency = workspaces.get(name)?.manifest;
 
-                        if (dependency)
+                    if (dependency)
+                    {
+                        const isFileReference = version.startsWith("file:");
+
+                        if (options.updateFileReferences && isFileReference || options.synchronize && !isFileReference)
                         {
                             dependencies[name] = `~${dependency.version}`;
 
@@ -345,7 +362,7 @@ export default class Publisher
     {
         for (const entry of workspaces.values())
         {
-            if (options.synchronize)
+            if (options.synchronize || options.updateFileReferences)
             {
                 this.sync(entry.manifest, workspaces, options);
             }
@@ -408,52 +425,63 @@ export default class Publisher
         }
     }
 
-    private async unpublishWorkspaces(tag: string, options: UnpublishOptions, workspaces: Map<string, Metadata>, config: NpmConfig | null): Promise<void>
+    private async unpublishPackage(tag: string, metadata: Metadata, config: NpmConfig | null, options: UnpublishOptions): Promise<void>
     {
-        for (const metadata of workspaces.values())
+        if ((this.options.includePrivate || !metadata.manifest.private) && (options.includeWorkspaceRoot || !metadata.workspaces))
         {
-            if ((this.options.includePrivate || !metadata.manifest.private) && (options.includeWorkspaceRoot || !metadata.workspaces))
+            const repository = this.getRepository(metadata, options, config);
+
+            const versionedName = `${metadata.manifest.name}@${metadata.manifest.version}`;
+
+            if (await repository.getStatus(metadata.manifest) != Status.InRegistry)
             {
-                const repository = this.getRepository(metadata, options, config);
-
-                const versionedName = `${metadata.manifest.name}@${metadata.manifest.version}`;
-
-                if (await repository.getStatus(metadata.manifest) != Status.InRegistry)
+                this.logger.trace(`${versionedName} not in registry, ignoring...`);
+            }
+            else if (!this.options.dry)
+            {
+                try
                 {
-                    this.logger.trace(`${versionedName} not in registry, ignoring...`);
+                    this.logger.trace(`Unpublishing ${versionedName}.`);
+
+                    await repository.unpublish(metadata.manifest, tag);
+
+                    this.logger.info(`${versionedName} was unpublished.`);
                 }
-                else if (!this.options.dry)
+                catch (error)
                 {
-                    try
-                    {
-                        this.logger.trace(`Unpublishing ${versionedName}.`);
+                    this.logger.error(`Failed to unpublish package ${versionedName}!`);
 
-                        await repository.unpublish(metadata.manifest, tag);
-
-                        this.logger.info(`${versionedName} was unpublished.`);
-                    }
-                    catch (error)
-                    {
-                        this.logger.error(`Failed to unpublish package ${versionedName}!`);
-
-                        this.errors.push(error as Error);
-                    }
-                }
-                else
-                {
-                    this.logger.info(`${versionedName} will be unpublished.`);
+                    this.errors.push(error as Error);
                 }
             }
+
             else
             {
-                this.logger.trace(`Package ${metadata.manifest.name} is ${metadata.manifest.private ? "private" : "an workspace"}, unpublishing ignored...`);
-            }
-
-            if (metadata.workspaces?.size)
-            {
-                await this.unpublishWorkspaces(tag, options, metadata.workspaces, metadata.config ?? config);
+                this.logger.info(`${versionedName} will be unpublished.`);
             }
         }
+
+        else
+        {
+            this.logger.trace(`Package ${metadata.manifest.name} is ${metadata.manifest.private ? "private" : "an workspace"}, unpublishing ignored...`);
+        }
+
+        if (metadata.workspaces?.size)
+        {
+            await this.unpublishWorkspaces(tag, metadata.workspaces, metadata.config ?? config, options);
+        }
+    }
+
+    private async unpublishWorkspaces(tag: string, workspaces: Map<string, Metadata>, config: NpmConfig | null, options: UnpublishOptions): Promise<void>
+    {
+        const promises: Promise<void>[] = [];
+
+        for (const metadata of workspaces.values())
+        {
+            promises.push(this.unpublishPackage(tag, metadata, config, options));
+        }
+
+        await Promise.all(promises);
     }
 
     /**
@@ -480,7 +508,7 @@ export default class Publisher
             }
             else
             {
-                this.logger.info("Bump done!");
+                this.logger.info(`${this.options.dry ? "[dry] " : ""}Bump done!`);
             }
         }
     }
@@ -496,10 +524,10 @@ export default class Publisher
 
         if (await this.loadMetadata())
         {
+            const bumpOptions: BumpOptions = { synchronize: options.synchronize, updateFileReferences: true };
+
             if (options.canary)
             {
-                const bumpOptions: BumpOptions = { synchronize: true, updateFileReferences: true };
-
                 options.prereleaseType
                     ? await this.bump(options.prereleaseType, options.identifier ? options.identifier + (options.sequence ? `.${options.sequence}` : "") : undefined, bumpOptions)
                     : await this.bump(`*-${options.identifier ?? "dev"}.${options.sequence ?? timestamp()}`, undefined, bumpOptions);
@@ -516,12 +544,12 @@ export default class Publisher
                     }
                 }
 
-                await this.writeWorkspaces({ updateFileReferences: true });
+                await this.writeWorkspaces(bumpOptions);
             }
 
             await this.publishWorkspaces(tag, options, this.workspaces, this.config);
 
-            if (this.errors.length > 0 || options.canary && !this.options.dry)
+            if (!this.options.dry && (this.errors.length > 0 || options.canary))
             {
                 await this.restorePackages();
             }
@@ -534,7 +562,7 @@ export default class Publisher
             }
             else
             {
-                this.logger.info("Publishing Done!");
+                this.logger.info(`${this.options.dry ? "[dry] " : ""}Publishing Done!`);
             }
         }
     }
@@ -550,7 +578,7 @@ export default class Publisher
 
         if (await this.loadMetadata())
         {
-            await this.unpublishWorkspaces(tag, options, this.workspaces, this.config);
+            await this.unpublishWorkspaces(tag, this.workspaces, this.config, options);
 
             if (this.errors.length > 0)
             {
@@ -560,7 +588,7 @@ export default class Publisher
             }
             else
             {
-                this.logger.info("Unpublishing Done!");
+                this.logger.info(`${this.options.dry ? "[dry] " : ""}Unpublishing Done!`);
             }
         }
     }
