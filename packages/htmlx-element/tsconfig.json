@@ -1,5 +1,5 @@
 {
-    "extends": "@surface/tsconfig/tsconfig.composite.web.json",
+    "extends": "../../tsconfig.web.json",
     "compilerOptions":
     {
         "outDir":  ".",

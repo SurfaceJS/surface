@@ -1,11 +1,9 @@
 {
-    "extends": "@surface/tsconfig/tsconfig.composite.json",
+    "extends": "../../tsconfig.node.json",
     "compilerOptions":
     {
-        "outDir":           ".",
-        "rootDir":          ".",
-        "module":           "NodeNext",
-        "moduleResolution": "NodeNext"
+        "outDir":  ".",
+        "rootDir": ".",
     },
     "files":
     [

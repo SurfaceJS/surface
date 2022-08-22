@@ -1,12 +1,10 @@
 {
-    "extends": "@surface/tsconfig/tsconfig.composite.node.json",
+    "extends": "../../tsconfig.node.json",
     "compilerOptions":
     {
         "outDir":  ".",
+        "paths":   { "webpack": ["./node_modules/webpack"] },
         "rootDir": ".",
-        "paths": {
-            "webpack": ["./node_modules/webpack"]
-        }
     },
     "files":
     [
