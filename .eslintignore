@@ -1,4 +1,12 @@
 *.d.ts
-**/.*js
-!**/interfaces/**/*.d.ts
+*.d.cts
+*.d.mts
+**/*.js
+**/*.cjs
+**/*.mjs
+!**/@?types/**/*.d.cts
+!**/@?types/**/*.d.mts
 !**/@?types/**/*.d.ts
+!**/interfaces/**/*.d.cts
+!**/interfaces/**/*.d.mts
+!**/interfaces/**/*.d.ts

@@ -12,8 +12,13 @@ import
     Property,
     TypeGuard,
 } from "@surface/expression";
-import type { IExpression, INode, IPattern,
-    RestElement } from "@surface/expression";
+import type
+{
+    IExpression,
+    INode,
+    IPattern,
+    RestElement,
+} from "@surface/expression";
 
 export default class ScopeRewriterVisitor extends ExpressionRewriterVisitor
 {
