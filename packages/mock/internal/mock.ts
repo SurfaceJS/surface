@@ -11,7 +11,7 @@ import type
 import CallSetup                  from "./call-setup.js";
 import type ICallSetup            from "./interfaces/call-setup.js";
 import type IExecutable           from "./interfaces/executable.js";
-import type IGetSetup             from "./interfaces/get-setup.js";
+import type IGetSetupSync         from "./interfaces/get-setup-sync.js";
 import type IReturnsInstanceSetup from "./interfaces/returns-instance-setup.js";
 import ReturnSetup                from "./return-setup.js";
 import type ResolveSetup          from "./types/resolve-setup.js";
@@ -120,7 +120,7 @@ export default class Mock<T extends object | Function>
                 }
                 else if (this.mode == "strict" && !isAllowed(target, propertyKey))
                 {
-                    throw new Error(`${this.getTargetName(target)} does not has get setup for the key "${String(propertyKey)}"`);
+                    throw new Error(`${this.getTargetName(target)}.${String(propertyKey)} does not has "get" setup`);
                 }
 
                 return Reflect.get(target, propertyKey, receiver);
@@ -144,7 +144,7 @@ export default class Mock<T extends object | Function>
                 }
                 else if (this.mode == "strict" && !isAllowed(target, propertyKey))
                 {
-                    throw new Error(`${this.getTargetName(target)} does not has get setup for the key "${typeof propertyKey == "symbol" ? `Symbol(${propertyKey.description})` : propertyKey}"`);
+                    throw new Error(`${this.getTargetName(target)}.${typeof propertyKey == "symbol" ? `[Symbol(${propertyKey.description})]` : propertyKey} does not has "get" setup`);
                 }
 
                 return descriptor;
@@ -215,9 +215,9 @@ export default class Mock<T extends object | Function>
         return setup as object as ICallSetup;
     }
 
-    public setupGet<K extends keyof T>(key: K): IGetSetup<T[K]>;
-    public setupGet(key: PropertyKey): IGetSetup;
-    public setupGet(key: PropertyKey): IGetSetup
+    public setupGet<K extends keyof T>(key: K): IGetSetupSync<T[K]>;
+    public setupGet(key: PropertyKey): IGetSetupSync;
+    public setupGet(key: PropertyKey): IGetSetupSync
     {
         let setup = this.setups.get(key);
 
@@ -226,7 +226,7 @@ export default class Mock<T extends object | Function>
             this.setups.set(key, setup = new ReturnSetup());
         }
 
-        return setup as object as IGetSetup;
+        return setup as object as IGetSetupSync;
     }
 
     public unlock(): void

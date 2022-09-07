@@ -442,6 +442,7 @@ const config =
                 "no-unsafe-finally":                "warn",
                 "no-unsafe-negation":               "warn",
                 "no-unused-labels":                 "warn",
+                "no-unused-vars":                   "off",
                 "no-useless-backreference":         "warn",
                 "no-useless-call":                  "warn",
                 "no-useless-catch":                 "warn",

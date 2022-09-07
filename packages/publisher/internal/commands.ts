@@ -3,7 +3,6 @@ import Publisher,
     type BumpOptions,
     type Options,
     type PublishOptions,
-    type UnpublishOptions,
     type Version,
 } from "./publisher.js";
 
@@ -21,29 +20,28 @@ export default class Commands
         await new Publisher(options).bump(version, identifier, bumpOptions);
     }
 
-    public static async publish(tag: string = "latest", options: Options & PublishOptions = { }): Promise<void>
+    public static async changed(tag: string = "latest", options: Options = { }): Promise<void>
+    {
+        const changes = await new Publisher(options).changed(tag);
+
+        console.log(changes.length > 0 ? `Packages with changes:\n${changes.join("\n")}` : "No changes detected!");
+    }
+
+    public static async publish(tag?: string, options: Options & PublishOptions = { }): Promise<void>
     {
         const publishOptions: PublishOptions =
         {
             canary:         options.canary,
             identifier:     options.identifier,
-            registry:       options.registry,
             prereleaseType: options.prereleaseType,
             sequence:       options.sequence,
-            token:          options.token,
         };
 
-        await new Publisher(options).publish(tag, publishOptions);
+        await new Publisher(options).publish(tag ?? options.canary ? "next" : "latest", publishOptions);
     }
 
-    public static async unpublish(tag: string = "latest", options: Options & UnpublishOptions = { }): Promise<void>
+    public static async unpublish(tag: string = "latest", options: Options = { }): Promise<void>
     {
-        const unpublishOptions: UnpublishOptions =
-        {
-            registry: options.registry,
-            token:    options.token,
-        };
-
-        await new Publisher(options).unpublish(tag, unpublishOptions);
+        await new Publisher(options).unpublish(tag);
     }
 }

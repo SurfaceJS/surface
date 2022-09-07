@@ -14,7 +14,7 @@ chai.use(chaiAsPromised);
 const CommandsMock = Mock.of(Commands);
 
 @suite
-export default class CreateProgramSpec
+export default class MainSpec
 {
     @beforeEach
     public beforeEach(): void
@@ -23,6 +23,10 @@ export default class CreateProgramSpec
 
         CommandsMock.setup("bump")
             .call(It.any(), It.any(), It.any())
+            .resolve();
+
+        CommandsMock.setup("changed")
+            .call(It.any(), It.any())
             .resolve();
 
         CommandsMock.setup("publish")
@@ -50,14 +54,19 @@ export default class CreateProgramSpec
             "bump",
             "prerelease",
             "alpha",
+            "--compare-tag=next",
             "--cwd=.",
             "--dry=true",
             "--include-private=true",
+            "--include-unchanged=true",
+            "--include-workspace-root=true",
             "--independent=true",
             "--log-level=trace",
             "--packages=bar",
             "--packages=foo",
+            "--registry=https://registry.com",
             "--synchronize=true",
+            "--token=123",
             "--update-file-references=true",
         ];
 
@@ -67,13 +76,18 @@ export default class CreateProgramSpec
             "prerelease",
             "alpha",
             {
+                compareTag:           "next",
                 cwd:                  ".",
                 dry:                  true,
                 includePrivate:       true,
+                includeUnchanged:     true,
+                includeWorkspaceRoot: true,
                 independent:          true,
                 logLevel:             LogLevel.Trace,
                 packages:             ["bar", "foo"],
+                registry:             "https://registry.com",
                 synchronize:          true,
+                token:                "123",
                 updateFileReferences: true,
             },
         ];
@@ -83,8 +97,49 @@ export default class CreateProgramSpec
             .callback((...args) => actual = args)
             .resolve();
 
-        CommandsMock.setup("bump")
-            .call(It.any(), It.any(), It.any())
+        await chai.assert.isFulfilled(main(args));
+
+        chai.assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldPass
+    public async changed(): Promise<void>
+    {
+        const args =
+        [
+            "",
+            "",
+            "changed",
+            "latest",
+            "--cwd=.",
+            "--dry=true",
+            "--include-private=true",
+            "--include-workspace-root=true",
+            "--log-level=trace",
+            "--packages=bar",
+            "--packages=foo",
+            "--registry=https://registry.com",
+            "--token=123",
+        ];
+
+        let actual: Parameters<typeof Commands["changed"]> | undefined;
+        const expected: DeepRequired<Parameters<typeof Commands["changed"]>> =
+        [
+            "latest",
+            {
+                cwd:                  ".",
+                dry:                  true,
+                includePrivate:       true,
+                includeWorkspaceRoot: true,
+                logLevel:             LogLevel.Trace,
+                packages:             ["bar", "foo"],
+                registry:             "https://registry.com",
+                token:                "123",
+            },
+        ];
+
+        CommandsMock.setup("changed")
+            .call(It.any(), It.any())
             .callback((...args) => actual = args)
             .resolve();
 

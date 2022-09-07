@@ -3,6 +3,7 @@ import { LogLevel }                         from "@surface/logger";
 import type { Options }                     from "../internal/publisher.js";
 import type Publisher                       from "../internal/publisher.js";
 import type VirtualDirectory                from "./types/virtual-directory.js";
+import type VirtualRegistry                 from "./types/virtual-registry.js";
 
 type PackageJson = _PackageJson & { workspaces?: string[] };
 
@@ -14,17 +15,19 @@ export type BumpScenario =
     message:   string,
     args:      Parameters<Publisher["bump"]>,
     options:   Options,
+    registry:  VirtualRegistry,
     directory: VirtualDirectory,
     expected:  Record<string, Partial<PackageJson>>,
 };
 
-export const validScenarios: BumpScenario[] =
+export const validBumpScenarios: BumpScenario[] =
 [
     {
 
         skip,
         message:   "Bump with no updates",
         options:   { },
+        registry:  { },
         directory: { },
         expected:  { },
         args:      ["major"],
@@ -34,6 +37,7 @@ export const validScenarios: BumpScenario[] =
         skip,
         message:   "Dry run Bump single package",
         options:   { dry: true },
+        registry:  { },
         directory:
         {
             "./package.json": JSON.stringify
@@ -52,6 +56,7 @@ export const validScenarios: BumpScenario[] =
         skip,
         message:   "Dry run Bump workspace",
         options:   { dry: true },
+        registry:  { },
         directory:
         {
             "./package.json": JSON.stringify
@@ -83,6 +88,7 @@ export const validScenarios: BumpScenario[] =
         skip,
         message:   "Bump private package",
         options:   { dry: true },
+        registry:  { },
         directory:
         {
             "./package.json": JSON.stringify
@@ -101,6 +107,7 @@ export const validScenarios: BumpScenario[] =
         skip,
         message:   "Bump single package",
         options:   { },
+        registry:  { },
         directory:
         {
             "./package.json": JSON.stringify
@@ -126,6 +133,7 @@ export const validScenarios: BumpScenario[] =
         skip,
         message:   "Bump workspaces",
         options:   { },
+        registry:  { },
         directory:
         {
             "./package.json": JSON.stringify
@@ -177,6 +185,7 @@ export const validScenarios: BumpScenario[] =
         skip,
         message:   "Bump workspaces with synchronization",
         options:   {  },
+        registry:  { },
         directory:
         {
             "./package.json": JSON.stringify
@@ -228,6 +237,7 @@ export const validScenarios: BumpScenario[] =
         skip,
         message:   "Bump nested workspaces",
         options:   { },
+        registry:  { },
         directory:
         {
             "./package.json": JSON.stringify
@@ -307,6 +317,7 @@ export const validScenarios: BumpScenario[] =
         message:   "Bump workspace with independent version",
         options:   { },
         args:      ["major", undefined, { independent: true }],
+        registry:  { },
         directory:
         {
             "./package.json": JSON.stringify
@@ -365,6 +376,7 @@ export const validScenarios: BumpScenario[] =
         message:   "Bump workspace with independent version and dependencies synchronization",
         options:   { },
         args:      ["major", undefined, { independent: true, synchronize: true }],
+        registry:  { },
         directory:
         {
             "./package.json": JSON.stringify
@@ -426,6 +438,7 @@ export const validScenarios: BumpScenario[] =
             logLevel: LogLevel.Trace,
         },
         args:      ["minor", undefined, { independent: true }],
+        registry:  { },
         directory:
         {
             "./package.json": JSON.stringify
@@ -554,6 +567,7 @@ export const validScenarios: BumpScenario[] =
             logLevel: LogLevel.Trace,
         },
         args:      ["minor", undefined, { independent: true, updateFileReferences: true }],
+        registry:  { },
         directory:
         {
             "./package.json": JSON.stringify
@@ -679,6 +693,7 @@ export const validScenarios: BumpScenario[] =
         message:   "Bump prerelease with identifier",
         options:   { },
         args:      ["prerelease", "alpha"],
+        registry:  { },
         directory:
         {
             "./package.json": JSON.stringify
@@ -703,6 +718,7 @@ export const validScenarios: BumpScenario[] =
         message:   "Bump with custom version",
         options:   { },
         args:      ["1.0.0-alpha"],
+        registry:  { },
         directory:
         {
             "./package.json": JSON.stringify
@@ -727,6 +743,7 @@ export const validScenarios: BumpScenario[] =
         message:   "Bump with glob prerelease",
         options:   { },
         args:      ["*-dev+2022.5"],
+        registry:  { },
         directory:
         {
             "./package.json": JSON.stringify
@@ -746,9 +763,113 @@ export const validScenarios: BumpScenario[] =
             },
         },
     },
+    {
+        skip,
+        message:   "Package with no changes",
+        options:   { packages: ["package-a"] },
+        args:      ["*-dev+2022.9"],
+        registry:
+        {
+            "package-a":
+            {
+                remote:
+                {
+                    latest:
+                    {
+                        version: "0.0.1",
+                    },
+                },
+            },
+        },
+        directory:
+        {
+            "./package-a/package.json": JSON.stringify
+            (
+                {
+                    name:    "package-a",
+                    version: "0.0.1",
+                } as Partial<PackageJson>,
+            ),
+        },
+        expected:
+        { },
+    },
+    {
+        skip,
+        message:   "Package with no changes and version different from remote",
+        options:   { },
+        args:      ["*-dev+2022.9", undefined, { synchronize: true, updateFileReferences: true }],
+        registry:
+        {
+            "package-a":
+            {
+                remote:
+                {
+                    latest:
+                    {
+                        version: "0.0.1-dev+2022.1",
+                    },
+                },
+            },
+            "package-b":
+            {
+                hasChanges: true,
+            },
+        },
+        directory:
+        {
+            "./package.json": JSON.stringify
+            (
+                {
+                    name:       "package-root",
+                    workspaces: ["packages/*"],
+                    version:    "0.0.1",
+                } as Partial<PackageJson>,
+            ),
+            "./packages/package-a/package.json": JSON.stringify
+            (
+                {
+                    name:    "package-a",
+                    version: "0.0.1",
+                } as Partial<PackageJson>,
+            ),
+            "./packages/package-b/package.json": JSON.stringify
+            (
+                {
+                    name:         "package-b",
+                    dependencies:
+                    {
+                        "package-a": "file:../package-a",
+                    },
+                    version: "0.0.1",
+                } as Partial<PackageJson>,
+            ),
+        },
+        expected:
+        {
+            "package-root":
+            {
+                name:       "package-root",
+                version:    "0.0.1-dev+2022.9",
+                workspaces:
+                [
+                    "packages/*",
+                ],
+            },
+            "package-b":
+            {
+                name:         "package-b",
+                dependencies:
+                {
+                    "package-a": "~0.0.1-dev+2022.1",
+                },
+                version: "0.0.1-dev+2022.9",
+            },
+        },
+    },
 ];
 
-export const invalidScenarios: BumpScenario[] =
+export const invalidBumpScenarios: BumpScenario[] =
 [
     {
         skip,
@@ -762,6 +883,7 @@ export const invalidScenarios: BumpScenario[] =
             ],
         },
         args:      ["minor"],
+        registry:  { },
         directory:
         {
             "./packages":

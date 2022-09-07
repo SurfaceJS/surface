@@ -5,6 +5,7 @@
         "fs/promises",
         "libnpmpack",
         "pacote",
+        "tar",
         "util",
         "webpack",
         "webpack-dev-server",
@@ -15,6 +16,7 @@
         "./packages/builder/internal/common.js",
         "./packages/builder/internal/create-configurations.js",
         "./packages/publisher/internal/commands.js",
-        "./packages/publisher/internal/npm-repository.js"
+        "./packages/publisher/internal/common.js",
+        "./packages/publisher/internal/npm-service.js"
     ]
 }

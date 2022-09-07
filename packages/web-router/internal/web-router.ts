@@ -88,7 +88,7 @@ export default class WebRouter
 
         let outlet = outlets.get(key) ?? null;
 
-        if (!outlet || !outlet.isConnected)
+        if (!outlet?.isConnected)
         {
             if (!parent.shadowRoot)
             {

@@ -1,7 +1,7 @@
 import type { PackageJson as _PackageJson } from "@npm/types";
-import Status                               from "../internal/enums/status.js";
 import type { Options }                     from "../internal/publisher.js";
 import type VirtualDirectory                from "./types/virtual-directory.js";
+import type VirtualRegistry                 from "./types/virtual-registry.js";
 
 type PackageJson = _PackageJson & { workspaces?: string[] };
 
@@ -13,26 +13,27 @@ export type UnpublishScenario =
     message:   string,
     options:   Options,
     directory: VirtualDirectory,
-    registry:  Record<string, Status>,
+    registry:  VirtualRegistry,
     expected:  { unpublished: string[] },
 };
 
-export const validScenarios: UnpublishScenario[] =
+export const validUnpublishScenarios: UnpublishScenario[] =
 [
     {
+        skip,
         message:   "Unpublish with no packages",
         options:   { },
         registry:  { },
         directory: { },
         expected:  { unpublished: [] },
-        skip,
     },
     {
+        skip,
         message:  "Dry run",
         options:  { dry: true },
         registry:
         {
-            "package-a": Status.InRegistry,
+            "package-a": { isPublished: true, hasChanges: true },
         },
         directory:
         {
@@ -48,14 +49,14 @@ export const validScenarios: UnpublishScenario[] =
         {
             unpublished: [],
         },
-        skip,
     },
     {
+        skip,
         message:  "Unpublish private package",
         options:  { },
         registry:
         {
-            "package-a": Status.InRegistry,
+            "package-a": { isPublished: true, hasChanges: true },
         },
         directory:
         {
@@ -69,14 +70,14 @@ export const validScenarios: UnpublishScenario[] =
             ),
         },
         expected:  { unpublished: [] },
-        skip,
     },
     {
-        message:   "Unpublish package not in registry",
-        options:   { },
+        skip,
+        message:  "Unpublish package not in registry",
+        options:  { },
         registry:
         {
-            "package-a": Status.New,
+            "package-a": { isPublished: false, hasChanges: true },
         },
         directory:
         {
@@ -89,15 +90,15 @@ export const validScenarios: UnpublishScenario[] =
             ),
         },
         expected:  { unpublished: [] },
-        skip,
     },
     {
+        skip,
         message:  "Unpublish workspaces",
         options:  { },
         registry:
         {
-            "package-a": Status.InRegistry,
-            "package-b": Status.InRegistry,
+            "package-a": { isPublished: true, hasChanges: true },
+            "package-b": { isPublished: true, hasChanges: true },
         },
         directory:
         {
@@ -135,15 +136,15 @@ export const validScenarios: UnpublishScenario[] =
                 "package-b",
             ],
         },
-        skip,
     },
     {
+        skip,
         message:  "Unpublish workspaces with npmrc authentication",
         options:  { },
         registry:
         {
-            "package-a": Status.InRegistry,
-            "package-b": Status.New,
+            "package-a": { isPublished: true,  hasChanges: true },
+            "package-b": { isPublished: false, hasChanges: true },
         },
         directory:
         {
@@ -181,6 +182,5 @@ export const validScenarios: UnpublishScenario[] =
                 "package-a",
             ],
         },
-        skip,
     },
 ];

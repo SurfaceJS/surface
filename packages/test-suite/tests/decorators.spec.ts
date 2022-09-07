@@ -287,7 +287,7 @@ export default class DecoratorsSpec
     }
 
     @test
-    public uncategorizedTest(): void
+    public nonCategorizedTest(): void
     {
         // Coverage
     }

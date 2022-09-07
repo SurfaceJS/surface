@@ -1,6 +1,8 @@
-/* cSpell:ignore premajor, preminor, prepatch */
+/* cSpell:ignore premajor, preminor, prepatch, onentry */
 
+import { timestamp } from "@surface/core";
 import { type ReleaseType }                     from "semver";
+import tar                                      from "tar";
 import type { GlobPrerelease, SemanticVersion } from "./types/version.js";
 
 const GLOB_PRERELEASE_PATTERN = /^\*(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
@@ -8,6 +10,10 @@ const SEMVER_PATTERN          = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((
 const VERSION_SPLIT_PATTERN   = /^(\*|(?:(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)))([+-].*)?$/;
 
 const RELEASE_TYPES = new Set(["major", "minor", "patch", "premajor", "preminor", "prepatch", "prerelease"]);
+
+/* c8 ignore start */
+
+type ConcatAble = { concat: () => Promise<Buffer> };
 
 export function isGlobPrerelease(value: string): value is GlobPrerelease
 {
@@ -58,3 +64,17 @@ export const toSemver = (value: string): string | number =>
 
     throw new Error(`'${value}' is not semantic version or an valid option of '${Array.from(RELEASE_TYPES.values()).join(", ")}'`);
 };
+
+export async function untar(buffer: Buffer): Promise<Map<string, string>>
+{
+    const entries: Promise<[string, string]>[] = [];
+
+    tar.list({ onentry: (entry) => entries.push((entry as object as ConcatAble).concat().then((x: Buffer) => [String(entry.path), String(x)])) })
+        .end(buffer);
+
+    return new Map(await Promise.all(entries));
+}
+
+export { timestamp };
+
+/* c8 ignore stop */

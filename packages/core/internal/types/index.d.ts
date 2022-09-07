@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-type CallableOverloads<T> = T extends
+type CallableParametersOverloads<T> = T extends
 {
     (...args: infer A1): infer R1,
     (...args: infer A2): infer R2,
@@ -25,7 +25,34 @@ type CallableOverloads<T> = T extends
                 ? [A1, (...args: A1) => R1]
                 : never;
 
-type NewableOverloads<T> = T extends
+
+
+type CallableParametersOverloads<T> = T extends
+{
+    (...args: infer A1): infer R1,
+    (...args: infer A2): infer R2,
+    (...args: infer A3): infer R3,
+    (...args: infer A4): infer R4,
+}
+    ? [A1, (...args: A1) => R1] | [A2, (...args: A2) => R2] | [A3, (...args: A3) => R3] | [A4, (...args: A4) => R4]
+    : T extends
+    {
+        (...args: infer A1): infer R1,
+        (...args: infer A2): infer R2,
+        (...args: infer A3): infer R3,
+    }
+        ? [A1, (...args: A1) => R1] | [A2, (...args: A2) => R2] | [A3, (...args: A3) => R3]
+        : T extends
+        {
+            (...args: infer A1): infer R1,
+            (...args: infer A2): infer R2,
+        }
+            ? [A1, (...args: A1) => R1] | [A2, (...args: A2) => R2]
+            : T extends (...args: infer A1) => infer R1
+                ? [A1, (...args: A1) => R1]
+                : never;
+
+type NewableParametersOverloads<T> = T extends
 {
     new (...args: infer A1): infer R1,
     new (...args: infer A2): infer R2,
@@ -139,14 +166,94 @@ export type ArrayPathOfValue<T, P> =
                             : never
                         : unknown;
 
+export type CallableOverloads<T> = T extends
+{
+    (...args: infer A1): infer R1,
+    (...args: infer A2): infer R2,
+    (...args: infer A3): infer R3,
+    (...args: infer A4): infer R4,
+}
+    ?
+    [
+        (...args: A1) => R1,
+        (...args: A2) => R2,
+        (...args: A3) => R3,
+        (...args: A4) => R4
+    ]
+    : T extends
+    {
+        (...args: infer A1): infer R1,
+        (...args: infer A2): infer R2,
+        (...args: infer A3): infer R3,
+    }
+        ?
+        [
+            (...args: A1) => R1,
+            (...args: A2) => R2,
+            (...args: A3) => R3,
+        ]
+        : T extends
+        {
+            (...args: infer A1): infer R1,
+            (...args: infer A2): infer R2,
+        }
+            ?
+            [
+                (...args: A1) => infer R1,
+                (...args: A2) => infer R2,
+            ]
+            : T extends (...args: infer A1) => infer R1
+                ? [(...args: A1) => R1]
+                : never;
+
+export type NewOverloads<T> = T extends
+{
+    new (...args: infer A1): infer R1,
+    new (...args: infer A2): infer R2,
+    new (...args: infer A3): infer R3,
+    new (...args: infer A4): infer R4,
+}
+    ?
+    [
+        new (...args: A1) => R1,
+        new (...args: A2) => R2,
+        new (...args: A3) => R3,
+        new (...args: A4) => R4
+    ]
+    : T extends
+    {
+        new (...args: infer A1): infer R1,
+        new (...args: infer A2): infer R2,
+        new (...args: infer A3): infer R3,
+    }
+        ?
+        [
+            new (...args: A1) => R1,
+            new (...args: A2) => R2,
+            new (...args: A3) => R3,
+        ]
+        : T extends
+        {
+            new (...args: infer A1): infer R1,
+            new (...args: infer A2): infer R2,
+        }
+            ?
+            [
+                new (...args: A1) => infer R1,
+                new (...args: A2) => infer R2,
+            ]
+            : T extends new (...args: infer A1) => infer R1
+                ? [new (...args: A1) => R1]
+                : never;
+
 export type AsyncCallable                                                    = (...args: any[]) => Promise<any>;
 export type AsyncDelegate<TArgs extends unknown[] = [], TResult = void>      = (...args: TArgs) => Promise<TResult>;
 export type Callable                                                         = (...args: any[]) => any;
 export type Cast<T, U>                                                       = T extends U ? T : never;
 export type ClassDecoratorOf<T>                                              = (target: Constructor<T>) => Constructor<T> | void;
 export type Constructor<T = object>                                          = Newable<T>;
-export type ConstructorOverload<T extends Newable, TArgs>                    = Extract<NewableOverloads<T>, [TArgs, any]>[1];
-export type ConstructorParameterOverloads<T extends Newable>                 = NewableOverloads<T>[0];
+export type ConstructorOverload<T extends Newable, TArgs>                    = Extract<NewableParametersOverloads<T>, [TArgs, any]>[1];
+export type ConstructorParameterOverloads<T extends Newable>                 = NewableParametersOverloads<T>[0];
 export type DeepPartial<T>                                                   = { [K in keyof T]?: T[K] extends T[K] | undefined ? DeepPartial<T[K]> : Partial<T[K]> };
 export type DeepRequired<T>                                                  = { [K in keyof T]-?: T[K] extends T[K] | undefined ? DeepRequired<T[K]> : Required<T[K]> };
 export type Delegate<TArgs extends unknown[] = [], TResult = void>           = (...args: TArgs) => TResult;
@@ -165,9 +272,9 @@ export type MethodsOf<T extends object>                                      = K
 export type Mix<A extends ((superClass: Constructor<any>) => Constructor)[]> = Constructor<UnionToIntersection<InstanceType<ReturnType<A[number]>>>>;
 export type Newable<T = object>                                              = new (...args: any[]) => T;
 export type OnlyOfType<T extends object, U>                                  = Pick<T, KeysOfType<T, U>>;
-export type Overload<T extends Callable, TArgs>                              = Extract<CallableOverloads<T>, [TArgs, any]>[1];
+export type Overload<T extends Callable, TArgs>                              = Extract<CallableParametersOverloads<T>, [TArgs, any]>[1];
 export type Overwrite<T, U>                                                  = { [K in Exclude<keyof T, U>]: K extends keyof U ? U[K] : T[K] };
-export type ParameterOverloads<T extends Callable>                           = CallableOverloads<T>[0];
+export type ParameterOverloads<T extends Callable>                           = CallableParametersOverloads<T>[0];
 export type PropertyType<T extends object, K>                                = K extends keyof T ? T[K] : unknown;
 export type Required<T>                                                      = { [K in keyof T]-?: NonNullable<T[K]> };
 export type RequiredProperties<T>                                            = { [K in keyof Required<T>]: (T[K] | undefined) };

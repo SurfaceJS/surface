@@ -1,12 +1,11 @@
 import os                                   from "os";
 import { join }                             from "path";
 import type { PackageJson as _PackageJson } from "@npm/types";
-import { timestamp } from "@surface/core";
 import { LogLevel }                         from "@surface/logger";
-import Status                               from "../internal/enums/status.js";
 import type { Options }                     from "../internal/publisher.js";
 import type Publisher                       from "../internal/publisher.js";
 import type VirtualDirectory                from "./types/virtual-directory.js";
+import type VirtualRegistry                 from "./types/virtual-registry.js";
 
 /* cSpell:ignore premajor, postpack */
 
@@ -21,11 +20,11 @@ export type PublishScenario =
     args:      Parameters<Publisher["publish"]>,
     options:   Options,
     directory: VirtualDirectory,
-    registry:  Record<string, Status>,
+    registry:  VirtualRegistry,
     expected:  { published: string[] },
 };
 
-export const validScenarios: PublishScenario[] =
+export const validPublishScenarios: PublishScenario[] =
 [
     {
         skip,
@@ -146,7 +145,7 @@ export const validScenarios: PublishScenario[] =
         args:     ["latest"],
         registry:
         {
-            "package-a": Status.InRegistry,
+            "package-a": { isPublished: true, hasChanges: true },
         },
         directory:
         {
@@ -164,11 +163,11 @@ export const validScenarios: PublishScenario[] =
     {
         skip,
         message:  "Publish package already in registry",
-        options:  { },
-        args:     ["latest", { registry: "https://test.com" }],
+        options:  { registry: "https://registry.com" },
+        args:     ["latest"],
         registry:
         {
-            "package-a": Status.InRegistry,
+            "package-a": { isPublished: true, hasChanges: true },
         },
         directory:
         {
@@ -187,7 +186,7 @@ export const validScenarios: PublishScenario[] =
         message:   "Publish workspaces packages",
         options:   { },
         args:      ["latest"],
-        registry:  { "package-b": Status.InRegistry },
+        registry:  { "package-b": { isPublished: true, hasChanges: true } },
         directory:
         {
             "./package.json": JSON.stringify
@@ -227,9 +226,9 @@ export const validScenarios: PublishScenario[] =
     {
         skip,
         message:   "Publish workspaces packages and include workspaces root",
-        options:   {  },
-        args:      ["latest", { includeWorkspaceRoot: true }],
-        registry:  { "package-b": Status.InRegistry },
+        options:   { includeWorkspaceRoot: true },
+        args:      ["latest", {  }],
+        registry:  { "package-b": { isPublished: true, hasChanges: true } },
         directory:
         {
             "./package.json": JSON.stringify
@@ -279,12 +278,13 @@ export const validScenarios: PublishScenario[] =
             ],
         },
         args:      ["latest"],
-        registry:  { "package-b": Status.InRegistry },
+        registry:  { "package-b": { isPublished: true, hasChanges: true } },
         directory:
         {
             "./packages":
             {
-                [join(os.homedir(), ".npmrc")]: "@lib:registry=https://test.com\n//test.com:_authToken=123",
+                [join(os.homedir(), ".npmrc")]: "registry=https://global-registry.com\n_authToken=123\n@lib:registry=https://lib.com\n//lib.com:_authToken=123",
+                "./package-a/.npmrc":           "registry=https://package-a-registry.com\n_authToken=123",
                 "./package-a/package.json":     JSON.stringify
                 (
                     {
@@ -292,7 +292,7 @@ export const validScenarios: PublishScenario[] =
                         version: "0.0.1",
                     } as Partial<PackageJson>,
                 ),
-                "./package-a/.npmrc":       "registry=https://test.com\n_authToken=123",
+                "./package-b/.npmrc":       "@lib:registry=https://package-b-registry.com\n//package-b-registry.com:_authToken=123",
                 "./package-b/package.json": JSON.stringify
                 (
                     {
@@ -300,7 +300,6 @@ export const validScenarios: PublishScenario[] =
                         version: "0.1.0",
                     } as Partial<PackageJson>,
                 ),
-                "./package-b/.npmrc":       "@lib:registry=https://test.com\n//test.com:_authToken=123",
                 "./package-c/package.json": JSON.stringify
                 (
                     {
@@ -315,6 +314,7 @@ export const validScenarios: PublishScenario[] =
                         version: "0.1.0",
                     } as Partial<PackageJson>,
                 ),
+                "./package-e/.npmrc":       "",
                 "./package-e/package.json": JSON.stringify
                 (
                     {
@@ -469,8 +469,8 @@ export const validScenarios: PublishScenario[] =
         {
             published:
             [
-                `package-a@0.0.1-dev.${timestamp()}`,
-                `package-b@0.1.0-dev.${timestamp()}`,
+                "package-a@0.0.1-dev.202201010000",
+                "package-b@0.1.0-dev.202201010000",
             ],
         },
     },

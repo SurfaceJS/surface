@@ -86,11 +86,11 @@ export const authScenarios: AuthScenario[] =
     },
     {
         skip,
-        message:  "Cant find scoped registry and cant find scoped _authToken",
+        message:  "Find scoped registry but cant find scoped _authToken",
         path:     CWD,
         scope:    "@foo",
         source:   "@foo:registry=https://test.com",
-        expected: { registry: undefined, authToken: undefined, scopedAuth: null },
+        expected: { registry: undefined, authToken: undefined, scopedAuth: { registry: "https://test.com", token: undefined } },
     },
     {
         skip,

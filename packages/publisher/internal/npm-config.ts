@@ -104,7 +104,7 @@ export default class NpmConfig
             const registry = this.entries.get(`${scope}:registry`);
             const token    = registry && this.entries.get(`${registry.replace(HTTPS_PATTERN, "")}:_authToken`);
 
-            this.scopedAuth.set(scope, auth = registry && token ? { registry, token } : null);
+            this.scopedAuth.set(scope, auth = registry ? { registry, token } : null);
         }
 
         return auth;

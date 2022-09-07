@@ -5,6 +5,7 @@ export type
 {
     AsyncDelegate,
     Callable,
+    CallableOverloads,
     Cast,
     ClassDecoratorOf,
     Constructor,
@@ -26,6 +27,7 @@ export type
     MethodsOf,
     Mix,
     Newable,
+    NewOverloads,
     OnlyOfType,
     Overload,
     Overwrite,
