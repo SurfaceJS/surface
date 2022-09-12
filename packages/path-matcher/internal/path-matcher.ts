@@ -1,7 +1,8 @@
 
-import { resolve, sep }         from "path";
+import { parse, resolve, sep }  from "path";
 import { ESCAPABLE_CHARACTERS } from "./characters.js";
 import Parser, { type Options } from "./parser.js";
+import os                       from "os";
 
 const toArray = <T>(value: T | T[]): T[] => Array.isArray(value) ? value : [value];
 
@@ -23,7 +24,7 @@ export default class PathMatcher
     /** Negated path part extract from the provided patterns. */
     public readonly negatedPaths: Set<string> = new Set();
 
-    public constructor(patterns: string | string[], options?: Options)
+    public constructor(patterns: string | string[], options?: Options & { unix?: boolean })
     {
         for (const pattern of toArray(patterns))
         {
@@ -54,7 +55,7 @@ export default class PathMatcher
         }
     }
 
-    private static internalResolve(base: string, pattern: string, options?: Options): ResolvedPattern
+    private static internalResolve(base: string, pattern: string, options?: Options & { unix?: boolean }): ResolvedPattern
     {
         const tokens:     string[] = [];
         const separators: number[] = [];
@@ -67,7 +68,8 @@ export default class PathMatcher
 
         let index = 0;
 
-        for (const char of resolved)
+        /* c8 ignore next */
+        for (const char of os.platform() == "win32" && options?.unix ? resolved.replace(parse(resolved).root, "/").replace(/\\/g, "/") : resolved)
         {
             char == sep
                 ? (tokens.push("/"), separators.push(index))
@@ -109,9 +111,9 @@ export default class PathMatcher
      * @param base Base pattern.
      * @param pattern Pattern to resolve relative to base.
      */
-    public static resolve(base: string, pattern: string, options?: Omit<Options, "base">): ResolvedPattern;
-    public static resolve(base: string, pattern: string[], options?: Omit<Options, "base">): ResolvedPattern[];
-    public static resolve(base: string, patterns: string | string[], options?: Options): ResolvedPattern | ResolvedPattern[]
+    public static resolve(base: string, pattern: string, options?: Omit<Options, "base"> & { unix?: boolean }): ResolvedPattern;
+    public static resolve(base: string, pattern: string[], options?: Omit<Options, "base"> & { unix?: boolean }): ResolvedPattern[];
+    public static resolve(base: string, patterns: string | string[], options?: Options & { unix?: boolean }): ResolvedPattern | ResolvedPattern[]
     {
         const resolved = toArray(patterns).map(x => PathMatcher.internalResolve(base, x, options));
 

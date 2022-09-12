@@ -7,9 +7,9 @@ import { type ResolveScenario, resolveScenarios } from "./path-matcher.resolve.s
 export default class PatternMatcherSpec
 {
     @shouldPass
-    @batchTest(resolveScenarios, x => `Expects base: "${x.base}" and pattern: "${x.pattern}" resolves to ${x.expected}`, x => x.skip)
+    @batchTest(resolveScenarios, x => `Expects base: "${x.base}" and pattern: "${x.pattern}" resolves to ${x.fullPattern}`, x => x.skip)
     public resolve(scenario: ResolveScenario): void
     {
-        chai.assert.equal(PathMatcher.resolve(scenario.base, scenario.pattern).fullPattern, scenario.expected);
+        chai.assert.equal(PathMatcher.resolve(scenario.base, scenario.pattern, { unix: scenario.unix }).fullPattern, scenario.fullPattern);
     }
 }
