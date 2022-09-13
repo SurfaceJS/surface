@@ -1,6 +1,6 @@
 import { readFile, writeFile }                                                from "fs/promises";
 import os                                                                     from "os";
-import { dirname }                                                            from "path";
+import { dirname, join, resolve }                                                            from "path";
 import type { PackageJson as _PackageJson }                                   from "@npm/types";
 import { type RequiredProperties }                                            from "@surface/core";
 import Logger, { LogLevel }                                                   from "@surface/logger";
@@ -369,27 +369,40 @@ export default class Publisher
         }
     }
 
-    private sync(manifest: PackageJson, workspaces: Map<string, Entry>, options: BumpOptions, dependencyType?: "dependencies" | "devDependencies" | "peerDependencies"): void
+    private async sync(entry: Entry, workspaces: Map<string, Entry>, options: BumpOptions, dependencyType?: "dependencies" | "devDependencies" | "peerDependencies"): Promise<void>
     {
         if (dependencyType)
         {
-            const dependencies = manifest[dependencyType];
+            const dependencies = entry.manifest[dependencyType];
 
             if (dependencies)
             {
                 for (const [name, version] of Object.entries(dependencies))
                 {
-                    const dependency = workspaces.get(name)?.manifest;
+                    const isFileReference = version.startsWith("file:");
+                    const dependency      = workspaces.get(name)?.manifest;
 
-                    if (dependency)
+                    if (dependency || isFileReference)
                     {
-                        const isFileReference = version.startsWith("file:");
+                        let dependencyVersion: string | undefined;
 
-                        if (options.updateFileReferences && isFileReference || options.synchronize && !isFileReference)
+                        if (dependency)
                         {
-                            dependencies[name] = `~${dependency.version}`;
+                            dependencyVersion = dependency.version;
+                        }
+                        else if (isFileReference)
+                        {
+                            const path    = join(resolve(dirname(entry.path), version.replace("file:", "")), "package.json");
+                            const content = (await readFile(path)).toString();
 
-                            this.logger.trace(`${dependencyType}:${name} in ${manifest.name} updated from '${version}' to '${dependency.version}'`);
+                            dependencyVersion = (JSON.parse(content) as object as PackageJson).version;
+                        }
+
+                        if (dependencyVersion && (options.updateFileReferences && isFileReference) || options.synchronize && !isFileReference)
+                        {
+                            dependencies[name] = `~${dependencyVersion}`;
+
+                            this.logger.trace(`${dependencyType}:${name} in ${entry.manifest.name} updated from '${version}' to '${dependencyVersion}'`);
                         }
                     }
                 }
@@ -397,26 +410,33 @@ export default class Publisher
         }
         else
         {
-            this.sync(manifest, workspaces, options, "dependencies");
-            this.sync(manifest, workspaces, options, "devDependencies");
-            this.sync(manifest, workspaces, options, "peerDependencies");
+            await Promise.all
+            ([
+                this.sync(entry, workspaces, options, "dependencies"),
+                this.sync(entry, workspaces, options, "devDependencies"),
+                this.sync(entry, workspaces, options, "peerDependencies"),
+            ]);
         }
     }
 
     private async writeWorkspaces(options: BumpOptions, workspaces: Map<string, Entry> = this.workspaces): Promise<void>
     {
+        const promises: Promise<void>[] = [];
+
         for (const entry of workspaces.values())
         {
+            let chain = Promise.resolve();
+
             if (options.synchronize || options.updateFileReferences)
             {
-                this.sync(entry.manifest, workspaces, options);
+                chain = this.sync(entry, workspaces, options);
             }
 
             if (!this.options.dry)
             {
                 if (options.includeUnchanged || entry.modified)
                 {
-                    await writeFile(entry.path, JSON.stringify(entry.manifest, null, 4));
+                    promises.push(chain.then(async () => writeFile(entry.path, JSON.stringify(entry.manifest, null, 4))));
                 }
             }
             else
@@ -426,9 +446,11 @@ export default class Publisher
 
             if (entry.workspaces)
             {
-                await this.writeWorkspaces(options, entry.workspaces);
+                promises.push(this.writeWorkspaces(options, entry.workspaces));
             }
         }
+
+        await Promise.all(promises);
     }
 
     private async update(workspaces: Map<string, Entry>, version: Version, identifier: string | undefined, options: BumpOptions = { }): Promise<void>

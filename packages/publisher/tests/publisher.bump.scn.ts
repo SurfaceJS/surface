@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import type { PackageJson as _PackageJson } from "@npm/types";
 import { LogLevel }                         from "@surface/logger";
 import type { Options }                     from "../internal/publisher.js";
@@ -685,6 +686,86 @@ export const validBumpScenarios: BumpScenario[] =
                     "package-c": "~1.1.0",
                 },
                 version: "1.1.0",
+            },
+        },
+    },
+    {
+        skip,
+        message: "Bump workspace with outside file reference",
+        options:
+        {
+            logLevel: LogLevel.Trace,
+        },
+        args:      ["minor", undefined, { independent: true, updateFileReferences: true }],
+        registry:  { },
+        directory:
+        {
+            "./core/package.json": JSON.stringify
+            (
+                {
+                    name:    "core",
+                    version: "0.1.0",
+                } as Partial<PackageJson>,
+            ),
+            "./package.json": JSON.stringify
+            (
+                {
+                    name:       "package-root",
+                    version:    "1.0.0",
+                    workspaces: ["packages/*"],
+                } as Partial<PackageJson>,
+            ),
+            "./packages":
+            {
+                "./package-a/package.json": JSON.stringify
+                (
+                    {
+                        name:         "package-a",
+                        dependencies:
+                        {
+                            "core": "file:../../core",
+                        },
+                        version: "0.0.1",
+                    } as Partial<PackageJson>,
+                ),
+                "./package-b/package.json": JSON.stringify
+                (
+                    {
+                        name:         "package-b",
+                        dependencies:
+                        {
+                            "package-a": "file:../package-a",
+                        },
+                        version: "0.1.0",
+                    } as Partial<PackageJson>,
+                ),
+            },
+        },
+        expected:
+        {
+            "package-root":
+            {
+                name:       "package-root",
+                version:    "1.1.0",
+                workspaces: ["packages/*"],
+            },
+            "package-a":
+            {
+                name:         "package-a",
+                dependencies:
+                {
+                    "core": "~0.1.0",
+                },
+                version: "0.1.0",
+            },
+            "package-b":
+            {
+                name:         "package-b",
+                dependencies:
+                {
+                    "package-a": "~0.1.0",
+                },
+                version: "0.2.0",
             },
         },
     },
