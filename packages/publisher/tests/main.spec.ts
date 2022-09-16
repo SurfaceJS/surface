@@ -168,7 +168,6 @@ export default class MainSpec
             "--packages=foo",
             "--prerelease-type=premajor",
             "--registry=https://registry.com",
-            "--sequence=12345",
             "--synchronize=true",
             "--token=token",
         ];
@@ -189,7 +188,6 @@ export default class MainSpec
                 prereleaseType:       "premajor",
                 synchronize:          true,
                 registry:             "https://registry.com",
-                sequence:             "12345",
                 token:                "token",
             },
         ];

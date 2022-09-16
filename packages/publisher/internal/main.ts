@@ -67,8 +67,7 @@ export default async function main(args: string[]): Promise<void>
         .option("--synchronize            [n]", "Synchronize dependencies between workspace packages before publishing", toBoolean)
         .option("--canary                 [n]", "Enables canary release", toBoolean)
         .option("--prerelease-type        <n>", "An prerelease type: premajor, preminor, prepatch, prerelease", toEnum("premajor", "preminor", "prepatch", "prerelease"))
-        .option("--identifier             <n>", "Identifier used to generate canary prerelease")
-        .option("--sequence               <n>", "Sequence used to compose the prerelease");
+        .option("--identifier             <n>", "Identifier used to generate canary prerelease");
 
     apply(Commands.publish, publish, globalOptions);
 

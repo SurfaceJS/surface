@@ -589,7 +589,7 @@ export const validPublishScenarios: PublishScenario[] =
     },
     {
         skip,
-        message:   "Publish canary with prerelease type, identifier and sequence",
+        message:   "Publish canary with prerelease type and identifier",
         options:
         {
             logLevel: LogLevel.Trace,
@@ -598,7 +598,7 @@ export const validPublishScenarios: PublishScenario[] =
                 "packages/*",
             ],
         },
-        args:      ["latest", { canary: true, prereleaseType: "premajor", identifier: "dev", sequence: "2022" }],
+        args:      ["latest", { canary: true, prereleaseType: "premajor", identifier: "next" }],
         registry:  { },
         directory:
         {
@@ -628,8 +628,8 @@ export const validPublishScenarios: PublishScenario[] =
         {
             published:
             [
-                "package-a@1.0.0-dev.2022.0",
-                "package-b@1.0.0-dev.2022.0",
+                "package-a@1.0.0-next.0",
+                "package-b@1.0.0-next.0",
             ],
         },
     },
@@ -644,7 +644,7 @@ export const validPublishScenarios: PublishScenario[] =
                 "packages/*",
             ],
         },
-        args:      ["latest", { canary: true, identifier: "dev", sequence: "2022.8.20" }],
+        args:      ["latest", { canary: true, identifier: "dev" }],
         registry:  { },
         directory:
         {
@@ -674,8 +674,8 @@ export const validPublishScenarios: PublishScenario[] =
         {
             published:
             [
-                "package-a@0.0.1-dev.2022.8.20",
-                "package-b@0.1.0-dev.2022.8.20",
+                "package-a@0.0.1-dev.202201010000",
+                "package-b@0.1.0-dev.202201010000",
             ],
         },
     },
@@ -690,7 +690,7 @@ export const validPublishScenarios: PublishScenario[] =
                 "packages/*",
             ],
         },
-        args:      ["latest", { canary: false, identifier: "dev", sequence: "2022.8.20" }],
+        args:      ["latest", { canary: false, identifier: "dev" }],
         registry:  { },
         directory:
         {

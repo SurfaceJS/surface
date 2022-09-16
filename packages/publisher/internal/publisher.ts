@@ -110,9 +110,6 @@ export type PublishOptions =
     /** The "prerelease identifier" to use as a prefix for the "prerelease" part of a semver. Like the rc in 1.2.0-rc.8. */
     prereleaseType?: Pre<ReleaseType>,
 
-    /** Sequence used to compose the prerelease. */
-    sequence?: string,
-
     /** Synchronize dependencies between workspace packages before publishing. */
     synchronize?: boolean,
 };
@@ -626,12 +623,12 @@ export default class Publisher
             if (options.canary)
             {
                 options.prereleaseType
-                    ? await this.bump(options.prereleaseType, options.identifier ? options.identifier + (options.sequence ? `.${options.sequence}` : "") : undefined, bumpOptions)
-                    : await this.bump(`*-${options.identifier ?? "dev"}.${options.sequence ?? timestamp()}`, undefined, bumpOptions);
+                    ? await this.bump(options.prereleaseType, options.identifier, bumpOptions)
+                    : await this.bump(`*-${options.identifier ?? "dev"}.${timestamp()}`, undefined, bumpOptions);
             }
             else
             {
-                const keys: (keyof PublishOptions)[] = ["identifier", "prereleaseType", "sequence"];
+                const keys: (keyof PublishOptions)[] = ["identifier", "prereleaseType"];
 
                 for (const key of keys)
                 {

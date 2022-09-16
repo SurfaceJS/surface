@@ -34,7 +34,6 @@ export default class Commands
             canary:         options.canary,
             identifier:     options.identifier,
             prereleaseType: options.prereleaseType,
-            sequence:       options.sequence,
         };
 
         await new Publisher(options).publish(tag ?? options.canary ? "next" : "latest", publishOptions);
