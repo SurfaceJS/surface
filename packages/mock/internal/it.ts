@@ -1,5 +1,6 @@
 import { makeIt } from "./common.js";
 
+/** Provides methods used as arguments placeholders. */
 export default class It
 {
     public static is<T>(fn: (value: T) => boolean): T

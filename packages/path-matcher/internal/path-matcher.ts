@@ -1,8 +1,8 @@
 
+import os                       from "os";
 import { parse, resolve, sep }  from "path";
 import { ESCAPABLE_CHARACTERS } from "./characters.js";
 import Parser, { type Options } from "./parser.js";
-import os                       from "os";
 
 const toArray = <T>(value: T | T[]): T[] => Array.isArray(value) ? value : [value];
 

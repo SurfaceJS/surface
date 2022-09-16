@@ -15,6 +15,7 @@ const config =
             plugins:
             [
                 "@typescript-eslint",
+                "jsdoc",
                 "import",
             ],
             rules:
