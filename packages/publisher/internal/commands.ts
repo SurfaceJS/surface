@@ -1,6 +1,7 @@
 import Publisher,
 {
     type BumpOptions,
+    type ChangesOptions,
     type Options,
     type PublishOptions,
     type Version,
@@ -20,9 +21,9 @@ export default class Commands
         await new Publisher(options).bump(version, identifier, bumpOptions);
     }
 
-    public static async changed(tag: string = "latest", options: Options = { }): Promise<void>
+    public static async changed(tag: string = "latest", options: Options & ChangesOptions = { }): Promise<void>
     {
-        const changes = await new Publisher(options).changed(tag);
+        const changes = await new Publisher(options).changed(tag, options.ignoreChanges);
 
         console.log(changes.length > 0 ? `Packages with changes:\n${changes.join("\n")}` : "No changes detected!");
     }

@@ -1,48 +1,52 @@
 # Summary
+
 * [Introduction](#introduction)
 * [Getting Started](#getting-started)
 * [Templating](#templating)
 * [Interpolation](#interpolation)
 * [Bindings](#bindings)
-    * [One Way](#one-way)
-    * [Two Way](#two-way)
-    * [Events](#events)
-    * [Class and Style](#class-and-style)
+  * [One Way](#one-way)
+  * [Two Way](#two-way)
+  * [Events](#events)
+  * [Class and Style](#class-and-style)
 * [Reactivity](#reactivity)
-    * [Computed properties](#computed-properties)
-    * [Scopes](#scopes)
+  * [Computed properties](#computed-properties)
+  * [Scopes](#scopes)
 * [Template Directives](#template-directives)
-    * [Conditional](#conditional)
-    * [Loop](#loop)
-    * [Placeholder and Injection](#placeholder-and-injection)
-        * [Dynamic keys](#dynamic-keys)
-    * [Component Wrapping](#component-wrapping)
-    * [Styling injections](#styling-injections)
-    * [Awaiting painting](#awaiting-painting)
-    * [Custom Directives](#custom-directives)
+  * [Conditional](#conditional)
+  * [Loop](#loop)
+  * [Placeholder and Injection](#placeholder-and-injection)
+    * [Dynamic keys](#dynamic-keys)
+  * [Component Wrapping](#component-wrapping)
+  * [Styling injections](#styling-injections)
+  * [Awaiting painting](#awaiting-painting)
+  * [Custom Directives](#custom-directives)
 * [Decorators](#decorators)
-    * [attribute](#attribute)
-    * [event](#event)
-    * [listener](#listener)
-    * [query](#query)
-    * [queryAll](#queryall)
-    * [styles](#styles)
+  * [attribute](#attribute)
+  * [event](#event)
+  * [listener](#listener)
+  * [query](#query)
+  * [queryAll](#queryall)
+  * [styles](#styles)
 
-# Introduction
+## Introduction
+
 [Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components) are a set of web platform APIs that allow you to create new custom, reusable, encapsulated HTML tags to use in web pages and web apps. Custom components and widgets build on the Web Component standards, will work across modern browsers, and can be used with any JavaScript library or framework that works with HTML.
 
 However, the technology still lacks some important features presents on everyday workflow.
 
-**@surface/htmlx** aims fill this gap adding the ability to use directives and data bindings within web components templates enabling the creation of more complex components with less effort.  
+**@surface/htmlx** aims fill this gap adding the ability to use directives and data bindings within web components templates enabling the creation of more complex components with less effort.
 
-While **@surface/htmlx-element** provides a base class and an set of decorators to simplify htmlx templates usage. 
+While **@surface/htmlx-element** provides a base class and an set of decorators to simplify htmlx templates usage.
 
-# Getting Started
+## Getting Started
+
 A minimal component requires two things: Extend the `HTMLXElement` class and annotate the class with the element's decorator.
 
 Simple hello world component
 
 Typescript.
+
 ```ts
 import HTMLXElement, { element } from "@surface/htmlx-element";
 
@@ -59,6 +63,7 @@ document.body.appendChild(new MyElement());
 ```
 
 Javascript (no decorators).
+
 ```js
 import HTMLXElement, { element } from "@surface/htmlx-element";
 
@@ -92,9 +97,11 @@ document.body.appendChild(new MyElement());
 Note that currently custom elements are registered at declaration time in the global scope due a limitation of the current [web components spec](https://www.webcomponents.org/specs). This is expected to change with the arrival of [Custom Element Registry](https://github.com/WICG/webcomponents/pull/865).
 
 ## Templating
+
 Templates are where the magic happens. It can handle some types of directives to present data in dynamic ways.
 
 ### Interpolation
+
 Interpolation has the syntax `"Some Text {expression}"` and can be used in the text node or in the attributes.
 
 ```html
@@ -102,26 +109,31 @@ Interpolation has the syntax `"Some Text {expression}"` and can be used in the t
 ```
 
 ### Bindings
+
 Bindings support both `one way` and `two way` flow.
 
 #### One Way
+
 ```html
 <my-element :message="'Hello ' + host.name"></my-element>
 ```
 
 #### Two Way
+
 ```html
 <my-element ::message="host.message"></my-element>
 ```
 
-Notices that two way data binding suports only static property member expressions.
+Notices that two way data binding supports only static property member expressions.
 
 Following example is not allowed.
+
 ```html
 <my-element ::message="host[key]"></my-element>
 ```
 
 #### Events
+
 Binded events are executed in the scope of the template as opposed to events passed by attributes that are executed in the global scope.
 
 ```html
@@ -132,15 +144,16 @@ Binded events are executed in the scope of the template as opposed to events pas
 <my-element @click="event => host.clickHandler(event)"></my-element>
 
 <!--headerless-lambda-->
-<my-element @click="host.toogle = !host.toogle"></my-element>
+<my-element @click="host.toggle = !host.toggle"></my-element>
 <!--desugared to-->
-<my-element @click="() => host.toogle = !host.toogle"></my-element>
+<my-element @click="() => host.toggle = !host.toggle"></my-element>
 ```
 
 #### Class and Style
+
 **`class`** and **`style`** properties has a special binding handlers.
 
-**`class`** bindind expects an object of type `Record<string, boolean>` where only truthy properties will be added to the class list.
+**`class`** binding expects an object of type `Record<string, boolean>` where only truthy properties will be added to the class list.
 
 ```html
 <my-element :class="{ foo: true, bar: false }"></my-element>
@@ -148,7 +161,7 @@ Binded events are executed in the scope of the template as opposed to events pas
 <my-element class="foo"></my-element>
 ```
 
-**`style`** bindind expects an object of type `Record<string, string>` where all properties will be converted to css properties.
+**`style`** binding expects an object of type `Record<string, string>` where all properties will be converted to css properties.
 
 ```html
 <my-element :style="{ display: host.display /* flex */ }"></my-element>
@@ -157,12 +170,14 @@ Binded events are executed in the scope of the template as opposed to events pas
 ```
 
 ### Reactivity
-The core of the binding system is reactivity that allows the ui keep sync with the data.  
-HTMLx templates can evaluate almost any valid javascript expression ([see more](../expression/readme.md)). But only properties can be observed and requires that observed properties to be **`configurable`** and not **`readonly`**.  
+
+The core of the binding system is reactivity that allows the ui keep sync with the data.
+HTMLx templates can evaluate almost any valid javascript expression ([see more](../expression/readme.md)). But only properties can be observed and requires that observed properties to be **`configurable`** and not **`readonly`**.
 
 By design, no error or warning will be fired when trying to use an non observable property in an expression. Except for **two way** binding higher members.
 
 Example assuming that the scope contains variables called amount and item:
+
 ```html
 <span>The value is: {(host.value + item.value) * amount}</span>
 ```
@@ -170,6 +185,7 @@ Example assuming that the scope contains variables called amount and item:
 The above expression only be reevaluated when the properties **`host.value`** or **`item.value`** changes since the variables like **amount** are not reactive.
 
 ### Computed properties
+
 Since readonly properties cannot be observed, to make them reactive it is necessary to map their dependencies using the `@computed` decorator.
 
 ```ts
@@ -193,16 +209,19 @@ class MyElement extends HTMLXElement
 ```
 
 ### Scopes
+
 Reactivity depends on the scope which may vary according to the context.
 
 The upper scope contains only the variable **`host`** which refers to the template owner (shadowroot host).
 
 The base scope resembles something like this but it can also be extended using directives as we'll see later.
+
 ```ts
 type Scope = { host: MyElement };
 ```
 
 ### Template Directives
+
 Template Directives allows us to dynamically create content associated with local scopes.
 
 Directives can be used with templates or elements.
@@ -215,20 +234,21 @@ Directives can be used with templates or elements.
 It can also be composed where the decomposition will follow the order of directives.
 
 ```html
-<span #if="host.items.lenght > 0" #for="item of host.items">{item.name}</span>
-<span #else>No data avaliable</span>
+<span #if="host.items.length > 0" #for="item of host.items">{item.name}</span>
+<span #else>No data available</span>
 <!--decomposes-to-->
-<template #if="host.items.lenght > 0">
+<template #if="host.items.length > 0">
     <template #for="item of host.items">
         <span>{item.name}</span>
     </template>
 </template>
 <template #else>
-    <span>No data avaliable</span>
+    <span>No data available</span>
 </template>
 ```
 
 ### Conditional
+
 Conditional directive statement are well straightforward.
 If the expression evaluated is truthy, the template is inserted.
 
@@ -239,6 +259,7 @@ If the expression evaluated is truthy, the template is inserted.
 ```
 
 ### Loop
+
 The loop directive works similarly to its js counterpart. Also supporting **`"for in"`**, **`"for of"`** and **`array and object destructuring`**.
 
 ```html
@@ -252,6 +273,7 @@ The loop directive works similarly to its js counterpart. Also supporting **`"fo
 ```
 
 ### Placeholder and Injection
+
 If you have already worked with a javascript framework then you should already be familiar with the concept of [transclusion](https://en.wikipedia.org/wiki/Transclusion).
 
 Transclusion means the inclusion of the content of one document within another document by reference.
@@ -276,6 +298,7 @@ On surface/htmlx-element, templates additionally provide the ability to inject t
 ```
 
 ### Slots vs Placeholders
+
 You might have thought that what would be possible to get the same result as above using slots.
 
 You're right.
@@ -294,7 +317,7 @@ You're right.
 </my-element>
 ```
 
-The key difference here are scopes.  
+The key difference here are scopes.
 
 Something that Vue users are already familiar with.
 
@@ -337,6 +360,7 @@ And, unlike slots, placeholders can instantiate the injected template many times
 ```
 
 ## Dynamic keys
+
 **`#placeholder`** and **`#inject`** also supports dynamic keys using the syntax:
 
 ```html
@@ -344,7 +368,7 @@ And, unlike slots, placeholders can instantiate the injected template many times
 <span #inject.scope="scope" #inject.key="key"></span>
 ```
 
-Usefull to elaborate more complex scenarios.  
+Useful to elaborate more complex scenarios.
 
 ```html
 <!--my-element-->
@@ -371,7 +395,8 @@ Usefull to elaborate more complex scenarios.
 ```
 
 ### Styling injections
-How said before. The injected templates are placed inside the shadowdom.  
+
+How said before. The injected templates are placed inside the shadowdom.
 Therefore, they are not affected by external CSS rules unless the css parts of the element are specified.
 
 ```css
@@ -435,6 +460,7 @@ Fortunately, this can also be archived using the `spread` directive, which allow
 ```
 
 ### Awaiting painting
+
 Sometimes you may need to access some interface element that can be dynamically rendered as some data changes.
 
 ```ts
@@ -502,6 +528,7 @@ class MyComponent extends HTMLXElement
 ```
 
 ### Custom Directives
+
 Custom directives enables behaviors without a need to dive into the elements internals.
 It requires extending the `Directive` class and registering using `HTMLXElement.registerDirective` on global scope or element scope through `@element` decorator.
 
@@ -548,9 +575,11 @@ class MyElement extends HTMLXElement
 ```
 
 ## Decorators
+
 In addition, @surface/htmlx-element also provides a set of decorators that help with most trivial tasks.
 
 ### attribute
+
 Keeps sync between property and decorator.
 
 ```ts
@@ -571,17 +600,19 @@ class MyComponent extends HTMLXElement
     @attribute({ name: "json" type: JSON })
     public object: object = { foo: "bar" };
 
-    @attribute({ type: { parse: x => x === "true" || x === "", stringfy: String }, })
+    @attribute({ type: { parse: x => x === "true" || x === "", stringify: String }, })
     public customParser: boolean = false;
 }
 ```
 
 Results
+
 ```html
     <my-element string="some string" boolean number="5" json='{"foo":"bar"}' custom-parser="false"></my-element>
 ```
 
 ### event
+
 Listen for a host event using the decorated method as a handler.
 
 ```ts
@@ -599,6 +630,7 @@ class MyComponent extends HTMLXElement
 ```
 
 ### listener
+
 Listen to property changes.
 
 ```ts
@@ -618,6 +650,7 @@ class MyComponent extends HTMLXElement
 ```
 
 ### query
+
 Injects and optionally cache lazy queried element.
 
 ```ts
@@ -637,6 +670,7 @@ class MyComponent extends HTMLXElement
 ```
 
 ### queryAll
+
 Injects and optionally cache lazy queried an list of elements.
 
 ```ts
@@ -678,6 +712,7 @@ class MyComponent extends HTMLXElement
 ```
 
 ### styles
+
 Styles adopted by the shadow root. Particularly useful when used with inheritance or mixins.
 
 ```ts

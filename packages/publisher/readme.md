@@ -35,19 +35,50 @@ Usage: publisher bump [options] <version> [preid]
 Bump discovered packages or workspaces using provided custom version
 
 Arguments:
-  version                          An semantic version or an release type: major, minor, patch, premajor, preminor, prepatch, prerelease. Also can accept an glob prerelease '*-dev+123' to override just the prerelease part of the version. Useful for
-                                   canary builds.
+  version                          An semantic version or an release type: major, minor, patch, premajor, preminor, prepatch, prerelease. Also can
+                                   accept an glob prerelease '*-dev+123' to override just the prerelease part of the version. Useful for canary
+                                   builds.
   preid                            The 'prerelease identifier' to use as a prefix for the 'prerelease' part of a semver. Like the rc in 1.2.0-rc.8
 
 Options:
-  --synchronize            [n]     Synchronize dependencies between workspace packages after bumping
+  --compare-tag            <n>     Tag used to fetch remote packages that will be matched against local packages
+  --include-unchanged      [n]     Bump packages with no changes
   --independent            [n]     Ignore workspace version and bump itself
+  --synchronize            [n]     Synchronize dependencies between workspace packages after bumping
   --update-file-references [n]     Update file references when bumping
   --packages               <n...>  Packages or workspaces to include
+  --registry               <n>     Registry from where packages will be unpublished
+  --token                  <n>     Token used to authenticate
   --include-private        <n>     Include private packages
+  --include-workspace-root [n]     Includes workspaces root
   --cwd                    <n>     Working dir
   --dry                    [n]     Enables dry run
   --log-level              <n>     Log level (default: "info")
+  --ignore-changes         <n...>  Files to ignore when detecting changes
+  -h, --help                       display help for command
+```
+
+### Changed
+
+```txt
+Usage: publisher changed [options] [tag]
+
+List local packages that have changed compared to remote tagged package.
+
+Arguments:
+  tag                              Package tag to be compared
+
+Options:
+  --include-workspace-root [n]     Includes workspaces root
+  --packages               <n...>  Packages or workspaces to include
+  --registry               <n>     Registry from where packages will be unpublished
+  --token                  <n>     Token used to authenticate
+  --include-private        <n>     Include private packages
+  --include-workspace-root [n]     Includes workspaces root
+  --cwd                    <n>     Working dir
+  --dry                    [n]     Enables dry run
+  --log-level              <n>     Log level (default: "info")
+  --ignore-changes         <n...>  Files to ignore when detecting changes
   -h, --help                       display help for command
 ```
 
@@ -66,15 +97,15 @@ Options:
   --canary                 [n]     Enables canary release
   --prerelease-type        <n>     An prerelease type: premajor, preminor, prepatch, prerelease
   --identifier             <n>     Identifier used to generate canary prerelease
-  --sequence               <n>     Sequence used to compose the prerelease
+  --packages               <n...>  Packages or workspaces to include
   --registry               <n>     Registry from where packages will be unpublished
   --token                  <n>     Token used to authenticate
-  --include-workspace-root [n]     Includes workspaces root
-  --packages               <n...>  Packages or workspaces to include
   --include-private        <n>     Include private packages
+  --include-workspace-root [n]     Includes workspaces root
   --cwd                    <n>     Working dir
   --dry                    [n]     Enables dry run
   --log-level              <n>     Log level (default: "info")
+  --ignore-changes         <n...>  Files to ignore when detecting changes
   -h, --help                       display help for command
 ```
 
@@ -89,11 +120,11 @@ Arguments:
   tag                              Tag that will to unpublish
 
 Options:
+  --packages               <n...>  Packages or workspaces to include
   --registry               <n>     Registry from where packages will be unpublished
   --token                  <n>     Token used to authenticate
-  --include-workspace-root [n]     Includes workspaces root
-  --packages               <n...>  Packages or workspaces to include
   --include-private        <n>     Include private packages
+  --include-workspace-root [n]     Includes workspaces root
   --cwd                    <n>     Working dir
   --dry                    [n]     Enables dry run
   --log-level              <n>     Log level (default: "info")

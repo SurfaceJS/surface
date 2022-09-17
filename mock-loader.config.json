@@ -4,6 +4,7 @@
         "fs",
         "fs/promises",
         "libnpmpack",
+        "libnpmpublish",
         "pacote",
         "tar",
         "util",

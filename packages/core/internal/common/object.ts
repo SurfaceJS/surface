@@ -17,6 +17,15 @@ import type MergeRules       from "../types/merge-rules.js";
 import { assert, isIterable, typeGuard } from "./generic.js";
 
 const PRIVATES = Symbol("core:privates");
+const PRIMITIVE_TYPES = new Set
+([
+    "string",
+    "number",
+    "bigint",
+    "boolean",
+    "undefined",
+    "symbol",
+]);
 
 type Value = string | boolean | number | Object;
 
@@ -192,7 +201,7 @@ export function deepEqual<T>(left: T, right: T, compare?: (left: unknown, right:
         {
             for (const key of left.keys())
             {
-                if (!deepEqual(left.get(key), right.get(key), compare))
+                if (!right.has(key) || !deepEqual(left.get(key), right.get(key), compare))
                 {
                     return false;
                 }
@@ -225,13 +234,17 @@ export function deepEqual<T>(left: T, right: T, compare?: (left: unknown, right:
             return true;
         }
 
-        const keys = new Set([...enumerateKeys(left), ...enumerateKeys(right)]);
+        const leftKeys  = Array.from(enumerateKeys(left));
+        const rightKeys = Array.from(enumerateKeys(right));
 
-        for (const key of keys)
+        if (leftKeys.length == rightKeys.length)
         {
-            if (!(key in left && key in right) && !deepEqual(left[key], right[key], compare))
+            for (const key of leftKeys)
             {
-                return false;
+                if (!(key in right) || !deepEqual(left[key], right[key], compare))
+                {
+                    return false;
+                }
             }
         }
 
@@ -323,6 +336,11 @@ export function freeze(target: Indexer): Indexer
 export function isEsm(module: unknown): module is object
 {
     return typeof module == "object" && module !== null && (!!Reflect.get(module, "__esModule") || Reflect.get(module as Object, Symbol.toStringTag) == "Module");
+}
+
+export function isPrimitive(value: unknown): boolean
+{
+    return value === null || PRIMITIVE_TYPES.has(typeof value);
 }
 
 export function isReadonly(descriptor: PropertyDescriptor): boolean;

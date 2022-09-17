@@ -56,7 +56,8 @@ export default class Commands
 
         const file    = path.parse(filepath);
         const spec    = `${path.relative(process.cwd(), path.join(file.dir, file.name.replace(/((?:\.[-a-zA-Z0-9]+)*\.(?:scn))/, ".spec")))}.js`;
-        const target  = file.name.replace(/((?:\.\w+)*\.(?:scn|spec))/, "");
+        console.log(spec);
+        const target  = file.name.replace(/((?:\.[-a-zA-Z0-9]+)*\.(?:scn|spec))/, "");
         const include = `**/packages/**/${target}`;
 
         const command = `${c8} --text-exclude --include=${include}.js --include=${include}.ts --exclude=**/tests --exclude=**/node_modules --extension=.js --extension=.ts --reporter=text ${mocha} --loader=@surface/mock-loader --reporter=progress ${spec} --color`;

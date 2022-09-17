@@ -18,6 +18,12 @@ function apply(action: AsyncCallable, program: Command, ...configs: Delegate<[Co
     program.action(async (...args: unknown[]) => action(...args.slice(0, args.length - 1)));
 }
 
+function ignoreChangesOptions(program: Command): Command
+{
+    return program
+        .option("--ignore-changes         <n...>", "Files to ignore when detecting changes");
+}
+
 function globalOptions(program: Command): Command
 {
     return program
@@ -44,13 +50,13 @@ export default async function main(args: string[]): Promise<void>
         .description("Bump discovered packages or workspaces using provided custom version")
         .argument("<version>", "An semantic version or an release type: major, minor, patch, premajor, preminor, prepatch, prerelease. Also can accept an glob prerelease '*-dev+123' to override just the prerelease part of the version. Useful for canary builds.", toSemver)
         .argument("[preid]", "The 'prerelease identifier' to use as a prefix for the 'prerelease' part of a semver. Like the rc in 1.2.0-rc.8")
-        .option("--compare-tag            <n>", "Tag used to fetch remote packages to be compared with local")
+        .option("--compare-tag            <n>", "Tag used to fetch remote packages that will be matched against local packages")
         .option("--include-unchanged      [n]", "Bump packages with no changes", toBoolean)
         .option("--independent            [n]", "Ignore workspace version and bump itself", toBoolean)
         .option("--synchronize            [n]", "Synchronize dependencies between workspace packages after bumping", toBoolean)
         .option("--update-file-references [n]", "Update file references when bumping", toBoolean);
 
-    apply(Commands.bump, bump, globalOptions);
+    apply(Commands.bump, bump, globalOptions, ignoreChangesOptions);
 
     const changed = program
         .command("changed")
@@ -58,7 +64,7 @@ export default async function main(args: string[]): Promise<void>
         .argument("[tag]", "Package tag to be compared")
         .option("--include-workspace-root [n]", "Includes workspaces root", toBoolean);
 
-    apply(Commands.changed, changed, globalOptions);
+    apply(Commands.changed, changed, globalOptions, ignoreChangesOptions);
 
     const publish = program
         .command("publish")
@@ -69,7 +75,7 @@ export default async function main(args: string[]): Promise<void>
         .option("--prerelease-type        <n>", "An prerelease type: premajor, preminor, prepatch, prerelease", toEnum("premajor", "preminor", "prepatch", "prerelease"))
         .option("--identifier             <n>", "Identifier used to generate canary prerelease");
 
-    apply(Commands.publish, publish, globalOptions);
+    apply(Commands.publish, publish, globalOptions, ignoreChangesOptions);
 
     const unpublish = program
         .command("unpublish")

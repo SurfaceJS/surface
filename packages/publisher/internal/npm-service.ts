@@ -1,10 +1,13 @@
 import type { PackageJson }     from "@npm/types";
 import { deepEqual, typeGuard } from "@surface/core";
+import PathMatcher              from "@surface/path-matcher";
 import libnpmpublish            from "libnpmpublish";
 import pacote                   from "pacote";
 import { untar }                from "./common.js";
 
 // cSpell:ignore ETARGET
+
+type HasChangesOptions = { ignorePackageVersion?: boolean, ignoreFiles?: string[] };
 
 function stripSourceMap(source: string | undefined): string | undefined
 {
@@ -68,8 +71,10 @@ export default class NpmService
         }
     }
 
-    public async hasChanges(leftSpec: string, rightSpec: string): Promise<boolean>
+    public async hasChanges(leftSpec: string, rightSpec: string, options: HasChangesOptions): Promise<boolean>
     {
+        const matcher = options.ignoreFiles ? new PathMatcher(options.ignoreFiles, { unix: true, base: "/package" }) : null;
+
         const [leftBuffer, rightBuffer] = await Promise.all
         ([
             this.getTarball(leftSpec),
@@ -87,28 +92,36 @@ export default class NpmService
 
             for (const key of left.keys())
             {
-                if (key == "package/package.json")
+                if (!matcher?.isMatch(`/${key}`))
                 {
-                    const leftPackage  = JSON.parse(left.get(key)!) as PackageJson;
-                    const rightPackage = JSON.parse(right.get(key)!) as PackageJson;
+                    if (key == "package/package.json")
+                    {
+                        const leftPackage  = JSON.parse(left.get(key)!) as PackageJson;
+                        const rightPackage = JSON.parse(right.get(key)!) as PackageJson;
 
-                    rightPackage.version = leftPackage.version;
+                        if (options.ignorePackageVersion)
+                        {
+                            rightPackage.version = leftPackage.version;
+                        }
 
-                    stripFileReferences(leftPackage, rightPackage);
+                        stripFileReferences(leftPackage, rightPackage);
 
-                    if (!deepEqual(leftPackage, rightPackage))
+                        if (!deepEqual(leftPackage, rightPackage))
+                        {
+                            return true;
+                        }
+                    }
+                    else if (stripSourceMap(left.get(key)) != stripSourceMap(right.get(key)))
                     {
                         return true;
                     }
                 }
-                else if (stripSourceMap(left.get(key)) != stripSourceMap(right.get(key)))
-                {
-                    return true;
-                }
             }
+
+            return false;
         }
 
-        return false;
+        return true;
     }
 
     public async isPublished(manifest: PackageJson): Promise<boolean>

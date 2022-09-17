@@ -156,7 +156,7 @@ export default class PublisherSpec
 
         npmRepositoryMock
             .setup("hasChanges")
-            .call(It.any(), It.any())
+            .call(It.any(), It.any(), It.any())
             .returnsFactory
             (
                 async (_, rightSpec) =>

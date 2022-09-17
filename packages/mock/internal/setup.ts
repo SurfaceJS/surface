@@ -85,12 +85,12 @@ export default class Setup<TResult>
 
     public setRejected(args: Args, reason: unknown): void
     {
-        this.rejected.set(this.getKey(this.results, args), Promise.reject(reason));
+        this.rejected.set(this.getKey(this.rejected, args), Promise.reject(reason));
     }
 
     public setResolved(args: Args, value: Awaited<TResult>): void
     {
-        this.resolved.set(this.getKey(this.results, args), Promise.resolve(value));
+        this.resolved.set(this.getKey(this.resolved, args), Promise.resolve(value));
     }
 
     public setReturns(args: Args, value: TResult): void

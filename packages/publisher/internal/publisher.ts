@@ -43,10 +43,18 @@ type ScriptType =
 
 type LoadOptions =
 {
-    compareTag?: string,
-    cwd?:        string,
-    packages?:   string[],
-    auth?:       Auth,
+    compareTag?:    string,
+    cwd?:           string,
+    packages?:      string[],
+    auth?:          Auth,
+    ignoreChanges?: string[],
+};
+
+export type ChangesOptions =
+{
+
+    /** Files to ignore when detecting changes. */
+    ignoreChanges?: string[],
 };
 
 export type Options =
@@ -79,11 +87,8 @@ export type Options =
 export type BumpOptions =
 {
 
-    /** Tag used to fetch remote packages to be compared with local. Default: latest */
+    /** Tag used to fetch remote packages that will be matched against local packages. Default: latest */
     compareTag?: string,
-
-    /** Include private packages. */
-    includePrivate?: boolean,
 
     /** Ignore workspace version and bump itself. */
     independent?: boolean,
@@ -96,7 +101,7 @@ export type BumpOptions =
 
     /** Synchronize dependencies between workspace packages after bumping. */
     synchronize?: boolean,
-};
+} & ChangesOptions;
 
 export type PublishOptions =
 {
@@ -112,7 +117,7 @@ export type PublishOptions =
 
     /** Synchronize dependencies between workspace packages before publishing. */
     synchronize?: boolean,
-};
+} & ChangesOptions;
 
 export type Version = SemanticVersion | GlobPrerelease | ReleaseType;
 
@@ -157,7 +162,7 @@ export default class Publisher
         return changes;
     }
 
-    private async loadWorkspaces(options?: Pick<LoadOptions, "compareTag">): Promise<boolean>;
+    private async loadWorkspaces(options?: Pick<LoadOptions, "compareTag" | "ignoreChanges">): Promise<boolean>;
     private async loadWorkspaces(options: LoadOptions, depth: number): Promise<Map<string, Entry>>;
     private async loadWorkspaces(options: LoadOptions = { }, depth: number = 0): Promise<boolean | Map<string, Entry>>
     {
@@ -217,7 +222,7 @@ export default class Publisher
         const spec = `${manifest.name}@${tag}`;
 
         const remote   = await service.get(spec);
-        const modified = remote ? await service.hasChanges(`file:${parentPath}`, spec) : true;
+        const modified = remote ? await service.hasChanges(`file:${parentPath}`, spec, { ignorePackageVersion: true, ignoreFiles: options.ignoreChanges ?? [] }) : true;
 
         const entry: Entry =
         {
@@ -457,45 +462,38 @@ export default class Publisher
             const manifest = entry.manifest;
             const actual   = manifest.version;
 
-            if (options.includePrivate || !manifest.private)
+            if (options.includeUnchanged || entry.modified)
             {
-                if (options.includeUnchanged || entry.modified)
+                const updated: string | null = isSemanticVersion(version)
+                    ? version
+                    : isGlobPrerelease(version)
+                        ? overridePrerelease(manifest.version, version)
+                        : semver.inc(manifest.version, version, { loose: true }, identifier);
+
+                if (!updated)
                 {
-                    const updated: string | null = isSemanticVersion(version)
-                        ? version
-                        : isGlobPrerelease(version)
-                            ? overridePrerelease(manifest.version, version)
-                            : semver.inc(manifest.version, version, { loose: true }, identifier);
+                    const message = `Packaged ${manifest.name} has invalid version ${manifest.version}`;
 
-                    if (!updated)
-                    {
-                        const message = `Packaged ${manifest.name} has invalid version ${manifest.version}`;
+                    this.logger.error(message);
 
-                        this.logger.error(message);
-
-                        this.errors.push(new Error(message));
-                    }
-                    else
-                    {
-                        manifest.version = updated;
-
-                        this.logger.trace(`${manifest.name} version updated from ${actual} to ${manifest.version}`);
-                    }
-                }
-                else if (entry.remote && entry.manifest.version != entry.remote.version)
-                {
-                    this.logger.trace(`Package ${manifest.name} has no changes but local version (${manifest.version}) differ from remote version (${entry.remote.version}) using dist-tag ${options.compareTag ?? "latest"}`);
-
-                    manifest.version = entry.remote.version;
+                    this.errors.push(new Error(message));
                 }
                 else
                 {
-                    this.logger.trace(`Package ${manifest.name} has no changes`);
+                    manifest.version = updated;
+
+                    this.logger.trace(`${manifest.name} version updated from ${actual} to ${manifest.version}`);
                 }
+            }
+            else if (entry.remote && entry.manifest.version != entry.remote.version)
+            {
+                this.logger.trace(`Package ${manifest.name} has no changes but local version (${manifest.version}) differ from remote version (${entry.remote.version}) using dist-tag ${options.compareTag ?? "latest"}`);
+
+                manifest.version = entry.remote.version;
             }
             else
             {
-                this.logger.trace(`Package ${entry.manifest.name} is private, bump ignored...`);
+                this.logger.trace(`Package ${manifest.name} has no changes`);
             }
 
             if (entry.workspaces?.size)
@@ -570,7 +568,7 @@ export default class Publisher
      */
     public async bump(version: Version, identifier?: string, options: BumpOptions = { }): Promise<void>
     {
-        if (await this.loadWorkspaces({ compareTag: options.compareTag }))
+        if (await this.loadWorkspaces({ compareTag: options.compareTag, ignoreChanges: options.ignoreChanges }))
         {
             await this.update(this.workspaces, version, identifier, options);
 
@@ -595,9 +593,9 @@ export default class Publisher
      * List local packages that have changed compared to remote tagged package.
      * @param tag Package tag to be compared.
      **/
-    public async changed(tag: string): Promise<string[]>
+    public async changed(tag: string, ignore?: string[]): Promise<string[]>
     {
-        if (await this.loadWorkspaces({ compareTag: tag }))
+        if (await this.loadWorkspaces({ compareTag: tag, ignoreChanges: ignore }))
         {
             return this.changedWorkspaces(this.workspaces);
         }
@@ -612,7 +610,7 @@ export default class Publisher
      */
     public async publish(tag: string, options: PublishOptions = { }): Promise<void>
     {
-        if (await this.loadWorkspaces({ compareTag: tag }))
+        if (await this.loadWorkspaces({ compareTag: tag, ignoreChanges: options.ignoreChanges }))
         {
             const bumpOptions: BumpOptions =
             {
