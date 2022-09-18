@@ -1,17 +1,17 @@
 /* cSpell:ignore premajor, preminor, prepatch, onentry */
 
-import { timestamp } from "@surface/core";
+import { timestamp }                            from "@surface/core";
 import { type ReleaseType }                     from "semver";
 import tar                                      from "tar";
 import type { GlobPrerelease, SemanticVersion } from "./types/version.js";
+
+/* c8 ignore start */
 
 const GLOB_PRERELEASE_PATTERN = /^\*(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
 const SEMVER_PATTERN          = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/;
 const VERSION_SPLIT_PATTERN   = /^(\*|(?:(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)))([+-].*)?$/;
 
 const RELEASE_TYPES = new Set(["major", "minor", "patch", "premajor", "preminor", "prepatch", "prerelease"]);
-
-/* c8 ignore start */
 
 type ConcatAble = { concat: () => Promise<Buffer> };
 

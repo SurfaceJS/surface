@@ -35,22 +35,21 @@ Usage: publisher bump [options] <version> [preid]
 Bump discovered packages or workspaces using provided custom version
 
 Arguments:
-  version                          An semantic version or an release type: major, minor, patch, premajor, preminor, prepatch, prerelease. Also can
-                                   accept an glob prerelease '*-dev+123' to override just the prerelease part of the version. Useful for canary
-                                   builds.
-  preid                            The 'prerelease identifier' to use as a prefix for the 'prerelease' part of a semver. Like the rc in 1.2.0-rc.8
+  version                          An semantic version or an release type: major, minor, patch, premajor, preminor, prepatch, prerelease.
+                                   Also can accept an glob prerelease '*-dev+123' to override just the prerelease part of the version.
+                                   Useful for canary builds.
+  preid                            The 'prerelease identifier' to use as a prefix for the 'prerelease' part of a semver. Like the rc in
+                                   1.2.0-rc.8
 
 Options:
-  --compare-tag            <n>     Tag used to fetch remote packages that will be matched against local packages
-  --include-unchanged      [n]     Bump packages with no changes
-  --independent            [n]     Ignore workspace version and bump itself
+  --tag                    <n>     Tag used to compare local and remote packages
+  --force                  [n]     Bump packages with no changes
+  --independent            [n]     Ignore workspace root version and bump itself
   --synchronize            [n]     Synchronize dependencies between workspace packages after bumping
   --update-file-references [n]     Update file references when bumping
   --packages               <n...>  Packages or workspaces to include
   --registry               <n>     Registry from where packages will be unpublished
   --token                  <n>     Token used to authenticate
-  --include-private        <n>     Include private packages
-  --include-workspace-root [n]     Includes workspaces root
   --cwd                    <n>     Working dir
   --dry                    [n]     Enables dry run
   --log-level              <n>     Log level (default: "info")
@@ -66,19 +65,18 @@ Usage: publisher changed [options] [tag]
 List local packages that have changed compared to remote tagged package.
 
 Arguments:
-  tag                              Package tag to be compared
+  tag                              Dist tag used to compare local and remote packages
 
 Options:
-  --include-workspace-root [n]     Includes workspaces root
   --packages               <n...>  Packages or workspaces to include
   --registry               <n>     Registry from where packages will be unpublished
   --token                  <n>     Token used to authenticate
-  --include-private        <n>     Include private packages
-  --include-workspace-root [n]     Includes workspaces root
   --cwd                    <n>     Working dir
   --dry                    [n]     Enables dry run
   --log-level              <n>     Log level (default: "info")
   --ignore-changes         <n...>  Files to ignore when detecting changes
+  --include-private        <n>     Includes private packages when publishing or unpublishing
+  --include-workspace-root [n]     Includes workspaces root when publishing or unpublishing
   -h, --help                       display help for command
 ```
 
@@ -90,22 +88,23 @@ Usage: publisher publish [options] [tag]
 Publish packages or workspaces packages
 
 Arguments:
-  tag                              Tag that will to publish
+  tag                              Tag to publish
 
 Options:
   --synchronize            [n]     Synchronize dependencies between workspace packages before publishing
   --canary                 [n]     Enables canary release
   --prerelease-type        <n>     An prerelease type: premajor, preminor, prepatch, prerelease
-  --identifier             <n>     Identifier used to generate canary prerelease
+  --identifier             <n>     The "prerelease identifier" to use as a prefix for the "prerelease" part of a semver. Used by canary.
+  --force                  <n>     Forces to publish unchanged packages. Used by canary
   --packages               <n...>  Packages or workspaces to include
   --registry               <n>     Registry from where packages will be unpublished
   --token                  <n>     Token used to authenticate
-  --include-private        <n>     Include private packages
-  --include-workspace-root [n]     Includes workspaces root
   --cwd                    <n>     Working dir
   --dry                    [n]     Enables dry run
   --log-level              <n>     Log level (default: "info")
   --ignore-changes         <n...>  Files to ignore when detecting changes
+  --include-private        <n>     Includes private packages when publishing or unpublishing
+  --include-workspace-root [n]     Includes workspaces root when publishing or unpublishing
   -h, --help                       display help for command
 ```
 
@@ -117,16 +116,16 @@ Usage: publisher unpublish [options] [tag]
 Unpublish packages or workspaces packages
 
 Arguments:
-  tag                              Tag that will to unpublish
+  tag                              Tag to unpublish
 
 Options:
   --packages               <n...>  Packages or workspaces to include
   --registry               <n>     Registry from where packages will be unpublished
   --token                  <n>     Token used to authenticate
-  --include-private        <n>     Include private packages
-  --include-workspace-root [n]     Includes workspaces root
   --cwd                    <n>     Working dir
   --dry                    [n]     Enables dry run
   --log-level              <n>     Log level (default: "info")
+  --include-private        <n>     Includes private packages when publishing or unpublishing
+  --include-workspace-root [n]     Includes workspaces root when publishing or unpublishing
   -h, --help                       display help for command
 ```

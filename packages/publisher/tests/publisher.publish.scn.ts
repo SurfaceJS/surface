@@ -247,8 +247,8 @@ export const validPublishScenarios: PublishScenario[] =
     {
         skip,
         message:   "Publish workspaces packages and include workspaces root",
-        options:   { includeWorkspaceRoot: true },
-        args:      ["latest", {  }],
+        options:   {  },
+        args:      ["latest", { includeWorkspaceRoot: true }],
         registry:  { "package-b": { isPublished: true, hasChanges: true } },
         directory:
         {

@@ -43,18 +43,21 @@ type ScriptType =
 
 type LoadOptions =
 {
-    compareTag?:    string,
+    tag?:           string,
     cwd?:           string,
     packages?:      string[],
     auth?:          Auth,
     ignoreChanges?: string[],
 };
 
-export type ChangesOptions =
+type RestrictionOptions =
 {
 
-    /** Files to ignore when detecting changes. */
-    ignoreChanges?: string[],
+    /** Includes private packages. */
+    includePrivate?: boolean,
+
+    /** Includes workspace root. */
+    includeWorkspaceRoot?: boolean,
 };
 
 export type Options =
@@ -65,12 +68,6 @@ export type Options =
 
     /** Enables dry run */
     dry?: boolean,
-
-    /** Include private packages. */
-    includePrivate?: boolean,
-
-    /** Include workspace root when bumping or publishing. */
-    includeWorkspaceRoot?: boolean,
 
     logLevel?: LogLevel,
 
@@ -87,21 +84,28 @@ export type Options =
 export type BumpOptions =
 {
 
-    /** Tag used to fetch remote packages that will be matched against local packages. Default: latest */
-    compareTag?: string,
+    /** Dist tag used to compare local and remote packages. Default: latest */
+    tag?: string,
 
-    /** Ignore workspace version and bump itself. */
+    /** Ignore workspace root version and bump itself. */
     independent?: boolean,
 
-    /** Bumps unchanged packages when independent options is enabled */
-    includeUnchanged?: boolean,
+    /** Forces to bump unchanged packages when independent options is enabled */
+    force?: boolean,
 
     /** Update file references when bumping. */
     updateFileReferences?: boolean,
 
     /** Synchronize dependencies between workspace packages after bumping. */
     synchronize?: boolean,
-} & ChangesOptions;
+} & Pick<ChangedOptions, "ignoreChanges">;
+
+export type ChangedOptions =
+{
+
+    /** Files to ignore when detecting changes. */
+    ignoreChanges?: string[],
+} & RestrictionOptions;
 
 export type PublishOptions =
 {
@@ -109,15 +113,20 @@ export type PublishOptions =
     /** Enables canary release. */
     canary?: boolean,
 
-    /** Identifier used to generate canary prerelease. */
+    /** Forces to publish unchanged packages. Used by canary.*/
+    force?: boolean,
+
+    /** The "prerelease identifier" to use as a prefix for the "prerelease" part of a semver. Used by canary. */
     identifier?: string,
 
-    /** The "prerelease identifier" to use as a prefix for the "prerelease" part of a semver. Like the rc in 1.2.0-rc.8. */
+    /** An prerelease type. Used by canary. */
     prereleaseType?: Pre<ReleaseType>,
 
     /** Synchronize dependencies between workspace packages before publishing. */
     synchronize?: boolean,
-} & ChangesOptions;
+} & ChangedOptions & RestrictionOptions;
+
+export type UnpublishOptions = RestrictionOptions;
 
 export type Version = SemanticVersion | GlobPrerelease | ReleaseType;
 
@@ -142,27 +151,27 @@ export default class Publisher
         };
     }
 
-    private changedWorkspaces(workspaces: Map<string, Entry>): string[]
+    private changedWorkspaces(workspaces: Map<string, Entry>, options: ChangedOptions): string[]
     {
         const changes: string[] = [];
 
         for (const entry of workspaces.values())
         {
-            if (entry.modified && (this.options.includePrivate || !entry.manifest.private) && (this.options.includeWorkspaceRoot || !entry.workspaces))
+            if (entry.modified && (options.includePrivate || !entry.manifest.private) && (options.includeWorkspaceRoot || !entry.workspaces))
             {
                 changes.push(entry.manifest.name);
             }
 
             if (entry.workspaces)
             {
-                changes.push(...this.changedWorkspaces(entry.workspaces));
+                changes.push(...this.changedWorkspaces(entry.workspaces, options));
             }
         }
 
         return changes;
     }
 
-    private async loadWorkspaces(options?: Pick<LoadOptions, "compareTag" | "ignoreChanges">): Promise<boolean>;
+    private async loadWorkspaces(options?: Pick<LoadOptions, "tag" | "ignoreChanges">): Promise<boolean>;
     private async loadWorkspaces(options: LoadOptions, depth: number): Promise<Map<string, Entry>>;
     private async loadWorkspaces(options: LoadOptions = { }, depth: number = 0): Promise<boolean | Map<string, Entry>>
     {
@@ -208,7 +217,7 @@ export default class Publisher
 
         const auth: Auth = await this.getAuth(parentPath, manifest.name, options.auth);
 
-        const tag = options.compareTag ?? "latest";
+        const tag = options.tag ?? "latest";
 
         if (Array.isArray(manifest.workspaces))
         {
@@ -297,7 +306,7 @@ export default class Publisher
             await this.publishWorkspaces(tag, options, entry.workspaces);
         }
 
-        if ((this.options.includePrivate || !entry.manifest.private) && (this.options.includeWorkspaceRoot || !entry.workspaces))
+        if ((options.includePrivate || !entry.manifest.private) && (options.includeWorkspaceRoot || !entry.workspaces))
         {
             const versionedName = `${entry.manifest.name}@${entry.manifest.version}`;
 
@@ -436,7 +445,7 @@ export default class Publisher
 
             if (!this.options.dry)
             {
-                if (options.includeUnchanged || entry.modified)
+                if (options.force || entry.modified)
                 {
                     promises.push(chain.then(async () => writeFile(entry.path, JSON.stringify(entry.manifest, null, 4))));
                 }
@@ -462,7 +471,7 @@ export default class Publisher
             const manifest = entry.manifest;
             const actual   = manifest.version;
 
-            if (options.includeUnchanged || entry.modified)
+            if (options.force || entry.modified)
             {
                 const updated: string | null = isSemanticVersion(version)
                     ? version
@@ -487,7 +496,7 @@ export default class Publisher
             }
             else if (entry.remote && entry.manifest.version != entry.remote.version)
             {
-                this.logger.trace(`Package ${manifest.name} has no changes but local version (${manifest.version}) differ from remote version (${entry.remote.version}) using dist-tag ${options.compareTag ?? "latest"}`);
+                this.logger.trace(`Package ${manifest.name} has no changes but local version (${manifest.version}) differ from remote version (${entry.remote.version}) using dist-tag ${options.tag ?? "latest"}`);
 
                 manifest.version = entry.remote.version;
             }
@@ -503,9 +512,9 @@ export default class Publisher
         }
     }
 
-    private async unpublishPackage(tag: string, entry: Entry): Promise<void>
+    private async unpublishPackage(tag: string, entry: Entry, options: UnpublishOptions): Promise<void>
     {
-        if ((this.options.includePrivate || !entry.manifest.private) && (this.options.includeWorkspaceRoot || !entry.workspaces))
+        if ((options.includePrivate || !entry.manifest.private) && (options.includeWorkspaceRoot || !entry.workspaces))
         {
             const versionedName = `${entry.manifest.name}@${entry.manifest.version}`;
 
@@ -544,17 +553,17 @@ export default class Publisher
 
         if (entry.workspaces?.size)
         {
-            await this.unpublishWorkspaces(tag, entry.workspaces);
+            await this.unpublishWorkspaces(tag, entry.workspaces, options);
         }
     }
 
-    private async unpublishWorkspaces(tag: string, workspaces: Map<string, Entry>): Promise<void>
+    private async unpublishWorkspaces(tag: string, workspaces: Map<string, Entry>, options: UnpublishOptions): Promise<void>
     {
         const promises: Promise<void>[] = [];
 
         for (const entry of workspaces.values())
         {
-            promises.push(this.unpublishPackage(tag, entry));
+            promises.push(this.unpublishPackage(tag, entry, options));
         }
 
         await Promise.all(promises);
@@ -568,7 +577,7 @@ export default class Publisher
      */
     public async bump(version: Version, identifier?: string, options: BumpOptions = { }): Promise<void>
     {
-        if (await this.loadWorkspaces({ compareTag: options.compareTag, ignoreChanges: options.ignoreChanges }))
+        if (await this.loadWorkspaces({ tag: options.tag, ignoreChanges: options.ignoreChanges }))
         {
             await this.update(this.workspaces, version, identifier, options);
 
@@ -591,13 +600,13 @@ export default class Publisher
 
     /**
      * List local packages that have changed compared to remote tagged package.
-     * @param tag Package tag to be compared.
+     * @param tag Tag used to compare local and remote packages.
      **/
-    public async changed(tag: string, ignore?: string[]): Promise<string[]>
+    public async changed(tag: string, options: ChangedOptions = { }): Promise<string[]>
     {
-        if (await this.loadWorkspaces({ compareTag: tag, ignoreChanges: ignore }))
+        if (await this.loadWorkspaces({ tag, ignoreChanges: options.ignoreChanges }))
         {
-            return this.changedWorkspaces(this.workspaces);
+            return this.changedWorkspaces(this.workspaces, options);
         }
 
         return [];
@@ -610,10 +619,11 @@ export default class Publisher
      */
     public async publish(tag: string, options: PublishOptions = { }): Promise<void>
     {
-        if (await this.loadWorkspaces({ compareTag: tag, ignoreChanges: options.ignoreChanges }))
+        if (await this.loadWorkspaces({ tag, ignoreChanges: options.ignoreChanges }))
         {
             const bumpOptions: BumpOptions =
             {
+                force:                options.force,
                 synchronize:          options.synchronize,
                 updateFileReferences: true,
             };
@@ -664,11 +674,11 @@ export default class Publisher
      * @param tag Tag to unpublish.
      * @param options Unpublish options.
      */
-    public async unpublish(tag: string): Promise<void>
+    public async unpublish(tag: string, options: UnpublishOptions = { }): Promise<void>
     {
         if (await this.loadWorkspaces())
         {
-            await this.unpublishWorkspaces(tag, this.workspaces);
+            await this.unpublishWorkspaces(tag, this.workspaces, options);
 
             if (this.errors.length > 0)
             {
