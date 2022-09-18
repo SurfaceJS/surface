@@ -1,0 +1,15 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions":
+    {
+        "outDir":  ".",
+        "rootDir": ".",
+        "module":  "NodeNext",
+        "lib":     ["DOM", "DOM.Iterable", "ESNext"],
+        "types":   ["node"]
+    },
+    "files":
+    [
+        "index.ts",
+    ],
+}

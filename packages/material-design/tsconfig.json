@@ -1,0 +1,24 @@
+{
+    "extends": "../../tsconfig.web.json",
+    "compilerOptions":
+    {
+        "outDir":  ".",
+        "rootDir": ".",
+    },
+    "files":
+    [
+        "./index.ts"
+    ],
+    "include":
+    [
+        "./internal",
+        "./tests"
+    ],
+    "references":
+    [
+        { "path": "../collection" },
+        { "path": "../core" },
+        { "path": "../htmlx-element" },
+        { "path": "../test-suite" },
+    ]
+}

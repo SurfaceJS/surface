@@ -1,0 +1,21 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions":
+    {
+        "outDir":  ".",
+        "rootDir": ".",
+    },
+    "files":
+    [
+        "./index.ts"
+    ],
+    "include":
+    [
+        "./internal",
+        "./tests"
+    ],
+    "references":
+    [
+        { "path": "../enumerable" }
+    ]
+}

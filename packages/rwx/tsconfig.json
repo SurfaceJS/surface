@@ -1,0 +1,24 @@
+{
+    "extends": "../../tsconfig.node.json",
+    "compilerOptions":
+    {
+        "outDir":  ".",
+        "rootDir": ".",
+    },
+    "files":
+    [
+        "./index.ts"
+    ],
+    "include":
+    [
+        "./internal",
+        "./tests"
+    ],
+    "references":
+    [
+        { "path": "../core" },
+        { "path": "../mock" },
+        { "path": "../path-matcher" },
+        { "path": "../test-suite" },
+    ]
+}

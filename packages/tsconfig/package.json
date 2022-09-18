@@ -1,0 +1,30 @@
+{
+    "author": "HitalloExiled",
+    "bugs": {
+        "url": "https://github.com/SurfaceJS/surface/issues"
+    },
+    "description": "An base tsconfig with @surface's recommendations",
+    "homepage": "https://github.com/SurfaceJS/surface#readme",
+    "keywords": [
+        "surface",
+        "typescrypt",
+        "tsconfig"
+    ],
+    "license": "MIT",
+    "main": "tsconfig.json",
+    "name": "@surface/tsconfig",
+    "peerDependencies": {
+        "@types/node": "*"
+    },
+    "peerDependenciesMeta": {
+        "@types/node": {
+            "optional": true
+        }
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/SurfaceJS/surface.git"
+    },
+    "sideEffects": false,
+    "version": "1.0.0-beta.0"
+}

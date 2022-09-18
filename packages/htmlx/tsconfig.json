@@ -1,0 +1,25 @@
+{
+    "extends": "../../tsconfig.web.json",
+    "compilerOptions":
+    {
+        "outDir":  ".",
+        "rootDir": ".",
+    },
+    "files":
+    [
+        "./index.ts"
+    ],
+    "include":
+    [
+        "./internal",
+        "./tests"
+    ],
+    "references":
+    [
+        { "path": "../core" },
+        { "path": "../dom-shim" },
+        { "path": "../htmlx-parser" },
+        { "path": "../observer" },
+        { "path": "../test-suite" },
+    ]
+}

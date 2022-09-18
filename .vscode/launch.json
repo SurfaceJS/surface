@@ -12,7 +12,7 @@
                 // "-e",  "./source/index.ts",                                  /* "-e|--entry"           */
                 // "-el", "${workspaceFolder}/client/.eslintrc.json",           /* "-el|--eslintrc"       */
                 // "-f",  "[name]/[hash].js",                                   /* "-f|--filename"        */
-                // "-ft", "./node_modules/@surface,../modules/packages/@surface", /* "-ft|--force-ts"       */
+                // "-ft", "./node_modules/@surface,../modules/packages",        /* "-ft|--force-ts"       */
                 // "-l",  "minimal",                                            /* "-l|--log"             */
                 // "-m",  "production",                                         /* "-m|--mode"            */
                 // "-o",  "${workspaceFolder}/server/wwwroot",                  /* "-o|--output"          */
@@ -26,11 +26,10 @@
             "name":     "Launch Builder",
             "outFiles":
             [
-                "${workspaceFolder}/packages/@surface/*/internal/**/*.js",
-                "${workspaceFolder}/packages/@surface/*/tests/**/*.js"
+                "${workspaceFolder}/packages/*/internal/**/*.js",
+                "${workspaceFolder}/packages/*/tests/**/*.js"
             ],
-            "program":  "${workspaceFolder}/packages/@surface/builder/cli",
-            "protocol": "inspector",
+            "program":  "${workspaceFolder}/packages/builder/cli",
             "request":  "launch",
             "skipFiles":
             [
@@ -42,7 +41,6 @@
             "cwd":      "${fileDirname}",
             "name":     "Debug File",
             "program":  "${fileDirname}/${fileBasenameNoExtension}.js",
-            "protocol": "inspector",
             "request":  "launch",
             "runtimeArgs":
             [
@@ -67,7 +65,6 @@
             "cwd":      "${fileDirname}",
             "name":     "Debug Task Cli",
             "program":  "${workspaceFolder}/tasks/cli",
-            "protocol": "inspector",
             "request":  "launch",
             "runtimeArgs":
             [
@@ -94,11 +91,10 @@
             [
                 "${workspaceFolder}/tasks/internal/**/*.js",
                 "${workspaceFolder}/tasks/tests/**/*.js",
-                "${workspaceFolder}/packages/@surface/*/internal/**/*.js",
-                "${workspaceFolder}/packages/@surface/*/tests/**/*.js"
+                "${workspaceFolder}/packages/*/internal/**/*.js",
+                "${workspaceFolder}/packages/*/tests/**/*.js"
             ],
             "program":  "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-            "protocol": "inspector",
             "request":  "launch",
             "runtimeArgs":
             [
@@ -108,8 +104,8 @@
             "sourceMaps": true,
             "skipFiles":
             [
-                "${workspaceFolder}/node_modules/**/*.js",
-                "<node_internals>/**/*.js"
+                "${workspaceFolder}/node_modules/**",
+                "<node_internals>/**"
             ],
             "type": "node"
         },

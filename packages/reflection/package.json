@@ -1,0 +1,34 @@
+{
+    "author": "HitalloExiled",
+    "bugs": {
+        "url": "https://github.com/SurfaceJS/surface/issues"
+    },
+    "dependencies": {
+        "@surface/core": "file:../core",
+        "tslib": "~2.4.0"
+    },
+    "description": "Provides reflection capability.",
+    "devDependencies": {
+        "@surface/test-suite": "file:../test-suite",
+        "@surface/tsconfig": "file:../tsconfig",
+        "@types/chai": "~4.3.3",
+        "@types/semver": "~7.3.12",
+        "chai": "~4.3.6",
+        "semver": "~7.3.7"
+    },
+    "homepage": "https://github.com/SurfaceJS/surface#readme",
+    "keywords": [
+        "reflection",
+        "surface",
+        "typescrypt"
+    ],
+    "license": "MIT",
+    "name": "@surface/reflection",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/SurfaceJS/surface.git"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "version": "1.0.0-beta.0"
+}

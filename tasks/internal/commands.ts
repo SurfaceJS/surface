@@ -2,24 +2,10 @@
 import { readFile, writeFile } from "fs/promises";
 import path                    from "path";
 import { fileURLToPath }       from "url";
-import { resolveError }        from "@surface/core";
+import Logger, { LogLevel }    from "@surface/logger";
+import { execute }             from "@surface/rwx";
 import chalk                   from "chalk";
 import JSON5                   from "json5";
-import
-{
-    backupFile,
-    execute,
-    log,
-    lookup,
-    paths,
-    restoreBackup,
-} from "./common.js";
-import Depsync                from "./depsync.js";
-import StrategyType           from "./enums/strategy-type.js";
-import NpmRepository          from "./npm-repository.js";
-import Publisher              from "./publisher.js";
-import type CliPublishOptions from "./types/cli-publish-options.js";
-import type SemanticVersion   from "./types/semantic-version";
 
 const DIRNAME       = path.dirname(fileURLToPath(import.meta.url));
 const TSC           = path.resolve(DIRNAME, "../../node_modules/.bin/tsc");
@@ -33,76 +19,33 @@ type TsConfig =
     },
 };
 
+const logger = new Logger(LogLevel.Trace);
+
 export default class Commands
 {
-    private static async disableReleaseBuild(): Promise<void>
+    public static async buildRelease(): Promise<void>
     {
-        await restoreBackup(TSCONFIG_PATH);
+        logger.trace("Cleaning...");
 
-        log("Release build disabled...");
-    }
+        await execute(`${TSC} --build "${TSCONFIG_PATH}" --clean`);
 
-    private static async enableReleaseBuild(): Promise<void>
-    {
-        await backupFile(TSCONFIG_PATH);
+        logger.info("Cleaning done!");
 
-        const tsconfig = JSON5.parse((await readFile(TSCONFIG_PATH)).toString()) as TsConfig;
+        const content = (await readFile(TSCONFIG_PATH)).toString();
 
-        tsconfig.compilerOptions.sourceMap = false;
+        const tsconfig = JSON5.parse(content) as TsConfig;
+
+        tsconfig.compilerOptions = { ...tsconfig.compilerOptions, sourceMap: false };
 
         await writeFile(TSCONFIG_PATH, JSON.stringify(tsconfig, null, 4));
 
-        log("Release build enabled...");
-    }
+        logger.trace("Building...");
 
-    private static async sync(strategy: StrategyType, version?: SemanticVersion): Promise<void>
-    {
-        const syncedPackages = await Depsync.sync(lookup, { strategy, version });
+        await execute(`${TSC} --build "${TSCONFIG_PATH}"`);
 
-        for (const $package of syncedPackages)
-        {
-            const filepath = path.join(paths.packages.root, $package.name, "package.json");
+        await writeFile(TSCONFIG_PATH, content);
 
-            await writeFile(filepath, JSON.stringify($package, null, 4));
-
-            log(`Updated ${$package.name} ${chalk.gray(filepath)}`);
-        }
-    }
-
-    private static async backup(): Promise<void>
-    {
-        const commands: Promise<void>[] = [];
-
-        for (const $package of lookup.values())
-        {
-            const manifest = path.normalize(path.resolve(paths.packages.root, $package.name, "package.json"));
-
-            commands.push(backupFile(manifest));
-
-            log(`Backuping ${chalk.bold.blue($package.name)}`);
-        }
-
-        await Promise.all(commands);
-
-        log(chalk.bold.green("Backuping modules done!"));
-    }
-
-    public static async build(): Promise<void>
-    {
-        await this.enableReleaseBuild();
-
-        await execute("Building...", `${TSC} --build "${TSCONFIG_PATH}"`);
-
-        await this.disableReleaseBuild();
-
-        log(chalk.bold.green("Building modules done!"));
-    }
-
-    public static async clean(): Promise<void>
-    {
-        await execute("Cleaning...", `${TSC} --build "${TSCONFIG_PATH}" --clean`);
-
-        log(chalk.bold.green("Cleaning done!"));
+        logger.info("Building modules done!");
     }
 
     public static async cover(filepath: string): Promise<void>
@@ -111,70 +54,30 @@ export default class Commands
         const mocha = path.join(bin, "mocha");
         const c8    = path.join(bin, "c8");
 
-        const file   = path.parse(filepath);
-        const spec   = `${path.relative(process.cwd(), path.join(file.dir, file.name))}.js`;
-        const target = file.name.replace(".spec", "");
+        const file    = path.parse(filepath);
+        const spec    = `${path.relative(process.cwd(), path.join(file.dir, file.name.replace(/((?:\.[-a-zA-Z0-9]+)*\.(?:scn))/, ".spec")))}.js`;
+        console.log(spec);
+        const target  = file.name.replace(/((?:\.[-a-zA-Z0-9]+)*\.(?:scn|spec))/, "");
+        const include = `**/packages/**/${target}`;
 
-        const command = `${c8} --text-exclude --include=**/@surface/**/${target}.js --include=**/@surface/**/${target}.ts --exclude=**/tests --exclude=**/node_modules --extension=.js --extension=.ts --reporter=text ${mocha} --loader=@surface/mock-loader --ui=tdd ${spec}`;
+        const command = `${c8} --text-exclude --include=${include}.js --include=${include}.ts --exclude=**/tests --exclude=**/node_modules --extension=.js --extension=.ts --reporter=text ${mocha} --loader=@surface/mock-loader --reporter=progress ${spec} --color`;
 
-        await execute(`cover ${chalk.bold.blue(filepath)} tests`, command);
+        logger.info(`cover ${chalk.bold.blue(target)} tests`);
+
+        await execute(command);
     }
 
-    public static async publish(_: string, options: CliPublishOptions): Promise<void>
+    public static async test(filepath: string): Promise<void>
     {
-        const publishignore = (await readFile(path.join(DIRNAME, "../.publishignore"))).toString();
+        const bin   = path.resolve(DIRNAME, "../../node_modules/.bin");
+        const mocha = path.join(bin, "mocha");
+        const file  = path.parse(filepath);
+        const spec  = `${path.relative(process.cwd(), path.join(file.dir, file.name.replace(/((?:\.[-a-zA-Z0-9]+)*\.(?:scn))/, ".spec")))}.js`;
 
-        const exclude = new Set(publishignore.split("\n").map(x => x.trim()));
+        const command = `${mocha} --loader=@surface/mock-loader ${spec} --color`;
 
-        await Commands.clean();
-        await Commands.build();
-        await Commands.backup();
+        logger.info(`test ${chalk.bold.blue(filepath)}`);
 
-        try
-        {
-            if (options.mode == "release")
-            {
-                await Commands.sync(StrategyType.Default);
-            }
-            else
-            {
-                // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-                const timestamp = options.timestamp || new Date().toISOString()
-                    .replace(/[-T:]/g, "")
-                    .substring(0, 12);
-
-                await Commands.sync(StrategyType.ForceVersion, `*.*.*-dev.${timestamp}` as SemanticVersion);
-            }
-
-            const packages = Array.from(lookup.keys()).filter(x => !exclude.has(x));
-
-            const repository = new NpmRepository(options.token);
-
-            await new Publisher(repository, lookup, options.dry).publish(packages);
-        }
-        catch (error)
-        {
-            log(resolveError(error).message);
-        }
-
-        await Commands.restore();
-    }
-
-    public static async restore(): Promise<void>
-    {
-        const commands: Promise<void>[] = [];
-
-        for (const $package of lookup.values())
-        {
-            const manifest = path.normalize(path.resolve(paths.packages.root, $package.name, "package.json"));
-
-            commands.push(restoreBackup(manifest));
-
-            log(`Restoring backup of ${chalk.bold.blue($package.name)}`);
-        }
-
-        await Promise.all(commands);
-
-        log(chalk.bold.green("Restoring backup done!"));
+        await execute(command);
     }
 }

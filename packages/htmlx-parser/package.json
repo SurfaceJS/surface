@@ -1,0 +1,38 @@
+{
+    "author": "HitalloExiled",
+    "bugs": {
+        "url": "https://github.com/SurfaceJS/surface/issues"
+    },
+    "dependencies": {
+        "@surface/core": "file:../core",
+        "@surface/expression": "file:../expression",
+        "tslib": "~2.4.0"
+    },
+    "description": "Parses custom elements templates.",
+    "devDependencies": {
+        "@surface/dom-shim": "file:../dom-shim",
+        "@surface/test-suite": "file:../test-suite",
+        "@surface/tsconfig": "file:../tsconfig",
+        "@types/chai": "~4.3.3",
+        "@types/chai-as-promised": "~7.1.5",
+        "chai": "~4.3.6",
+        "chai-as-promised": "~7.1.1"
+    },
+    "homepage": "https://github.com/SurfaceJS/surface#readme",
+    "keywords": [
+        "surface",
+        "typescript",
+        "webcomponents",
+        "parser"
+    ],
+    "license": "MIT",
+    "main": "index.js",
+    "name": "@surface/htmlx-parser",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/SurfaceJS/surface.git"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "version": "1.0.0-beta.0"
+}

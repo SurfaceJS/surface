@@ -1,10 +1,9 @@
 {
-    "extends": "../tsconfig.json",
+    "extends": "../tsconfig.node.json",
     "compilerOptions":
     {
         "outDir":  ".",
         "rootDir": ".",
-        "types":   ["node"],
     },
     "files":
     [
@@ -19,8 +18,8 @@
     ],
     "references":
     [
-        { "path": "../packages/@surface/core" },
-        { "path": "../packages/@surface/io" },
-        { "path": "../packages/@surface/mock" },
+        { "path": "../packages/core" },
+        { "path": "../packages/rwx" },
+        { "path": "../packages/mock" },
     ]
 }

@@ -1,12 +1,14 @@
 {
-    "extends": "./tsconfig.json",
+    "extends": "@surface/tsconfig",
     "compilerOptions":
     {
-        "noEmit": true
+        "noEmit": true,
+        "declaration": false
     },
     "include":
     [
-        "./**/*.ts",
+        "packages",
+        "tasks",
     ],
     "exclude": ["node_modules"]
 }

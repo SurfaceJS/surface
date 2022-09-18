@@ -1,0 +1,17 @@
+{
+    "extends": "../../tsconfig.node.json",
+    "compilerOptions":
+    {
+        "outDir":  ".",
+        "rootDir": ".",
+    },
+    "files":
+    [
+        "index.ts"
+    ],
+    "include":
+    [
+        "./internal",
+        "./tests"
+    ]
+}

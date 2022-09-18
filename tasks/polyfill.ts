@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/promise-function-async */
 /* eslint-disable object-shorthand */
@@ -94,7 +95,6 @@ if (!Object.fromEntries)
 
 if (!Promise.prototype.finally)
 {
-
     Object.defineProperty
     (
         Promise.prototype,
@@ -108,6 +108,55 @@ if (!Promise.prototype.finally)
                     return this.then(onfinally, onfinally);
                 },
             }.finally,
+            writable: true,
+        },
+    );
+}
+
+if (!String.prototype.replaceAll)
+{
+    Object.defineProperty
+    (
+        String.prototype,
+        "replaceAll",
+        {
+            configurable: true,
+            value:
+            {
+                replaceAll: function (this: string, searchValue: string | RegExp, replaceValue: string): string
+                {
+                    if (searchValue instanceof RegExp)
+                    {
+                        return this.replace(searchValue, replaceValue);
+                    }
+
+                    return this.replace(new RegExp(searchValue, "g"), replaceValue);
+                },
+            }.replaceAll,
+            writable: true,
+        },
+    );
+}
+
+if (!global.AggregateError)
+{
+    Object.defineProperty
+    (
+        global,
+        "AggregateError",
+        {
+            configurable: true,
+            value:        class AggregateError extends Error
+            {
+                public errors: any[] = [];
+
+                public constructor(errors: Iterable<any>, message?: string)
+                {
+                    super(message);
+
+                    this.errors = Array.from(errors);
+                }
+            },
             writable: true,
         },
     );

@@ -1,0 +1,77 @@
+{
+    "author": "HitalloExiled",
+    "bin": {
+        "surface-builder": "cli.js"
+    },
+    "bugs": {
+        "url": "https://github.com/SurfaceJS/surface/issues"
+    },
+    "dependencies": {
+        "@surface/core": "file:../core",
+        "@surface/htmlx-loader": "file:../htmlx-loader",
+        "@surface/rwx": "file:../rwx",
+        "@types/copy-webpack-plugin": "~10.1.0",
+        "@types/html-webpack-plugin": "~3.2.6",
+        "@types/loader-utils": "~2.0.3",
+        "@types/node": "~18.7.6",
+        "@types/tapable": "~2.2.2",
+        "@types/webpack-bundle-analyzer": "~4.4.2",
+        "@types/webpack-dev-server": "~4.7.2",
+        "@types/workbox-webpack-plugin": "~5.1.8",
+        "chalk": "~5.0.1",
+        "commander": "~9.4.0",
+        "copy-webpack-plugin": "~11.0.0",
+        "css-loader": "~6.7.1",
+        "eslint-webpack-plugin": "~3.2.0",
+        "extract-loader": "~5.1.0",
+        "fork-ts-checker-webpack-plugin": "~7.2.13",
+        "html-loader": "~4.1.0",
+        "html-webpack-plugin": "~5.5.0",
+        "loader-utils": "~3.2.0",
+        "resolve-url-loader": "~5.0.0",
+        "sass": "~1.54.4",
+        "sass-loader": "~13.0.2",
+        "style-loader": "~3.3.1",
+        "terser-webpack-plugin": "~5.3.5",
+        "thread-loader": "~3.0.4",
+        "to-string-loader": "~1.2.0",
+        "ts-loader": "~9.3.1",
+        "tslib": "~2.4.0",
+        "webpack": "~5.74.0",
+        "webpack-bundle-analyzer": "~4.5.0",
+        "webpack-dev-server": "~4.10.0",
+        "workbox-webpack-plugin": "~6.5.4"
+    },
+    "description": "Module responsible for managing the compilation of typescript, scss/sass and packaging with webpack.",
+    "devDependencies": {
+        "@surface/mock": "file:../mock",
+        "@surface/test-suite": "file:../test-suite",
+        "@surface/tsconfig": "file:../tsconfig",
+        "@types/chai": "~4.3.3",
+        "@types/chai-as-promised": "~7.1.5",
+        "chai": "~4.3.6",
+        "chai-as-promised": "~7.1.1"
+    },
+    "engines": {
+        "node": ">=14.16.1"
+    },
+    "homepage": "https://github.com/SurfaceJS/surface#readme",
+    "keywords": [
+        "builder",
+        "surface",
+        "typescript"
+    ],
+    "license": "MIT",
+    "main": "index.js",
+    "name": "@surface/builder",
+    "peerDependencies": {
+        "typescript": ">=4"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/SurfaceJS/surface.git"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "version": "1.0.0-beta.0"
+}

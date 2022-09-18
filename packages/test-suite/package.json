@@ -1,0 +1,35 @@
+{
+    "author": "HitalloExiled",
+    "bugs": {
+        "url": "https://github.com/SurfaceJS/surface/issues"
+    },
+    "dependencies": {
+        "tslib": "~2.4.0"
+    },
+    "description": "Provides decorators for testing with mocha using the OOP approach.",
+    "devDependencies": {
+        "@surface/tsconfig": "file:../tsconfig",
+        "@types/chai": "~4.3.3",
+        "chai": "~4.3.6"
+    },
+    "homepage": "https://github.com/SurfaceJS/surface#readme",
+    "keywords": [
+        "surface",
+        "suite",
+        "test",
+        "typescript"
+    ],
+    "license": "MIT",
+    "main": "index.js",
+    "name": "@surface/test-suite",
+    "peerDependencies": {
+        "mocha": ">=9"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/SurfaceJS/surface.git"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "version": "1.0.0-beta.0"
+}

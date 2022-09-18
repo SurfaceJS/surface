@@ -19,7 +19,7 @@
     ],
     "tasks": [
         {
-            "command": "${workspaceFolder}/node_modules/.bin/tsc.ps1 --build",
+            "command": "npm run ts:build",
             "label": "build",
             "presentation": {
                 "reveal": "silent"
@@ -30,7 +30,7 @@
             "type": "shell"
         },
         {
-            "command": "${workspaceFolder}/node_modules/.bin/tsc.ps1 --build --clean --dry",
+            "command": "npm run ts:dry",
             "label": "dry",
             "presentation": {
                 "reveal": "always"
@@ -41,10 +41,10 @@
             "type": "shell"
         },
         {
-            "command": "${workspaceFolder}/node_modules/.bin/tsc.ps1 --build --clean",
-            "label": "clean",
+            "command": "npm run ts:watch",
+            "label": "watch",
             "presentation": {
-                "reveal": "silent"
+                "reveal": "always"
             },
             "problemMatcher": {
                 "base": "$tsc"
@@ -52,20 +52,13 @@
             "type": "shell"
         },
         {
-            "command": "${workspaceFolder}/node_modules/.bin/tsc.ps1",
-            "label": "tsc",
-            "options": {
-                "cwd": "${fileDirname}"
-            },
+            "command": "npm run ts:clean",
+            "label": "clean",
             "presentation": {
                 "reveal": "silent"
             },
             "problemMatcher": {
-                "base": "$tsc",
-                "fileLocation": [
-                    "relative",
-                    "${fileDirname}"
-                ]
+                "base": "$tsc"
             },
             "type": "shell"
         },
@@ -88,15 +81,6 @@
             "type": "shell"
         },
         {
-            "command": "node ${workspaceFolder}/tasks/cli publish https://registry.npmjs.org --token=${env:NPM_AUTH_TOKEN} --mode=nightly --dry=${input:dry} --timestamp=${input:timestamp}",
-            "label": "publish-nightly",
-            "presentation": {
-                "reveal": "always"
-            },
-            "problemMatcher": [],
-            "type": "shell"
-        },
-        {
             "command": "npm run test",
             "label": "test-all",
             "presentation": {
@@ -106,7 +90,7 @@
             "type": "shell"
         },
         {
-            "command": "${workspaceFolder}/node_modules/.bin/mocha.cmd --loader=@surface/mock-loader --ui=tdd ${fileDirname}/${fileBasenameNoExtension}.js",
+            "command": "node ${workspaceFolder}/tasks/cli test ${file}",
             "label": "test-file",
             "presentation": {
                 "reveal": "always"

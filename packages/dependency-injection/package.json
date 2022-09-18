@@ -1,0 +1,33 @@
+{
+    "author": "HitalloExiled",
+    "bugs": {
+        "url": "https://github.com/SurfaceJS/surface/issues"
+    },
+    "dependencies": {
+        "@surface/core": "file:../core",
+        "tslib": "~2.4.0"
+    },
+    "description": "Provides dependency injection capabilities.",
+    "devDependencies": {
+        "@surface/test-suite": "file:../test-suite",
+        "@surface/tsconfig": "file:../tsconfig",
+        "@types/chai": "~4.3.3",
+        "chai": "~4.3.6"
+    },
+    "homepage": "https://github.com/SurfaceJS/surface#readme",
+    "keywords": [
+        "dependency-injection",
+        "surface",
+        "typescript"
+    ],
+    "license": "MIT",
+    "main": "index.js",
+    "name": "@surface/dependency-injection",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/SurfaceJS/surface.git"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "version": "1.0.0-beta.0"
+}

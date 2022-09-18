@@ -1,0 +1,8 @@
+**/!(*.d).ts
+**/!(*.d).cts
+**/*.js.map
+**/*.cjs.map
+*.backup
+*.tsbuildinfo
+tests/**
+tsconfig.json

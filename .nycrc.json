@@ -3,7 +3,7 @@
     "branches": 90,
     "exclude":
     [
-        "**/packages/@surface/*/index.js",
+        "**/packages/*/index.js",
         "**/tests"
     ],
     "extension":
@@ -14,8 +14,8 @@
     "functions": 90,
     "include":
     [
-        "packages/@surface/**/*.js",
-        "packages/@surface/**/*.ts"
+        "packages/**/*.js",
+        "packages/**/*.ts"
     ],
     "lines": 90,
     "reporter":

@@ -1,0 +1,25 @@
+{
+    "extends": "../../tsconfig.node.json",
+    "compilerOptions":
+    {
+        "outDir":  ".",
+        "rootDir": ".",
+    },
+    "files":
+    [
+        "./index.ts",
+        "./index.cts",
+    ],
+    "include":
+    [
+        "./internal",
+        "./tests"
+    ],
+    "references":
+    [
+        { "path": "../core" },
+        { "path": "../htmlx-parser" },
+        { "path": "../expression" },
+        { "path": "../test-suite" },
+    ]
+}

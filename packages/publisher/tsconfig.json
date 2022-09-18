@@ -1,0 +1,25 @@
+{
+    "extends": "../../tsconfig.node.json",
+    "compilerOptions":
+    {
+        "outDir":  ".",
+        "rootDir": ".",
+    },
+    "files":
+    [
+        "./cli.ts",
+        "./index.ts",
+    ],
+    "include":
+    [
+        "./@types",
+        "./internal",
+        "./tests"
+    ],
+    "references":
+    [
+        { "path": "../core" },
+        { "path": "../rwx" },
+        { "path": "../test-suite" },
+    ]
+}

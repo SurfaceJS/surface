@@ -1,0 +1,28 @@
+{
+    "extends": "../../tsconfig.node.json",
+    "compilerOptions":
+    {
+        "outDir":  ".",
+        "paths":   { "webpack": ["./node_modules/webpack"] },
+        "rootDir": ".",
+    },
+    "files":
+    [
+        "./cli.ts",
+        "./index.ts"
+    ],
+    "include":
+    [
+        "./bin",
+        "./internal",
+        "./tests"
+    ],
+    "references":
+    [
+        { "path": "../core" },
+        { "path": "../htmlx-loader" },
+        { "path": "../mock" },
+        { "path": "../rwx" },
+        { "path": "../test-suite" },
+    ]
+}

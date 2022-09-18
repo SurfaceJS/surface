@@ -1,33 +1,24 @@
 {
     "author": "HitalloExiled",
-    "dependencies": {
-        "@surface/core": "file:../packages/@surface/core",
-        "@surface/io": "file:../packages/@surface/io",
-        "@surface/mock": "file:../packages/@surface/mock",
-        "@surface/test-suite": "file:../packages/@surface/test-suite",
-        "@types/chai": "^4.3.0",
-        "@types/libnpmpublish": "^4.0.2",
-        "@types/minipass": "^3.1.2",
-        "@types/node": "^17.0.18",
-        "@types/pacote": "11.1.1",
-        "chai": "^4.3.6",
-        "chalk": "^5.0.0",
-        "commander": "^9.0.0",
-        "libnpmpack": "^3.1.0",
-        "libnpmpublish": "^5.0.1",
-        "pacote": "12.0.2",
-        "json5": "^2.2.1",
-        "tslib": "^2.3.1"
+    "bin": {
+        "tasks": "./cli.js"
     },
-    "description": "Global modules and shared types",
-    "keywords": [
-        "types",
-        "tests",
-        "shared"
-    ],
+    "dependencies": {
+        "@surface/core": "file:../packages/core",
+        "@surface/rwx": "file:../packages/rwx",
+        "@surface/logger": "file:../packages/logger",
+        "@types/chai": "^4.3.3",
+        "@types/node": "^18.7.6",
+        "chalk": "^5.0.1",
+        "commander": "^9.4.0",
+        "json5": "^2.2.1",
+        "tslib": "^2.4.0"
+    },
+    "description": "Workspace tasks",
     "license": "MIT",
     "main": "cli.js",
-    "name": "modules-tasks",
+    "name": "@private/tasks",
+    "private": true,
     "repository": {
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/surface.git"

@@ -1,0 +1,42 @@
+{
+    "author": "HitalloExiled",
+    "bugs": {
+        "url": "https://github.com/SurfaceJS/surface/issues"
+    },
+    "dependencies": {
+        "@surface/core": "file:../core",
+        "@surface/htmlx": "file:../htmlx",
+        "tslib": "~2.4.0"
+    },
+    "description": "Provides a base class and an set of decorators to simplify htmlx templates usage.",
+    "devDependencies": {
+        "@surface/dom-shim": "file:../dom-shim",
+        "@surface/test-suite": "file:../test-suite",
+        "@surface/tsconfig": "file:../tsconfig",
+        "@types/chai": "~4.3.3",
+        "@types/chai-as-promised": "~7.1.5",
+        "chai": "~4.3.6",
+        "chai-as-promised": "~7.1.1"
+    },
+    "exports": {
+        ".": "./index.js",
+        "./aot": "./index.aot.js"
+    },
+    "homepage": "https://github.com/SurfaceJS/surface#readme",
+    "keywords": [
+        "surface",
+        "typescript",
+        "webcomponents",
+        "htmlx"
+    ],
+    "license": "MIT",
+    "main": "index.js",
+    "name": "@surface/htmlx-element",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/SurfaceJS/surface.git"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "version": "1.0.0-beta.0"
+}

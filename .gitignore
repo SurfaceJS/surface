@@ -58,15 +58,27 @@ typings/
 .env
 
 # project
+*.cjs
+*.cjs.map
+*.d.cts
+*.d.mts
 *.d.ts
 *.js
 *.js.map
+*.mjs
+*.mjs.map
 *.orig
 .cache
 tsconfig.tsbuildinfo
-!shim.d.ts
+!**/@types/**/*.d.cts
+!**/@types/**/*.d.mts
+!**/@types/**/*.d.ts
 !**/cli.js
 !**/cli/index.js
+!**/interfaces/**/*.d.cts
+!**/interfaces/**/*.d.mts
 !**/interfaces/**/*.d.ts
+!**/types/**/*.d.cts
+!**/types/**/*.d.mts
 !**/types/**/*.d.ts
-!**/@types/**/*.d.ts
+!shim.d.ts

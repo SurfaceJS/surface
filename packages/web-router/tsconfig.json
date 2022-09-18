@@ -1,0 +1,26 @@
+{
+    "extends": "../../tsconfig.web.json",
+    "compilerOptions":
+    {
+        "outDir":  ".",
+        "rootDir": ".",
+    },
+    "files":
+    [
+        "./index.ts"
+    ],
+    "include":
+    [
+        "./internal",
+        "./tests"
+    ],
+    "references":
+    [
+        { "path": "../core" },
+        { "path": "../htmlx" },
+        { "path": "../dependency-injection" },
+        { "path": "../dom-shim" },
+        { "path": "../router" },
+        { "path": "../test-suite" },
+    ]
+}

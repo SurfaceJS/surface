@@ -2,14 +2,22 @@
     "modules":
     [
         "fs",
+        "fs/promises",
+        "libnpmpack",
+        "libnpmpublish",
+        "pacote",
+        "tar",
         "util",
-        "@surface/io",
         "webpack",
         "webpack-dev-server",
-        "./packages/@surface/io/internal/fs.js",
-        "./packages/@surface/builder/internal/builder.js",
-        "./packages/@surface/builder/internal/common.js",
-        "./packages/@surface/builder/internal/create-configurations.js",
-        "./packages/@surface/builder/internal/commands.js"
+        "@surface/logger",
+        "@surface/rwx",
+        "./packages/builder/internal/builder.js",
+        "./packages/builder/internal/commands.js",
+        "./packages/builder/internal/common.js",
+        "./packages/builder/internal/create-configurations.js",
+        "./packages/publisher/internal/commands.js",
+        "./packages/publisher/internal/common.js",
+        "./packages/publisher/internal/npm-service.js"
     ]
 }

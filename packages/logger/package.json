@@ -1,0 +1,34 @@
+{
+    "author": "HitalloExiled",
+    "bugs": {
+        "url": "https://github.com/SurfaceJS/surface/issues"
+    },
+    "dependencies": {
+        "@surface/core": "file:../core",
+        "@types/node": "~18.7.6",
+        "chalk": "^5.0.1",
+        "tslib": "~2.4.0"
+    },
+    "description": "Provides log functionality.",
+    "devDependencies": {
+        "@surface/mock": "file:../mock",
+        "@surface/test-suite": "file:../test-suite",
+        "@surface/tsconfig": "file:../tsconfig"
+    },
+    "homepage": "https://github.com/SurfaceJS/surface#readme",
+    "keywords": [
+        "io",
+        "surface",
+        "typescrypt"
+    ],
+    "license": "MIT",
+    "main": "index.js",
+    "name": "@surface/logger",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/SurfaceJS/surface.git"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "version": "1.0.0-beta.0"
+}
