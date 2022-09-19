@@ -860,7 +860,7 @@ export const validBumpScenarios: BumpScenario[] =
         skip,
         message:   "Package with no changes and version different from remote",
         options:   { },
-        args:      ["*-dev+2022.9", undefined, { synchronize: true, updateFileReferences: true }],
+        args:      ["major", undefined, { independent: true, synchronize: true, updateFileReferences: true }],
         registry:
         {
             "package-a":
@@ -869,13 +869,24 @@ export const validBumpScenarios: BumpScenario[] =
                 {
                     latest:
                     {
-                        version: "0.0.1-dev+2022.1",
+                        version: "1.0.0",
                     },
                 },
             },
             "package-b":
             {
                 hasChanges: true,
+            },
+            "package-c":
+            {
+                remote:
+                {
+                    latest:
+                    {
+                        version: "1.0.0",
+                    },
+                },
+                hasChanges: false,
             },
         },
         directory:
@@ -885,14 +896,14 @@ export const validBumpScenarios: BumpScenario[] =
                 {
                     name:       "package-root",
                     workspaces: ["packages/*"],
-                    version:    "0.0.1",
+                    version:    "1.0.0",
                 } as PackageJson,
             ),
             "./packages/package-a/package.json": JSON.stringify
             (
                 {
                     name:    "package-a",
-                    version: "0.0.1",
+                    version: "1.0.1",
                 } as PackageJson,
             ),
             "./packages/package-b/package.json": JSON.stringify
@@ -903,7 +914,14 @@ export const validBumpScenarios: BumpScenario[] =
                     {
                         "package-a": "file:../package-a",
                     },
-                    version: "0.0.1",
+                    version: "1.0.0",
+                } as PackageJson,
+            ),
+            "./packages/package-c/package.json": JSON.stringify
+            (
+                {
+                    name:    "package-c",
+                    version: "1.0.0",
                 } as PackageJson,
             ),
         },
@@ -912,7 +930,7 @@ export const validBumpScenarios: BumpScenario[] =
             "package-root":
             {
                 name:       "package-root",
-                version:    "0.0.1-dev+2022.9",
+                version:    "2.0.0",
                 workspaces:
                 [
                     "packages/*",
@@ -923,9 +941,9 @@ export const validBumpScenarios: BumpScenario[] =
                 name:         "package-b",
                 dependencies:
                 {
-                    "package-a": "~0.0.1-dev+2022.1",
+                    "package-a": "~1.0.0",
                 },
-                version: "0.0.1-dev+2022.9",
+                version: "2.0.0",
             },
         },
     },
