@@ -189,6 +189,8 @@ export default class Publisher
 
         if (!this.loaded)
         {
+            this.logger.trace("Loading workspaces...");
+
             const auth = await this.getAuth(os.homedir(), "");
 
             this.workspaces = await this.loadWorkspaces({ ...options, auth, packages: this.options.packages.map(this.normalizePattern), cwd: this.options.cwd }, 1);
@@ -272,13 +274,13 @@ export default class Publisher
     {
         if (manifest.scripts?.[script])
         {
-            this.logger.trace(`Running ${script} script in ${manifest.name}...`);
+            this.logger.debug(`Running ${script} script in ${manifest.name}...`);
 
             await execute(`npm run ${script} --if-present --color`, { cwd });
         }
         else
         {
-            this.logger.trace(`Script ${script} does not exists in ${manifest.name}, ignoring...`);
+            this.logger.debug(`Script ${script} does not exists in ${manifest.name}, ignoring...`);
         }
     }
 
@@ -312,7 +314,7 @@ export default class Publisher
 
             if (await entry.service.isPublished(entry.manifest))
             {
-                this.logger[options.canary ? "trace" : "warn"](`${versionedName} already in registry, ignoring...`);
+                this.logger[options.canary ? "debug" : "warn"](`${versionedName} already in registry, ignoring...`);
             }
             else if (!this.options.dry)
             {
@@ -327,7 +329,7 @@ export default class Publisher
 
                     await this.runScript(entry.manifest, "postpack", parentPath);
 
-                    this.logger.trace(`Publishing ${versionedName}`);
+                    this.logger.debug(`Publishing ${versionedName}`);
 
                     await entry.service.publish(entry.manifest, buffer, tag);
 
@@ -349,7 +351,7 @@ export default class Publisher
         }
         else
         {
-            this.logger.trace(`Package ${entry.manifest.name} is ${entry.manifest.private ? "private" : "an workspace"}, publishing ignored...`);
+            this.logger.debug(`Package ${entry.manifest.name} is ${entry.manifest.private ? "private" : "an workspace"}, publishing ignored...`);
         }
 
         if (!this.options.dry && entry.workspaces?.size)
@@ -360,6 +362,7 @@ export default class Publisher
 
     private async publishWorkspaces(tag: string, options: PublishOptions, workspaces: Map<string, Entry>): Promise<void>
     {
+        this.logger.trace("Publishing workspaces...");
         const promises: Promise<void>[] = [];
 
         for (const entry of workspaces.values())
@@ -376,7 +379,7 @@ export default class Publisher
         {
             await writeFile(key, value);
 
-            this.logger.trace(`Package ${key} restored!`);
+            this.logger.debug(`Package ${key} restored!`);
         }
     }
 
@@ -413,7 +416,7 @@ export default class Publisher
                         {
                             dependencies[name] = `~${dependencyVersion}`;
 
-                            this.logger.trace(`${dependencyType}:${name} in ${entry.manifest.name} updated from '${version}' to '${dependencyVersion}'`);
+                            this.logger.debug(`${dependencyType}:${name} in ${entry.manifest.name} updated from '${version}' to '${dependencyVersion}'`);
                         }
                     }
                 }
@@ -471,7 +474,7 @@ export default class Publisher
             const manifest = entry.manifest;
             const actual   = manifest.version;
 
-            if (options.force || entry.modified)
+            if (options.force || !options.independent || entry.modified)
             {
                 const updated: string | null = isSemanticVersion(version)
                     ? version
@@ -491,18 +494,18 @@ export default class Publisher
                 {
                     manifest.version = updated;
 
-                    this.logger.trace(`${manifest.name} version updated from ${actual} to ${manifest.version}`);
+                    this.logger.debug(`${manifest.name} version updated from ${actual} to ${manifest.version}`);
                 }
             }
             else if (entry.remote && entry.manifest.version != entry.remote.version)
             {
-                this.logger.trace(`Package ${manifest.name} has no changes but local version (${manifest.version}) differ from remote version (${entry.remote.version}) using dist-tag ${options.tag ?? "latest"}`);
+                this.logger.debug(`Package ${manifest.name} has no changes but local version (${manifest.version}) differ from remote version (${entry.remote.version}) using dist-tag ${options.tag ?? "latest"}`);
 
                 manifest.version = entry.remote.version;
             }
             else
             {
-                this.logger.trace(`Package ${manifest.name} has no changes`);
+                this.logger.debug(`Package ${manifest.name} has no changes`);
             }
 
             if (entry.workspaces?.size)
@@ -526,7 +529,7 @@ export default class Publisher
             {
                 try
                 {
-                    this.logger.trace(`Unpublishing ${versionedName}.`);
+                    this.logger.debug(`Unpublishing ${versionedName}.`);
 
                     await entry.service.unpublish(entry.manifest, tag);
 
@@ -548,7 +551,7 @@ export default class Publisher
 
         else
         {
-            this.logger.trace(`Package ${entry.manifest.name} is ${entry.manifest.private ? "private" : "an workspace"}, unpublishing ignored...`);
+            this.logger.debug(`Package ${entry.manifest.name} is ${entry.manifest.private ? "private" : "an workspace"}, unpublishing ignored...`);
         }
 
         if (entry.workspaces?.size)
@@ -559,6 +562,8 @@ export default class Publisher
 
     private async unpublishWorkspaces(tag: string, workspaces: Map<string, Entry>, options: UnpublishOptions): Promise<void>
     {
+        this.logger.trace("Unpublishing workspaces...");
+
         const promises: Promise<void>[] = [];
 
         for (const entry of workspaces.values())
@@ -579,8 +584,10 @@ export default class Publisher
     {
         if (await this.loadWorkspaces({ tag: options.tag, ignoreChanges: options.ignoreChanges }))
         {
+            this.logger.trace("Updating packages version...");
             await this.update(this.workspaces, version, identifier, options);
 
+            this.logger.trace("Writing packages...");
             await this.writeWorkspaces(options);
 
             if (this.errors.length > 0)
@@ -624,6 +631,7 @@ export default class Publisher
             const bumpOptions: BumpOptions =
             {
                 force:                options.force,
+                independent:          true,
                 synchronize:          options.synchronize,
                 updateFileReferences: true,
             };
