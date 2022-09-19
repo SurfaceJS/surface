@@ -1,7 +1,7 @@
 name: Build and Testing
 on: [push]
 jobs:
-  build:
+  install:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -23,5 +23,11 @@ jobs:
     - run: npm i -g npm@8.1.2
     - run: npm set unsafe-perm true
     - run: npm ci
+  build:
+    needs: install
+    steps:
     - run: npm run build
+  test:
+    needs: build
+    steps:
     - run: npm run cover
