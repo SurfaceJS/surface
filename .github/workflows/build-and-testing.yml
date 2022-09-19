@@ -24,10 +24,12 @@ jobs:
     - run: npm set unsafe-perm true
     - run: npm ci
   build:
+    runs-on: ubuntu-latest
     needs: install
     steps:
     - run: npm run build
   test:
+    runs-on: ubuntu-latest
     needs: build
     steps:
     - run: npm run cover
