@@ -110,6 +110,9 @@ export type ChangedOptions =
 export type PublishOptions =
 {
 
+    /** Semantic version build. Used by canary.*/
+    build?: string,
+
     /** Enables canary release. */
     canary?: boolean,
 
@@ -117,7 +120,7 @@ export type PublishOptions =
     force?: boolean,
 
     /** The "prerelease identifier" to use as a prefix for the "prerelease" part of a semver. Used by canary. */
-    identifier?: string,
+    preid?: string,
 
     /** An prerelease type. Used by canary. */
     prereleaseType?: Pre<ReleaseType>,
@@ -467,7 +470,7 @@ export default class Publisher
         await Promise.all(promises);
     }
 
-    private async update(workspaces: Map<string, Entry>, version: Version, identifier: string | undefined, options: BumpOptions = { }): Promise<void>
+    private async update(workspaces: Map<string, Entry>, version: Version, preid: string | undefined, build: string | undefined, options: BumpOptions = { }): Promise<void>
     {
         for (const entry of workspaces.values())
         {
@@ -480,7 +483,7 @@ export default class Publisher
                     ? version
                     : isGlobPrerelease(version)
                         ? overridePrerelease(manifest.version, version)
-                        : semver.inc(manifest.version, version, { loose: true }, identifier);
+                        : semver.inc(manifest.version, version, { loose: true }, preid);
 
                 if (!updated)
                 {
@@ -492,7 +495,7 @@ export default class Publisher
                 }
                 else
                 {
-                    manifest.version = updated;
+                    manifest.version = updated + (build ? `+${build}` : "");
 
                     this.logger.debug(`${manifest.name} version updated from ${actual} to ${manifest.version}`);
                 }
@@ -510,7 +513,7 @@ export default class Publisher
 
             if (entry.workspaces?.size)
             {
-                await this.update(entry.workspaces, options.independent ? version : entry.manifest.version as SemanticVersion, identifier, options);
+                await this.update(entry.workspaces, options.independent ? version : entry.manifest.version as SemanticVersion, preid, build, options);
             }
         }
     }
@@ -578,14 +581,15 @@ export default class Publisher
      * Bump discovered packages using provided custom version.
      * @param version An semantic version or an release type: major, minor, patch, premajor, preminor, prepatch, prerelease.
      * Also can accept an glob prerelease '*-dev+123' to override just the prerelease part of the version. Useful for canary builds.
-     * @param identifier The "prerelease identifier" to use as a prefix for the "prerelease" part of a semver. Like the rc in 1.2.0-rc.8.
+     * @param preid The 'prerelease identifier' part of a semver. Like the "rc" in 1.2.0-rc.8+2022.
+     * @param build The build part of a semver. Like the "2022" in 1.2.0-rc.8+2022.
      */
-    public async bump(version: Version, identifier?: string, options: BumpOptions = { }): Promise<void>
+    public async bump(version: Version, preid?: string, build?: string, options: BumpOptions = { }): Promise<void>
     {
         if (await this.loadWorkspaces({ tag: options.tag, ignoreChanges: options.ignoreChanges }))
         {
             this.logger.trace("Updating packages version...");
-            await this.update(this.workspaces, version, identifier, options);
+            await this.update(this.workspaces, version, preid, build, options);
 
             this.logger.trace("Writing packages...");
             await this.writeWorkspaces(options);
@@ -638,13 +642,15 @@ export default class Publisher
 
             if (options.canary)
             {
+                const build = options.build ?? timestamp();
+
                 options.prereleaseType
-                    ? await this.bump(options.prereleaseType, options.identifier, bumpOptions)
-                    : await this.bump(`*-${options.identifier ?? "dev"}.${timestamp()}`, undefined, bumpOptions);
+                    ? await this.bump(options.prereleaseType, options.preid, build, bumpOptions)
+                    : await this.bump(`*-${options.preid ?? "dev"}`, undefined, build, bumpOptions);
             }
             else
             {
-                const keys: (keyof PublishOptions)[] = ["identifier", "prereleaseType"];
+                const keys: (keyof PublishOptions)[] = ["preid", "prereleaseType", "build"];
 
                 for (const key of keys)
                 {

@@ -10,7 +10,7 @@ import Publisher,
 
 export default class Commands
 {
-    public static async bump(version: Version, identifier?: string, options: Options & BumpOptions = { }): Promise<void>
+    public static async bump(version: Version, preid?: string, build?: string, options: Options & BumpOptions = { }): Promise<void>
     {
         const bumpOptions: BumpOptions =
         {
@@ -19,7 +19,7 @@ export default class Commands
             updateFileReferences: options.updateFileReferences,
         };
 
-        await new Publisher(options).bump(version, identifier, bumpOptions);
+        await new Publisher(options).bump(version, preid, build, bumpOptions);
     }
 
     public static async changed(tag: string = "latest", options: Options & ChangedOptions = { }): Promise<void>
@@ -34,7 +34,7 @@ export default class Commands
         const publishOptions: PublishOptions =
         {
             canary:         options.canary,
-            identifier:     options.identifier,
+            preid:          options.preid,
             prereleaseType: options.prereleaseType,
         };
 

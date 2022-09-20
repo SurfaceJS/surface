@@ -490,14 +490,14 @@ export const validPublishScenarios: PublishScenario[] =
         {
             published:
             [
-                "package-a@0.0.1-dev.202201010000",
-                "package-b@0.1.0-dev.202201010000",
+                "package-a@0.0.1-dev+202201010000",
+                "package-b@0.1.0-dev+202201010000",
             ],
         },
     },
     {
         skip,
-        message:   "Publish canary with prerelease type",
+        message:   "Publish canary with prerelease type, preid and build",
         options:
         {
             logLevel: LogLevel.Trace,
@@ -506,7 +506,7 @@ export const validPublishScenarios: PublishScenario[] =
                 "packages/*",
             ],
         },
-        args:      ["latest", { canary: true, prereleaseType: "premajor" }],
+        args:      ["latest", { canary: true, prereleaseType: "premajor", preid: "alpha", build: "2022" }],
         registry:  { },
         directory:
         {
@@ -536,146 +536,8 @@ export const validPublishScenarios: PublishScenario[] =
         {
             published:
             [
-                "package-a@1.0.0-0",
-                "package-b@1.0.0-0",
-            ],
-        },
-    },
-    {
-        skip,
-        message:   "Publish canary with prerelease type and identifier",
-        options:
-        {
-            logLevel: LogLevel.Trace,
-            packages:
-            [
-                "packages/*",
-            ],
-        },
-        args:      ["latest", { canary: true, prereleaseType: "premajor", identifier: "dev" }],
-        registry:  { },
-        directory:
-        {
-            "./packages":
-            {
-                "./package-a/package.json": JSON.stringify
-                (
-                    {
-                        name:    "package-a",
-                        version: "0.0.1",
-                    } as Partial<PackageJson>,
-                ),
-                "./package-b/package.json": JSON.stringify
-                (
-                    {
-                        name:         "package-b",
-                        dependencies:
-                        {
-                            "package-a": "0.0.1",
-                        },
-                        version: "0.1.0",
-                    } as Partial<PackageJson>,
-                ),
-            },
-        },
-        expected:
-        {
-            published:
-            [
-                "package-a@1.0.0-dev.0",
-                "package-b@1.0.0-dev.0",
-            ],
-        },
-    },
-    {
-        skip,
-        message:   "Publish canary with prerelease type and identifier",
-        options:
-        {
-            logLevel: LogLevel.Trace,
-            packages:
-            [
-                "packages/*",
-            ],
-        },
-        args:      ["latest", { canary: true, prereleaseType: "premajor", identifier: "next" }],
-        registry:  { },
-        directory:
-        {
-            "./packages":
-            {
-                "./package-a/package.json": JSON.stringify
-                (
-                    {
-                        name:    "package-a",
-                        version: "0.0.1",
-                    } as Partial<PackageJson>,
-                ),
-                "./package-b/package.json": JSON.stringify
-                (
-                    {
-                        name:         "package-b",
-                        dependencies:
-                        {
-                            "package-a": "0.0.1",
-                        },
-                        version: "0.1.0",
-                    } as Partial<PackageJson>,
-                ),
-            },
-        },
-        expected:
-        {
-            published:
-            [
-                "package-a@1.0.0-next.0",
-                "package-b@1.0.0-next.0",
-            ],
-        },
-    },
-    {
-        skip,
-        message:   "Publish canary with options",
-        options:
-        {
-            logLevel: LogLevel.Trace,
-            packages:
-            [
-                "packages/*",
-            ],
-        },
-        args:      ["latest", { canary: true, identifier: "dev" }],
-        registry:  { },
-        directory:
-        {
-            "./packages":
-            {
-                "./package-a/package.json": JSON.stringify
-                (
-                    {
-                        name:    "package-a",
-                        version: "0.0.1",
-                    } as Partial<PackageJson>,
-                ),
-                "./package-b/package.json": JSON.stringify
-                (
-                    {
-                        name:         "package-b",
-                        dependencies:
-                        {
-                            "package-a": "0.0.1",
-                        },
-                        version: "0.1.0",
-                    } as Partial<PackageJson>,
-                ),
-            },
-        },
-        expected:
-        {
-            published:
-            [
-                "package-a@0.0.1-dev.202201010000",
-                "package-b@0.1.0-dev.202201010000",
+                "package-a@1.0.0-alpha.0+2022",
+                "package-b@1.0.0-alpha.0+2022",
             ],
         },
     },
@@ -690,7 +552,7 @@ export const validPublishScenarios: PublishScenario[] =
                 "packages/*",
             ],
         },
-        args:      ["latest", { canary: false, identifier: "dev" }],
+        args:      ["latest", { canary: false, preid: "dev" }],
         registry:  { },
         directory:
         {

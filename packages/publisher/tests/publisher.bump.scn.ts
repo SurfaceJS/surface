@@ -298,7 +298,7 @@ export const validBumpScenarios: BumpScenario[] =
         skip,
         message:   "Bump workspace with independent version",
         options:   { },
-        args:      ["major", undefined, { independent: true }],
+        args:      ["major", undefined, undefined, { independent: true }],
         registry:  { },
         directory:
         {
@@ -357,7 +357,7 @@ export const validBumpScenarios: BumpScenario[] =
         skip,
         message:   "Bump workspace with independent version and dependencies synchronization",
         options:   { },
-        args:      ["major", undefined, { independent: true, synchronize: true }],
+        args:      ["major", undefined, undefined, { independent: true, synchronize: true }],
         registry:  { },
         directory:
         {
@@ -419,7 +419,7 @@ export const validBumpScenarios: BumpScenario[] =
         {
             logLevel: LogLevel.Trace,
         },
-        args:      ["minor", undefined, { independent: true }],
+        args:      ["minor", undefined, undefined, { independent: true }],
         registry:  { },
         directory:
         {
@@ -548,7 +548,7 @@ export const validBumpScenarios: BumpScenario[] =
         {
             logLevel: LogLevel.Trace,
         },
-        args:      ["minor", undefined, { independent: true, updateFileReferences: true }],
+        args:      ["minor", undefined, undefined, { independent: true, updateFileReferences: true }],
         registry:  { },
         directory:
         {
@@ -677,7 +677,7 @@ export const validBumpScenarios: BumpScenario[] =
         {
             logLevel: LogLevel.Trace,
         },
-        args:      ["minor", undefined, { independent: true, updateFileReferences: true }],
+        args:      ["minor", undefined, undefined, { independent: true, updateFileReferences: true }],
         registry:  { },
         directory:
         {
@@ -860,7 +860,7 @@ export const validBumpScenarios: BumpScenario[] =
         skip,
         message:   "Package with no changes and version different from remote",
         options:   { },
-        args:      ["major", undefined, { independent: true, synchronize: true, updateFileReferences: true }],
+        args:      ["major", undefined, undefined, { independent: true, synchronize: true, updateFileReferences: true }],
         registry:
         {
             "package-a":
