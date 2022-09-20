@@ -54,7 +54,8 @@ export default async function main(args: string[]): Promise<void>
         .command("bump")
         .description("Bump discovered packages or workspaces using provided custom version")
         .argument("<version>", "An semantic version or an release type: major, minor, patch, premajor, preminor, prepatch, prerelease. Also can accept an glob prerelease '*-dev+123' to override just the prerelease part of the version. Useful for canary builds.", toSemver)
-        .argument("[preid]", "The 'prerelease identifier' to use as a prefix for the 'prerelease' part of a semver. Like the rc in 1.2.0-rc.8")
+        .argument("[preid]", "The 'prerelease identifier' part of a semver. Like the \"rc\" in 1.2.0-rc.8+2022")
+        .argument("[build]", "The build part of a semver. Like the \"2022\" in 1.2.0-rc.8+2022")
         .option("--tag                    <n>", "Tag used to compare local and remote packages")
         .option("--force                  [n]", "Bump packages with no changes", toBoolean)
         .option("--independent            [n]", "Ignore workspace root version and bump itself", toBoolean)
@@ -77,7 +78,8 @@ export default async function main(args: string[]): Promise<void>
         .option("--synchronize            [n]", "Synchronize dependencies between workspace packages before publishing", toBoolean)
         .option("--canary                 [n]", "Enables canary release", toBoolean)
         .option("--prerelease-type        <n>", "An prerelease type: premajor, preminor, prepatch, prerelease", toEnum("premajor", "preminor", "prepatch", "prerelease"))
-        .option("--identifier             <n>", "The \"prerelease identifier\" to use as a prefix for the \"prerelease\" part of a semver. Used by canary.")
+        .option("--preid                  <n>", "The 'prerelease identifier' part of a semver. Like the \"rc\" in 1.2.0-rc.8+2022")
+        .option("--build                  <n>", "The build part of a semver. Like the \"2022\" in 1.2.0-rc.8+2022")
         .option("--force                  <n>", "Forces to publish unchanged packages. Used by canary", toBoolean);
 
     apply(Commands.publish, publish, globalOptions, ignoreChangesOptions, restrictionOptions);

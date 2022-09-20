@@ -30,16 +30,15 @@ Currently only npm automation tokens are supported when publishing on the `https
 ### Bump
 
 ```txt
-Usage: publisher bump [options] <version> [preid]
+Usage: publisher bump [options] <version> [preid] [build]
 
 Bump discovered packages or workspaces using provided custom version
 
 Arguments:
-  version                          An semantic version or an release type: major, minor, patch, premajor, preminor, prepatch, prerelease.
-                                   Also can accept an glob prerelease '*-dev+123' to override just the prerelease part of the version.
-                                   Useful for canary builds.
-  preid                            The 'prerelease identifier' to use as a prefix for the 'prerelease' part of a semver. Like the rc in
-                                   1.2.0-rc.8
+  version                          An semantic version or an release type: major, minor, patch, premajor, preminor, prepatch, prerelease. Also can accept an glob prerelease '*-dev+123' to override just the prerelease part of the version. Useful for canary
+                                   builds.
+  preid                            The 'prerelease identifier' part of a semver. Like the "rc" in 1.2.0-rc.8+2022
+  build                            The build part of a semver. Like the "2022" in 1.2.0-rc.8+2022
 
 Options:
   --tag                    <n>     Tag used to compare local and remote packages
@@ -94,7 +93,8 @@ Options:
   --synchronize            [n]     Synchronize dependencies between workspace packages before publishing
   --canary                 [n]     Enables canary release
   --prerelease-type        <n>     An prerelease type: premajor, preminor, prepatch, prerelease
-  --identifier             <n>     The "prerelease identifier" to use as a prefix for the "prerelease" part of a semver. Used by canary.
+  --preid                  <n>     The 'prerelease identifier' part of a semver. Like the "rc" in 1.2.0-rc.8+2022
+  --build                  <n>     The build part of a semver. Like the "2022" in 1.2.0-rc.8+2022
   --force                  <n>     Forces to publish unchanged packages. Used by canary
   --packages               <n...>  Packages or workspaces to include
   --registry               <n>     Registry from where packages will be unpublished

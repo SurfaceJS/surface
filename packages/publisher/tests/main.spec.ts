@@ -54,6 +54,7 @@ export default class MainSpec
             "bump",
             "prerelease",
             "alpha",
+            "2022",
             "--tag=next",
             "--cwd=.",
             "--dry=true",
@@ -74,6 +75,7 @@ export default class MainSpec
         [
             "prerelease",
             "alpha",
+            "2022",
             {
                 cwd:                  ".",
                 tag:                  "next",
@@ -91,7 +93,7 @@ export default class MainSpec
         ];
 
         CommandsMock.setup("bump")
-            .call(It.any(), It.any(), It.any())
+            .call(It.any(), It.any(), It.any(), It.any())
             .callback((...args) => actual = args)
             .resolve();
 
@@ -157,11 +159,12 @@ export default class MainSpec
             "",
             "publish",
             "latest",
+            "--build=2022",
             "--canary=true",
             "--cwd=.",
             "--dry=true",
             "--force=true",
-            "--identifier=alpha",
+            "--preid=alpha",
             "--ignore-changes=*.md",
             "--include-private=true",
             "--include-workspace-root=true",
@@ -179,16 +182,17 @@ export default class MainSpec
         [
             "latest",
             {
+                build:                "2022",
                 canary:               true,
                 cwd:                  ".",
                 dry:                  true,
                 force:                true,
-                identifier:           "alpha",
                 ignoreChanges:        ["*.md"],
                 includePrivate:       true,
                 includeWorkspaceRoot: true,
                 logLevel:             LogLevel.Trace,
                 packages:             ["bar", "foo"],
+                preid:                "alpha",
                 prereleaseType:       "premajor",
                 registry:             "https://registry.com",
                 synchronize:          true,
