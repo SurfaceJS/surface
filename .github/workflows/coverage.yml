@@ -12,24 +12,15 @@ jobs:
         node-version: [18.x]
     steps:
     - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-    - name: Cache Node.js modules
-      uses: actions/cache@v2
-      with:
-        path: ~/.npm
-        key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.OS }}-node-
-          ${{ runner.OS }}-
-    - run: npm i -g npm@8.1.2
-    - run: npm set unsafe-perm true
-    - run: npm ci
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: ./.github/actions/setup
     - run: npm run build
     - run: npm run cover
     - name: Codecov
       uses: codecov/codecov-action@v1.0.14
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
+    - name: Canary
+      run: npm run publisher:canary -- dry=false
+      with:
+        NPM_TOKEN: ${{secrets.NPM_TOKEN}}

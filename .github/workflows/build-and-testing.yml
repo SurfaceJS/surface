@@ -5,61 +5,21 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [16.x, 17.x, 18.x]
+        # node-version: [16.x, 17.x, 18.x]
+        node-version: [18.x]
     steps:
     - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: ./.github/actions/setup
       with:
         node-version: ${{ matrix.node-version }}
-    - name: Cache Node.js modules
-      uses: actions/cache@v2
-      with:
-        path: ~/.npm
-        key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.OS }}-node-
-          ${{ runner.OS }}-
-    - run: npm i -g npm@8.1.2
-    - run: npm set unsafe-perm true
-    - run: npm ci
-  build:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [16.x, 17.x, 18.x]
-    needs: install
-    steps:
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-    - name: Cache Node.js modules
-      uses: actions/cache@v2
-      with:
-        path: ~/.npm
-        key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.OS }}-node-
-          ${{ runner.OS }}-
-    - run: npm run build
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [16.x, 17.x, 18.x]
-    needs: build
-    steps:
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-    - name: Cache Node.js modules
-      uses: actions/cache@v2
-      with:
-        path: ~/.npm
-        key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.OS }}-node-
-          ${{ runner.OS }}-
-    - run: npm run cover
+    - name: Building...
+      run: npm run build
+    - name: Testing...
+      run: npm run cover
+    ### !!! REMOVE BEFORE MERGE !!! ###
+    - name: Canary
+      run: npm run publisher:publish-canary -- dry=false
+      env:
+        NPM_TOKEN: ${{secrets.NPM_TOKEN}}
+
