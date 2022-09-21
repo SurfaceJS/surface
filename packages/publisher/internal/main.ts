@@ -32,7 +32,7 @@ function globalOptions(program: Command): Command
         .option("--token                  <n>", "Token used to authenticate")
         .option("--cwd                    <n>", "Working dir")
         .option("--dry                    [n]", "Enables dry run", toBoolean)
-        .option("--log-level              <n>", "Log level", toEnum(...Object.entries(LogLevel)), "info");
+        .option("--log-level              <n>", "Log level", toEnum(...Object.entries(LogLevel)), LogLevel.Info);
 }
 
 function restrictionOptions(program: Command): Command
