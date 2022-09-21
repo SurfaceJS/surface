@@ -268,7 +268,7 @@ export default class PublisherSpec
         const actual: string[] = [];
 
         npmRepositoryMock.setup("unpublish").call(It.any(), It.any())
-            .callback(x => actual.push(x.name))
+            .callback(x => actual.push(x))
             .resolve();
 
         await chai.assert.isFulfilled(new Publisher(scenario.options).unpublish("latest"));

@@ -120,7 +120,7 @@ export default class SuiteSpec
 
         const service = new NpmService();
 
-        await chai.assert.isFulfilled(service.unpublish({ name: "foo", version: "1.0.0" }));
+        await chai.assert.isFulfilled(service.unpublish("foo@1.0.0"));
     }
 
     @test @shouldFail
@@ -154,6 +154,6 @@ export default class SuiteSpec
 
         const service = new NpmService();
 
-        await chai.assert.isRejected(service.unpublish({ name: "foo", version: "1.0.0" }), /Failed to unpublish package foo/);
+        await chai.assert.isRejected(service.unpublish("foo@1.0.0"), /Failed to unpublish package foo/);
     }
 }

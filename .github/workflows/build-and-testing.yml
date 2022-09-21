@@ -19,7 +19,7 @@ jobs:
       run: npm run cover
     ### !!! REMOVE BEFORE MERGE !!! ###
     - name: Canary
-      run: npm run publisher:publish-canary -- dry=false
+      run: npm run publisher:publish-canary
       env:
         NPM_TOKEN: ${{secrets.NPM_TOKEN}}
 

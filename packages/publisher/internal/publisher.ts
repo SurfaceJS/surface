@@ -528,7 +528,7 @@ export default class Publisher
                 {
                     this.logger.trace(`Unpublishing ${versionedName}.`);
 
-                    await entry.service.unpublish(entry.manifest, tag);
+                    await entry.service.unpublish(versionedName, tag);
 
                     this.logger.info(`${versionedName} was unpublished.`);
                 }
