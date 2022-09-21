@@ -7,13 +7,12 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [18.x]
     steps:
     - uses: actions/checkout@v2
-    - name: Setup Node.js ${{ matrix.node-version }}
+    - name: Setup Node.js
       uses: ./.github/actions/setup
+      with:
+        node-version: 18.x
     - run: npm run build
     - run: npm run cover
     - name: Codecov
@@ -21,6 +20,6 @@ jobs:
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
     - name: Canary
-      run: npm run publisher:canary -- dry=false
-      with:
-        NPM_TOKEN: ${{secrets.NPM_TOKEN}}
+      run: npm run publisher:publish-canary
+      env:
+        NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

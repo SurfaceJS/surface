@@ -1,25 +1,19 @@
 name: Build and Testing
 on: [push]
 jobs:
-  install:
+  setup:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # node-version: [16.x, 17.x, 18.x]
-        node-version: [18.x]
+        node-version: [16.x, 17.x, 18.x]
     steps:
     - uses: actions/checkout@v2
     - name: Setup Node.js ${{ matrix.node-version }}
       uses: ./.github/actions/setup
       with:
         node-version: ${{ matrix.node-version }}
-    - name: Building...
+    - name: Build
       run: npm run build
-    - name: Testing...
+    - name: Test
       run: npm run cover
-    ### !!! REMOVE BEFORE MERGE !!! ###
-    - name: Canary
-      run: npm run publisher:publish-canary
-      env:
-        NPM_TOKEN: ${{secrets.NPM_TOKEN}}
 
