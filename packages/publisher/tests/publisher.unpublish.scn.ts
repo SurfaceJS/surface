@@ -132,8 +132,8 @@ export const validUnpublishScenarios: UnpublishScenario[] =
         {
             unpublished:
             [
-                "package-a",
-                "package-b",
+                "package-a@0.0.1",
+                "package-b@0.1.0",
             ],
         },
     },
@@ -179,7 +179,7 @@ export const validUnpublishScenarios: UnpublishScenario[] =
         {
             unpublished:
             [
-                "package-a",
+                "package-a@0.0.1",
             ],
         },
     },

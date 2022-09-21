@@ -139,13 +139,13 @@ export default class NpmService
         }
     }
 
-    public async unpublish(manifest: PackageJson, tag: string = "latest"): Promise<void>
+    public async unpublish(spec: string, tag: string = "latest"): Promise<void>
     {
-        const response = await libnpmpublish.unpublish(manifest, { registry: this.registry, access: "public", defaultTag: tag, forceAuth: { token: this.token } });
+        const response = await libnpmpublish.unpublish(spec, { registry: this.registry, access: "public", defaultTag: tag, forceAuth: { token: this.token } });
 
         if (!response)
         {
-            throw new Error(`Failed to unpublish package ${manifest.name}`);
+            throw new Error(`Failed to unpublish package ${spec}`);
         }
     }
 }

@@ -7,7 +7,7 @@ import type { Indexer }                                                         
 import { assert, contains, dashedToCamel, typeGuard }                                            from "@surface/core";
 import type { IExpression, IPattern, Identifier }                                                from "@surface/expression";
 import { ArrowFunctionExpression, Literal, SyntaxError, TypeGuard }                              from "@surface/expression";
-import { buildStackTrace, scapeBrackets, throwTemplateParseError }                               from "./common.js";
+import { scapeBrackets, throwTemplateParseError }                                                from "./common.js";
 import DescriptorType                                                                            from "./descriptor-type.js";
 import DirectiveType                                                                             from "./enums/directive-type.js";
 import NodeType                                                                                  from "./enums/node-type.js";
@@ -518,10 +518,6 @@ export default class Parser
                     if (node.nextSibling.nodeType == NodeType.Text && node.nextSibling.textContent?.trim() != "")
                     {
                         this.pushToStack(node.nextSibling, this.index - nonElementsCount);
-
-                        const message = `${"Any content between conditional statement branches will be ignored.\n"}${buildStackTrace(this.stackTrace)}`;
-
-                        console.warn(message);
 
                         this.stackTrace.pop();
                     }

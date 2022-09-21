@@ -1,27 +1,21 @@
 name: Build and Testing
 on: [push]
 jobs:
-  build:
+  setup:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [16.x, 17.x, 18.x]
     steps:
     - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: ./.github/actions/setup
       with:
         node-version: ${{ matrix.node-version }}
-    - name: Cache Node.js modules
-      uses: actions/cache@v2
-      with:
-        path: ~/.npm
-        key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.OS }}-node-
-          ${{ runner.OS }}-
-    - run: npm i -g npm@8.1.2
-    - run: npm set unsafe-perm true
-    - run: npm ci
-    - run: npm run build
-    - run: npm run cover
+    - name: Build
+      run: npm run build
+    - name: Lint
+      run: npm run lint
+    - name: Test
+      run: npm run cover-summary
+
