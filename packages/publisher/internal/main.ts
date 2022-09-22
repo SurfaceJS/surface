@@ -77,10 +77,10 @@ export default async function main(args: string[]): Promise<void>
         .argument("[tag]", "Tag to publish")
         .option("--synchronize            [n]", "Synchronize dependencies between workspace packages before publishing", toBoolean)
         .option("--canary                 [n]", "Enables canary release", toBoolean)
-        .option("--prerelease-type        <n>", "An prerelease type: premajor, preminor, prepatch, prerelease", toEnum("premajor", "preminor", "prepatch", "prerelease"))
-        .option("--preid                  <n>", "The 'prerelease identifier' part of a semver. Like the \"rc\" in 1.2.0-rc.8+2022")
-        .option("--build                  <n>", "The build part of a semver. Like the \"2022\" in 1.2.0-rc.8+2022")
-        .option("--force                  <n>", "Forces to publish unchanged packages. Used by canary", toBoolean);
+        .option("--prerelease-type        <n>", "An prerelease type: premajor, preminor, prepatch, prerelease. Used by canary", toEnum("premajor", "preminor", "prepatch", "prerelease"))
+        .option("--preid                  <n>", "The 'prerelease identifier' part of a semver. Like the \"rc\" in 1.2.0-rc.8+2022. Used by canary")
+        .option("--build                  <n>", "The build part of a semver. Like the \"2022\" in 1.2.0-rc.8+2022. Used by canary")
+        .option("--force                  [n]", "Forces to publish unchanged packages. Used by canary", toBoolean);
 
     apply(Commands.publish, publish, globalOptions, ignoreChangesOptions, restrictionOptions);
 
