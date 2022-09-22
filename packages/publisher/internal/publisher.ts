@@ -22,8 +22,8 @@ type PackageJson = _PackageJson & { workspaces?: string[] };
 type Entry =
 {
     auth:        Auth,
+    hasChanges:  boolean,
     manifest:    PackageJson,
-    modified:    boolean,
     path:        string,
     remote:      Pick<PackageJson, "name" | "version"> | null,
     service:     NpmService,
@@ -105,12 +105,15 @@ export type ChangedOptions =
 
     /** Files to ignore when detecting changes. */
     ignoreChanges?: string[],
+
+    /** Tag used to compare local and remote packages. */
+    tag?: string,
 } & RestrictionOptions;
 
 export type PublishOptions =
 {
 
-    /** Semantic version build. Used by canary.*/
+    /** Semantic version build. Used by canary. */
     build?: string,
 
     /** Enables canary release. */
@@ -127,6 +130,9 @@ export type PublishOptions =
 
     /** Synchronize dependencies between workspace packages before publishing. */
     synchronize?: boolean,
+
+    /** Tag to publish. */
+    tag?: string,
 } & ChangedOptions & RestrictionOptions;
 
 export type UnpublishOptions = RestrictionOptions;
@@ -140,7 +146,7 @@ export default class Publisher
     private readonly logger:  Logger;
     private readonly options: RequiredProperties<Options, "cwd" | "packages">;
 
-    private loaded:     boolean               = false;
+    private loaded:     boolean            = false;
     private workspaces: Map<string, Entry> = new Map();
 
     public constructor(options: Options)
@@ -160,7 +166,7 @@ export default class Publisher
 
         for (const entry of workspaces.values())
         {
-            if (entry.modified && (options.includePrivate || !entry.manifest.private) && (options.includeWorkspaceRoot || !entry.workspaces))
+            if (entry.hasChanges && (options.includePrivate || !entry.manifest.private) && (options.includeWorkspaceRoot || !entry.workspaces))
             {
                 changes.push(entry.manifest.name);
             }
@@ -235,14 +241,14 @@ export default class Publisher
 
         const spec = `${manifest.name}@${tag}`;
 
-        const remote   = await service.get(spec);
-        const modified = remote ? await service.hasChanges(`file:${parentPath}`, spec, { ignorePackageVersion: true, ignoreFiles: options.ignoreChanges ?? [] }) : true;
+        const remote     = await service.get(spec);
+        const hasChanges = remote ? await service.hasChanges(`file:${parentPath}`, spec, { ignorePackageVersion: true, ignoreFiles: options.ignoreChanges ?? [] }) : true;
 
         const entry: Entry =
         {
             auth,
+            hasChanges,
             manifest,
-            modified,
             path,
             remote,
             service,
@@ -315,7 +321,7 @@ export default class Publisher
         {
             const versionedName = `${entry.manifest.name}@${entry.manifest.version}`;
 
-            if (!options.force && await entry.service.isPublished(entry.manifest))
+            if (entry.manifest.version == entry.remote?.version)
             {
                 this.logger[options.canary ? "debug" : "warn"](`${versionedName} already in registry, ignoring...`);
             }
@@ -451,7 +457,7 @@ export default class Publisher
 
             if (!this.options.dry)
             {
-                if (options.force || entry.modified)
+                if (options.force || entry.hasChanges)
                 {
                     promises.push(chain.then(async () => writeFile(entry.path, JSON.stringify(entry.manifest, null, 4))));
                 }
@@ -477,7 +483,7 @@ export default class Publisher
             const manifest = entry.manifest;
             const actual   = manifest.version;
 
-            if (options.force || !options.independent || entry.modified)
+            if (options.force || !options.independent || entry.hasChanges)
             {
                 const updated: string | null = isSemanticVersion(version)
                     ? version
@@ -495,7 +501,7 @@ export default class Publisher
                 }
                 else
                 {
-                    manifest.version = updated + (build ? `+${build}` : "");
+                    manifest.version = updated + (build ? `.${build}` : "");
 
                     this.logger.debug(`${manifest.name} version updated from ${actual} to ${manifest.version}`);
                 }
@@ -518,7 +524,7 @@ export default class Publisher
         }
     }
 
-    private async unpublishPackage(tag: string, entry: Entry, options: UnpublishOptions): Promise<void>
+    private async unpublishPackage(entry: Entry, options: UnpublishOptions): Promise<void>
     {
         if ((options.includePrivate || !entry.manifest.private) && (options.includeWorkspaceRoot || !entry.workspaces))
         {
@@ -534,7 +540,7 @@ export default class Publisher
                 {
                     this.logger.debug(`Unpublishing ${versionedName}.`);
 
-                    await entry.service.unpublish(versionedName, tag);
+                    await entry.service.unpublish(versionedName);
 
                     this.logger.info(`${versionedName} was unpublished.`);
                 }
@@ -545,13 +551,11 @@ export default class Publisher
                     this.errors.push(error as Error);
                 }
             }
-
             else
             {
                 this.logger.info(`${versionedName} will be unpublished.`);
             }
         }
-
         else
         {
             this.logger.debug(`Package ${entry.manifest.name} is ${entry.manifest.private ? "private" : "an workspace"}, unpublishing ignored...`);
@@ -559,11 +563,11 @@ export default class Publisher
 
         if (entry.workspaces?.size)
         {
-            await this.unpublishWorkspaces(tag, entry.workspaces, options);
+            await this.unpublishWorkspaces(entry.workspaces, options);
         }
     }
 
-    private async unpublishWorkspaces(tag: string, workspaces: Map<string, Entry>, options: UnpublishOptions): Promise<void>
+    private async unpublishWorkspaces(workspaces: Map<string, Entry>, options: UnpublishOptions): Promise<void>
     {
         this.logger.trace("Unpublishing workspaces...");
 
@@ -571,7 +575,7 @@ export default class Publisher
 
         for (const entry of workspaces.values())
         {
-            promises.push(this.unpublishPackage(tag, entry, options));
+            promises.push(this.unpublishPackage(entry, options));
         }
 
         await Promise.all(promises);
@@ -611,11 +615,10 @@ export default class Publisher
 
     /**
      * List local packages that have changed compared to remote tagged package.
-     * @param tag Tag used to compare local and remote packages.
      **/
-    public async changed(tag: string, options: ChangedOptions = { }): Promise<string[]>
+    public async changed(options: ChangedOptions = { }): Promise<string[]>
     {
-        if (await this.loadWorkspaces({ tag, ignoreChanges: options.ignoreChanges }))
+        if (await this.loadWorkspaces({ tag: options.tag, ignoreChanges: options.ignoreChanges }))
         {
             return this.changedWorkspaces(this.workspaces, options);
         }
@@ -628,8 +631,10 @@ export default class Publisher
      * @param tag Tag to publish.
      * @param options Publish options.
      */
-    public async publish(tag: string, options: PublishOptions = { }): Promise<void>
+    public async publish(options: PublishOptions = { }): Promise<void>
     {
+        const tag = options.tag ?? (options.canary ? "next" : "latest");
+
         if (options.force)
         {
             this.logger.warn("Publishing using force mode");
@@ -690,14 +695,13 @@ export default class Publisher
 
     /**
      * Unpublish discovered packages.
-     * @param tag Tag to unpublish.
      * @param options Unpublish options.
      */
-    public async unpublish(tag: string, options: UnpublishOptions = { }): Promise<void>
+    public async unpublish(options: UnpublishOptions = { }): Promise<void>
     {
         if (await this.loadWorkspaces())
         {
-            await this.unpublishWorkspaces(tag, this.workspaces, options);
+            await this.unpublishWorkspaces(this.workspaces, options);
 
             if (this.errors.length > 0)
             {

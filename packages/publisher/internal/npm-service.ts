@@ -131,7 +131,7 @@ export default class NpmService
 
     public async publish(manifest: PackageJson, buffer: Buffer, tag: string = "latest"): Promise<void>
     {
-        const response = await libnpmpublish.publish(manifest, buffer, { registry: this.registry, token: this.token, access: "public", defaultTag: tag });
+        const response = await libnpmpublish.publish(manifest, buffer, { registry: this.registry, forceAuth: { token: this.token }, access: "public", defaultTag: tag });
 
         if (!response.ok)
         {
@@ -139,9 +139,9 @@ export default class NpmService
         }
     }
 
-    public async unpublish(spec: string, tag: string = "latest"): Promise<void>
+    public async unpublish(spec: string): Promise<void>
     {
-        const response = await libnpmpublish.unpublish(spec, { registry: this.registry, token: this.token, access: "public", defaultTag: tag });
+        const response = await libnpmpublish.unpublish(spec, { registry: this.registry, forceAuth: { token: this.token }, access: "public" });
 
         if (!response)
         {

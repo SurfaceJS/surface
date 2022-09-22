@@ -8,6 +8,30 @@ import { toBoolean, toEnum, toSemver }  from "./common.js";
 
 /* cSpell:ignore preid, premajor, preminor, prepatch */
 
+function handler(action: AsyncCallable): AsyncCallable
+{
+
+    /* c8 ignore start */
+    function errorHandler(error: Error): void
+    {
+        if (error instanceof AggregateError)
+        {
+            console.error(`${error.message}:${error.errors.map(x => (x as Error).message).join("\n  ")}`);
+        }
+        else
+        {
+            console.error(error.message);
+        }
+
+        process.exit(1);
+    }
+
+    /* c8 ignore stop */
+
+    return async (...args: unknown[]): Promise<unknown> =>
+        action(...args.slice(0, args.length - 1)).catch(errorHandler);
+}
+
 function apply(action: AsyncCallable, program: Command, ...configs: Delegate<[Command], Command>[]): void
 {
     for (const config of configs)
@@ -15,7 +39,7 @@ function apply(action: AsyncCallable, program: Command, ...configs: Delegate<[Co
         program = config(program);
     }
 
-    program.action(async (...args: unknown[]) => action(...args.slice(0, args.length - 1)));
+    program.action(handler(action));
 }
 
 function ignoreChangesOptions(program: Command): Command
@@ -38,8 +62,8 @@ function globalOptions(program: Command): Command
 function restrictionOptions(program: Command): Command
 {
     return program
-        .option("--include-private        <n>", "Includes private packages when publishing or unpublishing", toBoolean)
-        .option("--include-workspace-root [n]", "Includes workspaces root when publishing or unpublishing", toBoolean);
+        .option("--include-private        <n>", "Includes private packages", toBoolean)
+        .option("--include-workspace-root [n]", "Includes workspaces root", toBoolean);
 }
 
 export default async function main(args: string[]): Promise<void>
@@ -67,14 +91,14 @@ export default async function main(args: string[]): Promise<void>
     const changed = program
         .command("changed")
         .description("List local packages that have changed compared to remote tagged package.")
-        .argument("[tag]", "Dist tag used to compare local and remote packages");
+        .option("--tag                    <n>", "Dist tag used to compare local and remote packages");
 
     apply(Commands.changed, changed, globalOptions, ignoreChangesOptions, restrictionOptions);
 
     const publish = program
         .command("publish")
         .description("Publish packages or workspaces packages")
-        .argument("[tag]", "Tag to publish")
+        .option("--tag                    <n>", "Tag to publish")
         .option("--synchronize            [n]", "Synchronize dependencies between workspace packages before publishing", toBoolean)
         .option("--canary                 [n]", "Enables canary release", toBoolean)
         .option("--prerelease-type        <n>", "An prerelease type: premajor, preminor, prepatch, prerelease. Used by canary", toEnum("premajor", "preminor", "prepatch", "prerelease"))
@@ -86,8 +110,7 @@ export default async function main(args: string[]): Promise<void>
 
     const unpublish = program
         .command("unpublish")
-        .description("Unpublish packages or workspaces packages")
-        .argument("[tag]", "Tag to unpublish");
+        .description("Unpublish packages or workspaces packages");
 
     apply(Commands.unpublish, unpublish, globalOptions, restrictionOptions);
 

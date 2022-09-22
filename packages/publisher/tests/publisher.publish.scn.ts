@@ -30,7 +30,7 @@ export const validPublishScenarios: PublishScenario[] =
         skip,
         message:   "Publish with no packages",
         options:   { },
-        args:      ["latest"],
+        args:      [],
         registry:  { },
         directory: { },
         expected:  { published: [] },
@@ -42,7 +42,7 @@ export const validPublishScenarios: PublishScenario[] =
         {
             dry: true,
         },
-        args:      ["latest"],
+        args:      [],
         registry:  { },
         directory:
         {
@@ -66,7 +66,7 @@ export const validPublishScenarios: PublishScenario[] =
         {
             dry: true,
         },
-        args:      ["latest"],
+        args:      [],
         registry:  { },
         directory:
         {
@@ -88,7 +88,7 @@ export const validPublishScenarios: PublishScenario[] =
         skip,
         message:   "Publish single package with script",
         options:   { },
-        args:      ["latest"],
+        args:      [],
         registry:  { },
         directory:
         {
@@ -113,7 +113,7 @@ export const validPublishScenarios: PublishScenario[] =
         {
             dry: true,
         },
-        args:      ["latest"],
+        args:      [],
         registry:  { },
         directory:
         {
@@ -142,7 +142,7 @@ export const validPublishScenarios: PublishScenario[] =
         skip,
         message:  "Publish private package",
         options:  { },
-        args:     ["latest"],
+        args:     [],
         registry:
         {
             "package-a": { isPublished: true, hasChanges: true },
@@ -164,10 +164,21 @@ export const validPublishScenarios: PublishScenario[] =
         skip,
         message:  "Publish package already in registry",
         options:  { registry: "https://registry.com" },
-        args:     ["latest"],
+        args:     [],
         registry:
         {
-            "package-a": { isPublished: true, hasChanges: true },
+            "package-a":
+            {
+                hasChanges: true,
+                remote:
+                {
+                    latest:
+                    {
+                        name:    "package-a",
+                        version: "0.0.1",
+                    },
+                },
+            },
         },
         directory:
         {
@@ -185,7 +196,7 @@ export const validPublishScenarios: PublishScenario[] =
         skip,
         message:  "Publish force",
         options:  { registry: "https://registry.com" },
-        args:     ["latest", { force: true }],
+        args:     [{ force: true }],
         registry:
         {
             "package-a": { isPublished: true, hasChanges: true },
@@ -206,10 +217,21 @@ export const validPublishScenarios: PublishScenario[] =
         skip,
         message:  "Publish canary package already in registry",
         options:  { registry: "https://registry.com" },
-        args:     ["latest", { canary: true }],
+        args:     [{ canary: true, build: "2022" }],
         registry:
         {
-            "package-a": { isPublished: true, hasChanges: true },
+            "package-a":
+            {
+                hasChanges: true,
+                remote:
+                {
+                    next:
+                    {
+                        name:    "package-a",
+                        version: "0.0.1-dev.2022",
+                    },
+                },
+            },
         },
         directory:
         {
@@ -227,8 +249,22 @@ export const validPublishScenarios: PublishScenario[] =
         skip,
         message:   "Publish workspaces packages",
         options:   { },
-        args:      ["latest"],
-        registry:  { "package-b": { isPublished: true, hasChanges: true } },
+        args:      [],
+        registry:
+        {
+            "package-b":
+            {
+                remote:
+                {
+                    latest:
+                    {
+                        name:    "package-b",
+                        version: "0.1.0",
+                    },
+                },
+                hasChanges:  true,
+            },
+        },
         directory:
         {
             "./package.json": JSON.stringify
@@ -269,8 +305,22 @@ export const validPublishScenarios: PublishScenario[] =
         skip,
         message:   "Publish workspaces packages and include workspaces root",
         options:   {  },
-        args:      ["latest", { includeWorkspaceRoot: true }],
-        registry:  { "package-b": { isPublished: true, hasChanges: true } },
+        args:      [{ includeWorkspaceRoot: true }],
+        registry:
+        {
+            "package-b":
+            {
+                hasChanges: true,
+                remote:
+                {
+                    latest:
+                    {
+                        name:    "package-b",
+                        version: "0.1.0",
+                    },
+                },
+            },
+        },
         directory:
         {
             "./package.json": JSON.stringify
@@ -319,7 +369,7 @@ export const validPublishScenarios: PublishScenario[] =
                 "packages/*",
             ],
         },
-        args:      ["latest"],
+        args:      [],
         registry:  { "package-b": { isPublished: true, hasChanges: true } },
         directory:
         {
@@ -389,7 +439,7 @@ export const validPublishScenarios: PublishScenario[] =
                 "packages/*",
             ],
         },
-        args:      ["latest"],
+        args:      [],
         registry:  { },
         directory:
         {
@@ -435,7 +485,7 @@ export const validPublishScenarios: PublishScenario[] =
                 "packages/*",
             ],
         },
-        args:      ["latest"],
+        args:      [],
         registry:  { },
         directory:
         {
@@ -481,7 +531,7 @@ export const validPublishScenarios: PublishScenario[] =
                 "packages/*",
             ],
         },
-        args:      ["latest", { canary: true }],
+        args:      [{ canary: true }],
         registry:  { },
         directory:
         {
@@ -511,8 +561,8 @@ export const validPublishScenarios: PublishScenario[] =
         {
             published:
             [
-                "package-a@0.0.1-dev+202201010000",
-                "package-b@0.1.0-dev+202201010000",
+                "package-a@0.0.1-dev.202201010000",
+                "package-b@0.1.0-dev.202201010000",
             ],
         },
     },
@@ -527,7 +577,7 @@ export const validPublishScenarios: PublishScenario[] =
                 "packages/*",
             ],
         },
-        args:      ["latest", { canary: true, prereleaseType: "premajor", preid: "alpha", build: "2022" }],
+        args:      [{ canary: true, prereleaseType: "premajor", preid: "alpha", build: "2022" }],
         registry:  { },
         directory:
         {
@@ -557,8 +607,8 @@ export const validPublishScenarios: PublishScenario[] =
         {
             published:
             [
-                "package-a@1.0.0-alpha.0+2022",
-                "package-b@1.0.0-alpha.0+2022",
+                "package-a@1.0.0-alpha.0.2022",
+                "package-b@1.0.0-alpha.0.2022",
             ],
         },
     },
@@ -573,7 +623,7 @@ export const validPublishScenarios: PublishScenario[] =
                 "packages/*",
             ],
         },
-        args:      ["latest", { canary: false, preid: "dev" }],
+        args:      [{ canary: false, preid: "dev" }],
         registry:  { },
         directory:
         {

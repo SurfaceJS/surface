@@ -267,11 +267,11 @@ export default class PublisherSpec
 
         const actual: string[] = [];
 
-        npmRepositoryMock.setup("unpublish").call(It.any(), It.any())
+        npmRepositoryMock.setup("unpublish").call(It.any())
             .callback(x => actual.push(x))
             .resolve();
 
-        await chai.assert.isFulfilled(new Publisher(scenario.options).unpublish("latest"));
+        await chai.assert.isFulfilled(new Publisher(scenario.options).unpublish());
 
         chai.assert.deepEqual(actual, scenario.expected.unpublished);
     }
@@ -287,13 +287,13 @@ export default class PublisherSpec
         await chai.assert.isRejected(new Publisher(scenario.options).bump(...scenario.args));
     }
 
-    @test("[publishing]: Publishing should fail")
+    @test("[publish]: Publishing should fail")
     @shouldFail
     public async publishingShouldFail(): Promise<void>
     {
         const directory: VirtualDirectory =
         {
-            "./packages/package-a/package.json": "{ }",
+            "./packages/package-a/package.json": JSON.stringify({ name: "foo", version: "1.0.0" } as PackageJson),
         };
 
         this.setup({ directory, registry: { } });
@@ -302,10 +302,10 @@ export default class PublisherSpec
 
         writeFileMock.call(It.any(), It.any()).resolve();
 
-        await chai.assert.isRejected(new Publisher({ packages: ["packages/*"] }).publish("latest"));
+        await chai.assert.isRejected(new Publisher({ packages: ["packages/*"] }).publish());
     }
 
-    @test("[unpublishing]: Unpublishing should fail")
+    @test("[unpublish]: Unpublishing should fail")
     @shouldFail
     public async unpublishingShouldFail(): Promise<void>
     {
@@ -316,8 +316,8 @@ export default class PublisherSpec
 
         this.setup({ directory, registry: { "package-a": { isPublished: true, hasChanges: true } } });
 
-        npmRepositoryMock.setup("unpublish").call(It.any(), It.any()).reject();
+        npmRepositoryMock.setup("unpublish").call(It.any()).reject();
 
-        await chai.assert.isRejected(new Publisher({ packages: ["packages/*"] }).unpublish("latest"));
+        await chai.assert.isRejected(new Publisher({ packages: ["packages/*"] }).unpublish());
     }
 }
