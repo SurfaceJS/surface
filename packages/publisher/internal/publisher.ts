@@ -315,7 +315,7 @@ export default class Publisher
         {
             const versionedName = `${entry.manifest.name}@${entry.manifest.version}`;
 
-            if (await entry.service.isPublished(entry.manifest))
+            if (!options.force && await entry.service.isPublished(entry.manifest))
             {
                 this.logger[options.canary ? "debug" : "warn"](`${versionedName} already in registry, ignoring...`);
             }
@@ -604,7 +604,7 @@ export default class Publisher
             }
             else
             {
-                this.logger.info(`${this.options.dry ? "[dry] " : ""}Bump done!`);
+                this.logger.info(`${this.options.dry ? "[DRY RUN] " : ""}Bump done!`);
             }
         }
     }
@@ -630,6 +630,11 @@ export default class Publisher
      */
     public async publish(tag: string, options: PublishOptions = { }): Promise<void>
     {
+        if (options.force)
+        {
+            this.logger.warn("Publishing using force mode");
+        }
+
         if (await this.loadWorkspaces({ tag, ignoreChanges: options.ignoreChanges }))
         {
             const bumpOptions: BumpOptions =
@@ -678,7 +683,7 @@ export default class Publisher
             }
             else
             {
-                this.logger.info(`${this.options.dry ? "[dry] " : ""}Publishing Done!`);
+                this.logger.info(`${this.options.dry ? "[DRY RUN] " : ""}Publishing Done!`);
             }
         }
     }
@@ -702,7 +707,7 @@ export default class Publisher
             }
             else
             {
-                this.logger.info(`${this.options.dry ? "[dry] " : ""}Unpublishing Done!`);
+                this.logger.info(`${this.options.dry ? "[DRY RUN] " : ""}Unpublishing Done!`);
             }
         }
     }

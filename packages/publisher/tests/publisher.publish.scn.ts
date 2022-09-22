@@ -183,6 +183,27 @@ export const validPublishScenarios: PublishScenario[] =
     },
     {
         skip,
+        message:  "Publish force",
+        options:  { registry: "https://registry.com" },
+        args:     ["latest", { force: true }],
+        registry:
+        {
+            "package-a": { isPublished: true, hasChanges: true },
+        },
+        directory:
+        {
+            "./package.json": JSON.stringify
+            (
+                {
+                    name:    "package-a",
+                    version: "0.0.1",
+                } as Partial<PackageJson>,
+            ),
+        },
+        expected:  { published: ["package-a@0.0.1"] },
+    },
+    {
+        skip,
         message:  "Publish canary package already in registry",
         options:  { registry: "https://registry.com" },
         args:     ["latest", { canary: true }],

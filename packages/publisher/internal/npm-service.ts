@@ -11,7 +11,7 @@ type HasChangesOptions = { ignorePackageVersion?: boolean, ignoreFiles?: string[
 
 function stripSourceMap(source: string | undefined): string | undefined
 {
-    return source?.replace(/\/\/#\s+sourceMappingURL=.*$/, "").trimEnd();
+    return source?.replace(/\/\/#\s+sourceMappingURL=.*$/, "").trim();
 }
 
 function stripFileReferences(left: PackageJson, right: PackageJson, dependencyType?: "dependencies" | "devDependencies" | "peerDependencies"): void
@@ -58,7 +58,7 @@ export default class NpmService
     {
         try
         {
-            return await pacote.manifest(spec, { registry: this.registry, alwaysAuth: true });
+            return await pacote.manifest(spec, { registry: this.registry, token: this.token });
         }
         catch (error)
         {
@@ -131,7 +131,7 @@ export default class NpmService
 
     public async publish(manifest: PackageJson, buffer: Buffer, tag: string = "latest"): Promise<void>
     {
-        const response = await libnpmpublish.publish(manifest, buffer, { registry: this.registry, access: "public", defaultTag: tag, forceAuth: { token: this.token } });
+        const response = await libnpmpublish.publish(manifest, buffer, { registry: this.registry, token: this.token, access: "public", defaultTag: tag });
 
         if (!response.ok)
         {
@@ -141,7 +141,7 @@ export default class NpmService
 
     public async unpublish(spec: string, tag: string = "latest"): Promise<void>
     {
-        const response = await libnpmpublish.unpublish(spec, { registry: this.registry, access: "public", defaultTag: tag, forceAuth: { token: this.token } });
+        const response = await libnpmpublish.unpublish(spec, { registry: this.registry, token: this.token, access: "public", defaultTag: tag });
 
         if (!response)
         {
