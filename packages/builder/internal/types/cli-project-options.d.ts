@@ -1,5 +1,4 @@
-import type CliProjectOptions from "./cli-build-options.js";
-import type Project           from "./project.js";
+import type Project from "./project.js";
 
 type ESLint = Required<Project>["eslint"];
 

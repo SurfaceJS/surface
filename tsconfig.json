@@ -2,8 +2,8 @@
     "extends": "@surface/tsconfig",
     "compilerOptions":
     {
-        "incremental": true,
-        "composite":   true,
+        "incremental":  true,
+        "composite":    true,
     },
     "references":
     [

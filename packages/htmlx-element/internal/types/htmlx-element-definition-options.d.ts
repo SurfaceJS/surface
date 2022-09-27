@@ -1,4 +1,4 @@
-import type { TemplateFactory } from "@surface/htmlx";
+import type { DirectiveEntry, TemplateFactory } from "@surface/htmlx";
 
 type HTMLXElementDefinitionOptions =
 {

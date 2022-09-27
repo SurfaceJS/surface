@@ -25,33 +25,6 @@ type CallableParametersOverloads<T> = T extends
                 ? [A1, (...args: A1) => R1]
                 : never;
 
-
-
-type CallableParametersOverloads<T> = T extends
-{
-    (...args: infer A1): infer R1,
-    (...args: infer A2): infer R2,
-    (...args: infer A3): infer R3,
-    (...args: infer A4): infer R4,
-}
-    ? [A1, (...args: A1) => R1] | [A2, (...args: A2) => R2] | [A3, (...args: A3) => R3] | [A4, (...args: A4) => R4]
-    : T extends
-    {
-        (...args: infer A1): infer R1,
-        (...args: infer A2): infer R2,
-        (...args: infer A3): infer R3,
-    }
-        ? [A1, (...args: A1) => R1] | [A2, (...args: A2) => R2] | [A3, (...args: A3) => R3]
-        : T extends
-        {
-            (...args: infer A1): infer R1,
-            (...args: infer A2): infer R2,
-        }
-            ? [A1, (...args: A1) => R1] | [A2, (...args: A2) => R2]
-            : T extends (...args: infer A1) => infer R1
-                ? [A1, (...args: A1) => R1]
-                : never;
-
 type NewableParametersOverloads<T> = T extends
 {
     new (...args: infer A1): infer R1,
@@ -199,8 +172,8 @@ export type CallableOverloads<T> = T extends
         }
             ?
             [
-                (...args: A1) => infer R1,
-                (...args: A2) => infer R2,
+                (...args: A1) => R1,
+                (...args: A2) => R2,
             ]
             : T extends (...args: infer A1) => infer R1
                 ? [(...args: A1) => R1]
@@ -239,8 +212,8 @@ export type NewOverloads<T> = T extends
         }
             ?
             [
-                new (...args: A1) => infer R1,
-                new (...args: A2) => infer R2,
+                new (...args: A1) => R1,
+                new (...args: A2) => R2,
             ]
             : T extends new (...args: infer A1) => infer R1
                 ? [new (...args: A1) => R1]
@@ -262,11 +235,9 @@ export type FieldsOf<T>                                                      = {
 export type IgnoreKeysOfType<T extends object, U>                            = { [K in keyof T]: T[K] extends U ? never : K }[keyof T];
 export type IgnoreOfType<T extends object, U>                                = { [K in IgnoreKeysOfType<T, U>]: T[K] };
 export type Indexer<T = unknown>                                             = object & Record<string | number | symbol, T | undefined>;
-export type IndexesOf<T extends any[]>                                       = ValuesOf<{ [K in keyof T]: K }>;
 export type Intersect<T extends any[]>                                       = UnionToIntersection<T[number]>;
 export type KeysOfType<T extends object, U>                                  = { [K in keyof T]: T[K] extends U ? K : never }[keyof T];
 export type KeyValue<T, K extends keyof T = keyof T>                         = [K, T[K]];
-export type RequiredProperties<T extends object, K extends keyof T>                = Omit<T, K> & { [P in K]-?: Exclude<T[P], null | undefined> };
 export type Merge<T extends object, U extends object>                        = { [K in keyof (T & U)]: (K extends keyof T ? T[K] : never) | (K extends keyof U ? U[K] : never) };
 export type MethodsOf<T extends object>                                      = KeysOfType<T, Function>;
 export type Mix<A extends ((superClass: Constructor<any>) => Constructor)[]> = Constructor<UnionToIntersection<InstanceType<ReturnType<A[number]>>>>;
@@ -277,6 +248,6 @@ export type Overwrite<T, U>                                                  = {
 export type ParameterOverloads<T extends Callable>                           = CallableParametersOverloads<T>[0];
 export type PropertyType<T extends object, K>                                = K extends keyof T ? T[K] : unknown;
 export type Required<T>                                                      = { [K in keyof T]-?: NonNullable<T[K]> };
-export type RequiredProperties<T>                                            = { [K in keyof Required<T>]: (T[K] | undefined) };
+export type RequiredProperties<T extends object, K extends keyof T>          = Omit<T, K> & { [P in K]-?: Exclude<T[P], null | undefined> };
 export type TypesOf<T>                                                       = T[keyof T];
 export type UnionToIntersection<U>                                           = (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;

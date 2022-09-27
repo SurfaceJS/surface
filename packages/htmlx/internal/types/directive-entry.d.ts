@@ -1,3 +1,4 @@
+import type Directive        from "../directives/directive.js";
 import type DirectiveContext from "./directive-context.js";
 
 type DirectiveEntry = DirectiveConstructor | DirectiveFactory;
