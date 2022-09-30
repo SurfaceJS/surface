@@ -6,9 +6,9 @@
             <span
                 id             ="input"
                 contenteditable="true"
-                @bind         ="host.input = this"
-                @input        ="host.handleInput"
-                @paste        ="host.handlePaste"
+                @bind         ="host.onBind"
+                @input        ="host.onInput"
+                @paste        ="host.onPaste"
                 :text-content ="host.value"
             >
             </span>
@@ -18,9 +18,9 @@
             <span
                 id             ="input"
                 contenteditable="true"
-                @bind         ="e => host.input = e.target"
-                @input        ="host.handleInput"
-                @paste        ="host.handlePaste"
+                @bind         ="host.onBind"
+                @input        ="host.onInput"
+                @paste        ="host.onPaste"
                 :text-content ="host.value"
             >
             </span>
@@ -28,7 +28,7 @@
     </span>
     <span id="footer">
         <span id="hint">{host.hint}</span>
-        <span #if="host.maxLenght > 0" id="counter">{host.value.length} / {host.maxLenght}</span>
+        <span #if="host.maxLength > 0" id="counter">{host.value.length} / {host.maxLength}</span>
         <span #else id="counter">{host.value.length}</span>
     </span>
     <span id="label">{host.label}</span>
