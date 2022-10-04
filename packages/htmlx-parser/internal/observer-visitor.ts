@@ -181,6 +181,8 @@ export default class ObserverVisitor extends ExpressionVisitor
             this.stack.unshift(key);
         }
 
+        this.brokenPath = expression.optional;
+
         this.visit(expression.object);
 
         return expression;

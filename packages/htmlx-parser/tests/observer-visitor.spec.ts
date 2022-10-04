@@ -1,19 +1,17 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "@surface/dom-shim";
 
-import { Parser }                                         from "@surface/expression";
-import { batchTest, suite }                               from "@surface/test-suite";
-import chai                                               from "chai";
-import ObserverVisitor                                    from "../internal/observer-visitor.js";
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
-import type { ObservableExpression }                      from "./observer-visitor-expected.js";
-import { observableExpressions, unobservableExpressions } from "./observer-visitor-expected.js";
+import { Parser }                                             from "@surface/expression";
+import { batchTest, suite }                                   from "@surface/test-suite";
+import chai                                                   from "chai";
+import ObserverVisitor                                        from "../internal/observer-visitor.js";
+import { type Scenarios, scenarios, unobservableExpressions } from "./observer-visitor.scn.js";
 
 @suite
 export default class ObserverVisitorSpec
 {
-    @batchTest(observableExpressions, x => `observable expression ${x.expression}; expected paths: ${x.expected.map(x => `[${x}]`)}`)
-    public observableExpressions(observableExpression: ObservableExpression): void
+    @batchTest(scenarios, x => `observable expression ${x.expression}; expected paths: ${x.expected.map(x => `[${x}]`)}`, x => x.skip)
+    public observableExpressions(observableExpression: Scenarios): void
     {
         const expression = Parser.parse(observableExpression.expression);
 
