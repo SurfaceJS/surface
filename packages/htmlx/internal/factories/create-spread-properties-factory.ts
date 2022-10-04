@@ -2,7 +2,7 @@ import type { IDisposable }       from "@surface/core";
 import { oneWayBind, twoWayBind } from "../common.js";
 import Metadata                   from "../metadata.js";
 
-export default function createSpreadBindsFactory(source: HTMLElement, target: HTMLElement): IDisposable
+export default function createSpreadPropertiesFactory(source: HTMLElement, target: HTMLElement): IDisposable
 {
     const metadata = Metadata.from(source);
 

@@ -1,7 +1,7 @@
 import type { Delegate } from "./types/index.js";
 import type Subscription from "./types/subscription.js";
 
-export default class Event<TArgs = unknown>
+export default class Event<TArgs = void>
 {
     private readonly listeners: Set<Delegate<[TArgs]>> = new Set();
 

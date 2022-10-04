@@ -2,8 +2,7 @@
 enum SpreadProperties
 {
     Attributes = "attributes",
-    Binds      = "binds",
-    Injections = "injections",
+    Properties = "properties",
     Listeners  = "listeners",
 }
 

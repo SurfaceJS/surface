@@ -700,8 +700,7 @@ export default class SourceGeneratorSpec
             "\tcreateElementFactory,",
             "\tcreateSpreadFactory,",
             "\tcreateSpreadAttributesFactory,",
-            "\tcreateSpreadBindsFactory,",
-            "\tcreateSpreadInjectionsFactory,",
+            "\tcreateSpreadPropertiesFactory,",
             "\tcreateSpreadListenersFactory,",
             "\tTemplateFactory,",
             "} from \"@surface/htmlx\";",
@@ -721,12 +720,11 @@ export default class SourceGeneratorSpec
             "\t\t\t\t\t\t[],",
             "\t\t\t\t\t\t[",
             "\t\t\t\t\t\t\tcreateSpreadAttributesFactory,",
-            "\t\t\t\t\t\t\tcreateSpreadBindsFactory,",
-            "\t\t\t\t\t\t\tcreateSpreadInjectionsFactory,",
+            "\t\t\t\t\t\t\tcreateSpreadPropertiesFactory,",
             "\t\t\t\t\t\t\tcreateSpreadListenersFactory,",
             "\t\t\t\t\t\t],",
-            "\t\t\t\t\t\t\"...attributes|binds|injections|listeners=\\\"host\\\"\",",
-            "\t\t\t\t\t\t[[\"<x-component>\"],[\"#shadow-root\"],[\"<span ...attributes|binds|injections|listeners=\\\"host\\\">\"]],",
+            "\t\t\t\t\t\t\"...attributes|properties|listeners=\\\"host\\\"\",",
+            "\t\t\t\t\t\t[[\"<x-component>\"],[\"#shadow-root\"],[\"<span ...attributes|properties|listeners=\\\"host\\\">\"]],",
             "\t\t\t\t\t),",
             "\t\t\t\t],",
             "\t\t\t\tundefined,",
@@ -737,7 +735,7 @@ export default class SourceGeneratorSpec
             "export default new TemplateFactory(factory);",
         ].join("\n");
 
-        const actual = SourceGenerator.generate("x-component", "<span ...attributes|binds|injections|listeners=\"host\"></span>", { }, true);
+        const actual = SourceGenerator.generate("x-component", "<span ...attributes|properties|listeners=\"host\"></span>", { }, true);
 
         chai.assert.equal(actual, expected);
     }

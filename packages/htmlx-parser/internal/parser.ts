@@ -391,12 +391,12 @@ export default class Parser
                 {
                     if (!spreadFlags.has(property))
                     {
-                        throwTemplateParseError(`Property '${property}' not supported on spread directive.`, this.stackTrace);
+                        throwTemplateParseError(`Flag '${property}' not supported on spread directive.`, this.stackTrace);
                     }
 
                     if (duplications.has(property))
                     {
-                        throwTemplateParseError(`Property '${property}' specified in ${duplications.get(property)}.`, this.stackTrace);
+                        throwTemplateParseError(`Flag '${property}' already specified in ${duplications.get(property)}.`, this.stackTrace);
                     }
 
                     duplications.set(property, source);
@@ -409,14 +409,9 @@ export default class Parser
                     flags |= SpreadFlags.Attributes;
                 }
 
-                if (properties.has(SpreadProperties.Binds))
+                if (properties.has(SpreadProperties.Properties))
                 {
-                    flags |= SpreadFlags.Binds;
-                }
-
-                if (properties.has(SpreadProperties.Injections))
-                {
-                    flags |= SpreadFlags.Injections;
+                    flags |= SpreadFlags.Properties;
                 }
 
                 if (properties.has(SpreadProperties.Listeners))

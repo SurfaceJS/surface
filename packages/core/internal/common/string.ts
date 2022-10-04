@@ -12,6 +12,11 @@ export function camelToDashed(value: string): string
     return value.split(/(?:(?<![A-Z])(?=[A-Z]))|(?:(?<![a-zA-Z])(?=[a-z]))|(?:(?<![0-9])(?=[0-9]))/g).join("-").toLowerCase();
 }
 
+export function capitalize(value: string): string
+{
+    return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+}
+
 export function capture(source: string, start: RegExp, end: RegExp): [string, string, string]
 {
     const startMatch = start.exec(source);

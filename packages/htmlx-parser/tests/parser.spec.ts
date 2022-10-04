@@ -1235,8 +1235,8 @@ export default class HTMLXElementParserSpec
     {
         const template =
         [
-            "<div ...attributes|binds|injections|listeners=\"host\"></div>",
-            "<div ...attributes=\"host\" ...binds=\"host\" ...injections=\"host\" ...listeners=\"host\"></div>",
+            "<div ...attributes|properties|listeners=\"host\"></div>",
+            "<div ...attributes=\"host\" ...properties=\"host\" ...listeners=\"host\"></div>",
         ].join("");
 
         const expected: Descriptor =
@@ -1248,14 +1248,14 @@ export default class HTMLXElementParserSpec
                     [
                         {
                             expression:  parseExpression("host"),
-                            flags:       SpreadFlags.Attributes | SpreadFlags.Binds | SpreadFlags.Injections | SpreadFlags.Listeners,
+                            flags:       SpreadFlags.Attributes | SpreadFlags.Properties | SpreadFlags.Listeners,
                             observables: [],
-                            source:      "...attributes|binds|injections|listeners=\"host\"",
+                            source:      "...attributes|properties|listeners=\"host\"",
                             stackTrace:
                             [
                                 ["<x-component>"],
                                 ["#shadow-root"],
-                                ["<div ...attributes|binds|injections|listeners=\"host\">"],
+                                ["<div ...attributes|properties|listeners=\"host\">"],
                             ],
                             type: DescriptorType.Spread,
                         },
@@ -1276,33 +1276,20 @@ export default class HTMLXElementParserSpec
                             [
                                 ["<x-component>"],
                                 ["#shadow-root"],
-                                ["...1 other(s) node(s)", "<div ...attributes=\"host\" ...binds=\"host\" ...injections=\"host\" ...listeners=\"host\">"],
+                                ["...1 other(s) node(s)", "<div ...attributes=\"host\" ...properties=\"host\" ...listeners=\"host\">"],
                             ],
                             type: DescriptorType.Spread,
                         },
                         {
                             expression:  parseExpression("host"),
-                            flags:       SpreadFlags.Binds,
+                            flags:       SpreadFlags.Properties,
                             observables: [],
-                            source:      "...binds=\"host\"",
+                            source:      "...properties=\"host\"",
                             stackTrace:
                             [
                                 ["<x-component>"],
                                 ["#shadow-root"],
-                                ["...1 other(s) node(s)", "<div ...attributes=\"host\" ...binds=\"host\" ...injections=\"host\" ...listeners=\"host\">"],
-                            ],
-                            type: DescriptorType.Spread,
-                        },
-                        {
-                            expression:  parseExpression("host"),
-                            flags:       SpreadFlags.Injections,
-                            observables: [],
-                            source:      "...injections=\"host\"",
-                            stackTrace:
-                            [
-                                ["<x-component>"],
-                                ["#shadow-root"],
-                                ["...1 other(s) node(s)", "<div ...attributes=\"host\" ...binds=\"host\" ...injections=\"host\" ...listeners=\"host\">"],
+                                ["...1 other(s) node(s)", "<div ...attributes=\"host\" ...properties=\"host\" ...listeners=\"host\">"],
                             ],
                             type: DescriptorType.Spread,
                         },
@@ -1315,7 +1302,7 @@ export default class HTMLXElementParserSpec
                             [
                                 ["<x-component>"],
                                 ["#shadow-root"],
-                                ["...1 other(s) node(s)", "<div ...attributes=\"host\" ...binds=\"host\" ...injections=\"host\" ...listeners=\"host\">"],
+                                ["...1 other(s) node(s)", "<div ...attributes=\"host\" ...properties=\"host\" ...listeners=\"host\">"],
                             ],
                             type: DescriptorType.Spread,
                         },
@@ -2135,7 +2122,7 @@ export default class HTMLXElementParserSpec
     {
         const template = "<div ...invalid='key'></div>";
 
-        const message = "Property 'invalid' not supported on spread directive.";
+        const message = "Flag 'invalid' not supported on spread directive.";
         const stack   = "<x-component>\n   #shadow-root\n      <div ...invalid=\"key\">";
 
         const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
@@ -2203,10 +2190,10 @@ export default class HTMLXElementParserSpec
     @shouldFail @test
     public ErrorInvalidExtendsCombination1(): void
     {
-        const template = "<div ...attributes|binds='host' ...attributes='host'></div>";
+        const template = "<div ...attributes|properties='host' ...attributes='host'></div>";
 
-        const message = "Property 'attributes' specified in ...attributes|binds=\"host\".";
-        const stack   = "<x-component>\n   #shadow-root\n      <div ...attributes|binds=\"host\" ...attributes=\"host\">";
+        const message = "Flag 'attributes' already specified in ...attributes|properties=\"host\".";
+        const stack   = "<x-component>\n   #shadow-root\n      <div ...attributes|properties=\"host\" ...attributes=\"host\">";
 
         const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));
@@ -2217,10 +2204,10 @@ export default class HTMLXElementParserSpec
     @shouldFail @test
     public ErrorInvalidExtendsCombination2(): void
     {
-        const template = "<div ...attributes='host' ...attributes|binds='host'></div>";
+        const template = "<div ...attributes='host' ...attributes|properties='host'></div>";
 
-        const message = "Property 'attributes' specified in ...attributes=\"host\".";
-        const stack   = "<x-component>\n   #shadow-root\n      <div ...attributes=\"host\" ...attributes|binds=\"host\">";
+        const message = "Flag 'attributes' already specified in ...attributes=\"host\".";
+        const stack   = "<x-component>\n   #shadow-root\n      <div ...attributes=\"host\" ...attributes|properties=\"host\">";
 
         const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));
