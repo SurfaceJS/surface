@@ -22,7 +22,7 @@ export default class TextField extends mix(HTMLXElement, [colorable, lineRipplea
     private _selectionStart: number = 0;
 
     @query("#inputable")
-    protected inputable!: HTMLElement;
+    protected declare inputable: HTMLElement;
 
     protected input!: HTMLElement;
 
@@ -110,7 +110,7 @@ export default class TextField extends mix(HTMLXElement, [colorable, lineRipplea
     }
 
     @event("input")
-    protected handleInput(event: InputEvent): void
+    protected onInput(event: InputEvent): void
     {
         event.preventDefault();
 
@@ -131,7 +131,7 @@ export default class TextField extends mix(HTMLXElement, [colorable, lineRipplea
     }
 
     @event("keypress")
-    protected handleKeypress(event: KeyboardEvent): void
+    protected onKeypress(event: KeyboardEvent): void
     {
         if (event.key == "Enter")
         {
@@ -140,7 +140,7 @@ export default class TextField extends mix(HTMLXElement, [colorable, lineRipplea
     }
 
     @event("paste")
-    protected handlePaste(event: ClipboardEvent): void
+    protected onPaste(event: ClipboardEvent): void
     {
         event.preventDefault();
 
@@ -159,6 +159,11 @@ export default class TextField extends mix(HTMLXElement, [colorable, lineRipplea
 
         this._selectionStart = selection.anchorOffset;
         this._selectionEnd   = selection.focusOffset;
+    }
+
+    protected onBind(event: Event): void
+    {
+        this.input = event.target as HTMLInputElement;
     }
 
     public setCaret(position: number): void

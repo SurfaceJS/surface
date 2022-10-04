@@ -26,7 +26,7 @@ export const validChangedScenarios: ChangedScenario[] =
         skip,
         message:   "Changed with no packages",
         options:   { },
-        args:      ["latest"],
+        args:      [],
         registry:  { },
         directory: { },
         expected:  [],
@@ -36,7 +36,7 @@ export const validChangedScenarios: ChangedScenario[] =
         skip,
         message:   "Changed with no remote version",
         options:   { },
-        args:      ["latest"],
+        args:      [],
         registry:  { },
         directory:
         {
@@ -55,7 +55,7 @@ export const validChangedScenarios: ChangedScenario[] =
         skip,
         message:  "Changed with no changes",
         options:  { },
-        args:     ["latest"],
+        args:     [],
         registry:
         {
             "package-a":
@@ -81,7 +81,7 @@ export const validChangedScenarios: ChangedScenario[] =
         skip,
         message:  "Changed with changes",
         options:  { },
-        args:     ["latest"],
+        args:     [],
         registry:
         {
             "package-a":

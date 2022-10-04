@@ -80,7 +80,7 @@ export const authScenarios: AuthScenario[] =
         skip,
         message:  "find registry and auth token",
         path:     CWD,
-        source:   "registry=https://test.com\n_authToken=123",
+        source:   "registry=https://test.com\n//registry.npmjs.org/:_authToken=123",
         scope:    "@foo",
         expected: { registry: "https://test.com", authToken: "123", scopedAuth: null },
     },

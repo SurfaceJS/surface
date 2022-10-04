@@ -180,7 +180,7 @@ export default class ElementFactorySpec
     }
 
     @test @shouldPass
-    public directives(): void
+    public async directives(): Promise<void>
     {
         type Scope = { host: { value: string } };
 
@@ -197,6 +197,8 @@ export default class ElementFactorySpec
         const scope: Scope = { host: { value: "Hello World!!!" } };
 
         const disposable = activator(document.body, element, scope, globalCustomDirectives);
+
+        await scheduler.execution();
 
         chai.assert.equal(element.childNodes[0]!.textContent, "custom: Hello World!!!");
         chai.assert.equal(element.childNodes[1]!.textContent, "custom-factory: Hello World!!!");

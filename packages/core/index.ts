@@ -19,7 +19,6 @@ export type
     IgnoreKeysOfType,
     IgnoreOfType,
     Indexer,
-    IndexesOf,
     Intersect,
     KeysOfType,
     KeyValue,

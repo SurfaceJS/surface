@@ -1,4 +1,4 @@
-import type { IDisposable } from "@surface/core";
+import type { Constructor, IDisposable } from "@surface/core";
 
 export default interface IScopedProvider extends IDisposable
 {

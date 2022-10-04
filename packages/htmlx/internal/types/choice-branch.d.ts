@@ -1,7 +1,6 @@
-import type StackTrace     from "../../types/stack-trace.js";
-import type Evaluator      from "./evaluator.js";
-import type NodeFactory    from "./node-factory.js";
-import type ObservablePath from "./observable-path.js";
+import type Evaluator                      from "./evaluator.js";
+import type NodeFactory                    from "./node-factory.js";
+import type { ObservablePath, StackTrace } from "@surface/htmlx-parser";
 
 type ChoiceBranch =
 [

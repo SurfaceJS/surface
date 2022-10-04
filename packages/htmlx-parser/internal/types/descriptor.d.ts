@@ -1,7 +1,7 @@
 /* eslint-disable import/exports-last */
 import type { IExpression, IPattern } from "@surface/expression";
 import type DescriptorType            from "../descriptor-type.js";
-import type SpreadDirectiveFlag       from "../flags/spread-directive-flag.js";
+import type SpreadDirectiveFlag       from "../flags/spread-flags.js";
 import type ObservablePath            from "./observable-path.js";
 import type StackTrace                from "./stack-trace.js";
 

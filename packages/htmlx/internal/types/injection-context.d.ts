@@ -1,7 +1,7 @@
-import type StackTrace            from "../../types/stack-trace.js";
+import type { StackTrace }        from "@surface/htmlx-parser";
 import type DestructuredEvaluator from "./destructured-evaluator.js";
+import DirectiveEntry             from "./directive-entry.js";
 import type NodeFactory           from "./node-factory.js";
-import type { DirectiveEntry }    from ".";
 
 type InjectionContext =
 {

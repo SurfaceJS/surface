@@ -26,15 +26,15 @@ export default class MainSpec
             .resolve();
 
         CommandsMock.setup("changed")
-            .call(It.any(), It.any())
+            .call(It.any())
             .resolve();
 
         CommandsMock.setup("publish")
-            .call(It.any(), It.any())
+            .call(It.any())
             .resolve();
 
         CommandsMock.setup("unpublish")
-            .call(It.any(), It.any())
+            .call(It.any())
             .resolve();
     }
 
@@ -110,7 +110,6 @@ export default class MainSpec
             "",
             "",
             "changed",
-            "latest",
             "--cwd=.",
             "--dry=true",
             "--ignore-changes=*.md",
@@ -120,13 +119,13 @@ export default class MainSpec
             "--packages=bar",
             "--packages=foo",
             "--registry=https://registry.com",
+            "--tag=latest",
             "--token=123",
         ];
 
         let actual: Parameters<typeof Commands["changed"]> | undefined;
         const expected: DeepRequired<Parameters<typeof Commands["changed"]>> =
         [
-            "latest",
             {
                 cwd:                  ".",
                 dry:                  true,
@@ -137,11 +136,12 @@ export default class MainSpec
                 packages:             ["bar", "foo"],
                 registry:             "https://registry.com",
                 token:                "123",
+                tag:                  "latest",
             },
         ];
 
         CommandsMock.setup("changed")
-            .call(It.any(), It.any())
+            .call(It.any())
             .callback((...args) => actual = args)
             .resolve();
 
@@ -158,7 +158,6 @@ export default class MainSpec
             "",
             "",
             "publish",
-            "latest",
             "--build=2022",
             "--canary=true",
             "--cwd=.",
@@ -174,13 +173,13 @@ export default class MainSpec
             "--prerelease-type=premajor",
             "--registry=https://registry.com",
             "--synchronize=true",
+            "--tag=latest",
             "--token=token",
         ];
 
         let actual: Parameters<typeof Commands["publish"]> | undefined;
         const expected: DeepRequired<Parameters<typeof Commands["publish"]>> =
         [
-            "latest",
             {
                 build:                "2022",
                 canary:               true,
@@ -196,12 +195,13 @@ export default class MainSpec
                 prereleaseType:       "premajor",
                 registry:             "https://registry.com",
                 synchronize:          true,
+                tag:                  "latest",
                 token:                "token",
             },
         ];
 
         CommandsMock.setup("publish")
-            .call(It.any(), It.any())
+            .call(It.any())
             .callback((...args) => actual = args)
             .resolve();
 
@@ -233,7 +233,6 @@ export default class MainSpec
         let actual: Parameters<typeof Commands["unpublish"]> | undefined;
         const expected: DeepRequired<Parameters<typeof Commands["unpublish"]>> =
         [
-            "latest",
             {
                 cwd:                  ".",
                 dry:                  true,
@@ -247,7 +246,7 @@ export default class MainSpec
         ];
 
         CommandsMock.setup("unpublish")
-            .call(It.any(), It.any())
+            .call(It.any())
             .callback((...args) => actual = args)
             .resolve();
 

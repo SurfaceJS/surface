@@ -6,5 +6,11 @@ import type Evaluator                      from "../types/evaluator.js";
 export default function createOneWayFactory(key: string, evaluator: Evaluator, observables: ObservablePath[], source?: string, stackTrace?: StackTrace): AttributeFactory
 {
     return (element, scope) =>
-        oneWayBind(element, scope, key, evaluator, observables, source, stackTrace);
+    {
+        const disposable = oneWayBind(element, scope, key, evaluator, observables, source, stackTrace);
+
+        element.dispatchEvent(new Event("bind"));
+
+        return disposable;
+    };
 }

@@ -25,21 +25,22 @@ export default class Commands
         await new Publisher(options).bump(version, preid, build, bumpOptions);
     }
 
-    public static async changed(tag: string = "latest", options: Options & ChangedOptions = { }): Promise<void>
+    public static async changed(options: Options & ChangedOptions = { }): Promise<void>
     {
         const changedOptions: Required<ChangedOptions> =
         {
             ignoreChanges:        options.ignoreChanges!,
             includePrivate:       options.includePrivate!,
             includeWorkspaceRoot: options.includeWorkspaceRoot!,
+            tag:                  options.tag!,
         };
 
-        const changes = await new Publisher(options).changed(tag, changedOptions);
+        const changes = await new Publisher(options).changed(changedOptions);
 
         console.log(changes.length > 0 ? `Packages with changes:\n${changes.join("\n")}` : "No changes detected!");
     }
 
-    public static async publish(tag: string = "latest", options: Options & PublishOptions = { }): Promise<void>
+    public static async publish(options: Options & PublishOptions = { }): Promise<void>
     {
         const publishOptions: Required<PublishOptions> =
         {
@@ -52,12 +53,13 @@ export default class Commands
             preid:                options.preid!,
             prereleaseType:       options.prereleaseType!,
             synchronize:          options.synchronize!,
+            tag:                  options.tag!,
         };
 
-        await new Publisher(options).publish(tag ?? options.canary ? "next" : "latest", publishOptions);
+        await new Publisher(options).publish(publishOptions);
     }
 
-    public static async unpublish(tag: string = "latest", options: Options & UnpublishOptions = { }): Promise<void>
+    public static async unpublish(options: Options & UnpublishOptions = { }): Promise<void>
     {
         const unpublishOptions: Required<UnpublishOptions> =
         {
@@ -65,6 +67,6 @@ export default class Commands
             includeWorkspaceRoot: options.includeWorkspaceRoot!,
         };
 
-        await new Publisher(options).unpublish(tag, unpublishOptions);
+        await new Publisher(options).unpublish(unpublishOptions);
     }
 }

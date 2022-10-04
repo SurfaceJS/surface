@@ -381,13 +381,15 @@ export default class CompilerSpec
     }
 
     @test @shouldPass
-    public elementWithCustomDirective(): void
+    public async elementWithCustomDirective(): Promise<void>
     {
         const host = createNode();
 
         const shadowRoot = "<span #custom=\"'Hello World!!!'\"></span><span #custom-factory=\"'Hello World!!!'\"></span>";
 
         compile({ host, shadowRoot });
+
+        await scheduler.execution();
 
         chai.assert.equal(host.shadowRoot!.firstElementChild!.textContent, "custom: Hello World!!!");
         chai.assert.equal(host.shadowRoot!.lastElementChild!.textContent, "custom-factory: Hello World!!!");
@@ -1846,7 +1848,7 @@ export default class CompilerSpec
     }
 
     @test @shouldPass
-    public evaluationErrorCustomDirective(): void
+    public async evaluationErrorCustomDirective(): Promise<void>
     {
         const host = createNode();
 
@@ -1855,7 +1857,7 @@ export default class CompilerSpec
         const message = "Evaluation error in '#custom=\"{ value }\"': value is not defined";
         const stack   = "<y-component>\n   #shadow-root\n      <span #custom=\"{ value }\">";
 
-        const actual   = tryAction(() => compile({ host, shadowRoot }));
+        const actual   = await tryActionAsync(() => compile({ host, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
 
         chai.assert.deepEqual(actual, expected);
@@ -2225,7 +2227,7 @@ export default class CompilerSpec
     }
 
     @test @shouldFail
-    public bindingErrorCustomDirective(): void
+    public async bindingErrorCustomDirective(): Promise<void>
     {
         const host = createNode();
 
@@ -2234,7 +2236,7 @@ export default class CompilerSpec
         const message = "Binding error in '#custom=\"host.key\"': Property \"key\" does not exists on type YComponent";
         const stack   = "<y-component>\n   #shadow-root\n      <span #custom=\"host.key\">";
 
-        const actual   = tryAction(() => compile({ host, shadowRoot }));
+        const actual   = await tryActionAsync(() => compile({ host, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
 
         chai.assert.deepEqual(actual, expected);
@@ -2258,7 +2260,7 @@ export default class CompilerSpec
     }
 
     @shouldFail @test
-    public unregisteredDirective(): void
+    public async unregisteredDirective(): Promise<void>
     {
         const host = createNode();
 
@@ -2267,7 +2269,7 @@ export default class CompilerSpec
         const message = "Unregistered directive #foo.";
         const stack   = "<y-component>\n   #shadow-root\n      <div>\n         ...1 other(s) node(s)\n         <section>\n            <span #foo=\"\"bar\"\">";
 
-        const actual   = tryAction(() => compile({ host, shadowRoot }));
+        const actual   = await tryActionAsync(() => compile({ host, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
 
         chai.assert.deepEqual(actual, expected);

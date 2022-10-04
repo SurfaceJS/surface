@@ -22,7 +22,7 @@ export default class NpmConfig
 
     public get authToken(): string | undefined
     {
-        return this.entries.get("_authToken");
+        return this.entries.get("//registry.npmjs.org/:_authToken");
     }
 
     public constructor(source: string, env: Env)

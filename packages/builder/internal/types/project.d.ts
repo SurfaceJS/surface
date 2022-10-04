@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/extensions
-import type { ElementAttributeHandler }               from "@surface/htmlx-loader";
+import type { AttributeHandlers }                     from "@surface/htmlx-loader";
 import type { Options as EslintWebpackPluginOptions } from "eslint-webpack-plugin";
 import type HtmlWebpackPlugin                         from "html-webpack-plugin";
 import type webpack                                   from "webpack";
@@ -10,18 +10,18 @@ type HTMLXOptions =
 {
 
     /** Set attributes that need special resolution. Like the attributes src and srcset of tag img. */
-    attributeHandlers: ElementAttributeHandler[],
+    attributeHandlers: AttributeHandlers[],
 
     /**
      * Compilation mode of templates used by @surface/htmlx.
-     * - aot: Tree shakeble. All templates will be compiled at build time. Attempting to use runtime templates will raise an error.
-     * - mixed: Non tree shakeble. All templates will be compiled at build time, but it will also be possible to compile at run time.
-     * - runtime: Non tree shakeble. All templates will be compiled at runtime.
+     * - aot: Tree shakeable. All templates will be compiled at build time. Attempting to use runtime templates will raise an error.
+     * - mixed: Non tree shakeable. All templates will be compiled at build time, but it will also be possible to compile at run time.
+     * - runtime: Non tree shakeable. All templates will be compiled at runtime.
      **/
     mode: "aot" | "mixed" | "runtime",
 };
 
-type Formaters =
+type Formatters =
     | "checkstyle"
     | "codeframe"
     | "compact"
@@ -52,7 +52,7 @@ type EsLintOptions =
     files?: string | string[],
 
     /** Formatter used by ESLint. */
-    formatter?:  Formaters,
+    formatter?:  Formatters,
 };
 
 type Project =
