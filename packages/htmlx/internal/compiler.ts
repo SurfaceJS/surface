@@ -13,10 +13,9 @@ import createLoopFactory                           from "./factories/create-loop
 import createOnewayFactory                         from "./factories/create-one-way-factory.js";
 import createPlaceholderFactory                    from "./factories/create-placeholder-factory.js";
 import createSpreadAttributesFactory               from "./factories/create-spread-attributes-factory.js";
-import createSpreadBindsFactory                    from "./factories/create-spread-binds-factory.js";
 import createSpreadFactory                         from "./factories/create-spread-factory.js";
-import createSpreadInjectionsFactory               from "./factories/create-spread-injections.js";
 import createSpreadListenersFactory                from "./factories/create-spread-listeners.js";
+import createSpreadPropertiesFactory               from "./factories/create-spread-properties-factory.js";
 import createTextNodeFactory                       from "./factories/create-text-node-factory.js";
 import createTextNodeInterpolationFactory          from "./factories/create-text-node-interpolation-factory.js";
 import createTwoWayFactory                         from "./factories/create-two-way-factory.js";
@@ -60,14 +59,9 @@ export default class Compiler
                             spreadFactories.push(createSpreadAttributesFactory);
                         }
 
-                        if (hasFlag(bind.flags, SpreadFlags.Binds))
+                        if (hasFlag(bind.flags, SpreadFlags.Properties))
                         {
-                            spreadFactories.push(createSpreadBindsFactory);
-                        }
-
-                        if (hasFlag(bind.flags, SpreadFlags.Injections))
-                        {
-                            spreadFactories.push(createSpreadInjectionsFactory);
+                            spreadFactories.push(createSpreadPropertiesFactory);
                         }
 
                         if (hasFlag(bind.flags, SpreadFlags.Listeners))

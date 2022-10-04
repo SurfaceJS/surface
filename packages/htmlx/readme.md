@@ -16,7 +16,7 @@
   * [Loop](#loop)
   * [Placeholder and Injection](#placeholder-and-injection)
     * [Dynamic keys](#dynamic-keys)
-  * [Component Wrapping](#component-wrapping)
+  * [High order component](#high-order-component)
   * [Styling injections](#styling-injections)
   * [Awaiting painting](#awaiting-painting)
   * [Custom Directives](#custom-directives)
@@ -368,7 +368,7 @@ my-element::part(header)
 </my-element>
 ```
 
-### Component Wrapping
+### High order Component
 
 Sometimes we need to take some third party component and apply some defaults to allow code reuse.
 
@@ -392,18 +392,27 @@ This can be archived by wrapping the component and propagating host bindings to 
 
 That's fine for small components, but it can be a lot of work for large ones.
 
-Fortunately, this can also be archived using the `spread` directive, which allows us to spread directives from any source to the target element.
+Fortunately, this can also be archived using the `spread` directive, which allows us to spread some directives from any source to the target element.
+And combined with `host.$injections` allows us forward injections from host to child elements.
 
 ```html
 <!--my-extended-element-->
-    <my-element ...attributes|binds|injections|listeners="host"></my-element>
+    <my-element ...attributes|properties|listeners="host"></my-element>
     <!--or-->
     <my-element
         ...attributes="host.element1"
-        ...binds="host.element2"
-        ...injections="host.element3"
-        ...listeners="host.element4"
-    ></my-element>
+        ...properties="host.element2"
+        ...listeners="host.element3"
+    >
+        <template
+            #for="key of host.$injections"
+            #inject.key="key"
+            #inject.scope="scope"
+            #placeholder.key="key"
+            #placeholder.scope="scope"
+        >
+        </template>
+    </my-element>
 <!--my-extended-element/-->
 ```
 

@@ -465,7 +465,7 @@ export default class CompilerSpec
     }
 
     @test @shouldPass
-    public async templateWithSpreadOnewayBindsDirective(): Promise<void>
+    public async templateWithSpreadOnewayPropertiesDirective(): Promise<void>
     {
         const hash = crypto.randomUUID();
 
@@ -474,7 +474,7 @@ export default class CompilerSpec
         const CHILD_TAG = `x-child-${hash}` as const;
 
         defineComponent(CHILD_TAG);
-        defineComponent(HOST_TAG,  `<${CHILD_TAG} ...binds='host'></${CHILD_TAG}>`);
+        defineComponent(HOST_TAG,  `<${CHILD_TAG} ...properties='host'></${CHILD_TAG}>`);
         defineComponent(ROOT_TAG,  `<${HOST_TAG} :lang='host.lang'></${HOST_TAG}>`);
 
         const root  = document.createElement(ROOT_TAG);
@@ -513,7 +513,7 @@ export default class CompilerSpec
     }
 
     @test @shouldPass
-    public async templateWithSpreadTwoWayBindsDirective(): Promise<void>
+    public async templateWithSpreadTwoWayPropertiesDirective(): Promise<void>
     {
         const hash = crypto.randomUUID();
 
@@ -522,7 +522,7 @@ export default class CompilerSpec
         const CHILD_TAG = `x-child-${hash}` as const;
 
         defineComponent(CHILD_TAG);
-        defineComponent(HOST_TAG, `<${CHILD_TAG} ...binds='host'></${CHILD_TAG}>`);
+        defineComponent(HOST_TAG, `<${CHILD_TAG} ...properties='host'></${CHILD_TAG}>`);
         defineComponent(ROOT_TAG, `<${HOST_TAG} ::lang='host.lang'></${HOST_TAG}>`);
 
         const root  = document.createElement(ROOT_TAG);
@@ -586,36 +586,6 @@ export default class CompilerSpec
         child.dispatchEvent(new Event("click"));
 
         chai.assert.equal(root.title, child.nodeName);
-    }
-
-    @test @shouldPass
-    public async templateWithSpreadInjectionsDirective(): Promise<void>
-    {
-        const hash = crypto.randomUUID();
-
-        const ROOT_TAG  = `x-root-${hash}`  as const;
-        const HOST_TAG  = `x-host-${hash}`  as const;
-        const CHILD_TAG = `x-child-${hash}` as const;
-
-        defineComponent(CHILD_TAG, "<span #placeholder:title>Inject Content Here</span><span #if='host.lang' #placeholder:message>Inject Content Here</span>");
-        defineComponent(HOST_TAG, `<${CHILD_TAG} ...injections='host'></${CHILD_TAG}>`);
-        defineComponent(ROOT_TAG, `<${HOST_TAG}><span #inject:title>Greetings</span><span #inject:message>Hello World!!!</span></${HOST_TAG}>`);
-
-        const root  = document.createElement(ROOT_TAG);
-        const host  = root.shadowRoot!.firstElementChild as HTMLElement;
-        const child = host.shadowRoot!.firstElementChild as HTMLElement;
-
-        await scheduler.execution();
-
-        chai.assert.equal(child.shadowRoot!.firstElementChild!.textContent, "Greetings");
-        chai.assert.equal(child.shadowRoot!.firstElementChild!.nextElementSibling, null);
-
-        child.lang = "pt-br";
-
-        await scheduler.execution();
-
-        chai.assert.equal(child.shadowRoot!.firstElementChild!.textContent, "Greetings");
-        chai.assert.equal(child.shadowRoot!.firstElementChild!.nextElementSibling!.textContent, "Hello World!!!");
     }
 
     @test @shouldPass
@@ -1798,7 +1768,7 @@ export default class CompilerSpec
             `</${HOST_TAG}>`,
         ].join("");
 
-        defineComponent(HOST_TAG, "<span ...injections=\"host\"></span><span #placeholder></span>");
+        defineComponent(HOST_TAG, "<span ...attributes=\"host\"></span><span #placeholder></span>");
         defineComponent(ROOT_TAG, rootTemplate);
 
         const root = document.createElement(ROOT_TAG) as HTMLElement & IDisposable;
@@ -2247,10 +2217,10 @@ export default class CompilerSpec
     {
         const host = createNode();
 
-        const shadowRoot = "<span ...binds=\"{ }\"></span>";
+        const shadowRoot = "<span ...properties=\"{ }\"></span>";
 
-        const message = "Expression '...binds=\"{ }\"' does not result in a valid HTMLElement.";
-        const stack   = "<y-component>\n   #shadow-root\n      <span ...binds=\"{ }\">";
+        const message = "Expression '...properties=\"{ }\"' does not result in a valid HTMLElement.";
+        const stack   = "<y-component>\n   #shadow-root\n      <span ...properties=\"{ }\">";
 
         const actual = await tryActionAsync(() => compile({ host, shadowRoot }));
 

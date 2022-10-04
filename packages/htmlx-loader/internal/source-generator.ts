@@ -34,8 +34,7 @@ const attributeFactoryMap: Record<Exclude<AttributeBindDescritor["type"], Descri
 const spreadFactories =
 {
     Attributes: "createSpreadAttributesFactory",
-    Binds:      "createSpreadBindsFactory",
-    Injections: "createSpreadInjectionsFactory",
+    Properties: "createSpreadPropertiesFactory",
     Listeners:  "createSpreadListenersFactory",
 } as const;
 
@@ -176,16 +175,10 @@ export default class SourceGenerator
                             this.factories.add(spreadFactories.Attributes);
                         }
 
-                        if (hasFlag(descriptor.flags, SpreadFlags.Binds))
+                        if (hasFlag(descriptor.flags, SpreadFlags.Properties))
                         {
-                            this.writeLine(`${spreadFactories.Binds},`);
-                            this.factories.add(spreadFactories.Binds);
-                        }
-
-                        if (hasFlag(descriptor.flags, SpreadFlags.Injections))
-                        {
-                            this.writeLine(`${spreadFactories.Injections},`);
-                            this.factories.add(spreadFactories.Injections);
+                            this.writeLine(`${spreadFactories.Properties},`);
+                            this.factories.add(spreadFactories.Properties);
                         }
 
                         if (hasFlag(descriptor.flags, SpreadFlags.Listeners))
