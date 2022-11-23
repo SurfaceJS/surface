@@ -85,7 +85,7 @@ export default class TypeSpec
     }
 
     @test @shouldPass
-    public getFielMember(): void
+    public getFieldMember(): void
     {
         const key = "instanceField";
 

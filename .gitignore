@@ -82,3 +82,4 @@ tsconfig.tsbuildinfo
 !**/types/**/*.d.mts
 !**/types/**/*.d.ts
 !shim.d.ts
+.cspellcache

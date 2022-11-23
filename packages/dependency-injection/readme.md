@@ -1,19 +1,22 @@
 # Summary
+
 * [Introduction](#introduction)
 * [Basic setup](#basic-setup)
 * [Injection](#injection)
 * [Registration](#registration)
-    * [Singleton](#singleton)
-    * [Transient](#transient)
-    * [Scoped](#scoped)
-    * [Scoped Provider](#scoped-provider)
+  * [Singleton](#singleton)
+  * [Transient](#transient)
+  * [Scoped](#scoped)
+  * [Scoped Provider](#scoped-provider)
 * [Hierarchy](#hierarchy)
 * [Provider](#provider)
 
-# Introduction
+## Introduction
+
 Provides dependency injection capabilities.
 
 ## Basic setup
+
 ```ts
 import Container, { inject } from "@surface/dependency-injection";
 
@@ -33,7 +36,7 @@ class MyClass
 {
     @inject(B) private readonly b!: B
 
-    // Anotate constructor parameter using the registered key
+    // Annotate constructor parameter using the registered key
     public constructor(@inject(KEY) private readonly a: A)
     { }
 }
@@ -41,28 +44,34 @@ class MyClass
 // Resolve injected instance using the registered key
 const a = container.resolve(KEY);
 
-// Inject dependecy using the constructor with annotated dependencies
+// Inject dependency using the constructor with annotated dependencies
 const b = container.inject(MyClass);
 ```
 
 ## Injection
-The container can inject both constructor parameters and properties.  
+
+The container can inject both constructor parameters and properties.
 
 Note that properties are injected after instantiation and will not be accessible in the constructor.
 
 ## Registration
+
 Are three types of registration `Transient`, `Singleton` and `Scoped`.
 
 ### Transient
+
 Are always resolved to a new instance and never disposed by the container.
 
 ### Singleton
+
 After resolved persists until the container is disposed.
 
 ### Scoped
+
 When resolved by the container, the injection will be resolved to the same instance in the scope of the `resolve` or `inject` call and will not disposed by the container.
 
 ### Scoped provider
+
 Creating scopes allows dependencies to persist until the scope is dropped.
 
 ```ts
@@ -75,7 +84,7 @@ class MyClass { }
 // Register dependency using a key
 container.registerScoped(MyClass);
 
-// Inject dependecy using the constructor with annotated dependencies
+// Inject dependency using the constructor with annotated dependencies
 const scope = container.createScope();
 
 const a = scope.resolve(MyClass);
@@ -87,7 +96,8 @@ scope.dispose(); // Clear scope and call the dispose method of all cached instan
 ```
 
 ## Hierarchy
-When the container is nested. The dependency will be resolved from bottom up. Following the container instance resgistration type.
+
+When the container is nested. The dependency will be resolved from bottom up. Following the container instance registration type.
 
 Disposing a child container does not affect the parent and vice versa.
 
@@ -104,7 +114,7 @@ class B { }
 child.registerSingleton(A);
 parent.registerSingleton(B);
 
-// Inject dependecy using the constructor with annotated dependencies.
+// Inject dependency using the constructor with annotated dependencies.
 const scope = container.createScope();
 
 const a = child.resolve(A); // Resolved and cached on child.
@@ -112,15 +122,17 @@ const b = child.resolve(B); // Resolved and cached on parent.
 ```
 
 ## Provider
+
 When building a web app, register all dependencies on single container can increase significantly the load/size of the startup.
 
-In this case, the best pratices is break you containers in smaller peaces and distribute where is need.
+In this case, the best practices is break you containers in smaller peaces and distribute where is need.
 
 But we still need a way of connect all together.
 
 This can be done using `provider`.
 
 keys.ts
+
 ```ts
 const A_KEY                 = Symbol();
 const B_KEY                 = Symbol();
@@ -132,12 +144,14 @@ export C_KEY;
 ```
 
 c.ts
+
 ```ts
 export default class C
 { }
 ```
 
 b.ts
+
 ```ts
 import Container                        from "@surface/dependency-injection";
 import B                                from "./b.ts";
@@ -156,6 +170,7 @@ export default class A
 ```
 
 b.ts
+
 ```ts
 import { inject }                from "@surface/dependency-injection";
 import Type C                    from "./c.ts";
@@ -169,6 +184,7 @@ export class B
 ```
 
 index.ts
+
 ```ts
 import Container                 from "@surface/dependency-injection";
 import C                         from "./c.ts";

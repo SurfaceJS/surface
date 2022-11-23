@@ -1,36 +1,39 @@
 # Summary
+
 * [Introduction](#introduction)
 * [Basic setup](#basic-setup)
-* [Route Configuration](#route-Configuration)
-    * [Synchronous](#synchronous)
-    * [Asynchronous](#asynchronous)
-    * [Named](#named)
-    * [Metadata](#metadata)
-    * [Children Route](#children-route)
-    * [Multiples Components](#multiples-components)
+* [Route Configuration](#route-configuration)
+  * [Synchronous](#synchronous)
+  * [Asynchronous](#asynchronous)
+  * [Named](#named)
+  * [Metadata](#metadata)
+  * [Children Route](#children-route)
+  * [Multiples Components](#multiples-components)
 * [Url Templates](#url-templates)
-    * [Parameters](#parameters)
-    * [Constraints](#constraints)
-    * [Transformers](#transformers)
-        * [Custom Constraints and Transformers](#custom-constraints-and-transformers)
-    * [Match All](#match-all)
+  * [Parameters](#parameters)
+  * [Constraints](#constraints)
+  * [Transformers](#transformers)
+    * [Custom Constraints and Transformers](#custom-constraints-and-transformers)
+  * [Match All](#match-all)
 * [Interceptors](#interceptors)
 * [Life Cycle Hooks](#life-cycle-hooks)
 * [Navigation](#navigation)
 * [Dependency Injection](#dependency-injection)
 * [Directive](#directive)
 
-# Introduction
+## Introduction
+
 @surface/web-router enables navigation in your application without the need of page refresh.
 Features support for synchronous and asynchronous routes, url templates and native dependency injection.
 
 ## Basic setup
+
 ```ts
 import HTMLXElement               from "@surface/htmlx-element";
 import type { RouteConfiguration } from "@surface/web-router";
 import WebRouter                   from "@surface/web-router";
 
-// <router-outlet> determines where the content will be outputed.
+// <router-outlet> determines where the content will be outputted.
 @element("app-root", { template: "<router-outlet></router-outlet>" })
 class App extends HTMLXElement
 { }
@@ -59,7 +62,7 @@ void router.push("/home");
 ```
 
 By default, the router lookups by `<router-outlet>` element where it outputs the resolved component.
-This can overrided at configuration level passing the `selector` option.
+This can override at configuration level passing the `selector` option.
 
 ```ts
 import HTMLXElement               from "@surface/htmlx-element";
@@ -85,10 +88,13 @@ void router.push("/home");
 ```
 
 ## Route Configuration
+
 Route configuration allow us to create routes in some ways.
 
 ### Synchronous
-Component impoted in synchronous way.
+
+Component imported in synchronous way.
+
 ```ts
 import type { RouteConfiguration } from "@surface/web-router";
 import HomeView                    from "./views/home-view";
@@ -101,7 +107,8 @@ const routes: RouteConfiguration[] =
 ```
 
 ### Asynchronous
-Also known as lazy loading. Component is resolved on demand and can be used for code spliting.
+
+Also known as lazy loading. Component is resolved on demand and can be used for code splitting.
 
 ```ts
 const routes: RouteConfiguration[] =
@@ -110,7 +117,9 @@ const routes: RouteConfiguration[] =
     { component: async () => (await import("./views/home-view")).MyView, path: "/" }, // Using explicit export
 ];
 ```
+
 ### Named
+
 Named allow us navigate to the route using the name instead the path.
 
 Note that when the route contains mandatory parameters it must also be specified otherwise the route will not match ([see](#parameters)).
@@ -133,7 +142,9 @@ void router.push({ name: "foo" });
 ```
 
 ### Metadata
+
 Meta is static data provided aside the route that can be access through current route instance.
+
 ```ts
 const routes: RouteConfiguration[] =
 [
@@ -145,6 +156,7 @@ console.log(router.route.meta); // outputs { requiresAuth: false }
 ```
 
 ### Children Route
+
 When using children routes the router only updates the component related to the segment that has changed keeping state of the parent segment.
 
 ```ts
@@ -178,6 +190,7 @@ void router.push("/view/children-b");
 ```
 
 ### Multiples Components
+
 One component can contains multiples named outlets handled by one single route.
 The property `components` allows specifies where each component outputs.
 
@@ -205,9 +218,11 @@ void router.push("/view/children-b");
 ```
 
 ## Url Templates
+
 Url Templates can be used to provide additional information about the route.
 
 ### Parameters
+
 The most simple example is url parameters.
 
 ```ts
@@ -221,22 +236,26 @@ const routes: RouteConfiguration[] =
 
 When the router or the browser navigate to the some of the mapped URLs, the router's active route will have the mapped parameter available.
 
-The URL http://localhost/path-1/42 will produces some like:
+The URL <http://localhost/path-1/42> will produces some like:
+
 ```ts
 { id: "42" }
 ```
 
-The URL http://localhost/path-2 will produces some like:
+The URL <http://localhost/path-2> will produces some like:
+
 ```ts
 { }
 ```
 
-The URL http://localhost/path-3 will produces some like:
+The URL <http://localhost/path-3> will produces some like:
+
 ```ts
 { id: "0" }
 ```
 
 ### Constraints
+
 Constrains are used to restrict match to exact pattern expected by parameter.
 The builtin constraints are: `UUID`, `Alpha`, `Number`, `Boolean` and `Date`.
 
@@ -249,9 +268,10 @@ const routes: RouteConfiguration[] =
 
 Using above configuration.
 
-The URL https://localhost/user/xyz will match, while https://localhost/user/41 will not.
+The URL <https://localhost/user/xyz> will match, while <https://localhost/user/41> will not.
 
 ### Transformers
+
 By default all parameters are captured like string. But if you need some kind of transformation, transformers can be used.
 
 The builtin transformer are: `Number`, `Boolean` and `Date`.
@@ -265,13 +285,15 @@ const routes: RouteConfiguration[] =
 ];
 ```
 
-The URL http://localhost/user/42 will produces some like:
+The URL <http://localhost/user/42> will produces some like:
+
 ```ts
 { id: 42 }
 ```
 
 ### Custom Constraints and Transformers
-You also can provide your own custom constraints implementeing the interface `IRouteParameterConstraints` and/or custom transformers implementeing the interface IRouteParameterTransformers` and registering on the router instance.
+
+You also can provide your own custom constraints implementing the interface `IRouteParameterConstraints` and/or custom transformers implementing the interface IRouteParameterTransformers` and registering on the router instance.
 
 ```ts
 import type { IRouteParameterConstraint, IRouteParameterTransformer } from "@surface/web-router";
@@ -293,6 +315,7 @@ const router = new WebRouter({ root: "app-root", routes, transformers: { Array: 
 ```
 
 ## Match All
+
 Matches any segment between placeholder patterns.
 
 ```ts
@@ -302,12 +325,14 @@ const routes: RouteConfiguration[] =
 ];
 ```
 
-The URL http://localhost/user/some/deep/path/details/ will produces some like:
+The URL <http://localhost/user/some/deep/path/details/> will produces some like:
+
 ```ts
 console.log(router.route.parameters); // outputs { rest: "some/deep/path" }
 ```
 
 ## Interceptors
+
 Interceptors can be used to guard some routes and re-route when needed.
 
 ```ts
@@ -334,7 +359,9 @@ const routes: RouteConfiguration[] =
 
 const router = new WebRouter({ root: "app-root", interceptors: [Interceptor], routes });
 ```
+
 ### Life Cycle Hooks
+
 Besides interceptor, some hooks also can be used to handle some route life cycles.
 
 ```ts
@@ -350,15 +377,18 @@ export default interface IRouteableElement extends HTMLElement, Partial<IDisposa
     dispose?(): void;
 }
 ```
+
 ## Navigation
+
 It is possible to navigate between routes using url, named routes or router history.
+
 ```ts
 const routes: RouteConfiguration[] =
 [
     { component: async () => import("./views/company"), path: "/company/{id}", name: "company" }
 ];
 
-// Pushs to window.location.href
+// Pushes to window.location.href
 await router.pushCurrentLocation();
 
 await router.push("/company/1?show-employees=true#details");
@@ -380,9 +410,10 @@ await router.go(2);
 // Replaces current entry in history
 await router.replace("/company/2");
 ```
-## Dependency Injection
-**@surface/web-router** has builtin support of dependency injection through of module [**@surface/dependency-injection**](../dependency-injection/readme.md) and can inject dependencies directly on routed component constructor or properties (notes that injected properties are initialized after constructor). For code split, see [**Provider**](../dependency-injection/readme.md#provider).
 
+## Dependency Injection
+
+**@surface/web-router** has builtin support of dependency injection through of module [**@surface/dependency-injection**](../dependency-injection/readme.md) and can inject dependencies directly on routed component constructor or properties (notes that injected properties are initialized after constructor). For code split, see [**Provider**](../dependency-injection/readme.md#provider).
 
 ```ts
 import HTMLXElement               from "@surface/htmlx-element";
@@ -416,6 +447,7 @@ void import("./app")
 ```
 
 ## Directive
+
 **@surface/web-router** provides a custom directive that allows you to create router links directly in html and accepts the same arguments that `router.push(...)`.
 
 ```ts

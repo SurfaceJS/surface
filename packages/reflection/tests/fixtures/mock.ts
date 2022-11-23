@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import BaseMock                                                                 from "./base-mock.js";
-import { classMetadata, methodMetadata, parameterMetadata, propertyMedatadata } from "./decorators.js";
+import BaseMock                                                               from "./base-mock.js";
+import { classMetadata, methodMetadata, parameterMetadata, propertyMetadata } from "./decorators.js";
 
 @classMetadata
 class Mock extends BaseMock
@@ -8,7 +8,7 @@ class Mock extends BaseMock
     private static _staticProperty: number = 1;
     private _instanceProperty: number = 1;
 
-    @propertyMedatadata
+    @propertyMetadata
     public static get staticProperty(): number
     {
         return this._staticProperty;
@@ -25,7 +25,7 @@ class Mock extends BaseMock
         return 0;
     }
 
-    @propertyMedatadata
+    @propertyMetadata
     public get instanceProperty(): number
     {
         return this._instanceProperty;

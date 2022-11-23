@@ -1,12 +1,12 @@
-import { deepMerge, hasFlag }                                                               from "@surface/core";
-import type { IExpression, IPattern }                                                       from "@surface/expression";
-import { TypeGuard }                                                                        from "@surface/expression";
-import { DescriptorType, Parser, SpreadFlags }                                              from "@surface/htmlx-parser";
-import type { AttributeBindDescritor, BranchDescriptor, Descriptor, RawAttributeDescritor } from "@surface/htmlx-parser";
-import jsdom                                                                                from "jsdom";
-import { defaultAttributeHandlers }                                                         from "./attribute-handlers.js";
-import ScopeRewriterVisitor                                                                 from "./scope-rewriter-visitor.js";
-import type { AttributeHandlers }                                                           from "./types/index.cjs";
+import { deepMerge, hasFlag }                                                                 from "@surface/core";
+import type { IExpression, IPattern }                                                         from "@surface/expression";
+import { TypeGuard }                                                                          from "@surface/expression";
+import { DescriptorType, Parser, SpreadFlags }                                                from "@surface/htmlx-parser";
+import type { AttributeBindDescriptor, BranchDescriptor, Descriptor, RawAttributeDescriptor } from "@surface/htmlx-parser";
+import jsdom                                                                                  from "jsdom";
+import { defaultAttributeHandlers }                                                           from "./attribute-handlers.js";
+import ScopeRewriterVisitor                                                                   from "./scope-rewriter-visitor.js";
+import type { AttributeHandlers }                                                             from "./types/index.cjs";
 
 const factoryMap: Record<Descriptor["type"], string> =
 {
@@ -21,7 +21,7 @@ const factoryMap: Record<Descriptor["type"], string> =
     [DescriptorType.TextInterpolation]: "createTextNodeInterpolationFactory",
 };
 
-const attributeFactoryMap: Record<Exclude<AttributeBindDescritor["type"], DescriptorType.Attribute>, string> =
+const attributeFactoryMap: Record<Exclude<AttributeBindDescriptor["type"], DescriptorType.Attribute>, string> =
 {
     [DescriptorType.Directive]:     "createDirectiveFactory",
     [DescriptorType.Spread]:        "createSpreadFactory",
@@ -83,10 +83,10 @@ export default class SourceGenerator
         this.lines.pop();
     }
 
-    private separateAttributes(descriptors: Iterable<AttributeBindDescritor>): { attributes: RawAttributeDescritor[], directives: Exclude<AttributeBindDescritor, RawAttributeDescritor>[] }
+    private separateAttributes(descriptors: Iterable<AttributeBindDescriptor>): { attributes: RawAttributeDescriptor[], directives: Exclude<AttributeBindDescriptor, RawAttributeDescriptor>[] }
     {
-        const attributes: RawAttributeDescritor[]                                  = [];
-        const directives: Exclude<AttributeBindDescritor, RawAttributeDescritor>[] = [];
+        const attributes: RawAttributeDescriptor[]                                  = [];
+        const directives: Exclude<AttributeBindDescriptor, RawAttributeDescriptor>[] = [];
 
         for (const descriptor of descriptors)
         {
@@ -103,7 +103,7 @@ export default class SourceGenerator
         return { attributes, directives };
     }
 
-    private writeAttributeBinds(tag: string, descriptors: Iterable<AttributeBindDescritor>): void
+    private writeAttributeBinds(tag: string, descriptors: Iterable<AttributeBindDescriptor>): void
     {
         const binds = this.separateAttributes(descriptors);
 

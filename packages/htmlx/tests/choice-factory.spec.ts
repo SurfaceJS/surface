@@ -14,7 +14,7 @@ import type Evaluator              from "../internal/types/evaluator.js";
 export default class ChoiceFactorySpec
 {
     @test @shouldPass
-    public async braches(): Promise<void>
+    public async branches(): Promise<void>
     {
         type Scope = { id: number };
 

@@ -3,4 +3,5 @@
 
 npm run ts:rebuild
 npm run lint
+npm run spellcheck -- --silent
 npm run cover-summary

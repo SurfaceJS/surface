@@ -13,7 +13,7 @@ export function parameterMetadata(_target: Object, _propertyKey: string | symbol
     //
 }
 
-export function propertyMedatadata(_target: Object, _propertyKey: string | symbol): void
+export function propertyMetadata(_target: Object, _propertyKey: string | symbol): void
 {
     //
 }

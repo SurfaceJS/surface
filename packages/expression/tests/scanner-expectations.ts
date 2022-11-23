@@ -1,6 +1,7 @@
 /* eslint-disable no-loss-of-precision */
 /* eslint-disable @typescript-eslint/no-loss-of-precision */
 /* eslint-disable max-lines */
+// cSpell:ignore 0xhij
 import Messages   from "../internal/messages.js";
 import TokenType  from "../internal/token-type.js";
 import type Token from "../internal/types/token.js";

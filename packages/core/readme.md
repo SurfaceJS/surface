@@ -1,1 +1,1 @@
-Provives core functionality of many @surfaces modules.
+# Provides core functionality of many @surfaces modules

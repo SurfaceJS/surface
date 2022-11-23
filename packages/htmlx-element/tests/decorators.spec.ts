@@ -12,7 +12,7 @@ import CustomDirective             from "./fixtures/custom-directive.js";
 export default class DecoratorsSpec
 {
     @test @shouldPass
-    public elementDecoratorHtmlElementWithObservedAttibute(): void
+    public elementDecoratorHtmlElementWithObservedAttribute(): void
     {
         @element(`mock-${crypto.randomUUID()}` as `${string}-${string}`)
         class Mock extends HTMLXElement
@@ -41,7 +41,7 @@ export default class DecoratorsSpec
     }
 
     // @test @shouldPass
-    // public elementDecoratorHtmlElementWithMultiplesObservedAttibute(): void
+    // public elementDecoratorHtmlElementWithMultiplesObservedAttribute(): void
     // {
     //     @element(`mock-${crypto.randomUUID()}` as `${string}-${string}`)
     //     class Mock extends HTMLXElement

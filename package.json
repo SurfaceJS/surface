@@ -2,14 +2,15 @@
     "author": "HitalloExiled",
     "description": "Surface workspace",
     "devDependencies": {
-        "@commitlint/cli": "~17.1.1",
-        "@commitlint/config-conventional": "~17.1.0",
+        "@commitlint/cli": "~17.3.0",
+        "@commitlint/config-conventional": "~17.3.0",
         "c8": "~7.12.0",
-        "husky": "~8.0.1",
-        "mocha": "~10.0.0",
+        "husky": "~8.0.2",
+        "mocha": "~10.1.0",
         "rimraf": "~3.0.2",
-        "tslib": "~2.4.0",
-        "typescript": "~4.7.4"
+        "tslib": "~2.4.1",
+        "typescript": "~4.9.3",
+        "cspell": "~6.14.3"
     },
     "keywords": [
         "types",
@@ -27,6 +28,8 @@
         "cover": "c8 --check-coverage npm test",
         "cover-summary": "c8 --reporter=text-summary --check-coverage npm run test-summary",
         "lint": "eslint . --cache --ext .ts",
+        "spellcheck:help": "cspell",
+        "spellcheck": "cspell **/*.{cts,mts,ts,md,json} --cache --exclude=coverage --exclude=node_modules",
         "postinstall": "npm run ts:build",
         "postpublishworkspace": "npm run build",
         "prepare": "husky install .husky",

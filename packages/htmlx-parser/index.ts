@@ -3,24 +3,24 @@ export type { default as StackTrace }     from "./internal/types/stack-trace.js"
 export type { default as ObservablePath } from "./internal/types/observable-path.js";
 export type
 {
-    AttributeBindDescritor,
+    AttributeBindDescriptor,
     BranchDescriptor,
     ChoiceStatementDescriptor,
     CommentDescriptor,
     Descriptor,
-    DirectiveAttributeDescritor,
+    DirectiveAttributeDescriptor,
     ElementDescriptor,
-    EventDescritor,
+    EventDescriptor,
     FragmentDescriptor,
     InjectionStatementDescriptor,
     KeyScopeObservable,
     LoopStatementDescriptor,
-    OneWayAttributeDescritor,
+    OneWayAttributeDescriptor,
     PlaceholderStatementDescriptor,
-    RawAttributeDescritor,
+    RawAttributeDescriptor,
     TextDescriptor,
     TextInterpolationDescriptor,
-    TwoWayAttributeDescritor,
+    TwoWayAttributeDescriptor,
 } from "./internal/types/descriptor.js";
 
 export { default as SpreadFlags }    from "./internal/flags/spread-flags.js";

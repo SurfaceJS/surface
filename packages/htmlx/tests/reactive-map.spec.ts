@@ -18,9 +18,9 @@ export default class ReactiveMapSpec
 
         let values: [string, number][] = [];
 
-        const listerner = (x: Map<string, number>): void => void (values = Array.from(x));
+        const listener = (x: Map<string, number>): void => void (values = Array.from(x));
 
-        map.subscribe(listerner);
+        map.subscribe(listener);
 
         map.set("one", 1);
 
@@ -42,7 +42,7 @@ export default class ReactiveMapSpec
 
         chai.assert.equal(values.length, 0);
 
-        map.unsubscribe(listerner);
+        map.unsubscribe(listener);
 
         chai.assert.equal(values.length, 0);
 
@@ -52,7 +52,7 @@ export default class ReactiveMapSpec
     }
 
     @test @shouldFail
-    public throwsListernerNotSubscribed(): void
+    public throwsListenerNotSubscribed(): void
     {
         chai.assert.throws(() => new ReactiveMap().unsubscribe(() => void 0));
     }

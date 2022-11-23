@@ -19,7 +19,7 @@ import ObserverVisitor                                                          
 import { interpolation }                                                                         from "./patterns.js";
 import type Descriptor                                                                           from "./types/descriptor.js";
 import type {
-    AttributeBindDescritor,
+    AttributeBindDescriptor,
     BranchDescriptor,
     ElementDescriptor,
     FragmentDescriptor,
@@ -360,7 +360,7 @@ export default class Parser
         return { children: this.enumerateParsedNodes(template.content), type: DescriptorType.Fragment };
     }
 
-    private *parseAttributes(element: Element, stackTrace: StackTrace): Iterable<AttributeBindDescritor>
+    private *parseAttributes(element: Element, stackTrace: StackTrace): Iterable<AttributeBindDescriptor>
     {
         const duplications = new Map<string, string>();
 
