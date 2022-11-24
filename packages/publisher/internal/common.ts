@@ -1,6 +1,9 @@
 /* cSpell:ignore premajor, preminor, prepatch, onentry */
 
+import { dirname }                              from "path";
 import { timestamp }                            from "@surface/core";
+import conventionalChangelog                    from "conventional-changelog";
+import conventionalRecommendedBump              from "conventional-recommended-bump";
 import { type ReleaseType }                     from "semver";
 import tar                                      from "tar";
 import type { GlobPrerelease, SemanticVersion } from "./types/version.js";
@@ -14,6 +17,35 @@ const VERSION_SPLIT_PATTERN   = /^(\*|(?:(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1
 const RELEASE_TYPES = new Set(["major", "minor", "patch", "premajor", "preminor", "prepatch", "prerelease"]);
 
 type ConcatAble = { concat: () => Promise<Buffer> };
+
+export async function changelog(path: string, lernaPackage: string | undefined, preset: string = "angular"): Promise<Buffer>
+{
+    return new Promise<Buffer>
+    (
+        (resolve, reject) =>
+        {
+            const output: number[] = [];
+
+            const handler = (buffer: Buffer | string): void =>
+                void output.push(...Buffer.from(buffer));
+
+            // cSpell:ignore Projetos
+            conventionalChangelog({ preset, lernaPackage, pkg: { path } }, {}, { path: dirname(path) })
+                .on("data", handler)
+                .on("error", reject)
+                .on("end", () => resolve(Buffer.from(output)));
+        },
+    );
+}
+
+export async function recommendedBump(path: string, lernaPackage: string | undefined, preset: string = "angular"): Promise<conventionalRecommendedBump.Callback.Recommendation>
+{
+    return new Promise
+    (
+        (resolve, reject) =>
+            conventionalRecommendedBump({ preset, lernaPackage, path }, (error, recommendation) => error ? reject(error) : resolve(recommendation)),
+    );
+}
 
 export function isGlobPrerelease(value: string): value is GlobPrerelease
 {
@@ -57,7 +89,7 @@ export const toEnum = (...values: (string | [string, number | string])[]): (valu
 
 export const toSemver = (value: string): string | number =>
 {
-    if (isGlobPrerelease(value) || isSemanticVersion(value) || isReleaseType(value))
+    if (value.toLowerCase() == "recommended" || isGlobPrerelease(value) || isSemanticVersion(value) || isReleaseType(value))
     {
         return value;
     }

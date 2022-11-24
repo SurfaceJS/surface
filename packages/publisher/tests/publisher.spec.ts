@@ -10,6 +10,7 @@ import chai                                                                     
 import chaiAsPromised                                                            from "chai-as-promised";
 import pack                                                                      from "libnpmpack";
 import { timestamp }                                                             from "../internal/common.js";
+import { addTag, commit, commitAll, isWorkingTreeClean, pushToRemote }           from "../internal/git.js";
 import NpmService                                                                from "../internal/npm-service.js";
 import Publisher                                                                 from "../internal/publisher.js";
 import
@@ -36,20 +37,25 @@ type PackageJson = _PackageJson & { workspaces?: string[] };
 
 chai.use(chaiAsPromised);
 
-const executeMock       = Mock.of(execute);
-const existsSyncMock    = Mock.of(existsSync);
-const loggerMock        = Mock.instance<Logger>();
-const LoggerMock        = Mock.of(Logger);
-const npmRepositoryMock = Mock.instance<NpmService>();
-const NpmRepositoryMock = Mock.of(NpmService);
-const packMock          = Mock.of(pack);
-const readdirMock       = Mock.of(readdir);
-const readFileMock      = Mock.of(readFile);
-const statMock          = Mock.of(stat);
-const timestampMock     = Mock.of(timestamp);
-const writeFileMock     = Mock.of(writeFile);
+const addTagMock             = Mock.of(addTag);
+const commitAllMock          = Mock.of(commitAll);
+const commitMock             = Mock.of(commit);
+const executeMock            = Mock.of(execute);
+const existsSyncMock         = Mock.of(existsSync);
+const isWorkingTreeCleanMock = Mock.of(isWorkingTreeClean);
+const loggerMock             = Mock.instance<Logger>();
+const LoggerMock             = Mock.of(Logger);
+const npmServiceMock         = Mock.instance<NpmService>();
+const NpmServiceMock         = Mock.of(NpmService);
+const packMock               = Mock.of(pack);
+const pushToRemoteMock       = Mock.of(pushToRemote);
+const readdirMock            = Mock.of(readdir);
+const readFileMock           = Mock.of(readFile);
+const statMock               = Mock.of(stat);
+const timestampMock          = Mock.of(timestamp);
+const writeFileMock          = Mock.of(writeFile);
 
-executeMock.call(It.any(), It.any()).resolve();
+executeMock.call(It.any(), It.any()).resolve(Buffer.from([]));
 
 loggerMock.setup("debug").call(It.any());
 loggerMock.setup("error").call(It.any());
@@ -136,7 +142,7 @@ export default class PublisherSpec
 
     private setupVirtualRegistry(registry: VirtualRegistry): void
     {
-        npmRepositoryMock
+        npmServiceMock
             .setup("get")
             .call(It.any())
             .returnsFactory
@@ -149,12 +155,12 @@ export default class PublisherSpec
                 },
             );
 
-        npmRepositoryMock
+        npmServiceMock
             .setup("isPublished")
             .call(It.any())
             .returnsFactory(async x => Promise.resolve(registry[x.name]?.isPublished ?? false));
 
-        npmRepositoryMock
+        npmServiceMock
             .setup("hasChanges")
             .call(It.any(), It.any(), It.any())
             .returnsFactory
@@ -172,15 +178,22 @@ export default class PublisherSpec
     public beforeEach(): void
     {
         LoggerMock.new(It.any()).returns(loggerMock.proxy);
-        NpmRepositoryMock.new(It.any(), It.any()).returns(npmRepositoryMock.proxy);
+        NpmServiceMock.new(It.any(), It.any()).returns(npmServiceMock.proxy);
         packMock.call(It.any()).resolve(Buffer.from([]));
         timestampMock.call().returns("202201010000");
+        isWorkingTreeCleanMock.call().resolve(true);
+        addTagMock.call(It.any(), It.any()).resolve();
 
         LoggerMock.lock();
-        NpmRepositoryMock.lock();
+        NpmServiceMock.lock();
 
+        addTagMock.lock();
+        commitAllMock.lock();
+        commitMock.lock();
         existsSyncMock.lock();
+        isWorkingTreeCleanMock.lock();
         packMock.lock();
+        pushToRemoteMock.lock();
         readdirMock.lock();
         readFileMock.lock();
         statMock.lock();
@@ -194,10 +207,15 @@ export default class PublisherSpec
         this.directoryTree.clear();
 
         LoggerMock.release();
-        NpmRepositoryMock.release();
+        NpmServiceMock.release();
 
+        addTagMock.release();
+        commitAllMock.release();
+        commitMock.release();
         existsSyncMock.release();
+        isWorkingTreeCleanMock.release();
         packMock.release();
+        pushToRemoteMock.release();
         readdirMock.release();
         readFileMock.release();
         statMock.release();
@@ -250,7 +268,7 @@ export default class PublisherSpec
 
         writeFileMock.call(It.any(), It.any()).resolve();
 
-        npmRepositoryMock.setup("publish").call(It.any(), It.any(), It.any())
+        npmServiceMock.setup("publish").call(It.any(), It.any(), It.any())
             .callback(x => actual.push(`${x.name}@${x.version}`))
             .resolve();
 
@@ -267,7 +285,7 @@ export default class PublisherSpec
 
         const actual: string[] = [];
 
-        npmRepositoryMock.setup("unpublish").call(It.any())
+        npmServiceMock.setup("unpublish").call(It.any())
             .callback(x => actual.push(x))
             .resolve();
 
@@ -298,7 +316,7 @@ export default class PublisherSpec
 
         this.setup({ directory, registry: { } });
 
-        npmRepositoryMock.setup("publish").call(It.any(), It.any(), It.any()).reject();
+        npmServiceMock.setup("publish").call(It.any(), It.any(), It.any()).reject();
 
         writeFileMock.call(It.any(), It.any()).resolve();
 
@@ -316,7 +334,7 @@ export default class PublisherSpec
 
         this.setup({ directory, registry: { "package-a": { isPublished: true, hasChanges: true } } });
 
-        npmRepositoryMock.setup("unpublish").call(It.any()).reject();
+        npmServiceMock.setup("unpublish").call(It.any()).reject();
 
         await chai.assert.isRejected(new Publisher({ packages: ["packages/*"] }).unpublish());
     }

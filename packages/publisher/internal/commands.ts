@@ -14,9 +14,13 @@ export default class Commands
     {
         const bumpOptions: Required<BumpOptions> =
         {
+            changelog:            options.changelog!,
+            commit:               options.commit!,
             force:                options.force!,
             ignoreChanges:        options.ignoreChanges!,
             independent:          options.independent!,
+            pushToRemote:         options.pushToRemote!,
+            remote:               options.remote!,
             synchronize:          options.synchronize!,
             tag:                  options.tag!,
             updateFileReferences: options.updateFileReferences!,

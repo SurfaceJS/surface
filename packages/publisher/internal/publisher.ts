@@ -1,17 +1,26 @@
-import { readFile, writeFile }                                                from "fs/promises";
-import os                                                                     from "os";
-import { dirname, join, resolve }                                             from "path";
-import type { PackageJson as _PackageJson }                                   from "@npm/types";
-import { type RequiredProperties }                                            from "@surface/core";
-import Logger, { LogLevel }                                                   from "@surface/logger";
-import { enumeratePaths, execute }                                            from "@surface/rwx";
-import pack                                                                   from "libnpmpack";
-import semver, { type ReleaseType }                                           from "semver";
-import { isGlobPrerelease, isSemanticVersion, overridePrerelease, timestamp } from "./common.js";
-import type { Auth }                                                          from "./npm-config.js";
-import NpmConfig                                                              from "./npm-config.js";
-import NpmService                                                             from "./npm-service.js";
-import type { GlobPrerelease, SemanticVersion }                               from "./types/version.js";
+import { readFile, writeFile }              from "fs/promises";
+import os                                   from "os";
+import { dirname, join, resolve }           from "path";
+import type { PackageJson as _PackageJson } from "@npm/types";
+import { type RequiredProperties }          from "@surface/core";
+import Logger, { LogLevel }                 from "@surface/logger";
+import { enumeratePaths, execute }          from "@surface/rwx";
+import pack                                 from "libnpmpack";
+import semver, { type ReleaseType }         from "semver";
+import
+{
+    changelog,
+    isGlobPrerelease,
+    isSemanticVersion,
+    overridePrerelease,
+    recommendedBump,
+    timestamp,
+} from "./common.js";
+import { addTag, commitAll, isWorkingTreeClean, pushToRemote } from "./git.js";
+import type { Auth }                                           from "./npm-config.js";
+import NpmConfig                                               from "./npm-config.js";
+import NpmService                                              from "./npm-service.js";
+import type { GlobPrerelease, SemanticVersion }                from "./types/version.js";
 
 /* cSpell:ignore preid, premajor, preminor, prepatch, postpack, postpublish */
 
@@ -98,6 +107,18 @@ export type BumpOptions =
 
     /** Synchronize dependencies between workspace packages after bumping. */
     synchronize?: boolean,
+
+    /** Generates changelog after bumping. */
+    changelog?: boolean,
+
+    /** Commit changes. */
+    commit?: boolean,
+
+    /** Push commit to remote. */
+    pushToRemote?: boolean,
+
+    /** Git remote. */
+    remote?: string,
 } & Pick<ChangedOptions, "ignoreChanges">;
 
 export type ChangedOptions =
@@ -137,7 +158,7 @@ export type PublishOptions =
 
 export type UnpublishOptions = RestrictionOptions;
 
-export type Version = SemanticVersion | GlobPrerelease | ReleaseType;
+export type Version = SemanticVersion | GlobPrerelease | ReleaseType | "recommended";
 
 export default class Publisher
 {
@@ -145,6 +166,7 @@ export default class Publisher
     private readonly errors:  Error[]             = [];
     private readonly logger:  Logger;
     private readonly options: RequiredProperties<Options, "cwd" | "packages">;
+    private readonly updates: Entry[] = [];
 
     private loaded:     boolean            = false;
     private workspaces: Map<string, Entry> = new Map();
@@ -478,50 +500,76 @@ export default class Publisher
 
     private async update(workspaces: Map<string, Entry>, version: Version, preid: string | undefined, build: string | undefined, options: BumpOptions = { }): Promise<void>
     {
+        const promises: Promise<void>[] = [];
+
         for (const entry of workspaces.values())
         {
-            const manifest = entry.manifest;
-            const actual   = manifest.version;
-
-            if (options.force || !options.independent || entry.hasChanges)
+            const action = async (): Promise<void> =>
             {
-                const updated: string | null = isSemanticVersion(version)
-                    ? version
-                    : isGlobPrerelease(version)
-                        ? overridePrerelease(manifest.version, version)
-                        : semver.inc(manifest.version, version, { loose: true }, preid);
+                const manifest = entry.manifest;
+                const actual   = manifest.version;
 
-                if (!updated)
+                if (options.force || !options.independent || entry.hasChanges)
                 {
-                    const message = `Packaged ${manifest.name} has invalid version ${manifest.version}`;
+                    let manifestVersion = version;
 
-                    this.logger.error(message);
+                    if (manifestVersion == "recommended")
+                    {
+                        const result = await recommendedBump(dirname(entry.path), manifest.name);
 
-                    this.errors.push(new Error(message));
+                        if (!result.releaseType)
+                        {
+                            return;
+                        }
+
+                        // eslint-disable-next-line no-param-reassign
+                        manifestVersion = result.releaseType;
+                    }
+
+                    const updated: string | null = isSemanticVersion(manifestVersion)
+                        ? manifestVersion
+                        : isGlobPrerelease(manifestVersion)
+                            ? overridePrerelease(manifest.version, manifestVersion)
+                            : semver.inc(manifest.version, manifestVersion, { loose: true }, preid);
+
+                    if (!updated)
+                    {
+                        const message = `Packaged ${manifest.name} has invalid version ${manifest.version}`;
+
+                        this.logger.error(message);
+
+                        this.errors.push(new Error(message));
+                    }
+                    else
+                    {
+                        manifest.version = updated + (build ? `.${build}` : "");
+
+                        this.logger.debug(`${manifest.name} version updated from ${actual} to ${manifest.version}`);
+
+                        this.updates.push(entry);
+                    }
+                }
+                else if (entry.remote && entry.manifest.version != entry.remote.version)
+                {
+                    this.logger.debug(`Package ${manifest.name} has no changes but local version (${manifest.version}) differ from remote version (${entry.remote.version}) using dist-tag ${options.tag ?? "latest"}`);
+
+                    manifest.version = entry.remote.version;
                 }
                 else
                 {
-                    manifest.version = updated + (build ? `.${build}` : "");
-
-                    this.logger.debug(`${manifest.name} version updated from ${actual} to ${manifest.version}`);
+                    this.logger.debug(`Package ${manifest.name} has no changes`);
                 }
-            }
-            else if (entry.remote && entry.manifest.version != entry.remote.version)
-            {
-                this.logger.debug(`Package ${manifest.name} has no changes but local version (${manifest.version}) differ from remote version (${entry.remote.version}) using dist-tag ${options.tag ?? "latest"}`);
 
-                manifest.version = entry.remote.version;
-            }
-            else
-            {
-                this.logger.debug(`Package ${manifest.name} has no changes`);
-            }
+                if (entry.workspaces?.size)
+                {
+                    await this.update(entry.workspaces, options.independent ? version : entry.manifest.version as SemanticVersion, preid, build, options);
+                }
+            };
 
-            if (entry.workspaces?.size)
-            {
-                await this.update(entry.workspaces, options.independent ? version : entry.manifest.version as SemanticVersion, preid, build, options);
-            }
+            promises.push(action());
         }
+
+        await Promise.all(promises);
     }
 
     private async unpublishPackage(entry: Entry, options: UnpublishOptions): Promise<void>
@@ -590,6 +638,11 @@ export default class Publisher
      */
     public async bump(version: Version, preid?: string, build?: string, options: BumpOptions = { }): Promise<void>
     {
+        if (options.commit && !await isWorkingTreeClean())
+        {
+            throw new Error("Working tree has uncommitted changes");
+        }
+
         if (await this.loadWorkspaces({ tag: options.tag, ignoreChanges: options.ignoreChanges }))
         {
             this.logger.trace("Updating packages version...");
@@ -597,6 +650,85 @@ export default class Publisher
 
             this.logger.trace("Writing packages...");
             await this.writeWorkspaces(options);
+
+            if (options.changelog)
+            {
+                this.logger.trace("Generating changelogs...");
+
+                const promises: Promise<void>[] = [];
+
+                for (const entry of this.updates)
+                {
+                    const action = async (): Promise<void> =>
+                    {
+                        if (options.independent || entry.workspaces)
+                        {
+                            const changelogPath = join(dirname(entry.path), "CHANGELOG.md");
+
+                            if (options.changelog)
+                            {
+                                if (!this.options.dry)
+                                {
+                                    this.logger.debug(`creating ${entry.manifest.name}'s changelog.`);
+
+                                    const content = await changelog(entry.path, entry.manifest.name);
+
+                                    await writeFile(changelogPath, content);
+
+                                    this.logger.debug(`${entry.manifest.name}'s changelog created.`);
+                                }
+                                else
+                                {
+                                    this.logger.info(`${entry.manifest.name}'s changelog will be created.`);
+                                }
+                            }
+                        }
+                    };
+
+                    promises.push(action());
+                }
+
+                await Promise.all(promises);
+            }
+
+            if (options.commit)
+            {
+                const tagger = (entry: Entry): string =>
+                    options.independent
+                        ? `${entry.manifest.name}@${entry.manifest.version}`
+                        : `v${entry.manifest.version}`;
+
+                const tags = this.updates.map(tagger);
+
+                const commitMessage = `chore(release): publish\n\n${tags.map(x => ` - ${x}`).join("\r\n")}`;
+
+                if (!this.options.dry)
+                {
+                    this.logger.trace("Committing changes...");
+                    await commitAll(commitMessage);
+
+                    this.logger.trace("Adding tags...");
+                    await Promise.all(tags.map(async x => addTag(x, x)));
+                }
+                else
+                {
+                    this.logger.info(`Commit message\n${commitMessage}`);
+                    this.logger.info(`Tags will be created\n${tags.join("\n")}`);
+                }
+
+                if (options.pushToRemote)
+                {
+                    if (!this.options.dry)
+                    {
+                        this.logger.trace("Pushing to remote...");
+                        await pushToRemote(options.remote);
+                    }
+                    else
+                    {
+                        this.logger.info(`commit will be pushed to remote ${options.remote}`);
+                    }
+                }
+            }
 
             if (this.errors.length > 0)
             {
@@ -606,10 +738,8 @@ export default class Publisher
 
                 throw new AggregateError(this.errors);
             }
-            else
-            {
-                this.logger.info(`${this.options.dry ? "[DRY RUN] " : ""}Bump done!`);
-            }
+
+            this.logger.info(`${this.options.dry ? "[DRY RUN] " : ""}Bump done!`);
         }
     }
 
