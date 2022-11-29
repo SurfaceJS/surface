@@ -27,11 +27,23 @@ export async function commitAll(message: string): Promise<void>
 
 export async function isWorkingTreeClean(): Promise<boolean>
 {
-    // return (await executeSilent("git status"))
-    //     .toString()
-    //     .endsWith("nothing to commit, working tree clean");
+    // return (await executeSilent("git status --porcelain")).toString() == "";
 
     return true;
+}
+
+export async function getRemoteUrl(remote: string): Promise<string>
+{
+    return (await execute(`git config --get "remote.${remote}.url"`)).toString();
+}
+
+export async function getRepoInfo(remote: string): Promise<[owner: string, project: string]>
+{
+    const remoteUrl = await getRemoteUrl(remote);
+    const url       = new URL(remoteUrl.trim().replace(/^git@/, "https://").replace(/\.git$/, ""));
+    const [, owner, ...project] = url.pathname.split("/");
+
+    return [owner!, project.join("/")];
 }
 
 export async function pushToRemote(remote: string = "origin"): Promise<void>

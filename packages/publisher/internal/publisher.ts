@@ -16,11 +16,12 @@ import
     recommendedBump,
     timestamp,
 } from "./common.js";
-import { addTag, commitAll, isWorkingTreeClean, pushToRemote } from "./git.js";
-import type { Auth }                                           from "./npm-config.js";
-import NpmConfig                                               from "./npm-config.js";
-import NpmService                                              from "./npm-service.js";
-import type { GlobPrerelease, SemanticVersion }                from "./types/version.js";
+import { addTag, commitAll, getRemoteUrl, isWorkingTreeClean, pushToRemote } from "./git.js";
+import type { Auth }                                                         from "./npm-config.js";
+import NpmConfig                                                             from "./npm-config.js";
+import NpmService                                                            from "./npm-service.js";
+import ReleaseClient                                                         from "./release-client.js";
+import type { GlobPrerelease, SemanticVersion }                              from "./types/version.js";
 
 /* cSpell:ignore preid, premajor, preminor, prepatch, postpack, postpublish */
 
@@ -119,6 +120,9 @@ export type BumpOptions =
 
     /** Git remote. */
     remote?: string,
+
+    /** Creates a github or gitlab release with the generated changes. */
+    createRelease?: "github" | "gitlab",
 } & Pick<ChangedOptions, "ignoreChanges">;
 
 export type ChangedOptions =
@@ -278,6 +282,149 @@ export default class Publisher
         };
 
         return [manifest.name, entry];
+    }
+
+    private async generateArtifacts(options: BumpOptions): Promise<void>
+    {
+        const changes = new Map<string, string>();
+
+        const getTag = (entry: Entry): string => options.independent
+            ? `${entry.manifest.name}@${entry.manifest.version}`
+            : `v${entry.manifest.version}`;
+
+        if (options.changelog || options.createRelease)
+        {
+            if (options.changelog)
+            {
+                this.logger.trace("Generating changelogs...");
+            }
+
+            const promises: Promise<void>[] = [];
+
+            for (const entry of this.updates)
+            {
+                const action = async (): Promise<void> =>
+                {
+                    if (options.independent || entry.workspaces)
+                    {
+                        const changelogPath = join(dirname(entry.path), "CHANGELOG.md");
+
+                        if (!this.options.dry)
+                        {
+                            this.logger.debug(`creating ${entry.manifest.name}'s changelog.`);
+
+                            const content = await changelog(entry.path, getTag(entry));
+
+                            changes.set(entry.manifest.name, content.toString());
+
+                            if (options.changelog)
+                            {
+                                await writeFile(changelogPath, content);
+                            }
+
+                            this.logger.debug(`${entry.manifest.name}'s changelog created.`);
+                        }
+                        else
+                        {
+                            this.logger.info(`${entry.manifest.name}'s changelog will be created.`);
+                        }
+                    }
+                };
+
+                promises.push(action());
+            }
+
+            await Promise.all(promises);
+        }
+
+        if (options.createRelease || options.commit)
+        {
+            const tags = this.updates.map(getTag);
+
+            if (!this.options.dry)
+            {
+                const commitMessage = `chore(release): publish\n\n${tags.map(x => ` - ${x}`).join("\r\n")}`;
+
+                this.logger.trace("Committing changes...");
+                await commitAll(commitMessage);
+
+                this.logger.trace("Adding tags...");
+                await Promise.all(tags.map(async (x) => addTag(x, x)));
+            }
+
+            else
+            {
+                this.logger.info("Changes will be committed.");
+                this.logger.info(`Tags will be created\n${tags.join("\n")}`);
+            }
+
+            if (options.createRelease || options.pushToRemote)
+            {
+                if (!this.options.dry)
+                {
+                    this.logger.trace("Pushing to remote...");
+                    await pushToRemote(options.remote);
+                }
+
+                else
+                {
+                    this.logger.info(`Commit will be pushed to remote ${options.remote}.`);
+                }
+            }
+
+            if (options.createRelease)
+            {
+                if (!this.options.dry)
+                {
+                    this.logger.trace("Creating releases...");
+
+                    const promises: Promise<void>[] = [];
+
+                    const apiUrl = process.env.GITHUB_API ?? process.env.GITLAB_API;
+                    const token  = process.env.GITHUB_TOKEN ?? process.env.GITLAB_TOKEN;
+
+                    if (!token)
+                    {
+                        throw new Error("Api token is required");
+                    }
+
+                    const remoteUrl          = await getRemoteUrl(options.remote ?? "origin");
+                    const url                = new URL(remoteUrl.trim().replace(/^git@/, "https://").replace(/\.git$/, ""));
+                    const [, owner, ...rest] = url.pathname.split("/") as string[];
+                    const project            = rest.join("/");
+                    const client             = new ReleaseClient({ type: options.createRelease, apiUrl, token, owner: owner!, project }, this.logger);
+
+                    for (const entry of this.updates)
+                    {
+                        const action = async (): Promise<void> =>
+                        {
+                            if (options.independent || entry.workspaces)
+                            {
+                                if (!this.options.dry)
+                                {
+                                    this.logger.debug(`Creating ${entry.manifest.name}'s release.`);
+
+                                    const content = changes.get(entry.manifest.name)!;
+                                    const tag     = getTag(entry);
+
+                                    await client.createRelease(tag, content);
+                                }
+                                else
+                                {
+                                    this.logger.info(`${entry.manifest.name}'s changelog will be created.`);
+                                }
+                            }
+                        };
+
+                        promises.push(action());
+                    }
+                }
+                else
+                {
+                    this.logger.info(`Commit will be pushed to remote ${options.remote}.`);
+                }
+            }
+        }
     }
 
     private async getAuth(path: string, packageName: string, parent: Auth = { }): Promise<Auth>
@@ -447,7 +594,7 @@ export default class Publisher
                         {
                             dependencies[name] = `~${dependencyVersion}`;
 
-                            this.logger.debug(`${dependencyType}:${name} in ${entry.manifest.name} updated from '${version}' to '${dependencyVersion}'`);
+                            this.logger.debug(`${dependencyType}:${name} in ${entry.manifest.name} updated from '${version}' to '~${dependencyVersion}'`);
                         }
                     }
                 }
@@ -522,7 +669,6 @@ export default class Publisher
                             return;
                         }
 
-                        // eslint-disable-next-line no-param-reassign
                         manifestVersion = result.releaseType;
                     }
 
@@ -636,6 +782,7 @@ export default class Publisher
      * @param preid The 'prerelease identifier' part of a semver. Like the "rc" in 1.2.0-rc.8+2022.
      * @param build The build part of a semver. Like the "2022" in 1.2.0-rc.8+2022.
      */
+    // eslint-disable-next-line max-lines-per-function
     public async bump(version: Version, preid?: string, build?: string, options: BumpOptions = { }): Promise<void>
     {
         if (options.commit && !await isWorkingTreeClean())
@@ -650,85 +797,7 @@ export default class Publisher
 
             this.logger.trace("Writing packages...");
             await this.writeWorkspaces(options);
-
-            if (options.changelog)
-            {
-                this.logger.trace("Generating changelogs...");
-
-                const promises: Promise<void>[] = [];
-
-                for (const entry of this.updates)
-                {
-                    const action = async (): Promise<void> =>
-                    {
-                        if (options.independent || entry.workspaces)
-                        {
-                            const changelogPath = join(dirname(entry.path), "CHANGELOG.md");
-
-                            if (options.changelog)
-                            {
-                                if (!this.options.dry)
-                                {
-                                    this.logger.debug(`creating ${entry.manifest.name}'s changelog.`);
-
-                                    const content = await changelog(entry.path, entry.manifest.name);
-
-                                    await writeFile(changelogPath, content);
-
-                                    this.logger.debug(`${entry.manifest.name}'s changelog created.`);
-                                }
-                                else
-                                {
-                                    this.logger.info(`${entry.manifest.name}'s changelog will be created.`);
-                                }
-                            }
-                        }
-                    };
-
-                    promises.push(action());
-                }
-
-                await Promise.all(promises);
-            }
-
-            if (options.commit)
-            {
-                const tagger = (entry: Entry): string =>
-                    options.independent
-                        ? `${entry.manifest.name}@${entry.manifest.version}`
-                        : `v${entry.manifest.version}`;
-
-                const tags = this.updates.map(tagger);
-
-                const commitMessage = `chore(release): publish\n\n${tags.map(x => ` - ${x}`).join("\r\n")}`;
-
-                if (!this.options.dry)
-                {
-                    this.logger.trace("Committing changes...");
-                    await commitAll(commitMessage);
-
-                    this.logger.trace("Adding tags...");
-                    await Promise.all(tags.map(async x => addTag(x, x)));
-                }
-                else
-                {
-                    this.logger.info(`Commit message\n${commitMessage}`);
-                    this.logger.info(`Tags will be created\n${tags.join("\n")}`);
-                }
-
-                if (options.pushToRemote)
-                {
-                    if (!this.options.dry)
-                    {
-                        this.logger.trace("Pushing to remote...");
-                        await pushToRemote(options.remote);
-                    }
-                    else
-                    {
-                        this.logger.info(`commit will be pushed to remote ${options.remote}`);
-                    }
-                }
-            }
+            await this.generateArtifacts(options);
 
             if (this.errors.length > 0)
             {

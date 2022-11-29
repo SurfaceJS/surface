@@ -85,10 +85,11 @@ export default async function main(args: string[]): Promise<void>
         .option("--independent            [n]", "Ignore workspace root version and bump itself", toBoolean)
         .option("--synchronize            [n]", "Synchronize dependencies between workspace packages after bumping", toBoolean)
         .option("--update-file-references [n]", "Update file references when bumping", toBoolean)
-        .option("--changelog              [n]", "Generates changelog after bumping", toBoolean)
+        .option("--changelog              [n]", "Writes changelog file after bumping", toBoolean)
         .option("--commit                 [n]", "Commit changes", toBoolean)
         .option("--push-to-remote         [n]", "Push commit to remote", toBoolean)
-        .option("--remote                 [n]", "Git remote");
+        .option("--remote                 [n]", "Git remote")
+        .option("--create-release         <n>", "Creates a github or gitlab release with the generated changes.", toEnum("github", "gitlab"));
 
     apply(Commands.bump, bump, globalOptions, ignoreChangesOptions);
 

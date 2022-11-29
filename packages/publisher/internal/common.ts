@@ -18,7 +18,7 @@ const RELEASE_TYPES = new Set(["major", "minor", "patch", "premajor", "preminor"
 
 type ConcatAble = { concat: () => Promise<Buffer> };
 
-export async function changelog(path: string, lernaPackage: string | undefined, preset: string = "angular"): Promise<Buffer>
+export async function changelog(path: string, lernaPackage: string, preset: string = "angular"): Promise<Buffer>
 {
     return new Promise<Buffer>
     (
@@ -29,8 +29,7 @@ export async function changelog(path: string, lernaPackage: string | undefined, 
             const handler = (buffer: Buffer | string): void =>
                 void output.push(...Buffer.from(buffer));
 
-            // cSpell:ignore Projetos
-            conventionalChangelog({ preset, lernaPackage, pkg: { path } }, {}, { path: dirname(path) })
+            conventionalChangelog({ lernaPackage, preset, pkg: { path } }, {  }, { path: dirname(path) })
                 .on("data", handler)
                 .on("error", reject)
                 .on("end", () => resolve(Buffer.from(output)));
@@ -38,7 +37,7 @@ export async function changelog(path: string, lernaPackage: string | undefined, 
     );
 }
 
-export async function recommendedBump(path: string, lernaPackage: string | undefined, preset: string = "angular"): Promise<conventionalRecommendedBump.Callback.Recommendation>
+export async function recommendedBump(path: string, lernaPackage: string, preset: string = "angular"): Promise<conventionalRecommendedBump.Callback.Recommendation>
 {
     return new Promise
     (
