@@ -8,7 +8,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Setup Node.js
       uses: ./.github/actions/setup
       with:
@@ -20,7 +20,7 @@ jobs:
     - name: Cover
       run: npm run cover
     - name: Codecov
-      uses: codecov/codecov-action@v1.0.14
+      uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
     - name: Canary
