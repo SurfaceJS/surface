@@ -8,6 +8,8 @@ import Publisher,
     type Version,
 } from "./publisher.js";
 
+/* c8 ignore start */
+
 export default class Commands
 {
     public static async bump(version: Version, preid?: string, build?: string, options: Options & BumpOptions = { }): Promise<void>
@@ -79,3 +81,5 @@ export default class Commands
         await new Publisher(options).unpublish(unpublishOptions);
     }
 }
+
+/* c8 ignore stop */

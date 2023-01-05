@@ -19,6 +19,7 @@
         "./packages/publisher/internal/commands.js",
         "./packages/publisher/internal/common.js",
         "./packages/publisher/internal/git.js",
-        "./packages/publisher/internal/npm-service.js"
+        "./packages/publisher/internal/npm-service.js",
+        "./packages/publisher/internal/release-client.js"
     ]
 }

@@ -18,6 +18,8 @@ const RELEASE_TYPES = new Set(["major", "minor", "patch", "premajor", "preminor"
 
 type ConcatAble = { concat: () => Promise<Buffer> };
 
+const getEnv = (): NodeJS.ProcessEnv => process.env;
+
 export async function changelog(path: string, lernaPackage: string, preset: string = "angular"): Promise<Buffer>
 {
     return new Promise<Buffer>
@@ -106,6 +108,6 @@ export async function untar(buffer: Buffer): Promise<Map<string, string>>
     return new Map(await Promise.all(entries));
 }
 
-export { timestamp };
+export { getEnv, timestamp };
 
 /* c8 ignore stop */

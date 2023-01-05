@@ -10,6 +10,8 @@ type Options =
     type:    "github" | "gitlab",
 };
 
+/* c8 ignore start */
+
 const APIS: Record<Options["type"], string> =
 {
     "github": "https://api.github.com",
@@ -103,3 +105,5 @@ export default class ReleaseClient
         }
     }
 }
+
+/* c8 ignore stop */

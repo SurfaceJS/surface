@@ -3,6 +3,8 @@ import os            from "os";
 import { join }      from "path";
 import { execute }   from "@surface/rwx";
 
+/* c8 ignore start */
+
 const executeSilent = async (command: string): Promise<Buffer> =>
     execute(command, { silent: false });
 
@@ -37,16 +39,9 @@ export async function getRemoteUrl(remote: string): Promise<string>
     return (await execute(`git config --get "remote.${remote}.url"`)).toString();
 }
 
-export async function getRepoInfo(remote: string): Promise<[owner: string, project: string]>
-{
-    const remoteUrl = await getRemoteUrl(remote);
-    const url       = new URL(remoteUrl.trim().replace(/^git@/, "https://").replace(/\.git$/, ""));
-    const [, owner, ...project] = url.pathname.split("/");
-
-    return [owner!, project.join("/")];
-}
-
 export async function pushToRemote(remote: string = "origin"): Promise<void>
 {
     await executeSilent(`git push ${remote} --tags`);
 }
+
+/* c8 ignore stop */

@@ -1,18 +1,20 @@
-import { type Stats, existsSync }                                                from "fs";
-import { readFile, readdir, stat, writeFile }                                    from "fs/promises";
-import path                                                                      from "path";
-import type { PackageJson as _PackageJson }                                      from "@npm/types";
-import Logger                                                                    from "@surface/logger";
-import Mock, { It }                                                              from "@surface/mock";
-import { execute }                                                               from "@surface/rwx";
-import { afterEach, batchTest, beforeEach, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import chai                                                                      from "chai";
-import chaiAsPromised                                                            from "chai-as-promised";
-import pack                                                                      from "libnpmpack";
-import { timestamp }                                                             from "../internal/common.js";
-import { addTag, commit, commitAll, isWorkingTreeClean, pushToRemote }           from "../internal/git.js";
-import NpmService                                                                from "../internal/npm-service.js";
-import Publisher                                                                 from "../internal/publisher.js";
+import { type Stats, existsSync }                                                    from "fs";
+import { readFile, readdir, stat, writeFile }                                        from "fs/promises";
+import path, { relative, resolve }                                                   from "path";
+import type { PackageJson as _PackageJson }                                          from "@npm/types";
+import { assert }                                                                    from "@surface/core";
+import Logger                                                                        from "@surface/logger";
+import Mock, { It }                                                                  from "@surface/mock";
+import { execute }                                                                   from "@surface/rwx";
+import { afterEach, batchTest, beforeEach, shouldFail, shouldPass, suite, test }     from "@surface/test-suite";
+import chai                                                                          from "chai";
+import chaiAsPromised                                                                from "chai-as-promised";
+import pack                                                                          from "libnpmpack";
+import { changelog, getEnv, recommendedBump, timestamp }                             from "../internal/common.js";
+import { addTag, commit, commitAll, getRemoteUrl, isWorkingTreeClean, pushToRemote } from "../internal/git.js";
+import NpmService                                                                    from "../internal/npm-service.js";
+import Publisher                                                                     from "../internal/publisher.js";
+import ReleaseClient                                                                 from "../internal/release-client.js";
 import
 {
     type BumpScenario,
@@ -38,10 +40,13 @@ type PackageJson = _PackageJson & { workspaces?: string[] };
 chai.use(chaiAsPromised);
 
 const addTagMock             = Mock.of(addTag);
+const changelogMock          = Mock.of(changelog);
 const commitAllMock          = Mock.of(commitAll);
 const commitMock             = Mock.of(commit);
+const getEnvMock             = Mock.of(getEnv);
 const executeMock            = Mock.of(execute);
 const existsSyncMock         = Mock.of(existsSync);
+const getRemoteUrlMock       = Mock.of(getRemoteUrl);
 const isWorkingTreeCleanMock = Mock.of(isWorkingTreeClean);
 const loggerMock             = Mock.instance<Logger>();
 const LoggerMock             = Mock.of(Logger);
@@ -51,6 +56,9 @@ const packMock               = Mock.of(pack);
 const pushToRemoteMock       = Mock.of(pushToRemote);
 const readdirMock            = Mock.of(readdir);
 const readFileMock           = Mock.of(readFile);
+const recommendedBumpMock    = Mock.of(recommendedBump);
+const releaseClientMock      = Mock.instance<ReleaseClient>();
+const ReleaseClientMock      = Mock.of(ReleaseClient);
 const statMock               = Mock.of(stat);
 const timestampMock          = Mock.of(timestamp);
 const writeFileMock          = Mock.of(writeFile);
@@ -111,10 +119,16 @@ export default class PublisherSpec
         }
     }
 
-    private setup(scenario: { registry: VirtualRegistry, directory: VirtualDirectory }): void
+    private setup(scenario: { registry: VirtualRegistry, directory: VirtualDirectory, env?: NodeJS.ProcessEnv }): void
     {
+        this.setupVirtualEnv(scenario.env);
         this.setupVirtualDirectory(scenario.directory);
         this.setupVirtualRegistry(scenario.registry);
+    }
+
+    private setupVirtualEnv(env?: NodeJS.ProcessEnv): void
+    {
+        getEnvMock.call().returns(env ?? { });
     }
 
     private setupVirtualDirectory(directory: VirtualDirectory, parent: string = process.cwd()): void
@@ -177,25 +191,37 @@ export default class PublisherSpec
     @beforeEach
     public beforeEach(): void
     {
+        addTagMock.call(It.any(), It.any()).resolve();
+        changelogMock.call(It.any(), It.any()).resolve(Buffer.from([]));
+        commitAllMock.call(It.any()).resolve();
+        getRemoteUrlMock.call(It.any()).resolve("https://host/owner/project");
+        isWorkingTreeCleanMock.call().resolve(true);
         LoggerMock.new(It.any()).returns(loggerMock.proxy);
         NpmServiceMock.new(It.any(), It.any()).returns(npmServiceMock.proxy);
         packMock.call(It.any()).resolve(Buffer.from([]));
+        pushToRemoteMock.call(It.any()).resolve();
+        ReleaseClientMock.new(It.any(), It.any()).returns(releaseClientMock.proxy);
         timestampMock.call().returns("202201010000");
-        isWorkingTreeCleanMock.call().resolve(true);
-        addTagMock.call(It.any(), It.any()).resolve();
+        releaseClientMock.setup("createRelease").call(It.any(), It.any()).resolve();
 
         LoggerMock.lock();
         NpmServiceMock.lock();
+        ReleaseClientMock.lock();
 
         addTagMock.lock();
+        changelogMock.lock();
         commitAllMock.lock();
         commitMock.lock();
+        getEnvMock.lock();
         existsSyncMock.lock();
+        getRemoteUrlMock.lock();
         isWorkingTreeCleanMock.lock();
         packMock.lock();
         pushToRemoteMock.lock();
         readdirMock.lock();
         readFileMock.lock();
+        recommendedBumpMock.lock();
+        releaseClientMock.lock();
         statMock.lock();
         timestampMock.lock();
         writeFileMock.lock();
@@ -208,16 +234,22 @@ export default class PublisherSpec
 
         LoggerMock.release();
         NpmServiceMock.release();
+        ReleaseClientMock.unlock();
 
         addTagMock.release();
+        changelogMock.release();
         commitAllMock.release();
         commitMock.release();
+        getEnvMock.release();
         existsSyncMock.release();
+        getRemoteUrlMock.release();
         isWorkingTreeCleanMock.release();
         packMock.release();
         pushToRemoteMock.release();
         readdirMock.release();
         readFileMock.release();
+        recommendedBumpMock.release();
+        releaseClientMock.unlock();
         statMock.release();
         timestampMock.release();
         writeFileMock.release();
@@ -229,16 +261,33 @@ export default class PublisherSpec
     {
         this.setup(scenario);
 
-        const actual: Record<string, PackageJson> = { };
+        if (scenario.recommended)
+        {
+            for (const [key, value] of Object.entries(scenario.recommended))
+            {
+                recommendedBumpMock.call(It.any(), key).resolve({ releaseType: value });
+            }
+        }
+
+        const actual: Required<BumpScenario["expected"]> = { bumps: { }, changelogs: [] };
 
         writeFileMock.call(It.any(), It.any())
             .callback
             (
-                (_, data) =>
+                (filename, data) =>
                 {
-                    const manifest = JSON.parse(data as string) as PackageJson;
+                    assert(typeof filename == "string");
 
-                    actual[manifest.name] = manifest;
+                    if (filename.endsWith("package.json"))
+                    {
+                        const manifest = JSON.parse(data as string) as PackageJson;
+
+                        actual.bumps[manifest.name] = manifest;
+                    }
+                    else if (filename.endsWith("CHANGELOG.md"))
+                    {
+                        actual.changelogs.push(relative(process.cwd(), resolve(filename, "..")) || ".");
+                    }
                 },
             );
 
@@ -294,7 +343,7 @@ export default class PublisherSpec
         chai.assert.deepEqual(actual, scenario.expected.unpublished);
     }
 
-    @batchTest(invalidBumpScenarios, x => x.message, x => x.skip)
+    @batchTest(invalidBumpScenarios, x => `[bump]: ${x.message}`, x => x.skip)
     @shouldFail
     public async invalidBumpScenarios(scenario: BumpScenario): Promise<void>
     {
@@ -303,6 +352,22 @@ export default class PublisherSpec
         writeFileMock.call(It.any(), It.any()).resolve();
 
         await chai.assert.isRejected(new Publisher(scenario.options).bump(...scenario.args));
+    }
+
+    @test("[bump]: Try commit dirty working tree")
+    @shouldFail
+    public async bumpTryCommitDirtyWorkingTree(): Promise<void>
+    {
+        const directory: VirtualDirectory =
+        {
+            "./package.json": JSON.stringify({ name: "foo", version: "1.0.0" } as PackageJson),
+        };
+
+        isWorkingTreeCleanMock.call().resolve(false);
+
+        this.setup({ directory, registry: { } });
+
+        await chai.assert.isRejected(new Publisher({ }).bump("major", undefined, undefined, { commit: true }));
     }
 
     @test("[publish]: Publishing should fail")
