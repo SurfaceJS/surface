@@ -49,7 +49,7 @@ export default class HashSetSpec
     }
 
     @test @shouldPass
-    public removeInvalideItem(): void
+    public removeInvalidItem(): void
     {
         const set = HashSet.from([1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10], new Comparer());
 

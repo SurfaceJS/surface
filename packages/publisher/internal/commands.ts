@@ -8,15 +8,23 @@ import Publisher,
     type Version,
 } from "./publisher.js";
 
+/* c8 ignore start */
+
 export default class Commands
 {
     public static async bump(version: Version, preid?: string, build?: string, options: Options & BumpOptions = { }): Promise<void>
     {
+        // Enforce test
         const bumpOptions: Required<BumpOptions> =
         {
+            changelog:            options.changelog!,
+            commit:               options.commit!,
+            createRelease:        options.createRelease!,
             force:                options.force!,
             ignoreChanges:        options.ignoreChanges!,
             independent:          options.independent!,
+            pushToRemote:         options.pushToRemote!,
+            remote:               options.remote!,
             synchronize:          options.synchronize!,
             tag:                  options.tag!,
             updateFileReferences: options.updateFileReferences!,
@@ -27,6 +35,7 @@ export default class Commands
 
     public static async changed(options: Options & ChangedOptions = { }): Promise<void>
     {
+        // Enforce test
         const changedOptions: Required<ChangedOptions> =
         {
             ignoreChanges:        options.ignoreChanges!,
@@ -42,6 +51,7 @@ export default class Commands
 
     public static async publish(options: Options & PublishOptions = { }): Promise<void>
     {
+        // Enforce test
         const publishOptions: Required<PublishOptions> =
         {
             build:                options.build!,
@@ -61,6 +71,7 @@ export default class Commands
 
     public static async unpublish(options: Options & UnpublishOptions = { }): Promise<void>
     {
+        // Enforce test
         const unpublishOptions: Required<UnpublishOptions> =
         {
             includePrivate:       options.includePrivate!,
@@ -70,3 +81,5 @@ export default class Commands
         await new Publisher(options).unpublish(unpublishOptions);
     }
 }
+
+/* c8 ignore stop */

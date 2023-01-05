@@ -134,9 +134,9 @@ export function scaleSwatches(swatches: Swatch[], factor: number): Swatch[]
 
     return vertices.map
     (
-        (vertice, index) =>
+        (vertex, index) =>
         {
-            const direction  = Vector4.subtract(vertice, origin);
+            const direction  = Vector4.subtract(vertex, origin);
             const distance   = direction.magnitude * factor;
             const normalized = direction.normalized;
 

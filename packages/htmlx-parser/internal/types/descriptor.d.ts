@@ -5,14 +5,14 @@ import type SpreadDirectiveFlag       from "../flags/spread-flags.js";
 import type ObservablePath            from "./observable-path.js";
 import type StackTrace                from "./stack-trace.js";
 
-export type RawAttributeDescritor =
+export type RawAttributeDescriptor =
 {
     name:  string,
     value: string,
     type:  DescriptorType.Attribute,
 };
 
-export type OneWayAttributeDescritor =
+export type OneWayAttributeDescriptor =
 {
     key:         string,
     observables: ObservablePath[],
@@ -22,7 +22,7 @@ export type OneWayAttributeDescritor =
     value:       IExpression,
 };
 
-export type TwoWayAttributeDescritor =
+export type TwoWayAttributeDescriptor =
 {
     left:       string,
     right:      ObservablePath,
@@ -31,7 +31,7 @@ export type TwoWayAttributeDescritor =
     type:       DescriptorType.TwoWay,
 };
 
-export type DirectiveAttributeDescritor =
+export type DirectiveAttributeDescriptor =
 {
     key:         string,
     observables: ObservablePath[],
@@ -41,13 +41,13 @@ export type DirectiveAttributeDescritor =
     value:       IExpression,
 };
 
-export type AttributeBindDescritor =
-    | DirectiveAttributeDescritor
-    | EventDescritor
-    | OneWayAttributeDescritor
-    | RawAttributeDescritor
+export type AttributeBindDescriptor =
+    | DirectiveAttributeDescriptor
+    | EventDescriptor
+    | OneWayAttributeDescriptor
+    | RawAttributeDescriptor
     | SpreadAttributeDescriptor
-    | TwoWayAttributeDescritor;
+    | TwoWayAttributeDescriptor;
 
 export type BranchDescriptor =
 {
@@ -72,7 +72,7 @@ export type ChoiceStatementDescriptor =
 
 export type ElementDescriptor =
 {
-    attributes: Iterable<AttributeBindDescritor>,
+    attributes: Iterable<AttributeBindDescriptor>,
     children:     Iterable<Descriptor>,
     tag:        string,
     type:       DescriptorType.Element,
@@ -88,7 +88,7 @@ export type SpreadAttributeDescriptor =
     type:        DescriptorType.Spread,
 };
 
-export type EventDescritor =
+export type EventDescriptor =
 {
     context:    IExpression,
     listener:   IExpression,

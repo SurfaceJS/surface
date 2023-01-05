@@ -303,7 +303,7 @@
             }
         },
         "HTMLXMode": {
-            "description": "Compilation mode of templates used by @surface/htmlx. * aot: Tree shakeble. All templates will be compiled at build time. Attempting to use runtime templates will raise an error. * mixed: Non tree shakeble. All templates will be compiled at build time, but it will also be possible to compile at run time. * runtime: Non tree shakeble. All templates will be compiled at runtime.",
+            "description": "Compilation mode of templates used by @surface/htmlx. * aot: Tree shakeable. All templates will be compiled at build time. Attempting to use runtime templates will raise an error. * mixed: Non tree shakeable. All templates will be compiled at build time, but it will also be possible to compile at run time. * runtime: Non tree shakeable. All templates will be compiled at runtime.",
             "enum": [
                 "aot",
                 "mixed",
@@ -485,7 +485,7 @@
                     "type": "boolean"
                 },
                 "usedExports": {
-                    "description": "Figure out which exports are used by modules to mangle export names, omit unused exports and generate more efficient code (true: analyse used exports for each runtime, 'global': analyse exports globally for all runtimes combined).",
+                    "description": "Figure out which exports are used by modules to mangle export names, omit unused exports and generate more efficient code (true: analyses used exports for each runtime, 'global': analyses exports globally for all runtime's combined).",
                     "enum": [
                         true,
                         false,

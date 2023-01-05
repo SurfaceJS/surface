@@ -151,21 +151,32 @@ export function *enumeratePathsSync(patterns: string | string[], options: Option
  * Spawns a shell then executes the command within that shell.
  * @param command string passed to the exec function and processed directly by the shell and special characters (vary based on shell) need to be dealt with accordingly:
 */
-export async function execute(command: string, options?: child_process.ExecOptions): Promise<void>
+export async function execute(command: string, options?: child_process.ExecOptions & { silent?: boolean }): Promise<Buffer>
 {
-    const print = (buffer: unknown): void => console.log(String(buffer).trimEnd());
+    const output: number[] = [];
 
-    await new Promise<void>
+    console.log(command);
+
+    const handler = (buffer: Buffer | string): void =>
+    {
+        if (!options?.silent)
+        {
+            console.log(String(buffer).trimEnd());
+        }
+
+        output.push(...Buffer.from(buffer));
+    };
+
+    return new Promise<Buffer>
     (
         (resolve, reject) =>
         {
             const childProcess = child_process.exec(command, options);
 
-            childProcess.stdout?.on("data", print);
-            childProcess.stderr?.on("data", print);
+            childProcess.stdout?.on("data", handler);
 
-            childProcess.on("error", x => (print(x), reject));
-            childProcess.on("exit", resolve);
+            childProcess.on("error", reject);
+            childProcess.on("exit", code => code == 1 ? reject("Exit code 1") : resolve(Buffer.from(output)));
         },
     );
 }

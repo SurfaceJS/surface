@@ -3,7 +3,7 @@ import StaticMetadata from "../metadata.js";
 import type { Key }   from "../types/index.js";
 
 /**
- * Injects dependecies resolved by active container.
+ * Injects dependencies resolved by active container.
  * Can be used on constructor parameters or properties.
  * Note that when using property injection, injection occurs after instantiation. Therefore the values will not be available in the constructor.
  * @param key Key used to resolve instance.

@@ -10,28 +10,33 @@
         "@surface/core": "file:../core",
         "@surface/logger": "file:../logger",
         "@surface/rwx": "file:../rwx",
-        "@types/libnpmpublish": "^4.0.3",
-        "@types/node": "^18.7.13",
-        "@types/npm": "^7.19.0",
+        "@types/conventional-changelog": "~3.1.1",
+        "@types/conventional-recommended-bump": "~6.1.0",
+        "@types/libnpmpublish": "~4.0.3",
+        "@types/node": "~18.11.18",
+        "@types/npm": "~7.19.0",
         "@types/pacote": "~11.1.5",
-        "@types/semver": "~7.3.12",
-        "@types/tar": "~6.1.2",
-        "commander": "~9.4.0",
-        "libnpmpack": "~4.1.2",
-        "libnpmpublish": "~6.0.4",
-        "pacote": "~13.6.2",
-        "semver": "~7.3.7",
-        "tar": "~6.1.11",
-        "tslib": "~2.4.0"
+        "@types/semver": "~7.3.13",
+        "@types/tar": "~6.1.3",
+        "commander": "~9.4.1",
+        "conventional-changelog": "~3.1.25",
+        "conventional-recommended-bump": "~6.1.0",
+        "libnpmpack": "~5.0.6",
+        "libnpmpublish": "~7.0.6",
+        "node-fetch": "~3.3.0",
+        "pacote": "~15.0.8",
+        "semver": "~7.3.8",
+        "tar": "~6.1.13",
+        "tslib": "~2.4.1"
     },
     "description": "Tool designed to handles workspaces bumping and publishing.",
     "devDependencies": {
         "@surface/mock": "file:../mock",
         "@surface/test-suite": "file:../test-suite",
         "@surface/tsconfig": "file:../tsconfig",
-        "@types/chai": "^4.3.3",
-        "chai": "^4.3.6",
-        "chai-as-promised": "^7.1.1"
+        "@types/chai": "~4.3.4",
+        "chai": "~4.3.7",
+        "chai-as-promised": "~7.1.1"
     },
     "homepage": "https://github.com/SurfaceJS/surface#readme",
     "keywords": [
@@ -48,5 +53,5 @@
     },
     "sideEffects": false,
     "type": "module",
-    "version": "1.0.0-beta.0"
+    "version": "1.0.0"
 }

@@ -1,4 +1,4 @@
-import { classMetadata, methodMetadata, parameterMetadata, propertyMedatadata } from "./decorators.js";
+import { classMetadata, methodMetadata, parameterMetadata, propertyMetadata } from "./decorators.js";
 
 @classMetadata
 class BaseMock
@@ -6,7 +6,7 @@ class BaseMock
     private static _baseStaticProperty: number = 1;
     private _baseInstanceProperty: number = 1;
 
-    @propertyMedatadata
+    @propertyMetadata
     public static get baseStaticProperty(): number
     {
         return this._baseStaticProperty;
@@ -17,7 +17,7 @@ class BaseMock
         this._baseStaticProperty = value;
     }
 
-    @propertyMedatadata
+    @propertyMetadata
     public get baseInstanceProperty(): number
     {
         return this._baseInstanceProperty;

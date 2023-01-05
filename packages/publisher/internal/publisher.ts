@@ -1,17 +1,28 @@
-import { readFile, writeFile }                                                from "fs/promises";
-import os                                                                     from "os";
-import { dirname, join, resolve }                                             from "path";
-import type { PackageJson as _PackageJson }                                   from "@npm/types";
-import { type RequiredProperties }                                            from "@surface/core";
-import Logger, { LogLevel }                                                   from "@surface/logger";
-import { enumeratePaths, execute }                                            from "@surface/rwx";
-import pack                                                                   from "libnpmpack";
-import semver, { type ReleaseType }                                           from "semver";
-import { isGlobPrerelease, isSemanticVersion, overridePrerelease, timestamp } from "./common.js";
-import type { Auth }                                                          from "./npm-config.js";
-import NpmConfig                                                              from "./npm-config.js";
-import NpmService                                                             from "./npm-service.js";
-import type { GlobPrerelease, SemanticVersion }                               from "./types/version.js";
+import { readFile, writeFile }              from "fs/promises";
+import os                                   from "os";
+import { dirname, join, resolve }           from "path";
+import type { PackageJson as _PackageJson } from "@npm/types";
+import { type RequiredProperties }          from "@surface/core";
+import Logger, { LogLevel }                 from "@surface/logger";
+import { enumeratePaths, execute }          from "@surface/rwx";
+import pack                                 from "libnpmpack";
+import semver, { type ReleaseType }         from "semver";
+import
+{
+    changelog,
+    getEnv,
+    isGlobPrerelease,
+    isSemanticVersion,
+    overridePrerelease,
+    recommendedBump,
+    timestamp,
+} from "./common.js";
+import { addTag, commitAll, getRemoteUrl, isWorkingTreeClean, pushToRemote } from "./git.js";
+import type { Auth }                                                         from "./npm-config.js";
+import NpmConfig                                                             from "./npm-config.js";
+import NpmService                                                            from "./npm-service.js";
+import ReleaseClient                                                         from "./release-client.js";
+import type { GlobPrerelease, SemanticVersion }                              from "./types/version.js";
 
 /* cSpell:ignore preid, premajor, preminor, prepatch, postpack, postpublish */
 
@@ -19,16 +30,48 @@ type Pre<T extends string> = T extends `pre${string}` ? T : never;
 
 type PackageJson = _PackageJson & { workspaces?: string[] };
 
-type Entry =
+class Entry
 {
-    auth:        Auth,
-    hasChanges:  boolean,
-    manifest:    PackageJson,
-    path:        string,
-    remote:      Pick<PackageJson, "name" | "version"> | null,
-    service:     NpmService,
-    workspaces?: Map<string, Entry>,
-};
+    private _workspaces?: Map<string, Entry>;
+
+    public readonly auth:        Auth;
+    public readonly hasChanges:  boolean;
+    public readonly isRoot:      boolean;
+    public readonly manifest:    PackageJson;
+    public readonly parent?:     Entry;
+    public readonly path:        string;
+    public readonly remote:      Pick<PackageJson, "name" | "version"> | null;
+    public readonly root:        Entry;
+    public readonly service:     NpmService;
+
+    public get isWorkspaceRoot(): boolean
+    {
+        return this.isRoot && !!this._workspaces;
+    }
+
+    public get workspaces(): Map<string, Entry> | undefined
+    {
+        return this._workspaces;
+    }
+
+    public set workspaces(value: Map<string, Entry> | undefined)
+    {
+        this._workspaces = value;
+    }
+
+    public constructor(values: Pick<Entry, Exclude<keyof Entry, "isRoot" | "parent" | "root" | "workspaces" | "isWorkspaceRoot">>, parent?: Entry)
+    {
+        this.auth        = values.auth;
+        this.hasChanges  = values.hasChanges;
+        this.isRoot      = !parent?.root;
+        this.manifest    = values.manifest;
+        this.parent      = parent;
+        this.path        = values.path;
+        this.remote      = values.remote;
+        this.root        = parent?.root ?? this;
+        this.service     = values.service;
+    }
+}
 
 type ScriptType =
     | "prepublishworkspace"
@@ -98,6 +141,21 @@ export type BumpOptions =
 
     /** Synchronize dependencies between workspace packages after bumping. */
     synchronize?: boolean,
+
+    /** Generates changelog after bumping. */
+    changelog?: boolean,
+
+    /** Commit changes. */
+    commit?: boolean,
+
+    /** Push commit to remote. */
+    pushToRemote?: boolean,
+
+    /** Git remote. */
+    remote?: string,
+
+    /** Creates a github or gitlab release with the generated changes. */
+    createRelease?: "github" | "gitlab",
 } & Pick<ChangedOptions, "ignoreChanges">;
 
 export type ChangedOptions =
@@ -137,7 +195,7 @@ export type PublishOptions =
 
 export type UnpublishOptions = RestrictionOptions;
 
-export type Version = SemanticVersion | GlobPrerelease | ReleaseType;
+export type Version = SemanticVersion | GlobPrerelease | ReleaseType | "recommended";
 
 export default class Publisher
 {
@@ -145,9 +203,10 @@ export default class Publisher
     private readonly errors:  Error[]             = [];
     private readonly logger:  Logger;
     private readonly options: RequiredProperties<Options, "cwd" | "packages">;
+    private readonly updates: Entry[] = [];
 
-    private loaded:     boolean            = false;
-    private workspaces: Map<string, Entry> = new Map();
+    private loaded:  boolean            = false;
+    private entries: Map<string, Entry> = new Map();
 
     public constructor(options: Options)
     {
@@ -166,7 +225,7 @@ export default class Publisher
 
         for (const entry of workspaces.values())
         {
-            if (entry.hasChanges && (options.includePrivate || !entry.manifest.private) && (options.includeWorkspaceRoot || !entry.workspaces))
+            if (entry.hasChanges && (options.includePrivate || !entry.manifest.private) && (options.includeWorkspaceRoot || !entry.isWorkspaceRoot))
             {
                 changes.push(entry.manifest.name);
             }
@@ -180,82 +239,153 @@ export default class Publisher
         return changes;
     }
 
-    private async loadWorkspaces(options?: Pick<LoadOptions, "tag" | "ignoreChanges">): Promise<boolean>;
-    private async loadWorkspaces(options: LoadOptions, depth: number): Promise<Map<string, Entry>>;
-    private async loadWorkspaces(options: LoadOptions = { }, depth: number = 0): Promise<boolean | Map<string, Entry>>
+    private async createReleases(options: BumpOptions, changes: Map<string, string>, getTag: (entry: Entry) => string): Promise<void>
     {
-        if (options.packages && options.cwd)
+        if (!this.options.dry)
         {
-            const promises: Promise<[string, Entry]>[] = [];
+            this.logger.trace("Creating releases...");
 
-            for await (const path of enumeratePaths(options.packages, { base: options.cwd }))
+            const promises: Promise<void>[] = [];
+
+            const env = getEnv();
+
+            const [apiUrl, token] = options.createRelease == "github"
+                ? [env.GITHUB_API, env.GITHUB_TOKEN]
+                : [env.GITLAB_API, env.GITLAB_TOKEN];
+
+            if (!token)
             {
-                promises.push(this.loadEntry(path, options, depth));
+                throw new Error("Api token is required");
             }
 
-            return new Map<string, Entry>(await Promise.all(promises));
-        }
+            const remoteUrl          = await getRemoteUrl(options.remote ?? "origin");
+            const url                = new URL(remoteUrl.trim().replace(/^git@/, "https://").replace(/\.git$/, ""));
+            const [, owner, ...rest] = url.pathname.split("/") as string[];
+            const project            = rest.join("/");
+            const client             = new ReleaseClient({ type: options.createRelease!, apiUrl, token, owner: owner!, project }, this.logger);
 
-        if (!this.loaded)
-        {
-            this.logger.trace("Loading workspaces...");
-
-            const auth = await this.getAuth(os.homedir(), "");
-
-            this.workspaces = await this.loadWorkspaces({ ...options, auth, packages: this.options.packages.map(this.normalizePattern), cwd: this.options.cwd }, 1);
-
-            if (this.workspaces.size == 0)
+            for (const entry of this.updates)
             {
-                this.logger.warn("No packages found.");
+                const action = async (): Promise<void> =>
+                {
+                    if (options.independent || entry.isWorkspaceRoot || entry.isRoot)
+                    {
+                        this.logger.debug(`Creating ${entry.manifest.name}'s release.`);
+
+                        const content = changes.get(entry.manifest.name)!;
+                        const tag = getTag(entry);
+
+                        await client.createRelease(tag, content);
+                    }
+                };
+
+                promises.push(action());
             }
 
-            this.loaded = true;
+            await Promise.all(promises);
+
+            this.logger.trace("Releases created...");
         }
 
-        return this.workspaces.size > 0;
+        else
+        {
+            this.logger.info(`Releases will created on ${options.createRelease}...`);
+        }
     }
 
-    private async loadEntry(path: string, options: LoadOptions, depth: number): Promise<[string, Entry]>
+    private async generateArtifacts(options: BumpOptions): Promise<void>
     {
-        const content  = (await readFile(path)).toString();
-        const manifest = JSON.parse(content) as object as PackageJson;
+        const changes = new Map<string, string>();
 
-        this.backup.set(path, content);
+        const getTag = (entry: Entry): string => options.independent
+            ? `${entry.manifest.name}@${entry.manifest.version}`
+            : `v${entry.manifest.version}`;
 
-        let workspaces: Map<string, Entry> | undefined;
-
-        const parentPath = dirname(path);
-
-        const auth: Auth = await this.getAuth(parentPath, manifest.name, options.auth);
-
-        const tag = options.tag ?? "latest";
-
-        if (Array.isArray(manifest.workspaces))
+        if (options.changelog || options.createRelease)
         {
-            workspaces = depth > 0
-                ? await this.loadWorkspaces({ ...options, auth, packages: manifest.workspaces.map(this.normalizePattern), cwd: parentPath }, depth - 1)
-                : new Map();
+            if (options.changelog)
+            {
+                this.logger.trace("Generating changelogs...");
+            }
+
+            const promises: Promise<void>[] = [];
+
+            for (const entry of this.updates)
+            {
+                const action = async (): Promise<void> =>
+                {
+                    if (options.independent || entry.isWorkspaceRoot || entry.isRoot)
+                    {
+                        const changelogPath = join(dirname(entry.path), "CHANGELOG.md");
+
+                        if (!this.options.dry)
+                        {
+                            this.logger.debug(`creating ${entry.manifest.name}'s changelog.`);
+
+                            const content = await changelog(entry.path, getTag(entry));
+
+                            changes.set(entry.manifest.name, content.toString());
+
+                            if (options.changelog)
+                            {
+                                await writeFile(changelogPath, content);
+                            }
+
+                            this.logger.debug(`${entry.manifest.name}'s changelog created.`);
+                        }
+                        else
+                        {
+                            changes.set(entry.manifest.name, "");
+                            this.logger.info(`${entry.manifest.name}'s changelog will be created.`);
+                        }
+                    }
+                };
+
+                promises.push(action());
+            }
+
+            await Promise.all(promises);
         }
 
-        const service = new NpmService(this.options.registry ?? auth.registry, this.options.token ?? auth.token);
-
-        const spec = `${manifest.name}@${tag}`;
-
-        const remote     = await service.get(spec);
-        const hasChanges = remote ? await service.hasChanges(`file:${parentPath}`, spec, { ignorePackageVersion: true, ignoreFiles: options.ignoreChanges ?? [] }) : true;
-
-        const entry: Entry =
+        if (options.createRelease || options.commit)
         {
-            auth,
-            hasChanges,
-            manifest,
-            path,
-            remote,
-            service,
-            workspaces,
-        };
+            const tags = this.updates.map(getTag);
 
-        return [manifest.name, entry];
+            if (!this.options.dry)
+            {
+                const commitMessage = `chore(release): publish\n\n${tags.map(x => ` - ${x}`).join("\r\n")}`;
+
+                this.logger.trace("Committing changes...");
+                await commitAll(commitMessage);
+
+                this.logger.trace("Adding tags...");
+                await Promise.all(tags.map(async (x) => addTag(x, x)));
+            }
+            else
+            {
+                this.logger.info("Changes will be committed.");
+                this.logger.info(`Tags will be created\n${tags.join("\n")}`);
+            }
+
+            if (options.createRelease || options.pushToRemote)
+            {
+                if (!this.options.dry)
+                {
+                    this.logger.trace("Pushing to remote...");
+                    await pushToRemote(options.remote);
+                }
+
+                else
+                {
+                    this.logger.info(`Commit will be pushed to remote ${options.remote}.`);
+                }
+            }
+
+            if (options.createRelease)
+            {
+                await this.createReleases(options, changes, getTag);
+            }
+        }
     }
 
     private async getAuth(path: string, packageName: string, parent: Auth = { }): Promise<Auth>
@@ -277,6 +407,84 @@ export default class Publisher
         }
 
         return { registry: this.options.registry ?? auth.registry, token: this.options.token ?? auth.token };
+    }
+
+    private async loadWorkspaces(options?: Pick<LoadOptions, "tag" | "ignoreChanges">): Promise<boolean>;
+    private async loadWorkspaces(options: LoadOptions, parent?: Entry): Promise<Map<string, Entry>>;
+    private async loadWorkspaces(options: LoadOptions = { }, parent: Entry | undefined = undefined): Promise<boolean | Map<string, Entry>>
+    {
+        if (options.packages && options.cwd)
+        {
+            const promises: Promise<[string, Entry]>[] = [];
+
+            for await (const path of enumeratePaths(options.packages, { base: options.cwd }))
+            {
+                promises.push(this.loadEntry(path, options, parent));
+            }
+
+            return new Map<string, Entry>(await Promise.all(promises));
+        }
+
+        if (!this.loaded)
+        {
+            this.logger.trace("Loading workspaces...");
+
+            const auth = await this.getAuth(os.homedir(), "");
+
+            this.entries = await this.loadWorkspaces({ ...options, auth, packages: this.options.packages.map(this.normalizePattern), cwd: this.options.cwd });
+
+            if (this.entries.size == 0)
+            {
+                this.logger.warn("No packages found.");
+            }
+
+            this.loaded = true;
+        }
+
+        return this.entries.size > 0;
+    }
+
+    private async loadEntry(path: string, options: LoadOptions, parent?: Entry): Promise<[string, Entry]>
+    {
+        const content  = (await readFile(path)).toString();
+        const manifest = JSON.parse(content) as object as PackageJson;
+
+        this.backup.set(path, content);
+
+        const parentPath = dirname(path);
+
+        const auth: Auth = await this.getAuth(parentPath, manifest.name, options.auth);
+
+        const tag = options.tag ?? "latest";
+
+        const service = new NpmService(this.options.registry ?? auth.registry, this.options.token ?? auth.token);
+
+        const spec = `${manifest.name}@${tag}`;
+
+        const remote     = await service.get(spec);
+        const hasChanges = remote ? await service.hasChanges(`file:${parentPath}`, spec, { ignorePackageVersion: true, ignoreFiles: options.ignoreChanges ?? [] }) : true;
+
+        const entry = new Entry
+        (
+            {
+                auth,
+                hasChanges,
+                manifest,
+                path,
+                remote,
+                service,
+            },
+            parent,
+        );
+
+        if (Array.isArray(manifest.workspaces))
+        {
+            entry.workspaces = entry.isRoot
+                ? await this.loadWorkspaces({ ...options, auth, packages: manifest.workspaces!.map(this.normalizePattern), cwd: parentPath }, entry)
+                : new Map();
+        }
+
+        return [manifest.name, entry];
     }
 
     private async runScript(manifest: PackageJson, script: ScriptType, cwd: string): Promise<void>
@@ -317,7 +525,7 @@ export default class Publisher
             await this.publishWorkspaces(tag, options, entry.workspaces);
         }
 
-        if ((options.includePrivate || !entry.manifest.private) && (options.includeWorkspaceRoot || !entry.workspaces))
+        if ((options.includePrivate || !entry.manifest.private) && (options.includeWorkspaceRoot || !entry.isWorkspaceRoot))
         {
             const versionedName = `${entry.manifest.name}@${entry.manifest.version}`;
 
@@ -425,7 +633,7 @@ export default class Publisher
                         {
                             dependencies[name] = `~${dependencyVersion}`;
 
-                            this.logger.debug(`${dependencyType}:${name} in ${entry.manifest.name} updated from '${version}' to '${dependencyVersion}'`);
+                            this.logger.debug(`${dependencyType}:${name} in ${entry.manifest.name} updated from '${version}' to '~${dependencyVersion}'`);
                         }
                     }
                 }
@@ -442,7 +650,7 @@ export default class Publisher
         }
     }
 
-    private async writeWorkspaces(options: BumpOptions, workspaces: Map<string, Entry> = this.workspaces): Promise<void>
+    private async writeWorkspaces(options: BumpOptions, workspaces: Map<string, Entry> = this.entries): Promise<void>
     {
         const promises: Promise<void>[] = [];
 
@@ -478,55 +686,80 @@ export default class Publisher
 
     private async update(workspaces: Map<string, Entry>, version: Version, preid: string | undefined, build: string | undefined, options: BumpOptions = { }): Promise<void>
     {
+        const promises: Promise<void>[] = [];
+
         for (const entry of workspaces.values())
         {
-            const manifest = entry.manifest;
-            const actual   = manifest.version;
-
-            if (options.force || !options.independent || entry.hasChanges)
+            const action = async (): Promise<void> =>
             {
-                const updated: string | null = isSemanticVersion(version)
-                    ? version
-                    : isGlobPrerelease(version)
-                        ? overridePrerelease(manifest.version, version)
-                        : semver.inc(manifest.version, version, { loose: true }, preid);
+                const manifest = entry.manifest;
+                const actual   = manifest.version;
 
-                if (!updated)
+                if (options.force || !options.independent || entry.hasChanges)
                 {
-                    const message = `Packaged ${manifest.name} has invalid version ${manifest.version}`;
+                    let manifestVersion = version;
 
-                    this.logger.error(message);
+                    if (manifestVersion == "recommended")
+                    {
+                        const result = await recommendedBump(dirname(entry.path), manifest.name);
 
-                    this.errors.push(new Error(message));
+                        if (!result.releaseType)
+                        {
+                            return;
+                        }
+
+                        manifestVersion = result.releaseType;
+                    }
+
+                    const updated: string | null = isSemanticVersion(manifestVersion)
+                        ? manifestVersion
+                        : isGlobPrerelease(manifestVersion)
+                            ? overridePrerelease(manifest.version, manifestVersion)
+                            : semver.inc(manifest.version, manifestVersion, { loose: true }, preid);
+
+                    if (!updated)
+                    {
+                        const message = `Packaged ${manifest.name} has invalid version ${manifest.version}`;
+
+                        this.logger.error(message);
+
+                        this.errors.push(new Error(message));
+                    }
+                    else
+                    {
+                        manifest.version = updated + (build ? `.${build}` : "");
+
+                        this.logger.debug(`${manifest.name} version updated from ${actual} to ${manifest.version}`);
+
+                        this.updates.push(entry);
+                    }
+                }
+                else if (entry.remote && entry.manifest.version != entry.remote.version)
+                {
+                    this.logger.debug(`Package ${manifest.name} has no changes but local version (${manifest.version}) differ from remote version (${entry.remote.version}) using dist-tag ${options.tag ?? "latest"}`);
+
+                    manifest.version = entry.remote.version;
                 }
                 else
                 {
-                    manifest.version = updated + (build ? `.${build}` : "");
-
-                    this.logger.debug(`${manifest.name} version updated from ${actual} to ${manifest.version}`);
+                    this.logger.debug(`Package ${manifest.name} has no changes`);
                 }
-            }
-            else if (entry.remote && entry.manifest.version != entry.remote.version)
-            {
-                this.logger.debug(`Package ${manifest.name} has no changes but local version (${manifest.version}) differ from remote version (${entry.remote.version}) using dist-tag ${options.tag ?? "latest"}`);
 
-                manifest.version = entry.remote.version;
-            }
-            else
-            {
-                this.logger.debug(`Package ${manifest.name} has no changes`);
-            }
+                if (entry.workspaces?.size)
+                {
+                    await this.update(entry.workspaces, options.independent ? version : entry.manifest.version as SemanticVersion, preid, build, options);
+                }
+            };
 
-            if (entry.workspaces?.size)
-            {
-                await this.update(entry.workspaces, options.independent ? version : entry.manifest.version as SemanticVersion, preid, build, options);
-            }
+            promises.push(action());
         }
+
+        await Promise.all(promises);
     }
 
     private async unpublishPackage(entry: Entry, options: UnpublishOptions): Promise<void>
     {
-        if ((options.includePrivate || !entry.manifest.private) && (options.includeWorkspaceRoot || !entry.workspaces))
+        if ((options.includePrivate || !entry.manifest.private) && (options.includeWorkspaceRoot || !entry.isWorkspaceRoot))
         {
             const versionedName = `${entry.manifest.name}@${entry.manifest.version}`;
 
@@ -588,15 +821,22 @@ export default class Publisher
      * @param preid The 'prerelease identifier' part of a semver. Like the "rc" in 1.2.0-rc.8+2022.
      * @param build The build part of a semver. Like the "2022" in 1.2.0-rc.8+2022.
      */
+    // eslint-disable-next-line max-lines-per-function
     public async bump(version: Version, preid?: string, build?: string, options: BumpOptions = { }): Promise<void>
     {
+        if (options.commit && !await isWorkingTreeClean())
+        {
+            throw new Error("Working tree has uncommitted changes");
+        }
+
         if (await this.loadWorkspaces({ tag: options.tag, ignoreChanges: options.ignoreChanges }))
         {
             this.logger.trace("Updating packages version...");
-            await this.update(this.workspaces, version, preid, build, options);
+            await this.update(this.entries, version, preid, build, options);
 
             this.logger.trace("Writing packages...");
             await this.writeWorkspaces(options);
+            await this.generateArtifacts(options);
 
             if (this.errors.length > 0)
             {
@@ -606,10 +846,8 @@ export default class Publisher
 
                 throw new AggregateError(this.errors);
             }
-            else
-            {
-                this.logger.info(`${this.options.dry ? "[DRY RUN] " : ""}Bump done!`);
-            }
+
+            this.logger.info(`${this.options.dry ? "[DRY RUN] " : ""}Bump done!`);
         }
     }
 
@@ -620,7 +858,7 @@ export default class Publisher
     {
         if (await this.loadWorkspaces({ tag: options.tag, ignoreChanges: options.ignoreChanges }))
         {
-            return this.changedWorkspaces(this.workspaces, options);
+            return this.changedWorkspaces(this.entries, options);
         }
 
         return [];
@@ -673,7 +911,7 @@ export default class Publisher
                 await this.writeWorkspaces(bumpOptions);
             }
 
-            await this.publishWorkspaces(tag, options, this.workspaces);
+            await this.publishWorkspaces(tag, options, this.entries);
 
             if (!this.options.dry && (this.errors.length > 0 || options.canary))
             {
@@ -701,7 +939,7 @@ export default class Publisher
     {
         if (await this.loadWorkspaces())
         {
-            await this.unpublishWorkspaces(this.workspaces, options);
+            await this.unpublishWorkspaces(this.entries, options);
 
             if (this.errors.length > 0)
             {
@@ -716,3 +954,4 @@ export default class Publisher
         }
     }
 }
+

@@ -1,32 +1,32 @@
-import { hasFlag }                                 from "@surface/core";
-import { DescriptorType, Parser, SpreadFlags }     from "@surface/htmlx-parser";
-import type { AttributeBindDescritor, Descriptor } from "@surface/htmlx-parser";
-import createChoiceFactory                         from "./factories/create-choice-factory.js";
-import createCommentFactory                        from "./factories/create-comment-factory.js";
-import createDirectiveFactory                      from "./factories/create-directive-factory.js";
-import createElementFactory                        from "./factories/create-element-factory.js";
-import createEventListenerFactory                  from "./factories/create-event-listener-factory.js";
-import createFragmentFactory                       from "./factories/create-fragment-factory.js";
-import createInjectionFactory                      from "./factories/create-injection-factory.js";
-import createInterpolationFactory                  from "./factories/create-interpolation-factory.js";
-import createLoopFactory                           from "./factories/create-loop-factory.js";
-import createOnewayFactory                         from "./factories/create-one-way-factory.js";
-import createPlaceholderFactory                    from "./factories/create-placeholder-factory.js";
-import createSpreadAttributesFactory               from "./factories/create-spread-attributes-factory.js";
-import createSpreadFactory                         from "./factories/create-spread-factory.js";
-import createSpreadListenersFactory                from "./factories/create-spread-listeners.js";
-import createSpreadPropertiesFactory               from "./factories/create-spread-properties-factory.js";
-import createTextNodeFactory                       from "./factories/create-text-node-factory.js";
-import createTextNodeInterpolationFactory          from "./factories/create-text-node-interpolation-factory.js";
-import createTwoWayFactory                         from "./factories/create-two-way-factory.js";
-import TemplateFactory                             from "./template-factory.js";
-import type AttributeFactory                       from "./types/attribute-factory.js";
-import type NodeFactory                            from "./types/node-factory.js";
-import type SpreadFactory                          from "./types/spread-factory.js";
+import { hasFlag }                                  from "@surface/core";
+import { DescriptorType, Parser, SpreadFlags }      from "@surface/htmlx-parser";
+import type { AttributeBindDescriptor, Descriptor } from "@surface/htmlx-parser";
+import createChoiceFactory                          from "./factories/create-choice-factory.js";
+import createCommentFactory                         from "./factories/create-comment-factory.js";
+import createDirectiveFactory                       from "./factories/create-directive-factory.js";
+import createElementFactory                         from "./factories/create-element-factory.js";
+import createEventListenerFactory                   from "./factories/create-event-listener-factory.js";
+import createFragmentFactory                        from "./factories/create-fragment-factory.js";
+import createInjectionFactory                       from "./factories/create-injection-factory.js";
+import createInterpolationFactory                   from "./factories/create-interpolation-factory.js";
+import createLoopFactory                            from "./factories/create-loop-factory.js";
+import createOnewayFactory                          from "./factories/create-one-way-factory.js";
+import createPlaceholderFactory                     from "./factories/create-placeholder-factory.js";
+import createSpreadAttributesFactory                from "./factories/create-spread-attributes-factory.js";
+import createSpreadFactory                          from "./factories/create-spread-factory.js";
+import createSpreadListenersFactory                 from "./factories/create-spread-listeners.js";
+import createSpreadPropertiesFactory                from "./factories/create-spread-properties-factory.js";
+import createTextNodeFactory                        from "./factories/create-text-node-factory.js";
+import createTextNodeInterpolationFactory           from "./factories/create-text-node-interpolation-factory.js";
+import createTwoWayFactory                          from "./factories/create-two-way-factory.js";
+import TemplateFactory                              from "./template-factory.js";
+import type AttributeFactory                        from "./types/attribute-factory.js";
+import type NodeFactory                             from "./types/node-factory.js";
+import type SpreadFactory                           from "./types/spread-factory.js";
 
 export default class Compiler
 {
-    private static mapAttributes(binds: Iterable<AttributeBindDescritor>): [[string, string][], AttributeFactory[]]
+    private static mapAttributes(binds: Iterable<AttributeBindDescriptor>): [[string, string][], AttributeFactory[]]
     {
         const attributes: [string, string][] = [];
         const factories:  AttributeFactory[] = [];

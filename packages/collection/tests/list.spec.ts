@@ -150,7 +150,7 @@ export default class ListSpec
     }
 
     @test @shouldPass
-    public createAndModifieValue(): void
+    public createAndModifyValue(): void
     {
         const list = new List([1, 2, 3]);
 
@@ -181,7 +181,7 @@ export default class ListSpec
     }
 
     @test @shouldFail
-    public getIndexGreatherOrEqualToLength(): void
+    public getIndexGreaterOrEqualToLength(): void
     {
         chai.assert.throw(() => new List()[0], ArgumentOutOfRangeError, "index is equal to or greater than length");
     }
@@ -193,7 +193,7 @@ export default class ListSpec
     }
 
     @test @shouldFail
-    public setIndexGreatherOrEqualToLength(): void
+    public setIndexGreaterOrEqualToLength(): void
     {
         chai.assert.throw(() => new List()[0] = 1, ArgumentOutOfRangeError, "index is equal to or greater than length");
     }

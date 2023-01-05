@@ -57,7 +57,7 @@ export default class PatternMatcherSpec
 
         chai.assert.deepEqual(regex, scenario.regex, "regex deep equal to expectation.regex");
 
-        // !!! Don't commit this uncomented !!!
+        // !!! Don't commit this uncommented !!!
         // const [startRange, endRange, interval = "1"] = scenario.pattern.substring(1, scenario.pattern.length - 1).split("..") as [string, string, string?];
 
         // const getMinLength = (value: string): number =>

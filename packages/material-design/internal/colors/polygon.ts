@@ -9,13 +9,13 @@ export default class Polygon
         this.vertices = vertices ?? [];
     }
 
-    public static scale(poligon: Polygon, origin: Vector3, factor: number): Polygon
+    public static scale(polygon: Polygon, origin: Vector3, factor: number): Polygon
     {
         const vertices: Vector3[] = [];
 
-        for (const vertice of poligon.vertices)
+        for (const vertex of polygon.vertices)
         {
-            const direction  = Vector3.subtract(vertice, origin);
+            const direction  = Vector3.subtract(vertex, origin);
             const distance   = direction.magnitude * factor;
             const normalized = direction.normalized;
 
@@ -25,13 +25,13 @@ export default class Polygon
         return new Polygon(vertices);
     }
 
-    public static translate(poligon: Polygon, offset: Vector3): Polygon
+    public static translate(polygon: Polygon, offset: Vector3): Polygon
     {
         const vertices: Vector3[] = [];
 
-        for (const vertice of poligon.vertices)
+        for (const vertex of polygon.vertices)
         {
-            vertices.push(Vector3.add(vertice, offset));
+            vertices.push(Vector3.add(vertex, offset));
         }
 
         return new Polygon(vertices);
