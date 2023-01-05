@@ -6,6 +6,7 @@ import { type RequiredProperties }          from "@surface/core";
 import Logger, { LogLevel }                 from "@surface/logger";
 import { enumeratePaths, execute }          from "@surface/rwx";
 import pack                                 from "libnpmpack";
+import type pacote                          from "pacote";
 import semver, { type ReleaseType }         from "semver";
 import
 {
@@ -18,8 +19,7 @@ import
     timestamp,
 } from "./common.js";
 import { addTag, commitAll, getRemoteUrl, isWorkingTreeClean, pushToRemote } from "./git.js";
-import type { Auth }                                                         from "./npm-config.js";
-import NpmConfig                                                             from "./npm-config.js";
+import loadConfig                                                            from "./load-config.js";
 import NpmService                                                            from "./npm-service.js";
 import ReleaseClient                                                         from "./release-client.js";
 import type { GlobPrerelease, SemanticVersion }                              from "./types/version.js";
@@ -33,16 +33,14 @@ type PackageJson = _PackageJson & { workspaces?: string[] };
 class Entry
 {
     private _workspaces?: Map<string, Entry>;
-
-    public readonly auth:        Auth;
-    public readonly hasChanges:  boolean;
-    public readonly isRoot:      boolean;
-    public readonly manifest:    PackageJson;
-    public readonly parent?:     Entry;
-    public readonly path:        string;
-    public readonly remote:      Pick<PackageJson, "name" | "version"> | null;
-    public readonly root:        Entry;
-    public readonly service:     NpmService;
+    public readonly hasChanges:      boolean;
+    public readonly isRoot:          boolean;
+    public readonly manifest:        PackageJson;
+    public readonly parent?:         Entry;
+    public readonly path:            string;
+    public readonly remote:          Pick<PackageJson, "name" | "version"> | null;
+    public readonly root:            Entry;
+    public readonly service:         NpmService;
 
     public get isWorkspaceRoot(): boolean
     {
@@ -61,15 +59,14 @@ class Entry
 
     public constructor(values: Pick<Entry, Exclude<keyof Entry, "isRoot" | "parent" | "root" | "workspaces" | "isWorkspaceRoot">>, parent?: Entry)
     {
-        this.auth        = values.auth;
-        this.hasChanges  = values.hasChanges;
-        this.isRoot      = !parent?.root;
-        this.manifest    = values.manifest;
-        this.parent      = parent;
-        this.path        = values.path;
-        this.remote      = values.remote;
-        this.root        = parent?.root ?? this;
-        this.service     = values.service;
+        this.hasChanges = values.hasChanges;
+        this.isRoot     = !parent?.root;
+        this.manifest   = values.manifest;
+        this.parent     = parent;
+        this.path       = values.path;
+        this.remote     = values.remote;
+        this.root       = parent?.root ?? this;
+        this.service    = values.service;
     }
 }
 
@@ -86,11 +83,11 @@ type ScriptType =
 
 type LoadOptions =
 {
-    tag?:           string,
+    config?:        pacote.Options,
     cwd?:           string,
-    packages?:      string[],
-    auth?:          Auth,
     ignoreChanges?: string[],
+    packages?:      string[],
+    tag?:           string,
 };
 
 type RestrictionOptions =
@@ -388,25 +385,16 @@ export default class Publisher
         }
     }
 
-    private async getAuth(path: string, packageName: string, parent: Auth = { }): Promise<Auth>
+    private async getConfig(path: string, parent?: Record<string, unknown>): Promise<pacote.Options>
     {
-        let auth: Auth = parent;
-
-        const config = await NpmConfig.load(path, process.env);
+        const config = await loadConfig(path, process.env);
 
         if (config)
         {
-            auth = { registry: config.registry ?? auth.registry, token: config.authToken ?? auth.token };
-
-            if (packageName.startsWith("@"))
-            {
-                const [scope] = packageName.split("/");
-
-                auth = config.getScopedAuth(scope!) ?? auth;
-            }
+            return { ...parent, ...config };
         }
 
-        return { registry: this.options.registry ?? auth.registry, token: this.options.token ?? auth.token };
+        return parent ?? { };
     }
 
     private async loadWorkspaces(options?: Pick<LoadOptions, "tag" | "ignoreChanges">): Promise<boolean>;
@@ -429,9 +417,26 @@ export default class Publisher
         {
             this.logger.trace("Loading workspaces...");
 
-            const auth = await this.getAuth(os.homedir(), "");
+            const parentConfig: Record<string, unknown> = { };
 
-            this.entries = await this.loadWorkspaces({ ...options, auth, packages: this.options.packages.map(this.normalizePattern), cwd: this.options.cwd });
+            if (this.options.registry)
+            {
+                parentConfig.registry = this.options.registry;
+
+                if (this.options.token)
+                {
+                    parentConfig[`${this.options.registry.replace(/(^https?:|\/$)/ig, "")}/:_authToken`] = this.options.token;
+                }
+            }
+            else if (this.options.token)
+            {
+                parentConfig.registry                            = "https://registry.npmjs.org";
+                parentConfig["//registry.npmjs.org/:_authToken"] = this.options.token;
+            }
+
+            const config = await this.getConfig(os.homedir(), parentConfig);
+
+            this.entries = await this.loadWorkspaces({ ...options, config, packages: this.options.packages.map(this.normalizePattern), cwd: this.options.cwd });
 
             if (this.entries.size == 0)
             {
@@ -453,11 +458,11 @@ export default class Publisher
 
         const parentPath = dirname(path);
 
-        const auth: Auth = await this.getAuth(parentPath, manifest.name, options.auth);
+        const config = await this.getConfig(parentPath, options.config);
 
         const tag = options.tag ?? "latest";
 
-        const service = new NpmService(this.options.registry ?? auth.registry, this.options.token ?? auth.token);
+        const service = new NpmService(config);
 
         const spec = `${manifest.name}@${tag}`;
 
@@ -467,7 +472,6 @@ export default class Publisher
         const entry = new Entry
         (
             {
-                auth,
                 hasChanges,
                 manifest,
                 path,
@@ -479,9 +483,15 @@ export default class Publisher
 
         if (Array.isArray(manifest.workspaces))
         {
-            entry.workspaces = entry.isRoot
-                ? await this.loadWorkspaces({ ...options, auth, packages: manifest.workspaces!.map(this.normalizePattern), cwd: parentPath }, entry)
-                : new Map();
+            const loadOptions =
+            {
+                ...options,
+                config,
+                packages: manifest.workspaces.map(this.normalizePattern),
+                cwd:      parentPath,
+            };
+
+            entry.workspaces = entry.isRoot ? await this.loadWorkspaces(loadOptions, entry) : undefined;
         }
 
         return [manifest.name, entry];
@@ -736,7 +746,7 @@ export default class Publisher
                 }
                 else if (entry.remote && entry.manifest.version != entry.remote.version)
                 {
-                    this.logger.debug(`Package ${manifest.name} has no changes but local version (${manifest.version}) differ from remote version (${entry.remote.version}) using dist-tag ${options.tag ?? "latest"}`);
+                    this.logger.debug(`Package ${manifest.name} has no changes but local version (${manifest.version}) differ from remote version (${entry.remote.version}) using dist-tag ${options.tag ?? "latest"}.`);
 
                     manifest.version = entry.remote.version;
                 }
@@ -885,6 +895,7 @@ export default class Publisher
                 force:                options.force,
                 independent:          true,
                 synchronize:          options.synchronize,
+                tag,
                 updateFileReferences: true,
             };
 
