@@ -1,6 +1,7 @@
 import type { PackageJson }     from "@npm/types";
 import { deepEqual, typeGuard } from "@surface/core";
 import PathMatcher              from "@surface/path-matcher";
+import pack                     from "libnpmpack";
 import libnpmpublish            from "libnpmpublish";
 import pacote                   from "pacote";
 import { untar }                from "./common.js";
@@ -11,7 +12,7 @@ type HasChangesOptions = { ignorePackageVersion?: boolean, ignoreFiles?: string[
 
 function stripSourceMap(source: string | undefined): string | undefined
 {
-    return source?.replace(/\/\/#\s+sourceMappingURL=.*$/, "").trim();
+    return source?.replace(/(?:\r)|(?:\/\/#\s+sourceMappingURL=.*$)/g, "").trim();
 }
 
 function stripFileReferences(left: PackageJson, right: PackageJson, dependencyType?: "dependencies" | "devDependencies" | "peerDependencies"): void
@@ -77,7 +78,7 @@ export default class NpmService
 
         const [leftBuffer, rightBuffer] = await Promise.all
         ([
-            this.getTarball(leftSpec),
+            pack(leftSpec),
             this.getTarball(rightSpec),
         ]);
 

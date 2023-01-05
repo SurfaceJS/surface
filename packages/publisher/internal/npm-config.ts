@@ -2,8 +2,8 @@ import { readFile } from "fs/promises";
 import { join }     from "path";
 import { isFile }   from "@surface/rwx";
 
-const ENV_PATTERN   = /\$\{([A-Z][A-Z0-9_]+)\}/gi;
-const HTTPS_PATTERN = /^https?:/i;
+const ENV_PATTERN     = /\$\{([A-Z][A-Z0-9_]+)\}/gi;
+const HTTPS_PATTERN   = /^https?:/i;
 const COMMENT_PATTERN = /^\s*[#;]/i;
 
 type Env = NodeJS.ProcessEnv | Record<string, string>;
