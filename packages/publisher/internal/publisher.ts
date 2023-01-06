@@ -503,7 +503,17 @@ export default class Publisher
         {
             this.logger.debug(`Running ${script} script in ${manifest.name}...`);
 
-            await execute(`npm run ${script} --if-present --color`, { cwd });
+            await execute(`npm run ${script} --if-present --color`, { cwd })
+                .catch
+                (
+                    error =>
+                    {
+                        const message = `Script failed: ${script} - ${error.message}`;
+
+                        this.logger.error(message);
+                        this.errors.push(new Error(message));
+                    },
+                );
         }
         else
         {
@@ -658,6 +668,11 @@ export default class Publisher
                 this.sync(entry, workspaces, options, "peerDependencies"),
             ]);
         }
+    }
+
+    private throwAggregateError(): never
+    {
+        throw new AggregateError(this.errors, "One or more errors occurred");
     }
 
     private async writeWorkspaces(options: BumpOptions, workspaces: Map<string, Entry> = this.entries): Promise<void>
@@ -854,7 +869,7 @@ export default class Publisher
 
                 this.logger.warn("Failed to bump some packages.");
 
-                throw new AggregateError(this.errors);
+                this.throwAggregateError();
             }
 
             this.logger.info(`${this.options.dry ? "[DRY RUN] " : ""}Bump done!`);
@@ -933,7 +948,7 @@ export default class Publisher
             {
                 this.logger.warn("Publishing done with errors!");
 
-                throw new AggregateError(this.errors);
+                this.throwAggregateError();
             }
             else
             {
@@ -956,7 +971,7 @@ export default class Publisher
             {
                 this.logger.warn("Unpublishing done with errors!");
 
-                throw new AggregateError(this.errors);
+                this.throwAggregateError();
             }
             else
             {

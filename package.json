@@ -39,7 +39,6 @@
         "publisher:dry:publish-canary": "publisher publish --log-level=trace --dry --canary",
         "publisher:dry:unpublish": "publisher unpublish --log-level=trace --dry",
         "publisher:changed": "publisher changed --log-level=trace --tag=next --ignore-changes=*.md",
-        "publisher:changelog": "publisher changelog",
         "publisher:publish-canary": "publisher publish --canary --ignore-changes=*.md",
         "test": "mocha --loader=@surface/mock-loader --require=./tasks/polyfill.js **/packages/*/tests/**/*.spec.js",
         "test-summary": "npm test -- --reporter=progress",
