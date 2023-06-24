@@ -25,7 +25,7 @@
         "libnpmpublish": "~7.0.6",
         "node-fetch": "~3.3.0",
         "pacote": "~15.0.8",
-        "semver": "~7.3.8",
+        "semver": "~7.5.2",
         "tar": "~6.1.13",
         "tslib": "~2.4.1"
     },
