@@ -29,9 +29,7 @@ export async function commitAll(message: string): Promise<void>
 
 export async function isWorkingTreeClean(): Promise<boolean>
 {
-    // return (await executeSilent("git status --porcelain")).toString() == "";
-
-    return true;
+    return (await executeSilent("git status --porcelain")).toString() == "";
 }
 
 export async function getRemoteUrl(remote: string): Promise<string>
