@@ -1,5 +1,5 @@
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import chai                                    from "chai";
+import { assert }                              from "chai";
 import ReactiveMap                             from "../internal/reactive-map.js";
 
 @suite
@@ -8,7 +8,7 @@ export default class ReactiveMapSpec
     @test @shouldPass
     public create(): void
     {
-        chai.assert.instanceOf(new ReactiveMap(), Map);
+        assert.instanceOf(new ReactiveMap(), Map);
     }
 
     @test @shouldPass
@@ -24,36 +24,36 @@ export default class ReactiveMapSpec
 
         map.set("one", 1);
 
-        chai.assert.equal(values.length, 1);
-        chai.assert.deepEqual(values[0], ["one", 1]);
+        assert.equal(values.length, 1);
+        assert.deepEqual(values[0], ["one", 1]);
 
         map.set("two", 2);
 
-        chai.assert.equal(values.length, 2);
-        chai.assert.deepEqual(values[0], ["one", 1]);
-        chai.assert.deepEqual(values[1], ["two", 2]);
+        assert.equal(values.length, 2);
+        assert.deepEqual(values[0], ["one", 1]);
+        assert.deepEqual(values[1], ["two", 2]);
 
         map.delete("one");
 
-        chai.assert.equal(values.length, 1);
-        chai.assert.deepEqual(values[0], ["two", 2]);
+        assert.equal(values.length, 1);
+        assert.deepEqual(values[0], ["two", 2]);
 
         map.clear();
 
-        chai.assert.equal(values.length, 0);
+        assert.equal(values.length, 0);
 
         map.unsubscribe(listener);
 
-        chai.assert.equal(values.length, 0);
+        assert.equal(values.length, 0);
 
         map.set("three", 3);
 
-        chai.assert.equal(values.length, 0);
+        assert.equal(values.length, 0);
     }
 
     @test @shouldFail
     public throwsListenerNotSubscribed(): void
     {
-        chai.assert.throws(() => new ReactiveMap().unsubscribe(() => void 0));
+        assert.throws(() => new ReactiveMap().unsubscribe(() => void 0));
     }
 }

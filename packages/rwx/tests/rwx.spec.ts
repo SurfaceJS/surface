@@ -27,8 +27,8 @@ import
     suite,
     test,
 } from "@surface/test-suite";
-import chai           from "chai";
-import chaiAsPromised from "chai-as-promised";
+import { assert, use } from "chai";
+import chaiAsPromised  from "chai-as-promised";
 import
 {
     isDirectory,
@@ -42,7 +42,7 @@ import
     searchAbove,
 } from "../internal/rwx.js";
 
-chai.use(chaiAsPromised);
+use(chaiAsPromised);
 
 type ReaddirSync = (path: string) => string[];
 type Readdir     = (path: string) => Promise<string[]>;
@@ -126,8 +126,8 @@ export default class IoSpec
         const actual1 = await listPaths(patterns[0]!);
         const actual2 = await listPaths(patterns);
 
-        chai.assert.deepEqual(actual1, expected1, "#1");
-        chai.assert.deepEqual(actual2, expected2, "#3");
+        assert.deepEqual(actual1, expected1, "#1");
+        assert.deepEqual(actual2, expected2, "#3");
     }
 
     @test @shouldPass
@@ -160,8 +160,8 @@ export default class IoSpec
         const actual1 = listPathsSync(patterns[0]!);
         const actual2 = listPathsSync(patterns);
 
-        chai.assert.deepEqual(actual1, expected1, "#1");
-        chai.assert.deepEqual(actual2, expected2, "#2");
+        assert.deepEqual(actual1, expected1, "#1");
+        assert.deepEqual(actual2, expected2, "#2");
     }
 
     @test @shouldPass
@@ -177,10 +177,10 @@ export default class IoSpec
         statMock.call(PATH_TO_ENOTDIR).reject({ code: "ENOTDIR" } as unknown as Error);
         statMock.call(It.any()).resolve({ isDirectory: () => false } as Stats);
 
-        chai.assert.isTrue(await isDirectory(PATH_TO_DIRECTORY), "isDirectory(PATH_TO_DIRECTORY) is true");
-        chai.assert.isFalse(await isDirectory(PATH_TO_FILE),     "isDirectory(PATH_TO_FILE) is false");
-        chai.assert.isFalse(await isDirectory(PATH_TO_ENOENT),   "isDirectory(PATH_TO_ENOENT) is false");
-        chai.assert.isFalse(await isDirectory(PATH_TO_ENOTDIR),  "isDirectory(PATH_TO_ENOTDIR) is false");
+        assert.isTrue(await isDirectory(PATH_TO_DIRECTORY), "isDirectory(PATH_TO_DIRECTORY) is true");
+        assert.isFalse(await isDirectory(PATH_TO_FILE),     "isDirectory(PATH_TO_FILE) is false");
+        assert.isFalse(await isDirectory(PATH_TO_ENOENT),   "isDirectory(PATH_TO_ENOENT) is false");
+        assert.isFalse(await isDirectory(PATH_TO_ENOTDIR),  "isDirectory(PATH_TO_ENOTDIR) is false");
     }
 
     @test @shouldPass
@@ -196,10 +196,10 @@ export default class IoSpec
         statSyncMock.call(PATH_TO_ENOTDIR).throws({ code: "ENOTDIR" } as unknown as Error);
         statSyncMock.call(It.any()).returns({ isDirectory: () => false } as Stats);
 
-        chai.assert.isTrue(isDirectorySync(PATH_TO_DIRECTORY), "isDirectorySync(PATH_TO_DIRECTORY) is true");
-        chai.assert.isFalse(isDirectorySync(PATH_TO_FILE),     "isDirectorySync(PATH_TO_FILE) is false");
-        chai.assert.isFalse(isDirectorySync(PATH_TO_ENOENT),   "isDirectorySync(PATH_TO_ENOENT) is false");
-        chai.assert.isFalse(isDirectorySync(PATH_TO_ENOTDIR),  "isDirectorySync(PATH_TO_ENOTDIR) is false");
+        assert.isTrue(isDirectorySync(PATH_TO_DIRECTORY), "isDirectorySync(PATH_TO_DIRECTORY) is true");
+        assert.isFalse(isDirectorySync(PATH_TO_FILE),     "isDirectorySync(PATH_TO_FILE) is false");
+        assert.isFalse(isDirectorySync(PATH_TO_ENOENT),   "isDirectorySync(PATH_TO_ENOENT) is false");
+        assert.isFalse(isDirectorySync(PATH_TO_ENOTDIR),  "isDirectorySync(PATH_TO_ENOTDIR) is false");
     }
 
     @test @shouldPass
@@ -217,11 +217,11 @@ export default class IoSpec
         statMock.call(PATH_TO_ENOTDIR).reject({ code: "ENOTDIR" } as unknown as Error);
         statMock.call(It.any()).resolve({ isFIFO: () => false, isFile: () => false } as Stats);
 
-        chai.assert.isTrue(await isFile(PATH_TO_FILE),       "isFile(PATH_TO_FILE) is true");
-        chai.assert.isTrue(await isFile(PATH_TO_FIFO),       "isFile(PATH_TO_FIFO) is true");
-        chai.assert.isFalse(await isFile(PATH_TO_DIRECTORY), "isFile(PATH_TO_DIRECTORY) is false");
-        chai.assert.isFalse(await isFile(PATH_TO_ENOENT),    "isFile(PATH_TO_ENOENT) is false");
-        chai.assert.isFalse(await isFile(PATH_TO_ENOTDIR),   "isFile(PATH_TO_ENOTDIR) is false");
+        assert.isTrue(await isFile(PATH_TO_FILE),       "isFile(PATH_TO_FILE) is true");
+        assert.isTrue(await isFile(PATH_TO_FIFO),       "isFile(PATH_TO_FIFO) is true");
+        assert.isFalse(await isFile(PATH_TO_DIRECTORY), "isFile(PATH_TO_DIRECTORY) is false");
+        assert.isFalse(await isFile(PATH_TO_ENOENT),    "isFile(PATH_TO_ENOENT) is false");
+        assert.isFalse(await isFile(PATH_TO_ENOTDIR),   "isFile(PATH_TO_ENOTDIR) is false");
     }
 
     @test @shouldPass
@@ -239,11 +239,11 @@ export default class IoSpec
         statSyncMock.call(PATH_TO_ENOTDIR).throws({ code: "ENOTDIR" } as unknown as Error);
         statSyncMock.call(It.any()).returns({ isFIFO: () => false, isFile: () => false } as Stats);
 
-        chai.assert.isTrue(isFileSync(PATH_TO_FILE),       "isFileSync(PATH_TO_FILE) is true");
-        chai.assert.isTrue(isFileSync(PATH_TO_FIFO),       "isFileSync(PATH_TO_FIFO) is true");
-        chai.assert.isFalse(isFileSync(PATH_TO_DIRECTORY), "isFileSync(PATH_TO_DIRECTORY) is false");
-        chai.assert.isFalse(isFileSync(PATH_TO_ENOENT),    "isFileSync(PATH_TO_ENOENT) is false");
-        chai.assert.isFalse(isFileSync(PATH_TO_ENOTDIR),   "isFileSync(PATH_TO_ENOTDIR) is false");
+        assert.isTrue(isFileSync(PATH_TO_FILE),       "isFileSync(PATH_TO_FILE) is true");
+        assert.isTrue(isFileSync(PATH_TO_FIFO),       "isFileSync(PATH_TO_FIFO) is true");
+        assert.isFalse(isFileSync(PATH_TO_DIRECTORY), "isFileSync(PATH_TO_DIRECTORY) is false");
+        assert.isFalse(isFileSync(PATH_TO_ENOENT),    "isFileSync(PATH_TO_ENOENT) is false");
+        assert.isFalse(isFileSync(PATH_TO_ENOTDIR),   "isFileSync(PATH_TO_ENOTDIR) is false");
     }
 
     @test @shouldPass
@@ -271,7 +271,7 @@ export default class IoSpec
 
         statMock.call(It.any()).resolve({ isFIFO: () => false, isFile: () => false } as Stats);
 
-        chai.assert.equal(await lookup(relativePaths), null);
+        assert.equal(await lookup(relativePaths), null);
 
         statMock.clear();
 
@@ -279,8 +279,8 @@ export default class IoSpec
         statMock.call(path.join(CWD, TO_RESOLVE_2_FILE)).resolve({ isFIFO: () => false, isFile: () => false } as Stats);
         statMock.call(path.join(CWD, TO_RESOLVE_3_FILE)).resolve({ isFIFO: () => true, isFile: () => false } as Stats);
 
-        chai.assert.equal(await lookup(relativePaths), expected);
-        chai.assert.equal(await lookup(absolutePaths), expected);
+        assert.equal(await lookup(relativePaths), expected);
+        assert.equal(await lookup(absolutePaths), expected);
     }
 
     @test @shouldPass
@@ -308,7 +308,7 @@ export default class IoSpec
 
         statSyncMock.call(It.any()).returns({ isFIFO: () => false, isFile: () => false } as Stats);
 
-        chai.assert.equal(lookupSync(relativePaths), null);
+        assert.equal(lookupSync(relativePaths), null);
 
         statSyncMock.clear();
 
@@ -316,8 +316,8 @@ export default class IoSpec
         statSyncMock.call(path.join(CWD, TO_RESOLVE_2_FILE)).returns({ isFIFO: () => false, isFile: () => false } as Stats);
         statSyncMock.call(path.join(CWD, TO_RESOLVE_3_FILE)).returns({ isFIFO: () => true, isFile: () => false } as Stats);
 
-        chai.assert.equal(lookupSync(relativePaths), expected);
-        chai.assert.equal(lookupSync(absolutePaths), expected);
+        assert.equal(lookupSync(relativePaths), expected);
+        assert.equal(lookupSync(absolutePaths), expected);
     }
 
     @test @shouldPass
@@ -329,8 +329,8 @@ export default class IoSpec
 
         existsSyncMock.call(PATH_FILE).returns(true);
 
-        chai.assert.equal(searchAbove(PATH_TO_LOOKUP, "empty.txt"), null);
-        chai.assert.equal(searchAbove(PATH_TO_LOOKUP, "file.txt"), expected);
+        assert.equal(searchAbove(PATH_TO_LOOKUP, "empty.txt"), null);
+        assert.equal(searchAbove(PATH_TO_LOOKUP, "file.txt"), expected);
     }
 
     @test @shouldFail
@@ -338,7 +338,7 @@ export default class IoSpec
     {
         statMock.call(It.any()).reject(new Error());
 
-        await chai.assert.isRejected(isDirectory(CWD));
+        await assert.isRejected(isDirectory(CWD));
     }
 
     @test @shouldFail
@@ -346,7 +346,7 @@ export default class IoSpec
     {
         statMock.call(It.any()).reject(new Error());
 
-        await chai.assert.isRejected(isFile(CWD));
+        await assert.isRejected(isFile(CWD));
     }
 
     @test @shouldFail
@@ -354,7 +354,7 @@ export default class IoSpec
     {
         statSyncMock.call(It.any()).throws(new Error());
 
-        chai.assert.throws(() => isDirectorySync(CWD));
+        assert.throws(() => isDirectorySync(CWD));
     }
 
     @test @shouldFail
@@ -362,6 +362,6 @@ export default class IoSpec
     {
         statSyncMock.call(It.any()).throws(new Error());
 
-        chai.assert.throws(() => isFileSync(CWD));
+        assert.throws(() => isFileSync(CWD));
     }
 }

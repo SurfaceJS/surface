@@ -1,10 +1,10 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
-import chai                        from "chai";
+import { assert, use }             from "chai";
 import chaiAsPromised              from "chai-as-promised";
 import createConfigurations        from "../internal/create-configurations.js";
 import type Configuration          from "../internal/types/configuration.js";
 
-chai.use(chaiAsPromised);
+use(chaiAsPromised);
 
 @suite
 export default class CreateConfigurationsSpec
@@ -12,14 +12,14 @@ export default class CreateConfigurationsSpec
     @test @shouldPass
     public async createAnalyzerConfiguration(): Promise<void>
     {
-        void chai.assert.isNotEmpty(await createConfigurations("analyze", { }));
-        void chai.assert.isNotEmpty(await createConfigurations("analyze", { projects: { default: { analyzer: { reportFilename: "analyzer.html" } } } }));
+        void assert.isNotEmpty(await createConfigurations("analyze", { }));
+        void assert.isNotEmpty(await createConfigurations("analyze", { projects: { default: { analyzer: { reportFilename: "analyzer.html" } } } }));
     }
 
     @test @shouldPass
     public async createBuildConfiguration(): Promise<void>
     {
-        void chai.assert.isFulfilled(createConfigurations("build", { }));
+        void assert.isFulfilled(createConfigurations("build", { }));
 
         const configuration: Configuration =
         {
@@ -71,15 +71,15 @@ export default class CreateConfigurationsSpec
             },
         };
 
-        await chai.assert.isFulfilled(createConfigurations("build", configuration));
+        await assert.isFulfilled(createConfigurations("build", configuration));
     }
 
     @test @shouldPass
     public async createDevServerConfiguration(): Promise<void>
     {
-        await chai.assert.isFulfilled(createConfigurations("serve", { }));
-        await chai.assert.isFulfilled(createConfigurations("serve", { projects: { default: { entry: "." } } }));
-        await chai.assert.isFulfilled(createConfigurations("serve", { projects: { default: { entry: ["."] } } }));
-        await chai.assert.isFulfilled(createConfigurations("serve", { projects: { default: { entry: { index: "." } } } }));
+        await assert.isFulfilled(createConfigurations("serve", { }));
+        await assert.isFulfilled(createConfigurations("serve", { projects: { default: { entry: "." } } }));
+        await assert.isFulfilled(createConfigurations("serve", { projects: { default: { entry: ["."] } } }));
+        await assert.isFulfilled(createConfigurations("serve", { projects: { default: { entry: { index: "." } } } }));
     }
 }

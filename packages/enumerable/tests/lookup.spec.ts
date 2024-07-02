@@ -1,5 +1,5 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
-import chai                        from "chai";
+import { assert }                  from "chai";
 import Comparer                    from "../internal/comparer.js";
 import Lookup                      from "../internal/lookup.js";
 
@@ -10,21 +10,21 @@ export default class LookupSpec
     public count(): void
     {
         const lookup = new Lookup([1, 2, 3], x => x, x => x, new Comparer());
-        chai.assert.equal(lookup.count, 3);
+        assert.equal(lookup.count, 3);
     }
 
     @test @shouldPass
     public contains(): void
     {
         const lookup = new Lookup([1, 2, 3], x => x, x => x, new Comparer());
-        chai.assert.equal(lookup.contains(1), true);
+        assert.equal(lookup.contains(1), true);
     }
 
     @test @shouldPass
     public get(): void
     {
         const lookup = new Lookup([1, 2, 3], x => x, x => x, new Comparer());
-        chai.assert.deepEqual(lookup.get(1), [1]);
+        assert.deepEqual(lookup.get(1), [1]);
     }
 
     @test @shouldPass
@@ -37,14 +37,14 @@ export default class LookupSpec
             { key: 2, value: 3 },
         ];
         const lookup = new Lookup(data, x => x.key, x => x, new Comparer());
-        chai.assert.deepEqual(lookup.get(2), [{ key: 2, value: 2 }, { key: 2, value: 3 }]);
+        assert.deepEqual(lookup.get(2), [{ key: 2, value: 2 }, { key: 2, value: 3 }]);
     }
 
     @test @shouldPass
     public getNonValidKey(): void
     {
         const lookup = new Lookup([1, 2, 3], x => x, x => x, new Comparer());
-        chai.assert.deepEqual(lookup.get(4), []);
+        assert.deepEqual(lookup.get(4), []);
     }
 
     @test @shouldPass
@@ -53,7 +53,7 @@ export default class LookupSpec
         const data   = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
         const lookup = new Lookup(data, x => x, x => x, new Comparer());
 
-        chai.assert.deepEqual(lookup.count, 10);
+        assert.deepEqual(lookup.count, 10);
     }
 
     @test @shouldPass
@@ -62,6 +62,6 @@ export default class LookupSpec
         const data   = [1, 2, 3];
         const lookup = new Lookup(data, x => x, x => x, new Comparer());
 
-        chai.assert.deepEqual(Array.from(lookup).length, 3);
+        assert.deepEqual(Array.from(lookup).length, 3);
     }
 }

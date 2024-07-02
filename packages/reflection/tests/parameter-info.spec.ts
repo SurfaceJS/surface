@@ -1,5 +1,5 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
-import chai                        from "chai";
+import { assert }                  from "chai";
 import MethodInfo                  from "../internal/method-info.js";
 import ParameterInfo               from "../internal/parameter-info.js";
 import Type                        from "../internal/type.js";
@@ -14,18 +14,18 @@ export default class ParameterInfoSpec
     @test @shouldPass
     public declaringMethod(): void
     {
-        chai.assert.deepEqual(parameterInfo.declaringMethod, methodInfo);
+        assert.deepEqual(parameterInfo.declaringMethod, methodInfo);
     }
 
     @test @shouldPass
     public index(): void
     {
-        chai.assert.equal(parameterInfo.index, 0);
+        assert.equal(parameterInfo.index, 0);
     }
 
     @test @shouldPass
     public name(): void
     {
-        chai.assert.deepEqual(parameterInfo.name, "a");
+        assert.deepEqual(parameterInfo.name, "a");
     }
 }

@@ -2,7 +2,7 @@
 import "@surface/dom-shim";
 
 import { shouldPass, suite, test } from "@surface/test-suite";
-import chai                        from "chai";
+import { assert }                  from "chai";
 import Scheduler                   from "../internal/processors/scheduler.js";
 import AsyncObserver               from "../internal/reactivity/async-observer.js";
 
@@ -21,13 +21,13 @@ export default class AsyncObserverSpec
         AsyncObserver.observe(target, ["value"], scheduler).subscribe(() => void 0); // Coverage
         AsyncObserver.observe(target, ["value"], scheduler).subscribe(x => asyncReceiver = x as number);
 
-        chai.assert.equal(target.value, asyncReceiver);
+        assert.equal(target.value, asyncReceiver);
 
         target.value = 2;
 
         await scheduler.execution();
 
-        chai.assert.equal(target.value, asyncReceiver);
+        assert.equal(target.value, asyncReceiver);
     }
 
     @test @shouldPass
@@ -39,11 +39,11 @@ export default class AsyncObserverSpec
 
         AsyncObserver.observe(target, ["value"]).subscribe(x => asyncReceiver = x as number);
 
-        chai.assert.equal(target.value, asyncReceiver);
+        assert.equal(target.value, asyncReceiver);
 
         target.value = 2;
 
-        chai.assert.equal(target.value, asyncReceiver);
+        assert.equal(target.value, asyncReceiver);
     }
 
     @test @shouldPass
@@ -58,7 +58,7 @@ export default class AsyncObserverSpec
 
         AsyncObserver.observe(target, ["value"], scheduler).subscribe(x => (receiver = x as number, hits++));
 
-        chai.assert.equal(target.value, receiver);
+        assert.equal(target.value, receiver);
 
         target.value = 2;
         target.value = 3;
@@ -66,8 +66,8 @@ export default class AsyncObserverSpec
 
         await scheduler.execution();
 
-        chai.assert.equal(hits, 1);
-        chai.assert.equal(target.value, receiver);
+        assert.equal(hits, 1);
+        assert.equal(target.value, receiver);
     }
 
     @test @shouldPass
@@ -84,15 +84,15 @@ export default class AsyncObserverSpec
         AsyncObserver.observe(target, ["value"], scheduler).subscribe(x => (receiver = x as string, hits++));
         AsyncObserver.observe(target, ["value", "length"], scheduler).subscribe(x => length = x as number);
 
-        chai.assert.equal(target.value, receiver);
+        assert.equal(target.value, receiver);
 
         target.value = "Hello World !!!";
         target.dispatchEvent(new Event("input"));
 
         await scheduler.execution();
 
-        chai.assert.equal(hits, 1);
-        chai.assert.equal(target.value, receiver);
-        chai.assert.equal(target.value.length, length);
+        assert.equal(hits, 1);
+        assert.equal(target.value, receiver);
+        assert.equal(target.value.length, length);
     }
 }

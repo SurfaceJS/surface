@@ -3,7 +3,7 @@ import "@surface/dom-shim";
 import { painting } from "@surface/htmlx";
 
 import { shouldPass, suite, test } from "@surface/test-suite";
-import chai                        from "chai";
+import { assert }                  from "chai";
 import element                     from "../internal/decorators/element.js";
 import HTMLXElement                from "../internal/htmlx-element.js";
 
@@ -19,7 +19,7 @@ export default class HTMLXElementSpec
 
         const instance = new Mock();
 
-        chai.assert.isOk(instance);
+        assert.isOk(instance);
     }
 
     @test @shouldPass
@@ -31,7 +31,7 @@ export default class HTMLXElementSpec
 
         const instance = new Mock();
 
-        chai.assert.isOk(instance);
+        assert.isOk(instance);
     }
 
     @test @shouldPass
@@ -47,13 +47,13 @@ export default class HTMLXElementSpec
         class Host extends HTMLXElement
         { }
 
-        chai.assert.isOk([Root, Host]); // Prevent unused warning.
+        assert.isOk([Root, Host]); // Prevent unused warning.
 
         const root = new Root();
         const host = root.shadowRoot.firstElementChild as HTMLXElement;
 
-        chai.assert.instanceOf(host.$listeners.click, Function);
-        chai.assert.equal(Object.entries(host.$listeners).length, 1);
+        assert.instanceOf(host.$listeners.click, Function);
+        assert.equal(Object.entries(host.$listeners).length, 1);
     }
 
     @test @shouldPass
@@ -69,21 +69,21 @@ export default class HTMLXElementSpec
         class Host extends HTMLXElement
         { }
 
-        chai.assert.isOk([Root, Host]); // Prevent unused warning.
+        assert.isOk([Root, Host]); // Prevent unused warning.
 
         const root = new Root();
         const host = root.shadowRoot.firstElementChild as HTMLXElement;
 
         await painting();
 
-        chai.assert.equal(host.$injections.length, 0);
+        assert.equal(host.$injections.length, 0);
 
         root.lang = "pt-br";
 
         await painting();
 
-        chai.assert.equal(host.$injections.length, 1);
-        chai.assert.equal(host.$injections[0], "default");
-        chai.assert.equal(host.shadowRoot!.querySelectorAll(".injected").length, 1);
+        assert.equal(host.$injections.length, 1);
+        assert.equal(host.$injections[0], "default");
+        assert.equal(host.shadowRoot!.querySelectorAll(".injected").length, 1);
     }
 }

@@ -1,7 +1,7 @@
 import type { ArrowFunctionExpression }  from "@surface/expression";
 import { Parser }                        from "@surface/expression";
 import { batchTest, shouldPass, suite }  from "@surface/test-suite";
-import chai                              from "chai";
+import { assert }                        from "chai";
 import ScopeRewriterVisitor              from "../internal/scope-rewriter-visitor.js";
 import { expressionsSeed, patternSeeds } from "./scope-rewriter-visitor-seed.spec.js";
 
@@ -15,7 +15,7 @@ export default class SourceGeneratorSpec
         const expression = Parser.parse(seed.source);
         const actual     = ScopeRewriterVisitor.rewriteExpression(expression).toString();
 
-        chai.assert.equal(actual, seed.expected);
+        assert.equal(actual, seed.expected);
     }
 
     @shouldPass
@@ -25,6 +25,6 @@ export default class SourceGeneratorSpec
         const expression = Parser.parse(`(${seed.source}) => 0`) as ArrowFunctionExpression;
         const actual     = ScopeRewriterVisitor.collectScope(expression.parameters[0]!).toString();
 
-        chai.assert.equal(actual, seed.expected);
+        assert.equal(actual, seed.expected);
     }
 }

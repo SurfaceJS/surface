@@ -1,6 +1,6 @@
 import type { IDisposable }                    from "@surface/core";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import chai                                    from "chai";
+import { assert }                              from "chai";
 import Container                               from "../internal/container.js";
 import inject                                  from "../internal/decorators/inject.js";
 import provide                                 from "../internal/decorators/provide.js";
@@ -30,7 +30,7 @@ export default class DependencyInjectionSpec
     {
         const instance = new Container().inject(class Mock { });
 
-        chai.assert.notEqual(instance, null, "instance notEqual null");
+        assert.notEqual(instance, null, "instance notEqual null");
     }
 
     @test @shouldPass
@@ -38,7 +38,7 @@ export default class DependencyInjectionSpec
     {
         const instance = new Container().inject(new class Mock { }());
 
-        chai.assert.notEqual(instance, null, "instance notEqual null");
+        assert.notEqual(instance, null, "instance notEqual null");
     }
 
     @test @shouldPass
@@ -94,12 +94,12 @@ export default class DependencyInjectionSpec
         const instance1 = container.inject(Mock);
         const instance2 = container.inject(Mock);
 
-        chai.assert.notEqual(container.resolve(MockA), container.resolve(MockA), "container.resolve(MockA) notEqual container.resolve(MockA)");
-        chai.assert.equal(instance1.b,    instance2.b,   "instance1.a equal instance1.b");
-        chai.assert.equal(instance1.a.c,  instance1.b.c, "instance1.a.c equal instance1.b.c");
-        chai.assert.equal(instance1.a.d,  instance1.b.d, "instance1.a.d equal instance1.b.d");
-        chai.assert.notEqual(instance1.c, instance2.c,   "instance1.c notEqual instance2.c");
-        chai.assert.notEqual(instance1.d, instance2.d,   "instance1.d notEqual instance2.d");
+        assert.notEqual(container.resolve(MockA), container.resolve(MockA), "container.resolve(MockA) notEqual container.resolve(MockA)");
+        assert.equal(instance1.b,    instance2.b,   "instance1.a equal instance1.b");
+        assert.equal(instance1.a.c,  instance1.b.c, "instance1.a.c equal instance1.b.c");
+        assert.equal(instance1.a.d,  instance1.b.d, "instance1.a.d equal instance1.b.d");
+        assert.notEqual(instance1.c, instance2.c,   "instance1.c notEqual instance2.c");
+        assert.notEqual(instance1.d, instance2.d,   "instance1.d notEqual instance2.d");
     }
 
     @test @shouldPass
@@ -114,7 +114,7 @@ export default class DependencyInjectionSpec
 
         container.registerSingleton("key", instance);
 
-        chai.assert.equal(instance, container.resolve(Mock), "instance equal container.resolve(Mock)");
+        assert.equal(instance, container.resolve(Mock), "instance equal container.resolve(Mock)");
     }
 
     @test @shouldPass
@@ -127,8 +127,8 @@ export default class DependencyInjectionSpec
             .registerTransient(Mock)
             .registerTransient(key, Mock);
 
-        chai.assert.notEqual(container.resolve(Mock), container.resolve(Mock), "container.resolve(Mock) notEqual container.resolve(Mock)");
-        chai.assert.notEqual(container.resolve(key), container.resolve(key), "container.resolve(key) notEqual container.resolve(key)");
+        assert.notEqual(container.resolve(Mock), container.resolve(Mock), "container.resolve(Mock) notEqual container.resolve(Mock)");
+        assert.notEqual(container.resolve(key), container.resolve(key), "container.resolve(key) notEqual container.resolve(key)");
     }
 
     @test @shouldPass
@@ -185,15 +185,15 @@ export default class DependencyInjectionSpec
         const instance1 = scope.inject(Mock);
         const instance2 = scope.inject(Mock);
 
-        chai.assert.notEqual(scope.resolve(MockA), scope.resolve(MockA), "scope.resolve(MockC) notEqual scope.resolve(MockC)");
-        chai.assert.equal(scope.resolve(MockB), scope.resolve(MockB), "scope.resolve(MockB) equal scope.resolve(MockB)");
-        chai.assert.equal(scope.resolve(MockC), scope.resolve(MockC), "scope.resolve(MockC) equal scope.resolve(MockC)");
-        chai.assert.equal(scope.resolve(MockD), scope.resolve(MockD), "scope.resolve(MockD) equal scope.resolve(MockD)");
-        chai.assert.equal(instance1.b,    instance2.b,   "instance1.a equal instance1.b");
-        chai.assert.equal(instance1.a.c,  instance1.b.c, "instance1.a.c equal instance1.b.c");
-        chai.assert.equal(instance1.a.d,  instance1.b.d, "instance1.a.d equal instance1.b.d");
-        chai.assert.notEqual(instance1.c, instance2.c,   "instance1.c notEqual instance2.c");
-        chai.assert.notEqual(instance1.d, instance2.d,   "instance1.d notEqual instance2.d");
+        assert.notEqual(scope.resolve(MockA), scope.resolve(MockA), "scope.resolve(MockC) notEqual scope.resolve(MockC)");
+        assert.equal(scope.resolve(MockB), scope.resolve(MockB), "scope.resolve(MockB) equal scope.resolve(MockB)");
+        assert.equal(scope.resolve(MockC), scope.resolve(MockC), "scope.resolve(MockC) equal scope.resolve(MockC)");
+        assert.equal(scope.resolve(MockD), scope.resolve(MockD), "scope.resolve(MockD) equal scope.resolve(MockD)");
+        assert.equal(instance1.b,    instance2.b,   "instance1.a equal instance1.b");
+        assert.equal(instance1.a.c,  instance1.b.c, "instance1.a.c equal instance1.b.c");
+        assert.equal(instance1.a.d,  instance1.b.d, "instance1.a.d equal instance1.b.d");
+        assert.notEqual(instance1.c, instance2.c,   "instance1.c notEqual instance2.c");
+        assert.notEqual(instance1.d, instance2.d,   "instance1.d notEqual instance2.d");
     }
 
     @test @shouldPass
@@ -206,7 +206,7 @@ export default class DependencyInjectionSpec
 
         parentContainer.registerSingleton(Mock);
 
-        chai.assert.equal(childContainer.resolve(Mock), parentContainer.resolve(Mock));
+        assert.equal(childContainer.resolve(Mock), parentContainer.resolve(Mock));
     }
 
     @test @shouldPass
@@ -214,21 +214,21 @@ export default class DependencyInjectionSpec
     {
         const instance1 = container.inject(InjectableMock);
 
-        chai.assert.instanceOf(instance1.foo, Foo);
-        chai.assert.instanceOf(instance1.bar, Bar);
-        chai.assert.instanceOf(instance1.baz, Baz);
-        chai.assert.instanceOf(instance1.qux, Qux);
+        assert.instanceOf(instance1.foo, Foo);
+        assert.instanceOf(instance1.bar, Bar);
+        assert.instanceOf(instance1.baz, Baz);
+        assert.instanceOf(instance1.qux, Qux);
 
         const instance2 = container.resolve<InjectableMock>("injectable-mock");
 
-        chai.assert.notEqual(instance1, instance2, "instance1 notEqual instance2");
-        chai.assert.deepEqual(instance1.foo,             instance2.foo, "instance1.foo         deepEqual instance2.foo");
-        chai.assert.deepEqual(instance1.foo.bar,         instance2.bar, "instance1.foo.bar     deepEqual instance2.bar");
-        chai.assert.deepEqual(instance1.foo.bar.baz,     instance2.baz, "instance1.foo.bar.baz deepEqual instance2.baz");
-        chai.assert.deepEqual(instance1.foo.bar.baz.qux, instance2.qux, "instance1.foo.bar.baz deepEqual instance2.baz");
-        chai.assert.deepEqual(instance1.bar,             instance2.bar, "instance1.bar         deepEqual instance2.bar");
-        chai.assert.deepEqual(instance1.baz,             instance2.baz, "instance1.baz         deepEqual instance2.baz");
-        chai.assert.deepEqual(instance1.qux,             instance2.qux, "instance1.qux         deepEqual instance2.qux");
+        assert.notEqual(instance1, instance2, "instance1 notEqual instance2");
+        assert.deepEqual(instance1.foo,             instance2.foo, "instance1.foo         deepEqual instance2.foo");
+        assert.deepEqual(instance1.foo.bar,         instance2.bar, "instance1.foo.bar     deepEqual instance2.bar");
+        assert.deepEqual(instance1.foo.bar.baz,     instance2.baz, "instance1.foo.bar.baz deepEqual instance2.baz");
+        assert.deepEqual(instance1.foo.bar.baz.qux, instance2.qux, "instance1.foo.bar.baz deepEqual instance2.baz");
+        assert.deepEqual(instance1.bar,             instance2.bar, "instance1.bar         deepEqual instance2.bar");
+        assert.deepEqual(instance1.baz,             instance2.baz, "instance1.baz         deepEqual instance2.baz");
+        assert.deepEqual(instance1.qux,             instance2.qux, "instance1.qux         deepEqual instance2.qux");
     }
 
     @test @shouldPass
@@ -263,10 +263,10 @@ export default class DependencyInjectionSpec
         container.registerSingleton(Base);
         container.registerSingleton(Derived);
 
-        chai.assert.equal(container.resolve(Base).value, baseValue);
-        chai.assert.equal(container.resolve(Base).property, propertyValue);
-        chai.assert.equal(container.resolve(Derived).value, derivedValue);
-        chai.assert.equal(container.resolve(Derived).property, propertyValue);
+        assert.equal(container.resolve(Base).value, baseValue);
+        assert.equal(container.resolve(Base).property, propertyValue);
+        assert.equal(container.resolve(Derived).value, derivedValue);
+        assert.equal(container.resolve(Derived).property, propertyValue);
     }
 
     @test @shouldPass
@@ -275,9 +275,9 @@ export default class DependencyInjectionSpec
         const instance1 = container.inject(new InjectableMock(new Foo(new Bar(new Baz(new Qux()))), new Bar(new Baz(new Qux()))));
         const instance2 = container.resolve<InjectableMock>("injectable-mock");
 
-        chai.assert.notEqual(instance1, instance2, "instance1 notEqual instance2");
-        chai.assert.equal(instance1.baz, instance2.baz, "instance1.baz equal instance2.baz");
-        chai.assert.equal(instance1.qux, instance2.qux, "instance1.qux equal instance2.qux");
+        assert.notEqual(instance1, instance2, "instance1 notEqual instance2");
+        assert.equal(instance1.baz, instance2.baz, "instance1.baz equal instance2.baz");
+        assert.equal(instance1.qux, instance2.qux, "instance1.qux equal instance2.qux");
     }
 
     @test @shouldPass
@@ -286,11 +286,11 @@ export default class DependencyInjectionSpec
         const instance1 = container.resolve<InjectableMock>("injectable-mock");
         const instance2 = container.resolve<InjectableMock>("injectable-mock");
 
-        chai.assert.equal(instance1, instance2, "instance1 equal instance2");
-        chai.assert.equal(instance1.foo, instance2.foo, "instance1.foo equal instance2.foo");
-        chai.assert.equal(instance1.bar, instance2.bar, "instance1.bar equal instance2.bar");
-        chai.assert.equal(instance1.baz, instance2.baz, "instance1.baz equal instance2.baz");
-        chai.assert.equal(instance1.qux, instance2.qux, "instance1.qux equal instance2.qux");
+        assert.equal(instance1, instance2, "instance1 equal instance2");
+        assert.equal(instance1.foo, instance2.foo, "instance1.foo equal instance2.foo");
+        assert.equal(instance1.bar, instance2.bar, "instance1.bar equal instance2.bar");
+        assert.equal(instance1.baz, instance2.baz, "instance1.baz equal instance2.baz");
+        assert.equal(instance1.qux, instance2.qux, "instance1.qux equal instance2.qux");
     }
 
     @test @shouldPass
@@ -299,11 +299,11 @@ export default class DependencyInjectionSpec
         const instance1 = container.resolve<InjectableMock>(SYMBOL_KEY);
         const instance2 = container.resolve<InjectableMock>(SYMBOL_KEY);
 
-        chai.assert.equal(instance1, instance2, "instance1 equal instance2");
-        chai.assert.equal(instance1.foo, instance2.foo, "instance1.foo equal instance2.foo");
-        chai.assert.equal(instance1.baz, instance2.baz, "instance1.bar equal instance2.bar");
-        chai.assert.equal(instance1.baz, instance2.baz, "instance1.baz equal instance2.baz");
-        chai.assert.equal(instance1.qux, instance2.qux, "instance1.qux equal instance2.qux");
+        assert.equal(instance1, instance2, "instance1 equal instance2");
+        assert.equal(instance1.foo, instance2.foo, "instance1.foo equal instance2.foo");
+        assert.equal(instance1.baz, instance2.baz, "instance1.bar equal instance2.bar");
+        assert.equal(instance1.baz, instance2.baz, "instance1.baz equal instance2.baz");
+        assert.equal(instance1.qux, instance2.qux, "instance1.qux equal instance2.qux");
     }
 
     @test @shouldPass
@@ -312,11 +312,11 @@ export default class DependencyInjectionSpec
         const instance1 = container.resolve(InjectableMock);
         const instance2 = container.resolve(InjectableMock);
 
-        chai.assert.equal(instance1, instance2, "instance1 equal instance2");
-        chai.assert.equal(instance1.foo, instance2.foo, "instance1.foo equal instance2.foo");
-        chai.assert.equal(instance1.baz, instance2.baz, "instance1.bar equal instance2.bar");
-        chai.assert.equal(instance1.baz, instance2.baz, "instance1.baz equal instance2.baz");
-        chai.assert.equal(instance1.qux, instance2.qux, "instance1.qux equal instance2.qux");
+        assert.equal(instance1, instance2, "instance1 equal instance2");
+        assert.equal(instance1.foo, instance2.foo, "instance1.foo equal instance2.foo");
+        assert.equal(instance1.baz, instance2.baz, "instance1.bar equal instance2.bar");
+        assert.equal(instance1.baz, instance2.baz, "instance1.baz equal instance2.baz");
+        assert.equal(instance1.qux, instance2.qux, "instance1.qux equal instance2.qux");
     }
 
     @test @shouldPass
@@ -325,11 +325,11 @@ export default class DependencyInjectionSpec
         const instance1 = container.resolve<InjectableMock>("factory");
         const instance2 = container.resolve(InjectableMock);
 
-        chai.assert.notEqual(instance1, instance2, "instance1 equal instance2");
-        chai.assert.equal(instance1.foo, instance2.foo, "instance1.foo equal instance2.foo");
-        chai.assert.equal(instance1.baz, instance2.baz, "instance1.bar equal instance2.bar");
-        chai.assert.equal(instance1.baz, instance2.baz, "instance1.baz equal instance2.baz");
-        chai.assert.equal(instance1.qux, instance2.qux, "instance1.qux equal instance2.qux");
+        assert.notEqual(instance1, instance2, "instance1 equal instance2");
+        assert.equal(instance1.foo, instance2.foo, "instance1.foo equal instance2.foo");
+        assert.equal(instance1.baz, instance2.baz, "instance1.bar equal instance2.bar");
+        assert.equal(instance1.baz, instance2.baz, "instance1.baz equal instance2.baz");
+        assert.equal(instance1.qux, instance2.qux, "instance1.qux equal instance2.qux");
     }
 
     @test @shouldPass
@@ -375,10 +375,10 @@ export default class DependencyInjectionSpec
 
         const instance = root.inject(Mock);
 
-        chai.assert.instanceOf(instance.rootA, A, "instance.rootA instanceOf RootA");
-        chai.assert.instanceOf(instance.rootB, RootB, "instance.rootB instanceOf RootB");
-        chai.assert.instanceOf(instance.a, A, "instance.a instanceOf A");
-        chai.assert.instanceOf(instance.b, B, "instance.b instanceOf B");
+        assert.instanceOf(instance.rootA, A, "instance.rootA instanceOf RootA");
+        assert.instanceOf(instance.rootB, RootB, "instance.rootB instanceOf RootB");
+        assert.instanceOf(instance.a, A, "instance.a instanceOf A");
+        assert.instanceOf(instance.b, B, "instance.b instanceOf B");
     }
 
     @test @shouldPass
@@ -399,19 +399,19 @@ export default class DependencyInjectionSpec
 
         const instance = container.resolve(Mock);
 
-        chai.assert.isFalse(instance.disposed);
+        assert.isFalse(instance.disposed);
 
         container.dispose();
 
-        chai.assert.isTrue(instance.disposed);
+        assert.isTrue(instance.disposed);
     }
 
     @test @shouldFail
     public resolveInvalidKey(): void
     {
-        chai.assert.throws(() => container.resolve(class Foo { }), Error, "Cannot resolve entry for the key Foo");
-        chai.assert.throws(() => container.resolve(Symbol("s")),   Error, "Cannot resolve entry for the key Symbol(s)");
-        chai.assert.throws(() => container.resolve("$"),           Error, "Cannot resolve entry for the key $");
+        assert.throws(() => container.resolve(class Foo { }), Error, "Cannot resolve entry for the key Foo");
+        assert.throws(() => container.resolve(Symbol("s")),   Error, "Cannot resolve entry for the key Symbol(s)");
+        assert.throws(() => container.resolve("$"),           Error, "Cannot resolve entry for the key $");
     }
 
     @test @shouldFail
@@ -433,7 +433,7 @@ export default class DependencyInjectionSpec
             .registerSingleton(MockA)
             .registerSingleton("mock-b", MockB);
 
-        chai.assert.throws(() => container.resolve(MockA), Error, "Circularity dependency to the key: [function MockA]");
-        chai.assert.throws(() => container.resolve("mock-b"), Error, "Circularity dependency to the key: mock-b");
+        assert.throws(() => container.resolve(MockA), Error, "Circularity dependency to the key: [function MockA]");
+        assert.throws(() => container.resolve("mock-b"), Error, "Circularity dependency to the key: mock-b");
     }
 }

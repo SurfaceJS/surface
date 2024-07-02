@@ -1,6 +1,6 @@
 import Mock, { It }                                                              from "@surface/mock";
 import { afterEach, batchTest, beforeEach, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import chai                                                                      from "chai";
+import { assert, use }                                                           from "chai";
 import chaiAsPromised                                                            from "chai-as-promised";
 import libnpmpublish                                                             from "libnpmpublish";
 import pacote                                                                    from "pacote";
@@ -8,7 +8,7 @@ import { untar }                                                                
 import NpmService                                                                from "../internal/npm-service.js";
 import { type HasChangesScenario, scenarios }                                    from "./npm-service.has-changes.scn.js";
 
-chai.use(chaiAsPromised);
+use(chaiAsPromised);
 
 const libnpmpublishMock = Mock.of(libnpmpublish);
 const pacoteMock        = Mock.of(pacote);
@@ -58,9 +58,9 @@ export default class SuiteSpec
 
         const service = new NpmService();
 
-        chai.assert.deepEqual(await service.get(FOO_404), null);
-        chai.assert.deepEqual(await service.get(FOO_ETARGET), null);
-        chai.assert.deepEqual(await service.get(FOO_LATEST), { name: "foo" } as Manifest);
+        assert.deepEqual(await service.get(FOO_404), null);
+        assert.deepEqual(await service.get(FOO_ETARGET), null);
+        assert.deepEqual(await service.get(FOO_LATEST), { name: "foo" } as Manifest);
     }
 
     @test @shouldPass
@@ -70,7 +70,7 @@ export default class SuiteSpec
 
         const service = new NpmService();
 
-        chai.assert.deepEqual(await service.isPublished({ name: "foo", version: "1.0.0" }), true);
+        assert.deepEqual(await service.isPublished({ name: "foo", version: "1.0.0" }), true);
     }
 
     @shouldPass
@@ -96,7 +96,7 @@ export default class SuiteSpec
 
         const service = new NpmService();
 
-        chai.assert.deepEqual(await service.hasChanges(LOCAL, REMOTE, scenario.options), scenario.expected);
+        assert.deepEqual(await service.hasChanges(LOCAL, REMOTE, scenario.options), scenario.expected);
     }
 
     @test @shouldPass
@@ -108,7 +108,7 @@ export default class SuiteSpec
 
         const service = new NpmService();
 
-        await chai.assert.isFulfilled(service.publish({ name: "foo", version: "1.0.0" }, Buffer.from([])));
+        await assert.isFulfilled(service.publish({ name: "foo", version: "1.0.0" }, Buffer.from([])));
     }
 
     @test @shouldPass
@@ -120,7 +120,7 @@ export default class SuiteSpec
 
         const service = new NpmService();
 
-        await chai.assert.isFulfilled(service.unpublish("foo@1.0.0"));
+        await assert.isFulfilled(service.unpublish("foo@1.0.0"));
     }
 
     @test @shouldFail
@@ -130,7 +130,7 @@ export default class SuiteSpec
 
         const service = new NpmService();
 
-        await chai.assert.isRejected(service.get("foo"));
+        await assert.isRejected(service.get("foo"));
     }
 
     @test @shouldFail
@@ -142,7 +142,7 @@ export default class SuiteSpec
 
         const service = new NpmService();
 
-        await chai.assert.isRejected(service.publish({ name: "foo", version: "1.0.0" }, Buffer.from([])), /Failed to publish package foo/);
+        await assert.isRejected(service.publish({ name: "foo", version: "1.0.0" }, Buffer.from([])), /Failed to publish package foo/);
     }
 
     @test @shouldFail
@@ -154,6 +154,6 @@ export default class SuiteSpec
 
         const service = new NpmService();
 
-        await chai.assert.isRejected(service.unpublish("foo@1.0.0"), /Failed to unpublish package foo/);
+        await assert.isRejected(service.unpublish("foo@1.0.0"), /Failed to unpublish package foo/);
     }
 }

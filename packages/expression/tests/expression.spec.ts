@@ -1,6 +1,5 @@
-import { assert }                                                  from "@surface/core";
 import { batchTest, shouldFail, shouldPass, suite, test }          from "@surface/test-suite";
-import chai                                                        from "chai";
+import { assert }                                                  from "chai";
 import ArrowFunctionExpression                                     from "../internal/expressions/arrow-function-expression.js";
 import Identifier                                                  from "../internal/expressions/identifier.js";
 import Literal                                                     from "../internal/expressions/literal.js";
@@ -22,8 +21,8 @@ export default class ExpressionSpec
     {
         const expression = expressionFactoryExpected.factory();
 
-        chai.assert.equal(expression.type, expressionFactoryExpected.type);
-        chai.assert.equal(expression.toString(), expressionFactoryExpected.toString);
+        assert.equal(expression.type, expressionFactoryExpected.type);
+        assert.equal(expression.toString(), expressionFactoryExpected.toString);
 
         const clone = expression.clone();
 
@@ -33,7 +32,7 @@ export default class ExpressionSpec
             clone.toString = expression.toString;
         }
 
-        chai.assert.deepEqual(expression, clone);
+        assert.deepEqual(expression, clone);
     }
 
     @test @shouldPass
@@ -41,7 +40,7 @@ export default class ExpressionSpec
     {
         const expression = Parser.parse("this");
 
-        chai.assert.equal(expression.type, NodeType.ThisExpression);
+        assert.equal(expression.type, NodeType.ThisExpression);
     }
 
     @shouldFail
@@ -58,7 +57,7 @@ export default class ExpressionSpec
         {
             assert(error instanceof Error);
 
-            chai.assert.equal(error.message, evaluationErrorExpected.error.message);
+            assert.equal(error.message, evaluationErrorExpected.error.message);
         }
     }
 
@@ -69,6 +68,6 @@ export default class ExpressionSpec
         const body          = new Identifier("x");
         const arrowFunction = new ArrowFunctionExpression(parameters, body);
 
-        chai.assert.throws(arrowFunction.evaluate({ }) as () => void, Messages.illegalPropertyInDeclarationContext);
+        assert.throws(arrowFunction.evaluate({ }) as () => void, Messages.illegalPropertyInDeclarationContext);
     }
 }

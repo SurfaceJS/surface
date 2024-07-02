@@ -2,12 +2,11 @@ import { type Stats, existsSync }                                               
 import { readFile, readdir, stat, writeFile }                                        from "fs/promises";
 import path, { relative, resolve }                                                   from "path";
 import type { PackageJson as _PackageJson }                                          from "@npm/types";
-import { assert }                                                                    from "@surface/core";
 import Logger                                                                        from "@surface/logger";
 import Mock, { It }                                                                  from "@surface/mock";
 import { execute }                                                                   from "@surface/rwx";
 import { afterEach, batchTest, beforeEach, shouldFail, shouldPass, suite, test }     from "@surface/test-suite";
-import chai                                                                          from "chai";
+import { assert, use }                                                               from "chai";
 import chaiAsPromised                                                                from "chai-as-promised";
 import pack                                                                          from "libnpmpack";
 import { changelog, getEnv, recommendedBump, timestamp }                             from "../internal/common.js";
@@ -37,7 +36,7 @@ import type VirtualRegistry  from "./types/virtual-registry.js";
 
 type PackageJson = _PackageJson & { workspaces?: string[] };
 
-chai.use(chaiAsPromised);
+use(chaiAsPromised);
 
 const addTagMock             = Mock.of(addTag);
 const changelogMock          = Mock.of(changelog);
@@ -291,9 +290,9 @@ export default class PublisherSpec
                 },
             );
 
-        await chai.assert.isFulfilled(new Publisher(scenario.options).bump(...scenario.args));
+        await assert.isFulfilled(new Publisher(scenario.options).bump(...scenario.args));
 
-        chai.assert.deepEqual(actual, scenario.expected);
+        assert.deepEqual(actual, scenario.expected);
     }
 
     @batchTest(validChangedScenarios, x => `[changed]: ${x.message}`, x => x.skip)
@@ -304,7 +303,7 @@ export default class PublisherSpec
 
         const actual = await new Publisher(scenario.options).changed(...scenario.args);
 
-        chai.assert.deepEqual(actual, scenario.expected);
+        assert.deepEqual(actual, scenario.expected);
     }
 
     @batchTest(validPublishScenarios, x => `[publish]: ${x.message}`, x => x.skip)
@@ -321,9 +320,9 @@ export default class PublisherSpec
             .callback(x => actual.push(`${x.name}@${x.version}`))
             .resolve();
 
-        await chai.assert.isFulfilled(new Publisher(scenario.options).publish(...scenario.args));
+        await assert.isFulfilled(new Publisher(scenario.options).publish(...scenario.args));
 
-        chai.assert.deepEqual(actual, scenario.expected.published);
+        assert.deepEqual(actual, scenario.expected.published);
     }
 
     @batchTest(validUnpublishScenarios, x => `[unpublish]: ${x.message}`, x => x.skip)
@@ -338,9 +337,9 @@ export default class PublisherSpec
             .callback(x => actual.push(x))
             .resolve();
 
-        await chai.assert.isFulfilled(new Publisher(scenario.options).unpublish());
+        await assert.isFulfilled(new Publisher(scenario.options).unpublish());
 
-        chai.assert.deepEqual(actual, scenario.expected.unpublished);
+        assert.deepEqual(actual, scenario.expected.unpublished);
     }
 
     @batchTest(invalidBumpScenarios, x => `[bump]: ${x.message}`, x => x.skip)
@@ -351,7 +350,7 @@ export default class PublisherSpec
 
         writeFileMock.call(It.any(), It.any()).resolve();
 
-        await chai.assert.isRejected(new Publisher(scenario.options).bump(...scenario.args));
+        await assert.isRejected(new Publisher(scenario.options).bump(...scenario.args));
     }
 
     @test("[bump]: Try commit dirty working tree")
@@ -367,7 +366,7 @@ export default class PublisherSpec
 
         this.setup({ directory, registry: { } });
 
-        await chai.assert.isRejected(new Publisher({ }).bump("major", undefined, undefined, { commit: true }));
+        await assert.isRejected(new Publisher({ }).bump("major", undefined, undefined, { commit: true }));
     }
 
     @test("[publish]: Publishing should fail")
@@ -385,7 +384,7 @@ export default class PublisherSpec
 
         writeFileMock.call(It.any(), It.any()).resolve();
 
-        await chai.assert.isRejected(new Publisher({ packages: ["packages/*"] }).publish());
+        await assert.isRejected(new Publisher({ packages: ["packages/*"] }).publish());
     }
 
     @test("[unpublish]: Unpublishing should fail")
@@ -401,6 +400,6 @@ export default class PublisherSpec
 
         npmServiceMock.setup("unpublish").call(It.any()).reject();
 
-        await chai.assert.isRejected(new Publisher({ packages: ["packages/*"] }).unpublish());
+        await assert.isRejected(new Publisher({ packages: ["packages/*"] }).unpublish());
     }
 }

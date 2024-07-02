@@ -2,7 +2,7 @@
 /* eslint-disable array-bracket-spacing */
 /* eslint-disable sort-keys */
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import chai                                    from "chai";
+import { assert }                         from "chai";
 import
 {
     DeepMergeFlags,
@@ -21,97 +21,97 @@ export default class CommonObjectSpec
     @test @shouldPass
     public deepEqual(): void
     {
-        chai.assert.isTrue(deepEqual(1, 1), "deepEqual(1, 1) isTrue");
-        chai.assert.isFalse(deepEqual(null, undefined), "deepEqual(null, undefined) isFalse");
+        assert.isTrue(deepEqual(1, 1), "deepEqual(1, 1) isTrue");
+        assert.isFalse(deepEqual(null, undefined), "deepEqual(null, undefined) isFalse");
 
         const objectLeft  = { value: 1, regex: /abc/g, date: new Date(0) };
         const objectRight = { value: 1, regex: /abc/g, date: new Date(0) };
 
-        chai.assert.isTrue(deepEqual(objectLeft, objectLeft), "deepEqual(objectLeft, objectLeft) isTrue");
-        chai.assert.isTrue(deepEqual(objectLeft, objectRight), "deepEqual(objectLeft, objectRight) isTrue");
+        assert.isTrue(deepEqual(objectLeft, objectLeft), "deepEqual(objectLeft, objectLeft) isTrue");
+        assert.isTrue(deepEqual(objectLeft, objectRight), "deepEqual(objectLeft, objectRight) isTrue");
 
         class Mock { public value: number = 1; }
 
         const mockLeft  = new Mock();
         const mockRight = new Mock();
 
-        chai.assert.isFalse(deepEqual(mockLeft, { value: 1 }), "deepEqual(mockLeft, mockRight) isFalse");
-        chai.assert.isTrue(deepEqual(mockLeft, mockRight), "deepEqual(mockLeft, mockRight) isTrue");
+        assert.isFalse(deepEqual(mockLeft, { value: 1 }), "deepEqual(mockLeft, mockRight) isFalse");
+        assert.isTrue(deepEqual(mockLeft, mockRight), "deepEqual(mockLeft, mockRight) isTrue");
 
         const nestedObjectLeft  = { value: { value: 1 } };
         const nestedObjectRight = { value: { value: 1 } };
 
-        chai.assert.isTrue(deepEqual(nestedObjectLeft, nestedObjectRight), "deepEqual(nestedObjectLeft, nestedObjectRight) isTrue");
+        assert.isTrue(deepEqual(nestedObjectLeft, nestedObjectRight), "deepEqual(nestedObjectLeft, nestedObjectRight) isTrue");
 
         const arrayLeft  = [1, 2, 3];
         const arrayRight = [1, 2, 3];
 
-        chai.assert.isTrue(deepEqual(arrayLeft, arrayRight), "deepEqual(arrayLeft, arrayRight) isTrue");
+        assert.isTrue(deepEqual(arrayLeft, arrayRight), "deepEqual(arrayLeft, arrayRight) isTrue");
 
         const setLeft  = new Set([1, 2, 3]);
         const setRight = new Set([1, 2, 3]);
 
-        chai.assert.isTrue(deepEqual(setLeft, setRight), "deepEqual(setLeft, setRight) isTrue");
+        assert.isTrue(deepEqual(setLeft, setRight), "deepEqual(setLeft, setRight) isTrue");
 
         const mapLeft  = new Map([[1, 1], [2, 2], [3, 3]]);
         const mapRight = new Map([[1, 1], [2, 2], [3, 3]]);
 
-        chai.assert.isTrue(deepEqual(mapLeft, mapRight), "deepEqual(mapLeft, mapRight) isTrue");
+        assert.isTrue(deepEqual(mapLeft, mapRight), "deepEqual(mapLeft, mapRight) isTrue");
 
         const nestedArrayLeft  = [[1]];
         const nestedArrayRight = [[1]];
 
-        chai.assert.isTrue(deepEqual(nestedArrayLeft, nestedArrayRight), "deepEqual(nestedArrayLeft, nestedArrayRight) isTrue");
+        assert.isTrue(deepEqual(nestedArrayLeft, nestedArrayRight), "deepEqual(nestedArrayLeft, nestedArrayRight) isTrue");
 
         const objectWithArrayLeft  = { value: [1] };
         const objectWithArrayRight = { value: [1] };
 
-        chai.assert.isTrue(deepEqual(objectWithArrayLeft, objectWithArrayRight), "deepEqual(objectWithArrayLeft, objectWithArrayRight) isTrue");
+        assert.isTrue(deepEqual(objectWithArrayLeft, objectWithArrayRight), "deepEqual(objectWithArrayLeft, objectWithArrayRight) isTrue");
 
         const arrayWithObjectLeft  = [{ value: [1] }];
         const arrayWithObjectRight = [{ value: [1] }];
 
-        chai.assert.isTrue(deepEqual(arrayWithObjectLeft, arrayWithObjectRight), "deepEqual(arrayWithObjectLeft, arrayWithObjectRight) isTrue");
+        assert.isTrue(deepEqual(arrayWithObjectLeft, arrayWithObjectRight), "deepEqual(arrayWithObjectLeft, arrayWithObjectRight) isTrue");
 
         const complexLeft  = [1, true, "string", undefined, null, { a: "a", b: { value: [{ value: "1" }] } }];
         const complexRight = [1, true, "string", undefined, null, { a: "a", b: { value: [{ value: "1" }] } }];
 
-        chai.assert.isTrue(deepEqual(complexLeft, complexRight), "deepEqual(complexLeft, complexRight) isTrue");
+        assert.isTrue(deepEqual(complexLeft, complexRight), "deepEqual(complexLeft, complexRight) isTrue");
 
         const notObjectLeft: object  = { value: 1 };
         const notObjectRight: object = { value1: 1 };
 
-        chai.assert.isFalse(deepEqual(notObjectLeft, notObjectRight), "deepEqual(notObjectLeft, notObjectRight) isFalse");
+        assert.isFalse(deepEqual(notObjectLeft, notObjectRight), "deepEqual(notObjectLeft, notObjectRight) isFalse");
 
         const arrayWithDifferentValuesLeft  = [1, 2, 3];
         const arrayWithDifferentValuesRight = [1, 3, 3];
 
-        chai.assert.isFalse(deepEqual(arrayWithDifferentValuesLeft, arrayWithDifferentValuesRight), "deepEqual(arrayWithDifferentValuesLeft, arrayWithDifferentValuesRight) isFalse");
+        assert.isFalse(deepEqual(arrayWithDifferentValuesLeft, arrayWithDifferentValuesRight), "deepEqual(arrayWithDifferentValuesLeft, arrayWithDifferentValuesRight) isFalse");
 
         const arrayWithDifferentSizeLeft  = [1, 2];
         const arrayWithDifferentSizeRight = [1, 2, 3];
 
-        chai.assert.isFalse(deepEqual(arrayWithDifferentSizeLeft, arrayWithDifferentSizeRight), "deepEqual(arrayWithDifferentSizeLeft, arrayWithDifferentSizeRight) isFalse");
+        assert.isFalse(deepEqual(arrayWithDifferentSizeLeft, arrayWithDifferentSizeRight), "deepEqual(arrayWithDifferentSizeLeft, arrayWithDifferentSizeRight) isFalse");
 
         const setWithDifferentValuesLeft  = new Set([1, 2, 3]);
         const setWithDifferentValuesRight = new Set([1, 3, 3]);
 
-        chai.assert.isFalse(deepEqual(setWithDifferentValuesLeft, setWithDifferentValuesRight), "deepEqual(setWithDifferentValuesLeft, setWithDifferentValuesRight) isFalse");
+        assert.isFalse(deepEqual(setWithDifferentValuesLeft, setWithDifferentValuesRight), "deepEqual(setWithDifferentValuesLeft, setWithDifferentValuesRight) isFalse");
 
         const setWithDifferentSizeLeft  = new Set([1, 2]);
         const setWithDifferentSizeRight = new Set([1, 2, 3]);
 
-        chai.assert.isFalse(deepEqual(setWithDifferentSizeLeft, setWithDifferentSizeRight), "deepEqual(setWithDifferentSizeLeft, setWithDifferentSizeRight) isFalse");
+        assert.isFalse(deepEqual(setWithDifferentSizeLeft, setWithDifferentSizeRight), "deepEqual(setWithDifferentSizeLeft, setWithDifferentSizeRight) isFalse");
 
         const mapWithDifferentValuesLeft  = new Map([[1, 1], [2, 2], [3, 3]]);
         const mapWithDifferentValuesRight = new Map([[1, 1], [2, 2], [4, 3]]);
 
-        chai.assert.isFalse(deepEqual(mapWithDifferentValuesLeft, mapWithDifferentValuesRight), "deepEqual(mapWithDifferentValuesLeft, mapWithDifferentValuesRight) isFalse");
+        assert.isFalse(deepEqual(mapWithDifferentValuesLeft, mapWithDifferentValuesRight), "deepEqual(mapWithDifferentValuesLeft, mapWithDifferentValuesRight) isFalse");
 
         const mapWithDifferentSizeLeft  = new Map([[1, 1], [2, 2]]);
         const mapWithDifferentSizeRight = new Map([[1, 1], [2, 2], [3, 3]]);
 
-        chai.assert.isFalse(deepEqual(mapWithDifferentSizeLeft, mapWithDifferentSizeRight), "deepEqual(mapWithDifferentSizeLeft, mapWithDifferentSizeRight) isFalse");
+        assert.isFalse(deepEqual(mapWithDifferentSizeLeft, mapWithDifferentSizeRight), "deepEqual(mapWithDifferentSizeLeft, mapWithDifferentSizeRight) isFalse");
     }
 
     @test @shouldPass
@@ -126,7 +126,7 @@ export default class CommonObjectSpec
 
         const actual = merge([left, right]);
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -141,7 +141,7 @@ export default class CommonObjectSpec
 
         const actual = merge([left, right], { e: "protected" });
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -156,7 +156,7 @@ export default class CommonObjectSpec
 
         const actual = merge([left, right]);
 
-        chai.assert.deepEqual(actual, expect);
+        assert.deepEqual(actual, expect);
     }
 
     @test @shouldPass
@@ -171,7 +171,7 @@ export default class CommonObjectSpec
 
         const actual = merge([left, right], { a: [, , "protected"], b: "protected", c: ["protected", "merge"] });
 
-        chai.assert.deepEqual(actual, expect);
+        assert.deepEqual(actual, expect);
     }
 
     @test @shouldPass
@@ -186,7 +186,7 @@ export default class CommonObjectSpec
 
         const actual = merge([left, right], { a: "merge", b: "...merge", c: [ , "merge"] });
 
-        chai.assert.deepEqual(actual, expect);
+        assert.deepEqual(actual, expect);
     }
 
     @test @shouldPass
@@ -201,7 +201,7 @@ export default class CommonObjectSpec
 
         const actual = merge([left, right], { a: "append" });
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -216,7 +216,7 @@ export default class CommonObjectSpec
 
         const actual = merge([left, right], { a: "prepend" });
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -231,7 +231,7 @@ export default class CommonObjectSpec
 
         const actual = merge([left, right], { a: [ , "match"], b: { id: "match" }, c: [, { id: "match" }, (a, b) => a.id == b.id ? b : a] });
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -246,7 +246,7 @@ export default class CommonObjectSpec
 
         const actual = merge([left, right], { a: [ , "match"], b: { id: "match" }, c: [, { id: "match" }, (a, b) => a?.id == 0 ? b : a] });
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -261,7 +261,7 @@ export default class CommonObjectSpec
 
         const actual = merge([left, right], { a: "match" });
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -276,7 +276,7 @@ export default class CommonObjectSpec
 
         const actual = merge([left, right], { a: "match" });
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -291,7 +291,7 @@ export default class CommonObjectSpec
 
         const actual = merge([left, right], { a: "match", b: { c: "match" } });
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     // @test @shouldPass
@@ -306,7 +306,7 @@ export default class CommonObjectSpec
 
     //     const actual = merge([left, right], { a: { aa: "replace" } });
 
-    //     chai.assert.deepEqual(actual, expected);
+    //     assert.deepEqual(actual, expected);
     // }
 
     @test @shouldPass
@@ -321,7 +321,7 @@ export default class CommonObjectSpec
 
         const actual = merge([left, right], { b: { c: "match" } });
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -333,7 +333,7 @@ export default class CommonObjectSpec
 
         const actual = deepMerge([left, right]);
 
-        chai.assert.deepEqual(actual, expect);
+        assert.deepEqual(actual, expect);
     }
 
     @test @shouldPass
@@ -345,7 +345,7 @@ export default class CommonObjectSpec
 
         const actual = deepMerge([left, right], DeepMergeFlags.IgnoreUndefined);
 
-        chai.assert.deepEqual(actual, expect);
+        assert.deepEqual(actual, expect);
     }
 
     @test @shouldPass
@@ -358,7 +358,7 @@ export default class CommonObjectSpec
 
         const expect = { values: [1, 2, 3, 4, 5, 6] };
 
-        chai.assert.deepEqual(actual, expect);
+        assert.deepEqual(actual, expect);
     }
 
     @test @shouldPass
@@ -371,7 +371,7 @@ export default class CommonObjectSpec
 
         const expect = { values: [1, 2, 3, 4, 5, 6] };
 
-        chai.assert.deepEqual(actual, expect);
+        assert.deepEqual(actual, expect);
     }
 
     @test @shouldPass
@@ -386,7 +386,7 @@ export default class CommonObjectSpec
         // eslint-disable-next-line sort-keys
         const expect = { values: [{ zero: 0 }, { one: 1, two: 2, three: 3 }, { four: 4, five: 5, six: 6 }] };
 
-        chai.assert.deepEqual(actual, expect);
+        assert.deepEqual(actual, expect);
     }
 
     @test @shouldPass
@@ -400,7 +400,7 @@ export default class CommonObjectSpec
 
         const expect = { a: 1, b: "2", c: { d: 3, e: true }, f: [1], g: { } };
 
-        chai.assert.deepEqual(actual, expect);
+        assert.deepEqual(actual, expect);
     }
 
     @test @shouldPass
@@ -422,7 +422,7 @@ export default class CommonObjectSpec
             foo: 0,
         };
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -434,7 +434,7 @@ export default class CommonObjectSpec
 
         const actual = makePath(source);
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -446,7 +446,7 @@ export default class CommonObjectSpec
 
         const actual = makePath(source, { keySeparator: "-", valueSeparator: " = " });
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -458,14 +458,14 @@ export default class CommonObjectSpec
 
         const proxy = proxyFrom(instanceA, instanceB, instanceC);
 
-        chai.assert.equal(proxy.a,                  1,            "proxy.a");
-        chai.assert.equal(proxy.b,                  "two",        "proxy.b");
-        chai.assert.equal(proxy.c,                  false,        "proxy.c");
-        chai.assert.equal(proxy.d,                  null,         "proxy.d");
-        chai.assert.deepEqual(proxy.e,              [0],          "proxy.e");
-        chai.assert.deepEqual(proxy.f,              { value: 1 }, "proxy.f");
-        chai.assert.deepEqual(proxy.g,              "G",          "proxy.g");
-        chai.assert.deepEqual((proxy as Indexer).h, undefined,    "proxy.h");
+        assert.equal(proxy.a,                  1,            "proxy.a");
+        assert.equal(proxy.b,                  "two",        "proxy.b");
+        assert.equal(proxy.c,                  false,        "proxy.c");
+        assert.equal(proxy.d,                  null,         "proxy.d");
+        assert.deepEqual(proxy.e,              [0],          "proxy.e");
+        assert.deepEqual(proxy.f,              { value: 1 }, "proxy.f");
+        assert.deepEqual(proxy.g,              "G",          "proxy.g");
+        assert.deepEqual((proxy as Indexer).h, undefined,    "proxy.h");
 
         proxy.a = 2;
         proxy.b = "three";
@@ -478,25 +478,25 @@ export default class CommonObjectSpec
 
         const merge = { bar: 2, foo: 1, ...proxy };
 
-        chai.assert.equal(merge.a,       2,             "merge.a");
-        chai.assert.equal(merge.b,       "three",       "merge.b");
-        chai.assert.equal(merge.c,       true,          "merge.c");
-        chai.assert.equal(merge.d,       null,          "merge.d");
-        chai.assert.deepEqual(merge.e,   [1, 2],        "merge.e");
-        chai.assert.deepEqual(merge.f,   { value: 3 },  "merge.f");
-        chai.assert.deepEqual(merge.g,   "g",           "merge.g");
-        chai.assert.deepEqual(merge.foo, 1,             "merge.foo");
-        chai.assert.deepEqual(merge.bar, 2,             "merge.bar");
-        chai.assert.deepEqual((merge as Indexer).h, 10, "merge.h");
+        assert.equal(merge.a,       2,             "merge.a");
+        assert.equal(merge.b,       "three",       "merge.b");
+        assert.equal(merge.c,       true,          "merge.c");
+        assert.equal(merge.d,       null,          "merge.d");
+        assert.deepEqual(merge.e,   [1, 2],        "merge.e");
+        assert.deepEqual(merge.f,   { value: 3 },  "merge.f");
+        assert.deepEqual(merge.g,   "g",           "merge.g");
+        assert.deepEqual(merge.foo, 1,             "merge.foo");
+        assert.deepEqual(merge.bar, 2,             "merge.bar");
+        assert.deepEqual((merge as Indexer).h, 10, "merge.h");
 
         const descriptors = Object.getOwnPropertyDescriptors(proxy);
 
-        chai.assert.notEqual(descriptors.a, undefined);
-        chai.assert.notEqual(descriptors.b, undefined);
-        chai.assert.notEqual(descriptors.c, undefined);
-        chai.assert.notEqual(descriptors.d, undefined);
-        chai.assert.notEqual(descriptors.e, undefined);
-        chai.assert.notEqual(descriptors.f, undefined);
-        chai.assert.notEqual(descriptors.g, undefined);
+        assert.notEqual(descriptors.a, undefined);
+        assert.notEqual(descriptors.b, undefined);
+        assert.notEqual(descriptors.c, undefined);
+        assert.notEqual(descriptors.d, undefined);
+        assert.notEqual(descriptors.e, undefined);
+        assert.notEqual(descriptors.f, undefined);
+        assert.notEqual(descriptors.g, undefined);
     }
 }

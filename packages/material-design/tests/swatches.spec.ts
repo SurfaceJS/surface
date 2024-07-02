@@ -1,6 +1,6 @@
 /* eslint-disable sort-keys */
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import chai                                    from "chai";
+import { assert }                              from "chai";
 import { interpolateSwatches, scaleSwatches }  from "../internal/colors/swatches.js";
 import type Swatch                             from "../internal/types/swatch.js";
 
@@ -27,7 +27,7 @@ export default class SwatchesSpec
 
         const actual = Array.from(interpolateSwatches(swatches));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -49,7 +49,7 @@ export default class SwatchesSpec
 
         const actual = Array.from(interpolateSwatches(swatches, { start: 1, end: 5 }));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -71,7 +71,7 @@ export default class SwatchesSpec
 
         const actual = Array.from(interpolateSwatches(swatches, { start: 1, end: 5 }));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -95,7 +95,7 @@ export default class SwatchesSpec
 
         const actual = Array.from(interpolateSwatches(swatches, { start: 1, end: 7 }));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -118,7 +118,7 @@ export default class SwatchesSpec
 
         const actual = Array.from(interpolateSwatches(swatches, { start: 1, end: 5 }));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -156,7 +156,7 @@ export default class SwatchesSpec
 
         const actual = Array.from(interpolateSwatches(swatches, { start: 1, end: 17 }));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -176,18 +176,18 @@ export default class SwatchesSpec
 
         const actual = scaleSwatches(swatches, 0.5);
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
     public emptySwatches(): void
     {
-        chai.assert.throw(() => interpolateSwatches([]));
+        assert.throw(() => interpolateSwatches([]));
     }
 
     @test @shouldFail
     public invalidRange(): void
     {
-        chai.assert.throw(() => interpolateSwatches([], { start: 10, end: 1 }));
+        assert.throw(() => interpolateSwatches([], { start: 10, end: 1 }));
     }
 }

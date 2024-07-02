@@ -1,7 +1,7 @@
 
 import { DisposableMetadata, Hookable }        from "@surface/core";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import chai                                    from "chai";
+import { assert }                              from "chai";
 import computed                                from "../internal/decorators/computed.js";
 // import listener                                from "../internal/decorators/listener.js";
 import Metadata                                from "../internal/metadata.js";
@@ -36,8 +36,8 @@ export default class ObserverSpec
         target.a = 2;
         target.b = 3;
 
-        chai.assert.equal(target.a, receiverA);
-        chai.assert.equal(target.b, receiverB);
+        assert.equal(target.a, receiverA);
+        assert.equal(target.b, receiverB);
     }
 
     @test @shouldPass
@@ -50,7 +50,7 @@ export default class ObserverSpec
 
         target.a.b.c.value = 1;
 
-        chai.assert.equal(target.a.b.c.value, receiver);
+        assert.equal(target.a.b.c.value, receiver);
 
         const c = target.a.b.c;
 
@@ -58,8 +58,8 @@ export default class ObserverSpec
 
         c.value = 3;
 
-        chai.assert.equal(target.a.b.c.value, receiver, "target.a.b.c.value equal to receiver #1");
-        chai.assert.notEqual(c.value, receiver, "c.value not equal receiver");
+        assert.equal(target.a.b.c.value, receiver, "target.a.b.c.value equal to receiver #1");
+        assert.notEqual(c.value, receiver, "c.value not equal receiver");
 
         const b = target.a.b;
 
@@ -67,8 +67,8 @@ export default class ObserverSpec
 
         b.c = { value: 5 };
 
-        chai.assert.equal(target.a.b.c.value, receiver, "target.a.b.c.value equal to receiver #2");
-        chai.assert.notEqual(b.c.value, receiver, "b.c.value not equal receiver");
+        assert.equal(target.a.b.c.value, receiver, "target.a.b.c.value equal to receiver #2");
+        assert.notEqual(b.c.value, receiver, "b.c.value not equal receiver");
 
         const a = target.a;
 
@@ -76,8 +76,8 @@ export default class ObserverSpec
 
         a.b = { c: { value: 7 } };
 
-        chai.assert.equal(target.a.b.c.value, receiver, "target.a.b.c.value equal to receiver #3");
-        chai.assert.notEqual(a.b.c.value, receiver, "a.b.c.value not equal receiver");
+        assert.equal(target.a.b.c.value, receiver, "target.a.b.c.value equal to receiver #3");
+        assert.notEqual(a.b.c.value, receiver, "a.b.c.value not equal receiver");
     }
 
     @test @shouldPass
@@ -90,7 +90,7 @@ export default class ObserverSpec
 
         target.value = "Hello World!!!";
 
-        chai.assert.equal(target.value.length, receiver);
+        assert.equal(target.value.length, receiver);
     }
 
     @test @shouldPass
@@ -106,13 +106,13 @@ export default class ObserverSpec
 
         target.a.value = 2;
 
-        chai.assert.equal(target.a.value, receiver1);
-        chai.assert.equal(target.a.value, receiver2);
+        assert.equal(target.a.value, receiver1);
+        assert.equal(target.a.value, receiver2);
 
         target.a = { value: 1 };
 
-        chai.assert.equal(target.a.value, receiver1);
-        chai.assert.equal(target.a.value, receiver2);
+        assert.equal(target.a.value, receiver1);
+        assert.equal(target.a.value, receiver2);
     }
 
     @test @shouldPass
@@ -130,14 +130,14 @@ export default class ObserverSpec
 
         target.a.b = { c: { value: 1 } };
 
-        chai.assert.equal(target.a.b.c.value, valueReceiver);
-        chai.assert.equal(target.a.b, bReceiver);
+        assert.equal(target.a.b.c.value, valueReceiver);
+        assert.equal(target.a.b, bReceiver);
 
         target.a = { b: { c: { value: 1 } } };
 
-        chai.assert.equal(target.a.b.c.value, valueReceiver);
-        chai.assert.equal(target.a.b,         bReceiver);
-        chai.assert.equal(target.a,           aReceiver);
+        assert.equal(target.a.b.c.value, valueReceiver);
+        assert.equal(target.a.b,         bReceiver);
+        assert.equal(target.a,           aReceiver);
     }
 
     @test @shouldPass
@@ -154,16 +154,16 @@ export default class ObserverSpec
 
         target.a.b.c.value = 1;
 
-        chai.assert.equal(target.a.b.c.value, abcValueReceiver);
-        chai.assert.equal(cValueReceiver, c.value);
+        assert.equal(target.a.b.c.value, abcValueReceiver);
+        assert.equal(cValueReceiver, c.value);
 
         target.a.b.c = { value: 2 };
 
         c.value = 3;
 
-        chai.assert.equal(target.a.b.c.value, abcValueReceiver);
-        chai.assert.equal(cValueReceiver, c.value);
-        chai.assert.notEqual(target.a.b.c.value, c.value);
+        assert.equal(target.a.b.c.value, abcValueReceiver);
+        assert.equal(cValueReceiver, c.value);
+        assert.notEqual(target.a.b.c.value, c.value);
     }
 
     @test @shouldPass
@@ -182,45 +182,45 @@ export default class ObserverSpec
         target[0] = 3;
         target[1] = 4;
 
-        chai.assert.equal(target[0], receiver0);
-        chai.assert.equal(target[1], receiver1);
-        chai.assert.equal(target.length, length);
+        assert.equal(target[0], receiver0);
+        assert.equal(target[1], receiver1);
+        assert.equal(target.length, length);
 
         target.unshift(5);
 
-        chai.assert.equal(target[0], receiver0);
-        chai.assert.equal(target[1], receiver1);
-        chai.assert.equal(target.length, length);
+        assert.equal(target[0], receiver0);
+        assert.equal(target[1], receiver1);
+        assert.equal(target.length, length);
 
         target.pop();
 
-        chai.assert.equal(target[0], receiver0);
-        chai.assert.equal(target[1], receiver1);
-        chai.assert.equal(target.length, length);
+        assert.equal(target[0], receiver0);
+        assert.equal(target[1], receiver1);
+        assert.equal(target.length, length);
 
         target.pop();
 
-        chai.assert.equal(target[0], receiver0);
-        chai.assert.notEqual(target[1], receiver1);
-        chai.assert.equal(target.length, length);
+        assert.equal(target[0], receiver0);
+        assert.notEqual(target[1], receiver1);
+        assert.equal(target.length, length);
 
         target.push(6);
 
-        chai.assert.equal(target[0], receiver0);
-        chai.assert.notEqual(target[1], receiver1);
-        chai.assert.equal(target.length, length);
+        assert.equal(target[0], receiver0);
+        assert.notEqual(target[1], receiver1);
+        assert.equal(target.length, length);
 
         target[1] = 7;
 
-        chai.assert.equal(target[0], receiver0);
-        chai.assert.notEqual(target[1], receiver1);
-        chai.assert.equal(target.length, length);
+        assert.equal(target[0], receiver0);
+        assert.notEqual(target[1], receiver1);
+        assert.equal(target.length, length);
 
         target.reverse();
 
-        chai.assert.equal(target[0], receiver0);
-        chai.assert.notEqual(target[1], receiver1);
-        chai.assert.equal(target.length, length);
+        assert.equal(target[0], receiver0);
+        assert.notEqual(target[1], receiver1);
+        assert.equal(target.length, length);
     }
 
     @test @shouldPass
@@ -232,15 +232,15 @@ export default class ObserverSpec
 
         Observer.observe(target, ["0", "value"]).subscribe(x => receiver = x as number);
 
-        chai.assert.equal(target[0]!.value, receiver);
+        assert.equal(target[0]!.value, receiver);
 
         target.unshift({ value: 2 });
 
-        chai.assert.equal(target[0]!.value, receiver);
+        assert.equal(target[0]!.value, receiver);
 
         target.shift();
 
-        chai.assert.equal(target[0]!.value, receiver);
+        assert.equal(target[0]!.value, receiver);
     }
 
     @test @shouldPass
@@ -252,11 +252,11 @@ export default class ObserverSpec
 
         Observer.observe(target, ["value"]).subscribe(x => receiver = x as typeof receiver);
 
-        chai.assert.equal(target.value, receiver);
+        assert.equal(target.value, receiver);
 
         target.value = 2;
 
-        chai.assert.equal(target.value, receiver);
+        assert.equal(target.value, receiver);
 
         const newTarget = { ...target };
 
@@ -264,13 +264,13 @@ export default class ObserverSpec
 
         newTarget.value = 3;
 
-        chai.assert.notEqual(newTarget.value, receiver);
+        assert.notEqual(newTarget.value, receiver);
 
         Observer.observe(newTarget, ["value"]).subscribe(x => newReceiver = x as typeof newReceiver);
 
         newTarget.value = 4;
 
-        chai.assert.equal(newTarget.value, newReceiver);
+        assert.equal(newTarget.value, newReceiver);
     }
 
     @test @shouldPass
@@ -289,13 +289,13 @@ export default class ObserverSpec
         Observer.notify(target, ["a"]);
         Observer.notify(target, ["c"]); // Coverage
 
-        chai.assert.equal(target.a, aReceiver);
-        chai.assert.notEqual(target.b, bReceiver);
+        assert.equal(target.a, aReceiver);
+        assert.notEqual(target.b, bReceiver);
 
         Observer.notify(target);
 
-        chai.assert.equal(target.a, aReceiver);
-        chai.assert.equal(target.b, bReceiver);
+        assert.equal(target.a, aReceiver);
+        assert.equal(target.b, bReceiver);
     }
 
     @test @shouldPass
@@ -328,7 +328,7 @@ export default class ObserverSpec
 
         target.recalculate();
 
-        chai.assert.equal(target.sum, receiver1);
+        assert.equal(target.sum, receiver1);
 
         const scope = { target };
 
@@ -338,7 +338,7 @@ export default class ObserverSpec
 
         target.recalculate();
 
-        chai.assert.equal(target.sum, receiver2);
+        assert.equal(target.sum, receiver2);
     }
 
     @test @shouldPass
@@ -372,7 +372,7 @@ export default class ObserverSpec
 
         target.recalculate();
 
-        chai.assert.equal(target.sum, receiver1);
+        assert.equal(target.sum, receiver1);
 
         const scope = { target };
 
@@ -380,7 +380,7 @@ export default class ObserverSpec
 
         target.recalculate();
 
-        chai.assert.equal(target.sum, receiver2);
+        assert.equal(target.sum, receiver2);
     }
 
     @test @shouldPass
@@ -395,13 +395,13 @@ export default class ObserverSpec
         const propertyMetadata  = Metadata.from(target1.property);
         const propertyAMetadata = Metadata.from(target1.property.a);
 
-        chai.assert.equal(propertyMetadata.subjects.get("a")!.size, 1);
-        chai.assert.equal(propertyAMetadata.subjects.get("value")!.size, 1);
+        assert.equal(propertyMetadata.subjects.get("a")!.size, 1);
+        assert.equal(propertyAMetadata.subjects.get("value")!.size, 1);
 
         DisposableMetadata.from(target1).dispose();
 
-        chai.assert.equal(propertyMetadata.subjects.get("a")!.size, 0);
-        chai.assert.equal(propertyAMetadata.subjects.get("value")!.size, 0);
+        assert.equal(propertyMetadata.subjects.get("a")!.size, 0);
+        assert.equal(propertyAMetadata.subjects.get("value")!.size, 0);
     }
 
     @test @shouldPass
@@ -417,7 +417,7 @@ export default class ObserverSpec
 
         observer.notify();
 
-        chai.assert.equal(value, 1);
+        assert.equal(value, 1);
     }
 
     @test @shouldFail
@@ -425,13 +425,13 @@ export default class ObserverSpec
     {
         const target: { a?: { b?: { c?: { value: 1 } } }  } = { a: { } };
 
-        chai.assert.throws(() => Observer.observe(target, ["a", "b", "c", "value"]));
+        assert.throws(() => Observer.observe(target, ["a", "b", "c", "value"]));
 
         target.a = { b: { c: { value: 1 } } };
 
         Observer.observe(target, ["a", "b", "c", "value"]);
 
-        chai.assert.throws(() => target.a = { });
+        assert.throws(() => target.a = { });
     }
 
     @test @shouldFail
@@ -449,7 +449,7 @@ export default class ObserverSpec
 
         observer.notify();
 
-        chai.assert.equal(value, 1);
+        assert.equal(value, 1);
 
         observer.unsubscribe(listener);
 
@@ -457,12 +457,12 @@ export default class ObserverSpec
 
         observer.notify();
 
-        chai.assert.equal(value, 1);
+        assert.equal(value, 1);
     }
 
     @test @shouldFail
     public unsubscribeInvalidListener(): void
     {
-        chai.assert.throws(() => new Observer({ }, [""]).unsubscribe(() => void 0), "Listener not subscribed");
+        assert.throws(() => new Observer({ }, [""]).unsubscribe(() => void 0), "Listener not subscribed");
     }
 }

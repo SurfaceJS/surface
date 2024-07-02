@@ -2,7 +2,7 @@
 import "@surface/dom-shim";
 
 import { shouldPass, suite, test } from "@surface/test-suite";
-import chai                        from "chai";
+import { assert }                  from "chai";
 import createCommentFactory        from "../internal/factories/create-comment-factory.js";
 import customDirectiveFactory      from "./fixtures/custom-directive-factory.js";
 import CustomDirective             from "./fixtures/custom-directive.js";
@@ -20,7 +20,7 @@ export default class CommentFactorySpec
     {
         const [element] = createCommentFactory("This is a comment")();
 
-        chai.assert.equal(element.nodeType, Node.COMMENT_NODE);
-        chai.assert.equal(element.textContent, "This is a comment");
+        assert.equal(element.nodeType, Node.COMMENT_NODE);
+        assert.equal(element.textContent, "This is a comment");
     }
 }

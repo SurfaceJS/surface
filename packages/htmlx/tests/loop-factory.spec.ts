@@ -2,7 +2,7 @@
 import "@surface/dom-shim";
 
 import { shouldPass, suite, test }        from "@surface/test-suite";
-import chai                               from "chai";
+import { assert }                         from "chai";
 import createElementFactory               from "../internal/factories/create-element-factory.js";
 import createFragmentFactory              from "../internal/factories/create-fragment-factory.js";
 import createLoopFactory                  from "../internal/factories/create-loop-factory.js";
@@ -52,7 +52,7 @@ export default class LoopFactorySpec
 
         const actual = Array.from(element.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual, expected, "#0");
+        assert.deepEqual(actual, expected, "#0");
 
         await scheduler.execution();
 
@@ -67,7 +67,7 @@ export default class LoopFactorySpec
 
         const actual1 = Array.from(element.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual1, expected1, "#1");
+        assert.deepEqual(actual1, expected1, "#1");
 
         scope.items = [1, 2, 3];
 
@@ -90,7 +90,7 @@ export default class LoopFactorySpec
 
         const actual2 = Array.from(element.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual2, expected2, "#2");
+        assert.deepEqual(actual2, expected2, "#2");
 
         scope.items = [1, 2];
 
@@ -110,10 +110,10 @@ export default class LoopFactorySpec
 
         const actual3 = Array.from(element.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual3, expected3, "#3");
+        assert.deepEqual(actual3, expected3, "#3");
 
         disposable.dispose();
 
-        chai.assert.equal(element.firstElementChild, null);
+        assert.equal(element.firstElementChild, null);
     }
 }

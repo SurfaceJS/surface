@@ -2,7 +2,7 @@
 import "@surface/dom-shim";
 
 import { shouldPass, suite, test } from "@surface/test-suite";
-import chai                        from "chai";
+import { assert }                  from "chai";
 import attribute                   from "../internal/decorators/attribute.js";
 import element                     from "../internal/decorators/element.js";
 import HTMLXElement                from "../internal/htmlx-element.js";
@@ -36,8 +36,8 @@ export default class DecoratorsSpec
             }
         }
 
-        chai.assert.doesNotThrow(() => new Mock());
-        chai.assert.deepEqual(Mock.observedAttributes, ["field", "property"]);
+        assert.doesNotThrow(() => new Mock());
+        assert.deepEqual(Mock.observedAttributes, ["field", "property"]);
     }
 
     // @test @shouldPass
@@ -79,8 +79,8 @@ export default class DecoratorsSpec
     //         }
     //     }
 
-    //     chai.assert.doesNotThrow(() => new Mock());
-    //     chai.assert.deepEqual(Mock.observedAttributes, ["value-1", "value-2"]);
+    //     assert.doesNotThrow(() => new Mock());
+    //     assert.deepEqual(Mock.observedAttributes, ["value-1", "value-2"]);
     // }
 
     @test @shouldPass
@@ -95,7 +95,7 @@ export default class DecoratorsSpec
             }
         }
 
-        chai.assert.doesNotThrow(() => new Mock());
+        assert.doesNotThrow(() => new Mock());
     }
 
     @test @shouldPass
@@ -110,7 +110,7 @@ export default class DecoratorsSpec
             }
         }
 
-        chai.assert.doesNotThrow(() => new Mock());
+        assert.doesNotThrow(() => new Mock());
     }
 
     @test @shouldPass
@@ -125,7 +125,7 @@ export default class DecoratorsSpec
             }
         }
 
-        chai.assert.doesNotThrow(() => new Mock());
+        assert.doesNotThrow(() => new Mock());
     }
 
     @test @shouldPass
@@ -143,6 +143,6 @@ export default class DecoratorsSpec
         class Mock extends HTMLXElement.as(HTMLDivElement)
         { }
 
-        chai.assert.doesNotThrow(() => new Mock().dispose());
+        assert.doesNotThrow(() => new Mock().dispose());
     }
 }

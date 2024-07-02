@@ -2,7 +2,7 @@
 import "@surface/dom-shim";
 
 import { shouldPass, suite, test } from "@surface/test-suite";
-import chai                        from "chai";
+import { assert }                  from "chai";
 import createChoiceFactory         from "../internal/factories/create-choice-factory.js";
 import createElementFactory        from "../internal/factories/create-element-factory.js";
 import createFragmentFactory       from "../internal/factories/create-fragment-factory.js";
@@ -66,29 +66,29 @@ export default class ChoiceFactorySpec
 
         const actual = Array.from(element.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual, expected, "#0");
+        assert.deepEqual(actual, expected, "#0");
 
         await scheduler.execution();
 
-        chai.assert.equal(element.firstElementChild!.nodeName, "SPAN");
-        chai.assert.equal(element.firstElementChild!.getAttribute("name"), "IF");
+        assert.equal(element.firstElementChild!.nodeName, "SPAN");
+        assert.equal(element.firstElementChild!.getAttribute("name"), "IF");
 
         scope.id = 2;
 
         await scheduler.execution();
 
-        chai.assert.equal(element.firstElementChild!.nodeName, "SPAN");
-        chai.assert.equal(element.firstElementChild!.getAttribute("name"), "ELSE IF");
+        assert.equal(element.firstElementChild!.nodeName, "SPAN");
+        assert.equal(element.firstElementChild!.getAttribute("name"), "ELSE IF");
 
         scope.id = 3;
 
         await scheduler.execution();
 
-        chai.assert.equal(element.firstElementChild!.nodeName, "SPAN");
-        chai.assert.equal(element.firstElementChild!.getAttribute("name"), "ELSE");
+        assert.equal(element.firstElementChild!.nodeName, "SPAN");
+        assert.equal(element.firstElementChild!.getAttribute("name"), "ELSE");
 
         disposable.dispose();
 
-        chai.assert.equal(element.firstElementChild, null);
+        assert.equal(element.firstElementChild, null);
     }
 }

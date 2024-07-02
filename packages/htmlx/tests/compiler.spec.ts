@@ -5,7 +5,7 @@ import "@surface/dom-shim";
 import type { Constructor, Delegate, IDisposable } from "@surface/core";
 import { resolveError }                            from "@surface/core";
 import { shouldFail, shouldPass, suite, test }     from "@surface/test-suite";
-import chai                                        from "chai";
+import { assert }                                  from "chai";
 import semver                                      from "semver";
 import Compiler                                    from "../internal/compiler.js";
 import LoopDirective                               from "../internal/directives/loop-directive.js";
@@ -166,7 +166,7 @@ export default class CompilerSpec
 
         compile({ host, shadowRoot });
 
-        chai.assert.equal(host.shadowRoot!.firstChild!.textContent, "This is A comment");
+        assert.equal(host.shadowRoot!.firstChild!.textContent, "This is A comment");
     }
 
     @test @shouldPass
@@ -178,7 +178,7 @@ export default class CompilerSpec
 
         compile({ host, shadowRoot });
 
-        chai.assert.equal(host.shadowRoot!.firstElementChild!.getAttribute("value"), "1");
+        assert.equal(host.shadowRoot!.firstElementChild!.getAttribute("value"), "1");
     }
 
     @test @shouldPass
@@ -194,16 +194,16 @@ export default class CompilerSpec
 
         const input = host.shadowRoot!.firstElementChild as HTMLSpanElement;
 
-        chai.assert.equal(input.lang, "pt-br");
-        chai.assert.equal(input.getAttribute("lang"), "pt-br");
-        chai.assert.equal(input.getAttribute("parent"), "Y-COMPONENT");
+        assert.equal(input.lang, "pt-br");
+        assert.equal(input.getAttribute("lang"), "pt-br");
+        assert.equal(input.getAttribute("parent"), "Y-COMPONENT");
 
         host.lang = "en-us";
 
         await scheduler.execution();
 
-        chai.assert.equal(input.lang, "en-us");
-        chai.assert.equal(input.getAttribute("lang"), "en-us");
+        assert.equal(input.lang, "en-us");
+        assert.equal(input.getAttribute("lang"), "en-us");
     }
 
     @test @shouldPass
@@ -216,13 +216,13 @@ export default class CompilerSpec
 
         compile({ host, shadowRoot });
 
-        chai.assert.equal(host.shadowRoot!.firstElementChild!.getAttribute("data-text"), "Tag lang: pt-br");
+        assert.equal(host.shadowRoot!.firstElementChild!.getAttribute("data-text"), "Tag lang: pt-br");
 
         host.lang = "en-us";
 
         await scheduler.execution();
 
-        chai.assert.equal(host.shadowRoot!.firstElementChild!.getAttribute("data-text"), "Tag lang: en-us");
+        assert.equal(host.shadowRoot!.firstElementChild!.getAttribute("data-text"), "Tag lang: en-us");
     }
 
     @test @shouldPass
@@ -236,7 +236,7 @@ export default class CompilerSpec
 
         const span = host.shadowRoot!.firstElementChild as HTMLSpanElement;
 
-        chai.assert.equal(span.getAttribute("has-children"), "Has children: false");
+        assert.equal(span.getAttribute("has-children"), "Has children: false");
     }
 
     @test @shouldPass
@@ -250,7 +250,7 @@ export default class CompilerSpec
 
         const span = host.shadowRoot!.firstElementChild as HTMLSpanElement;
 
-        chai.assert.equal(span.title, "Y-COMPONENT");
+        assert.equal(span.title, "Y-COMPONENT");
     }
 
     @test @shouldPass
@@ -264,7 +264,7 @@ export default class CompilerSpec
 
         const span = host.shadowRoot!.firstElementChild as HTMLSpanElement;
 
-        chai.assert.isTrue(span.classList.contains("closed"));
+        assert.isTrue(span.classList.contains("closed"));
     }
 
     @test @shouldPass
@@ -278,7 +278,7 @@ export default class CompilerSpec
 
         const span = host.shadowRoot!.firstElementChild as HTMLSpanElement;
 
-        chai.assert.equal(span.style.display, "none");
+        assert.equal(span.style.display, "none");
     }
 
     @test @shouldPass
@@ -298,13 +298,13 @@ export default class CompilerSpec
 
         await scheduler.execution();
 
-        chai.assert.equal(span.title, "foo");
+        assert.equal(span.title, "foo");
 
         span.title = "foo";
 
         await scheduler.execution();
 
-        chai.assert.equal(host.title, "foo");
+        assert.equal(host.title, "foo");
     }
 
     @test @shouldPass
@@ -325,13 +325,13 @@ export default class CompilerSpec
 
         await scheduler.execution();
 
-        chai.assert.equal(span.title, "foo");
+        assert.equal(span.title, "foo");
 
         span.title = "foo";
 
         await scheduler.execution();
 
-        chai.assert.equal(host.title, "foo");
+        assert.equal(host.title, "foo");
     }
 
     @test @shouldPass
@@ -349,7 +349,7 @@ export default class CompilerSpec
 
         host.shadowRoot!.firstElementChild!.dispatchEvent(new Event("click"));
 
-        chai.assert.equal(clicked, true);
+        assert.equal(clicked, true);
     }
 
     @test @shouldPass
@@ -363,7 +363,7 @@ export default class CompilerSpec
 
         host.shadowRoot!.firstElementChild!.dispatchEvent(new Event("click"));
 
-        chai.assert.equal(host.title, "clicked");
+        assert.equal(host.title, "clicked");
     }
 
     @test @shouldPass
@@ -377,7 +377,7 @@ export default class CompilerSpec
 
         host.shadowRoot!.firstElementChild!.dispatchEvent(new Event("click"));
 
-        chai.assert.equal(host.title, "clicked");
+        assert.equal(host.title, "clicked");
     }
 
     @test @shouldPass
@@ -391,8 +391,8 @@ export default class CompilerSpec
 
         await scheduler.execution();
 
-        chai.assert.equal(host.shadowRoot!.firstElementChild!.textContent, "custom: Hello World!!!");
-        chai.assert.equal(host.shadowRoot!.lastElementChild!.textContent, "custom-factory: Hello World!!!");
+        assert.equal(host.shadowRoot!.firstElementChild!.textContent, "custom: Hello World!!!");
+        assert.equal(host.shadowRoot!.lastElementChild!.textContent, "custom-factory: Hello World!!!");
     }
 
     @test @shouldPass
@@ -405,13 +405,13 @@ export default class CompilerSpec
 
         compile({ host, shadowRoot });
 
-        chai.assert.equal(host.shadowRoot!.firstElementChild!.innerHTML, "Host id: 01");
+        assert.equal(host.shadowRoot!.firstElementChild!.innerHTML, "Host id: 01");
 
         host.id = "02";
 
         await scheduler.execution();
 
-        chai.assert.equal(host.shadowRoot!.firstElementChild!.innerHTML, "Host id: 02");
+        assert.equal(host.shadowRoot!.firstElementChild!.innerHTML, "Host id: 02");
     }
 
     @test @shouldPass
@@ -424,13 +424,13 @@ export default class CompilerSpec
 
         compile({ host, shadowRoot });
 
-        chai.assert.equal(host.shadowRoot!.firstElementChild!.innerHTML, "true");
+        assert.equal(host.shadowRoot!.firstElementChild!.innerHTML, "true");
 
         host.id = "02";
 
         await scheduler.execution();
 
-        chai.assert.equal(host.shadowRoot!.firstElementChild!.innerHTML, "false");
+        assert.equal(host.shadowRoot!.firstElementChild!.innerHTML, "false");
     }
 
     @test @shouldPass
@@ -450,8 +450,8 @@ export default class CompilerSpec
         await scheduler.execution();
         await scheduler.execution();
 
-        chai.assert.equal(host.shadowRoot!.firstElementChild?.getAttribute("foo"), "foo");
-        chai.assert.equal(host.shadowRoot!.firstElementChild?.getAttribute("bar"), "bar");
+        assert.equal(host.shadowRoot!.firstElementChild?.getAttribute("foo"), "foo");
+        assert.equal(host.shadowRoot!.firstElementChild?.getAttribute("bar"), "bar");
 
         host.removeAttribute("foo");
         host.setAttribute("baz", "baz");
@@ -459,9 +459,9 @@ export default class CompilerSpec
         await scheduler.execution();
         await scheduler.execution(); // TODO: Investigate mutation observer event loop.
 
-        chai.assert.isFalse(host.shadowRoot!.firstElementChild?.hasAttribute("foo"));
-        chai.assert.equal(host.shadowRoot!.firstElementChild?.getAttribute("bar"), "bar");
-        chai.assert.equal(host.shadowRoot!.firstElementChild?.getAttribute("baz"), "baz");
+        assert.isFalse(host.shadowRoot!.firstElementChild?.hasAttribute("foo"));
+        assert.equal(host.shadowRoot!.firstElementChild?.getAttribute("bar"), "bar");
+        assert.equal(host.shadowRoot!.firstElementChild?.getAttribute("baz"), "baz");
     }
 
     @test @shouldPass
@@ -483,33 +483,33 @@ export default class CompilerSpec
 
         await scheduler.execution();
 
-        chai.assert.equal(root.lang, "");
-        chai.assert.equal(host.lang, "");
-        chai.assert.equal(child.lang, "");
+        assert.equal(root.lang, "");
+        assert.equal(host.lang, "");
+        assert.equal(child.lang, "");
 
         child.lang = "en-uk";
 
         await scheduler.execution();
 
-        chai.assert.equal(root.lang, "");
-        chai.assert.equal(host.lang, "");
-        chai.assert.equal(child.lang, "en-uk");
+        assert.equal(root.lang, "");
+        assert.equal(host.lang, "");
+        assert.equal(child.lang, "en-uk");
 
         host.lang = "en-us";
 
         await scheduler.execution();
 
-        chai.assert.equal(root.lang, "");
-        chai.assert.equal(host.lang, "en-us");
-        chai.assert.equal(child.lang, "en-uk");
+        assert.equal(root.lang, "");
+        assert.equal(host.lang, "en-us");
+        assert.equal(child.lang, "en-uk");
 
         root.lang = "pt-br";
 
         await scheduler.execution();
 
-        chai.assert.equal(root.lang, "pt-br");
-        chai.assert.equal(host.lang, "pt-br");
-        chai.assert.equal(child.lang, "pt-br");
+        assert.equal(root.lang, "pt-br");
+        assert.equal(host.lang, "pt-br");
+        assert.equal(child.lang, "pt-br");
     }
 
     @test @shouldPass
@@ -531,33 +531,33 @@ export default class CompilerSpec
 
         await scheduler.execution();
 
-        chai.assert.equal(root.lang, "");
-        chai.assert.equal(host.lang, "");
-        chai.assert.equal(child.lang, "");
+        assert.equal(root.lang, "");
+        assert.equal(host.lang, "");
+        assert.equal(child.lang, "");
 
         child.lang = "pt-br";
 
         await scheduler.execution();
 
-        chai.assert.equal(root.lang, "pt-br");
-        chai.assert.equal(host.lang, "pt-br");
-        chai.assert.equal(child.lang, "pt-br");
+        assert.equal(root.lang, "pt-br");
+        assert.equal(host.lang, "pt-br");
+        assert.equal(child.lang, "pt-br");
 
         host.lang = "en-us";
 
         await scheduler.execution();
 
-        chai.assert.equal(root.lang, "en-us");
-        chai.assert.equal(host.lang, "en-us");
-        chai.assert.equal(child.lang, "en-us");
+        assert.equal(root.lang, "en-us");
+        assert.equal(host.lang, "en-us");
+        assert.equal(child.lang, "en-us");
 
         root.lang = "en-uk";
 
         await scheduler.execution();
 
-        chai.assert.equal(root.lang, "en-uk");
-        chai.assert.equal(host.lang, "en-uk");
-        chai.assert.equal(child.lang, "en-uk");
+        assert.equal(root.lang, "en-uk");
+        assert.equal(host.lang, "en-uk");
+        assert.equal(child.lang, "en-uk");
     }
 
     @test @shouldPass
@@ -581,11 +581,11 @@ export default class CompilerSpec
 
         host.dispatchEvent(new Event("click"));
 
-        chai.assert.equal(root.title, host.nodeName);
+        assert.equal(root.title, host.nodeName);
 
         child.dispatchEvent(new Event("click"));
 
-        chai.assert.equal(root.title, child.nodeName);
+        assert.equal(root.title, child.nodeName);
     }
 
     @test @shouldPass
@@ -599,7 +599,7 @@ export default class CompilerSpec
 
         await scheduler.execution();
 
-        chai.assert.equal(host.shadowRoot!.textContent, "Hello Default!!!");
+        assert.equal(host.shadowRoot!.textContent, "Hello Default!!!");
     }
 
     @test @shouldPass
@@ -616,7 +616,7 @@ export default class CompilerSpec
 
         await scheduler.execution();
 
-        chai.assert.equal(host.shadowRoot!.textContent, "Hello World!!!");
+        assert.equal(host.shadowRoot!.textContent, "Hello World!!!");
     }
 
     @test @shouldPass
@@ -633,7 +633,7 @@ export default class CompilerSpec
 
         await scheduler.execution();
 
-        chai.assert.equal(host.shadowRoot!.textContent, "Hello World!!!");
+        assert.equal(host.shadowRoot!.textContent, "Hello World!!!");
     }
 
     @test @shouldPass
@@ -653,32 +653,32 @@ export default class CompilerSpec
 
         await scheduler.execution();
 
-        chai.assert.equal(host.shadowRoot!.textContent, "Placeholder Key: key-a");
+        assert.equal(host.shadowRoot!.textContent, "Placeholder Key: key-a");
 
         parentHost.id = "key-a";
 
         await scheduler.execution();
 
-        chai.assert.equal(host.shadowRoot!.textContent, "Inject Key: key-a");
+        assert.equal(host.shadowRoot!.textContent, "Inject Key: key-a");
 
         parentHost.id = "key-b";
 
         await scheduler.execution();
 
-        chai.assert.equal(host.shadowRoot!.textContent, "Placeholder Key: key-a");
+        assert.equal(host.shadowRoot!.textContent, "Placeholder Key: key-a");
 
         parentHost.id = "key-a";
         host.id = "key-b";
 
         await scheduler.execution();
 
-        chai.assert.equal(host.shadowRoot!.textContent, "Placeholder Key: key-b");
+        assert.equal(host.shadowRoot!.textContent, "Placeholder Key: key-b");
 
         host.id = "key-a";
 
         await scheduler.execution();
 
-        chai.assert.equal(host.shadowRoot!.textContent, "Inject Key: key-a");
+        assert.equal(host.shadowRoot!.textContent, "Inject Key: key-a");
     }
 
     @test @shouldPass
@@ -700,7 +700,7 @@ export default class CompilerSpec
 
         await scheduler.execution();
 
-        chai.assert.equal(child.shadowRoot!.firstElementChild!.textContent, "Title: forwarded");
+        assert.equal(child.shadowRoot!.firstElementChild!.textContent, "Title: forwarded");
     }
 
     @test @shouldPass
@@ -720,13 +720,13 @@ export default class CompilerSpec
 
         await scheduler.execution();
 
-        chai.assert.equal(host.shadowRoot!.textContent, "Hello People!!!");
+        assert.equal(host.shadowRoot!.textContent, "Hello People!!!");
 
         host.item = { value: "World" };
 
         await scheduler.execution();
 
-        chai.assert.equal(host.shadowRoot!.textContent, "Hello World!!!");
+        assert.equal(host.shadowRoot!.textContent, "Hello World!!!");
     }
 
     @test @shouldPass
@@ -753,8 +753,8 @@ export default class CompilerSpec
 
         await scheduler.execution();
 
-        chai.assert.equal(host.shadowRoot!.childNodes[0]!.textContent, "#start", "childNodes[0]");
-        chai.assert.equal(host.shadowRoot!.childNodes[1]!.textContent, "#end",   "childNodes[1]");
+        assert.equal(host.shadowRoot!.childNodes[0]!.textContent, "#start", "childNodes[0]");
+        assert.equal(host.shadowRoot!.childNodes[1]!.textContent, "#end",   "childNodes[1]");
 
         host.items =
         [
@@ -782,7 +782,7 @@ export default class CompilerSpec
 
         const actual1 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual1, expected1, "#1");
+        assert.deepEqual(actual1, expected1, "#1");
 
         host.items =
         [
@@ -809,7 +809,7 @@ export default class CompilerSpec
             "#end",
         ];
 
-        chai.assert.deepEqual(actual2, expected2, "#2");
+        assert.deepEqual(actual2, expected2, "#2");
     }
 
     @test @shouldPass
@@ -825,19 +825,19 @@ export default class CompilerSpec
 
         await scheduler.execution();
 
-        chai.assert.equal(host.shadowRoot!.firstElementChild?.textContent, "First");
+        assert.equal(host.shadowRoot!.firstElementChild?.textContent, "First");
 
         host.order = 2;
 
         await scheduler.execution();
 
-        chai.assert.equal(host.shadowRoot!.firstElementChild?.textContent, "");
+        assert.equal(host.shadowRoot!.firstElementChild?.textContent, "");
 
         host.shadowRoot!.innerHTML = "";
 
         host.order = 0;
 
-        chai.assert.equal(host.shadowRoot!.childNodes.length, 0);
+        assert.equal(host.shadowRoot!.childNodes.length, 0);
     }
 
     @test @shouldPass
@@ -853,19 +853,19 @@ export default class CompilerSpec
 
         await scheduler.execution();
 
-        chai.assert.equal(host.shadowRoot!.childNodes[1]!.textContent, "First");
+        assert.equal(host.shadowRoot!.childNodes[1]!.textContent, "First");
 
         host.order = 2;
 
         await scheduler.execution();
 
-        chai.assert.equal(host.shadowRoot!.childNodes[1]!.textContent, "Second");
+        assert.equal(host.shadowRoot!.childNodes[1]!.textContent, "Second");
 
         host.order = 3;
 
         await scheduler.execution();
 
-        chai.assert.equal(host.shadowRoot!.childNodes[1]!.textContent, "Last");
+        assert.equal(host.shadowRoot!.childNodes[1]!.textContent, "Last");
     }
 
     @test @shouldPass
@@ -881,25 +881,25 @@ export default class CompilerSpec
 
         await scheduler.execution();
 
-        chai.assert.equal(host.shadowRoot!.firstElementChild, null);
+        assert.equal(host.shadowRoot!.firstElementChild, null);
 
         host.description = "Not Empty";
 
         await scheduler.execution();
 
-        chai.assert.equal(host.shadowRoot!.firstElementChild!.textContent, "Text");
+        assert.equal(host.shadowRoot!.firstElementChild!.textContent, "Text");
 
         host.description = "Still Not Empty";
 
         await scheduler.execution();
 
-        chai.assert.equal(host.shadowRoot!.firstElementChild!.textContent, "Text");
+        assert.equal(host.shadowRoot!.firstElementChild!.textContent, "Text");
 
         host.description = "";
 
         await scheduler.execution();
 
-        chai.assert.equal(host.shadowRoot!.firstElementChild, null);
+        assert.equal(host.shadowRoot!.firstElementChild, null);
     }
 
     @test @shouldPass
@@ -926,7 +926,7 @@ export default class CompilerSpec
 
         const actual1 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual1, expected1, "#1");
+        assert.deepEqual(actual1, expected1, "#1");
 
         host.elements = [1, 2];
 
@@ -946,7 +946,7 @@ export default class CompilerSpec
 
         const actual2 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual2, expected2, "#2");
+        assert.deepEqual(actual2, expected2, "#2");
 
         host.elements = [1, 2, 3];
 
@@ -969,7 +969,7 @@ export default class CompilerSpec
 
         const actual3 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual3, expected3, "#3");
+        assert.deepEqual(actual3, expected3, "#3");
 
         host.elements = [2];
 
@@ -986,7 +986,7 @@ export default class CompilerSpec
 
         const actual4 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual4, expected4, "#4");
+        assert.deepEqual(actual4, expected4, "#4");
     }
 
     @test @shouldPass
@@ -1013,7 +1013,7 @@ export default class CompilerSpec
 
         const actual1 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual1, expected1, "#1");
+        assert.deepEqual(actual1, expected1, "#1");
 
         host.elements = [1, 2];
 
@@ -1033,7 +1033,7 @@ export default class CompilerSpec
 
         const actual2 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual2, expected2, "#2");
+        assert.deepEqual(actual2, expected2, "#2");
 
         host.elements = [1, 2, 3];
 
@@ -1056,7 +1056,7 @@ export default class CompilerSpec
 
         const actual3 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual3, expected3, "#3");
+        assert.deepEqual(actual3, expected3, "#3");
 
         host.elements = [2];
 
@@ -1073,7 +1073,7 @@ export default class CompilerSpec
 
         const actual4 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual4, expected4, "#4");
+        assert.deepEqual(actual4, expected4, "#4");
 
         host.elements = [1, 2, 3];
 
@@ -1096,7 +1096,7 @@ export default class CompilerSpec
 
         const actual5 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual5, expected5, "#5");
+        assert.deepEqual(actual5, expected5, "#5");
 
         host.elements = [3, 2, 1];
 
@@ -1119,7 +1119,7 @@ export default class CompilerSpec
 
         const actual6 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual6, expected6, "#6");
+        assert.deepEqual(actual6, expected6, "#6");
     }
 
     @test @shouldPass
@@ -1146,7 +1146,7 @@ export default class CompilerSpec
 
         const actual1 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual1, expected1, "#1");
+        assert.deepEqual(actual1, expected1, "#1");
 
         host.elements = [[1, 2], [2, 4]];
 
@@ -1166,7 +1166,7 @@ export default class CompilerSpec
 
         const actual2 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual2, expected2, "#2");
+        assert.deepEqual(actual2, expected2, "#2");
 
         host.elements = [[1, 2], [2, 4], [3, 6]];
 
@@ -1189,7 +1189,7 @@ export default class CompilerSpec
 
         const actual3 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual3, expected3, "#3");
+        assert.deepEqual(actual3, expected3, "#3");
 
         host.elements = [[2, 4]];
 
@@ -1206,7 +1206,7 @@ export default class CompilerSpec
 
         const actual4 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual4, expected4, "#4");
+        assert.deepEqual(actual4, expected4, "#4");
     }
 
     @test @shouldPass
@@ -1233,7 +1233,7 @@ export default class CompilerSpec
 
         const actual1 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual1, expected1, "#1");
+        assert.deepEqual(actual1, expected1, "#1");
 
         host.elements =
         [
@@ -1257,7 +1257,7 @@ export default class CompilerSpec
 
         const actual2 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual2, expected2, "#2");
+        assert.deepEqual(actual2, expected2, "#2");
 
         host.elements =
         [
@@ -1285,7 +1285,7 @@ export default class CompilerSpec
 
         const actual3 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual3, expected3, "#3");
+        assert.deepEqual(actual3, expected3, "#3");
 
         host.elements = [[2, { item: { name: "two" } }]];
 
@@ -1302,7 +1302,7 @@ export default class CompilerSpec
 
         const actual4 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual4, expected4, "#4");
+        assert.deepEqual(actual4, expected4, "#4");
     }
 
     @test @shouldPass
@@ -1329,7 +1329,7 @@ export default class CompilerSpec
 
         const actual1 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual1, expected1, "#1");
+        assert.deepEqual(actual1, expected1, "#1");
 
         host.elements =
         [
@@ -1353,7 +1353,7 @@ export default class CompilerSpec
 
         const actual2 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual2, expected2, "#2");
+        assert.deepEqual(actual2, expected2, "#2");
 
         host.elements =
         [
@@ -1381,7 +1381,7 @@ export default class CompilerSpec
 
         const actual3 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual3, expected3, "#3");
+        assert.deepEqual(actual3, expected3, "#3");
 
         host.elements = [{ values: [2, 4] }];
 
@@ -1398,7 +1398,7 @@ export default class CompilerSpec
 
         const actual4 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual4, expected4, "#4");
+        assert.deepEqual(actual4, expected4, "#4");
     }
 
     @test @shouldPass
@@ -1425,7 +1425,7 @@ export default class CompilerSpec
 
         const actual1 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual1, expected1, "#1");
+        assert.deepEqual(actual1, expected1, "#1");
 
         host.elements =
         [
@@ -1449,7 +1449,7 @@ export default class CompilerSpec
 
         const actual2 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual2, expected2, "#2");
+        assert.deepEqual(actual2, expected2, "#2");
 
         host.elements =
         [
@@ -1477,7 +1477,7 @@ export default class CompilerSpec
 
         const actual3 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual3, expected3, "#3");
+        assert.deepEqual(actual3, expected3, "#3");
 
         host.elements = [{ values: [2, [[4]]] }];
 
@@ -1494,7 +1494,7 @@ export default class CompilerSpec
 
         const actual4 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual4, expected4, "#4");
+        assert.deepEqual(actual4, expected4, "#4");
     }
 
     @test @shouldPass
@@ -1533,7 +1533,7 @@ export default class CompilerSpec
 
         const actual1 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual1, expected1, "#1");
+        assert.deepEqual(actual1, expected1, "#1");
 
         host.condition = true;
 
@@ -1556,7 +1556,7 @@ export default class CompilerSpec
 
         const actual2 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual2, expected2, "#2");
+        assert.deepEqual(actual2, expected2, "#2");
 
         host.condition = false;
 
@@ -1571,7 +1571,7 @@ export default class CompilerSpec
 
         const actual3 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual3, expected3, "#3");
+        assert.deepEqual(actual3, expected3, "#3");
     }
 
     @test @shouldPass
@@ -1608,7 +1608,7 @@ export default class CompilerSpec
 
         const actual1 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual1, expected1, "#1");
+        assert.deepEqual(actual1, expected1, "#1");
 
         host.condition = true;
 
@@ -1623,7 +1623,7 @@ export default class CompilerSpec
 
         const actual2 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual2, expected2, "#2");
+        assert.deepEqual(actual2, expected2, "#2");
     }
 
     @test @shouldPass
@@ -1662,7 +1662,7 @@ export default class CompilerSpec
 
         const actual1 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual1, expected1, "#1");
+        assert.deepEqual(actual1, expected1, "#1");
 
         host.condition = true;
 
@@ -1685,7 +1685,7 @@ export default class CompilerSpec
 
         const actual2 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual2, expected2, "#2");
+        assert.deepEqual(actual2, expected2, "#2");
     }
 
     @test @shouldPass
@@ -1722,7 +1722,7 @@ export default class CompilerSpec
 
         const actual1 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual1, expected1, "#1");
+        assert.deepEqual(actual1, expected1, "#1");
 
         host.items =
         [
@@ -1750,7 +1750,7 @@ export default class CompilerSpec
 
         const actual2 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual2, expected2, "#2");
+        assert.deepEqual(actual2, expected2, "#2");
     }
 
     @test @shouldPass
@@ -1779,7 +1779,7 @@ export default class CompilerSpec
 
         await scheduler.execution();
 
-        chai.assert.isOk(true);
+        assert.isOk(true);
     }
 
     @test @shouldFail
@@ -1795,7 +1795,7 @@ export default class CompilerSpec
         const actual   = tryAction(() => compile({ host, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1814,7 +1814,7 @@ export default class CompilerSpec
         const actual   = tryAction(() => compile({ host, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -1830,7 +1830,7 @@ export default class CompilerSpec
         const actual   = await tryActionAsync(() => compile({ host, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1846,7 +1846,7 @@ export default class CompilerSpec
         const actual   = tryAction(() => compile({ host, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1862,7 +1862,7 @@ export default class CompilerSpec
         const actual   = await tryActionAsync(() => compile({ host, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1878,7 +1878,7 @@ export default class CompilerSpec
         const actual   = await tryActionAsync(() => compile({ host, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1894,7 +1894,7 @@ export default class CompilerSpec
         const actual   = await tryActionAsync(() => compile({ host, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1911,7 +1911,7 @@ export default class CompilerSpec
         const actual   = await tryActionAsync(() => compile({ host, innerHTML, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1927,7 +1927,7 @@ export default class CompilerSpec
         const actual   = await tryActionAsync(() => compile({ host, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1944,7 +1944,7 @@ export default class CompilerSpec
         const actual   = await tryActionAsync(() => compile({ host, innerHTML, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1961,7 +1961,7 @@ export default class CompilerSpec
         const actual   = await tryActionAsync(() => compile({ host, innerHTML, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1977,7 +1977,7 @@ export default class CompilerSpec
         const actual   = tryAction(() => compile({ host, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1993,7 +1993,7 @@ export default class CompilerSpec
         const actual   = await tryActionAsync(() => compile({ host, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -2011,7 +2011,7 @@ export default class CompilerSpec
         const actual   = tryAction(() => compile({ host, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -2029,7 +2029,7 @@ export default class CompilerSpec
         const actual   = await tryActionAsync(() => compile({ host, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -2045,7 +2045,7 @@ export default class CompilerSpec
         const actual   = tryAction(() => compile({ host, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -2061,7 +2061,7 @@ export default class CompilerSpec
         const actual   = tryAction(() => compile({ host, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -2077,7 +2077,7 @@ export default class CompilerSpec
         const actual   = tryAction(() => compile({ host, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -2093,7 +2093,7 @@ export default class CompilerSpec
         const actual   = tryAction(() => compile({ host, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -2110,7 +2110,7 @@ export default class CompilerSpec
         const actual   = await tryActionAsync(() => compile({ host, innerHTML, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -2127,7 +2127,7 @@ export default class CompilerSpec
         const actual   = tryAction(() => compile({ host, innerHTML, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -2144,7 +2144,7 @@ export default class CompilerSpec
         const actual   = await tryActionAsync(() => compile({ host, innerHTML, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -2161,7 +2161,7 @@ export default class CompilerSpec
         const actual   = await tryActionAsync(() => compile({ host, innerHTML, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -2177,7 +2177,7 @@ export default class CompilerSpec
         const actual   = tryAction(() => compile({ host, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -2193,7 +2193,7 @@ export default class CompilerSpec
         const actual   = tryAction(() => compile({ host, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -2209,7 +2209,7 @@ export default class CompilerSpec
         const actual   = await tryActionAsync(() => compile({ host, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail // TODO: Investigate side effect crashes
@@ -2226,7 +2226,7 @@ export default class CompilerSpec
 
         const expected = toRaw(new CustomStackError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -2242,6 +2242,6 @@ export default class CompilerSpec
         const actual   = await tryActionAsync(() => compile({ host, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 }

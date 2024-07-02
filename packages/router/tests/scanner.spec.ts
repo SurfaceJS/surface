@@ -1,5 +1,5 @@
 import { batchTest, suite }                                       from "@surface/test-suite";
-import chai                                                       from "chai";
+import { assert }                                                 from "chai";
 import TokenType                                                  from "../internal/enums/token-type.js";
 import Scanner                                                    from "../internal/scanner.js";
 import { type ScannerValidExpectation, scannerValidExpectations } from "./scanner-expectations.js";
@@ -14,6 +14,6 @@ export default class RouteSpec
 
         const actual = scanner.nextToken();
 
-        chai.assert.deepEqual(actual, expected.token);
+        assert.deepEqual(actual, expected.token);
     }
 }

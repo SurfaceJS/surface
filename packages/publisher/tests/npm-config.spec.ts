@@ -3,7 +3,7 @@ import { join }                                                       from "path
 import Mock, { It }                                                   from "@surface/mock";
 import { isFile }                                                     from "@surface/rwx";
 import { afterEach, batchTest, beforeEach, shouldPass, suite }        from "@surface/test-suite";
-import chai                                                           from "chai";
+import { assert }                                                     from "chai";
 import NpmConfig                                                      from "../internal/npm-config.js";
 import { type AuthScenario, type Scenario, authScenarios, scenarios } from "./npm-config.scn.js";
 
@@ -49,7 +49,7 @@ export default class NpmConfigSpec
         // @ts-ignore
         const actual = config?.entries;
 
-        chai.assert.deepEqual(actual, scenario.expected);
+        assert.deepEqual(actual, scenario.expected);
     }
 
     @shouldPass
@@ -62,7 +62,7 @@ export default class NpmConfigSpec
 
         const actual = { registry: config!.registry, authToken: config!.authToken, scopedAuth: config!.getScopedAuth(scenario.scope) };
 
-        chai.assert.deepEqual(actual, scenario.expected);
-        chai.assert.deepEqual(config!.getScopedAuth(scenario.scope), scenario.expected.scopedAuth); // Cache
+        assert.deepEqual(actual, scenario.expected);
+        assert.deepEqual(config!.getScopedAuth(scenario.scope), scenario.expected.scopedAuth); // Cache
     }
 }

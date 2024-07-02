@@ -3,7 +3,7 @@ import "@surface/dom-shim";
 
 import { Parser }                                             from "@surface/expression";
 import { batchTest, suite }                                   from "@surface/test-suite";
-import chai                                                   from "chai";
+import { assert }                                             from "chai";
 import ObserverVisitor                                        from "../internal/observer-visitor.js";
 import { type Scenarios, scenarios, unobservableExpressions } from "./observer-visitor.scn.js";
 
@@ -17,7 +17,7 @@ export default class ObserverVisitorSpec
 
         const actual = ObserverVisitor.observe(expression);
 
-        chai.assert.deepEqual(actual, observableExpression.expected);
+        assert.deepEqual(actual, observableExpression.expected);
     }
 
     @batchTest(unobservableExpressions, x => `unobservable expression ${x}; shouldn't have observers`)
@@ -27,6 +27,6 @@ export default class ObserverVisitorSpec
 
         const paths = ObserverVisitor.observe(expression);
 
-        chai.assert.equal(paths.length, 0);
+        assert.equal(paths.length, 0);
     }
 }

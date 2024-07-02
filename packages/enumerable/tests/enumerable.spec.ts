@@ -1,6 +1,6 @@
 /* eslint-disable max-lines */
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import chai                                    from "chai";
+import { assert }                              from "chai";
 import Comparer                                from "../internal/comparer.js";
 import Enumerable                              from "../internal/enumerable.js";
 import type ILookup                            from "../internal/interfaces/lookup.js";
@@ -14,198 +14,198 @@ export default class EnumerableSpec
     {
         const enumerable = Enumerable.from([1, 2, 3]);
 
-        chai.assert.deepEqual(Array.from(enumerable), [1, 2, 3]);
-        chai.assert.deepEqual(enumerable.toArray(), [1, 2, 3]);
+        assert.deepEqual(Array.from(enumerable), [1, 2, 3]);
+        assert.deepEqual(enumerable.toArray(), [1, 2, 3]);
     }
 
     @test @shouldPass
     public empty(): void
     {
-        chai.assert.deepEqual(Array.from(Enumerable.empty()), []);
+        assert.deepEqual(Array.from(Enumerable.empty()), []);
     }
 
     @test @shouldPass
     public range(): void
     {
-        chai.assert.deepEqual(Array.from(Enumerable.range(1, 3)), [1, 2, 3]);
-        chai.assert.deepEqual(Array.from(Enumerable.range(3, 1)), [3, 2, 1]);
+        assert.deepEqual(Array.from(Enumerable.range(1, 3)), [1, 2, 3]);
+        assert.deepEqual(Array.from(Enumerable.range(3, 1)), [3, 2, 1]);
     }
 
     @test @shouldPass
     public repeat(): void
     {
-        chai.assert.deepEqual(Array.from(Enumerable.repeat(1, 3)), [1, 1, 1]);
+        assert.deepEqual(Array.from(Enumerable.repeat(1, 3)), [1, 1, 1]);
     }
 
     @test @shouldPass
     public aggregate(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).aggregate((previous, current) => previous + current), 6);
+        assert.equal(Enumerable.from([1, 2, 3]).aggregate((previous, current) => previous + current), 6);
     }
 
     @test @shouldPass
     public aggregateWithSeed(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).aggregate((previous, current) => previous + current, 10), 16);
+        assert.equal(Enumerable.from([1, 2, 3]).aggregate((previous, current) => previous + current, 10), 16);
     }
 
     @test @shouldPass
     public all(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).all(x => x > 0), true);
+        assert.equal(Enumerable.from([1, 2, 3]).all(x => x > 0), true);
     }
 
     @test @shouldPass
     public notAll(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).all(x => x < 0), false);
+        assert.equal(Enumerable.from([1, 2, 3]).all(x => x < 0), false);
     }
 
     @test @shouldPass
     public any(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).any(), true);
+        assert.equal(Enumerable.from([1, 2, 3]).any(), true);
     }
 
     @test @shouldPass
     public anyWithPredicate(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).any(x => x == 2), true);
+        assert.equal(Enumerable.from([1, 2, 3]).any(x => x == 2), true);
     }
 
     @test @shouldPass
     public notAnyWithPredicate(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).any(x => x == 4), false);
+        assert.equal(Enumerable.from([1, 2, 3]).any(x => x == 4), false);
     }
 
     @test @shouldPass
     public average(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).average(), 2);
+        assert.equal(Enumerable.from([1, 2, 3]).average(), 2);
     }
 
     @test @shouldPass
     public averageEmpty(): void
     {
-        chai.assert.equal(Enumerable.from([]).average(), 0);
+        assert.equal(Enumerable.from([]).average(), 0);
     }
 
     @test @shouldPass
     public averageWithSelector(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).average(x => x), 2);
+        assert.equal(Enumerable.from([1, 2, 3]).average(x => x), 2);
     }
 
     @test @shouldPass
     public cast(): void
     {
-        chai.assert.deepEqual(Array.from(Enumerable.from([1, 2, 3] as Object[]).cast<number>()), [1, 2, 3]);
+        assert.deepEqual(Array.from(Enumerable.from([1, 2, 3] as Object[]).cast<number>()), [1, 2, 3]);
     }
 
     @test @shouldPass
     public concat(): void
     {
-        chai.assert.deepEqual(Array.from(Enumerable.from([1, 2, 3]).concat([4, 5, 6])), [1, 2, 3, 4, 5, 6]);
+        assert.deepEqual(Array.from(Enumerable.from([1, 2, 3]).concat([4, 5, 6])), [1, 2, 3, 4, 5, 6]);
     }
 
     @test @shouldPass
     public contains(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).contains(1), true);
+        assert.equal(Enumerable.from([1, 2, 3]).contains(1), true);
     }
 
     @test @shouldPass
     public notContains(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).contains(4), false);
+        assert.equal(Enumerable.from([1, 2, 3]).contains(4), false);
     }
 
     @test @shouldPass
     public count(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).count(), 3);
-        chai.assert.equal(Enumerable.from([1, 2, 3]).count(x => x > 1), 2);
-        chai.assert.equal(Enumerable.from(Enumerable.from([1, 2, 3])).count(), 3);
-        chai.assert.equal(Enumerable.from(Enumerable.from([1, 2, 3])).count(x => x > 1), 2);
+        assert.equal(Enumerable.from([1, 2, 3]).count(), 3);
+        assert.equal(Enumerable.from([1, 2, 3]).count(x => x > 1), 2);
+        assert.equal(Enumerable.from(Enumerable.from([1, 2, 3])).count(), 3);
+        assert.equal(Enumerable.from(Enumerable.from([1, 2, 3])).count(x => x > 1), 2);
     }
 
     @test @shouldPass
     public countWithPredicate(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).count(x => x > 2), 1);
+        assert.equal(Enumerable.from([1, 2, 3]).count(x => x > 2), 1);
     }
 
     @test @shouldPass
     public defaultIfEmpty(): void
     {
-        chai.assert.deepEqual(Array.from(Enumerable.from([1, 2] as number[]).defaultIfEmpty(1)), [1, 2]);
+        assert.deepEqual(Array.from(Enumerable.from([1, 2] as number[]).defaultIfEmpty(1)), [1, 2]);
     }
 
     @test @shouldPass
     public defaultIfEmptyReturnDefault(): void
     {
-        chai.assert.deepEqual(Array.from(Enumerable.from([] as number[]).defaultIfEmpty(1)), [1]);
+        assert.deepEqual(Array.from(Enumerable.from([] as number[]).defaultIfEmpty(1)), [1]);
     }
 
     @test @shouldPass
     public distinct(): void
     {
-        chai.assert.deepEqual(Array.from(Enumerable.from([1, 1, 2, 2, 3]).distinct()), [1, 2, 3]);
+        assert.deepEqual(Array.from(Enumerable.from([1, 1, 2, 2, 3]).distinct()), [1, 2, 3]);
     }
 
     @test @shouldPass
     public elementAt(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).elementAt(2), 3);
+        assert.equal(Enumerable.from([1, 2, 3]).elementAt(2), 3);
     }
 
     @test @shouldPass
     public elementAtOrDefault(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).elementAtOrDefault(2), 3);
+        assert.equal(Enumerable.from([1, 2, 3]).elementAtOrDefault(2), 3);
     }
 
     @test @shouldPass
     public invalidElementAtOrDefault(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).elementAtOrDefault(5), null);
+        assert.equal(Enumerable.from([1, 2, 3]).elementAtOrDefault(5), null);
     }
 
     @test @shouldPass
     public except(): void
     {
-        chai.assert.deepEqual(Array.from(Enumerable.from([1, 2, 3]).except([2])), [1, 3]);
+        assert.deepEqual(Array.from(Enumerable.from([1, 2, 3]).except([2])), [1, 3]);
     }
 
     @test @shouldPass
     public first(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).first(), 1);
+        assert.equal(Enumerable.from([1, 2, 3]).first(), 1);
     }
 
     @test @shouldPass
     public firstWithPredicate(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).first(x => x > 1), 2);
+        assert.equal(Enumerable.from([1, 2, 3]).first(x => x > 1), 2);
     }
 
     @test @shouldPass
     public firstOrDefault(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).firstOrDefault(), 1);
+        assert.equal(Enumerable.from([1, 2, 3]).firstOrDefault(), 1);
     }
 
     @test @shouldPass
     public firstOrDefaultWithPredicate(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).firstOrDefault(x => x > 1), 2);
+        assert.equal(Enumerable.from([1, 2, 3]).firstOrDefault(x => x > 1), 2);
     }
 
     @test @shouldPass
     public firstOrDefaultReturnDefault(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).firstOrDefault(x => x < 0), null);
+        assert.equal(Enumerable.from([1, 2, 3]).firstOrDefault(x => x < 0), null);
     }
 
     @test @shouldPass
@@ -215,7 +215,7 @@ export default class EnumerableSpec
 
         Enumerable.from([1, 2, 3]).forEach(() => i++);
 
-        chai.assert.equal(i, 3);
+        assert.equal(i, 3);
     }
 
     @test @shouldPass
@@ -274,7 +274,7 @@ export default class EnumerableSpec
             },
         ];
 
-        chai.assert.deepEqual(Array.from(actual), expected);
+        assert.deepEqual(Array.from(actual), expected);
     }
 
     @test @shouldPass
@@ -296,7 +296,7 @@ export default class EnumerableSpec
             { elements: [{ id: 5, key: "c", value: 5 }], key: "c" },
         ];
 
-        chai.assert.deepEqual(Array.from(Enumerable.from(data).groupBy(x => x.key)), expected);
+        assert.deepEqual(Array.from(Enumerable.from(data).groupBy(x => x.key)), expected);
     }
 
     @test @shouldPass
@@ -320,7 +320,7 @@ export default class EnumerableSpec
 
         const actual = Array.from(Enumerable.from(data).groupBy(x => x.key, x => x.value));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -344,7 +344,7 @@ export default class EnumerableSpec
 
         const actual = Array.from(Enumerable.from(data).groupBy(x => x.key, x => x, (key, element) => ({ key, value: Enumerable.from(element).sum(x => x.value) })));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -394,13 +394,13 @@ export default class EnumerableSpec
             },
         ];
 
-        chai.assert.deepEqual(Array.from(actual), expected);
+        assert.deepEqual(Array.from(actual), expected);
     }
 
     @test @shouldPass
     public intersect(): void
     {
-        chai.assert.deepEqual(Array.from(Enumerable.from([1, 2, 3]).intersect([1, 4])), [1]);
+        assert.deepEqual(Array.from(Enumerable.from([1, 2, 3]).intersect([1, 4])), [1]);
     }
 
     @test @shouldPass
@@ -446,37 +446,37 @@ export default class EnumerableSpec
             },
         ];
 
-        chai.assert.deepEqual(Array.from(actual), expected);
+        assert.deepEqual(Array.from(actual), expected);
     }
 
     @test @shouldPass
     public last(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).last(), 3);
+        assert.equal(Enumerable.from([1, 2, 3]).last(), 3);
     }
 
     @test @shouldPass
     public lastWithPredicate(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).last(x => x < 3), 2);
+        assert.equal(Enumerable.from([1, 2, 3]).last(x => x < 3), 2);
     }
 
     @test @shouldPass
     public lastOrDefault(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).lastOrDefault(), 3);
+        assert.equal(Enumerable.from([1, 2, 3]).lastOrDefault(), 3);
     }
 
     @test @shouldPass
     public lastOrDefaultWithPredicate(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).lastOrDefault(x => x < 3), 2);
+        assert.equal(Enumerable.from([1, 2, 3]).lastOrDefault(x => x < 3), 2);
     }
 
     @test @shouldPass
     public lastOrDefaultReturnDefault(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).lastOrDefault(x => x > 3), null);
+        assert.equal(Enumerable.from([1, 2, 3]).lastOrDefault(x => x > 3), null);
     }
 
     @test @shouldPass
@@ -531,79 +531,79 @@ export default class EnumerableSpec
             },
         ];
 
-        chai.assert.deepEqual(Array.from(actual), expected);
+        assert.deepEqual(Array.from(actual), expected);
     }
 
     @test @shouldPass
     public max(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).max(), 3);
+        assert.equal(Enumerable.from([1, 2, 3]).max(), 3);
     }
 
     @test @shouldPass
     public maxFromEmpty(): void
     {
-        chai.assert.equal(Enumerable.from([]).max(), 0);
+        assert.equal(Enumerable.from([]).max(), 0);
     }
 
     @test @shouldPass
     public maxUnordered(): void
     {
-        chai.assert.equal(Enumerable.from([3, 6, 1]).max(), 6);
+        assert.equal(Enumerable.from([3, 6, 1]).max(), 6);
     }
 
     @test @shouldPass
     public maxWithSelector(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).max(x => x), 3);
+        assert.equal(Enumerable.from([1, 2, 3]).max(x => x), 3);
     }
 
     @test @shouldPass
     public min(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).min(), 1);
+        assert.equal(Enumerable.from([1, 2, 3]).min(), 1);
     }
 
     @test @shouldPass
     public minFromEmpty(): void
     {
-        chai.assert.equal(Enumerable.from([]).min(), 0);
+        assert.equal(Enumerable.from([]).min(), 0);
     }
 
     @test @shouldPass
     public minUnordered(): void
     {
-        chai.assert.equal(Enumerable.from([3, 6, 1]).min(), 1);
+        assert.equal(Enumerable.from([3, 6, 1]).min(), 1);
     }
 
     @test @shouldPass
     public minWithSelector(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).min(x => x), 1);
+        assert.equal(Enumerable.from([1, 2, 3]).min(x => x), 1);
     }
 
     @test @shouldPass
     public orderBy(): void
     {
-        chai.assert.deepEqual(Array.from(Enumerable.from([3, 2, 1]).orderBy(x => x)), [1, 2, 3]);
+        assert.deepEqual(Array.from(Enumerable.from([3, 2, 1]).orderBy(x => x)), [1, 2, 3]);
     }
 
     @test @shouldPass
     public orderByDescending(): void
     {
-        chai.assert.deepEqual(Array.from(Enumerable.from([1, 2, 3]).orderByDescending(x => x)), [3, 2, 1]);
+        assert.deepEqual(Array.from(Enumerable.from([1, 2, 3]).orderByDescending(x => x)), [3, 2, 1]);
     }
 
     @test @shouldPass
     public prepend(): void
     {
-        chai.assert.deepEqual(Array.from(Enumerable.from([1, 2, 3]).prepend(0)), [0, 1, 2, 3]);
+        assert.deepEqual(Array.from(Enumerable.from([1, 2, 3]).prepend(0)), [0, 1, 2, 3]);
     }
 
     @test @shouldPass
     public reverse(): void
     {
-        chai.assert.deepEqual(Array.from(Enumerable.from([1, 2, 3]).reverse()), [3, 2, 1]);
+        assert.deepEqual(Array.from(Enumerable.from([1, 2, 3]).reverse()), [3, 2, 1]);
     }
 
     @test @shouldPass
@@ -654,7 +654,7 @@ export default class EnumerableSpec
             },
         ];
 
-        chai.assert.deepEqual(Array.from(actual), expected);
+        assert.deepEqual(Array.from(actual), expected);
     }
 
     @test @shouldPass
@@ -667,7 +667,7 @@ export default class EnumerableSpec
             { id: 3, value: 33 },
         ];
 
-        chai.assert.deepEqual(Array.from(Enumerable.from(data).select(x => x.value)), [11, 22, 33]);
+        assert.deepEqual(Array.from(Enumerable.from(data).select(x => x.value)), [11, 22, 33]);
     }
 
     @test @shouldPass
@@ -680,7 +680,7 @@ export default class EnumerableSpec
             { id: 3, values: [7, 8, 9] },
         ];
 
-        chai.assert.deepEqual(Array.from(Enumerable.from(data).selectMany(x => x.values)), [1, 2, 3, 4, 5, 6, 7, 8, 9]);
+        assert.deepEqual(Array.from(Enumerable.from(data).selectMany(x => x.values)), [1, 2, 3, 4, 5, 6, 7, 8, 9]);
     }
 
     @test @shouldPass
@@ -708,94 +708,94 @@ export default class EnumerableSpec
             { item: 9, items: { id: 3, values: [7, 8, 9] } },
         ];
 
-        chai.assert.deepEqual(Array.from(actual), expected);
+        assert.deepEqual(Array.from(actual), expected);
     }
 
     @test @shouldPass
     public sequenceEqual(): void
     {
-        chai.assert.equal(Enumerable.from([]).sequenceEqual(Enumerable.from([])), true);
-        chai.assert.equal(Enumerable.from([1, 2, 3]).sequenceEqual(Enumerable.from([1, 2, 3])), true);
+        assert.equal(Enumerable.from([]).sequenceEqual(Enumerable.from([])), true);
+        assert.equal(Enumerable.from([1, 2, 3]).sequenceEqual(Enumerable.from([1, 2, 3])), true);
     }
 
     @test @shouldPass
     public notSequenceEqual(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).sequenceEqual(Enumerable.from([1, 2])), false);
-        chai.assert.equal(Enumerable.from([1, 2, 3]).sequenceEqual(Enumerable.from([2, 1])), false);
-        chai.assert.equal(Enumerable.from([1, 2, 3]).sequenceEqual(Enumerable.from([1, 3])), false);
+        assert.equal(Enumerable.from([1, 2, 3]).sequenceEqual(Enumerable.from([1, 2])), false);
+        assert.equal(Enumerable.from([1, 2, 3]).sequenceEqual(Enumerable.from([2, 1])), false);
+        assert.equal(Enumerable.from([1, 2, 3]).sequenceEqual(Enumerable.from([1, 3])), false);
     }
 
     @test @shouldPass
     public single(): void
     {
-        chai.assert.equal(Enumerable.from([1]).single(), 1);
+        assert.equal(Enumerable.from([1]).single(), 1);
     }
 
     @test @shouldPass
     public singleWithPredicate(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).single(x => x == 2), 2);
+        assert.equal(Enumerable.from([1, 2, 3]).single(x => x == 2), 2);
     }
 
     @test @shouldPass
     public singleOrDefault(): void
     {
-        chai.assert.equal(Enumerable.from([1]).singleOrDefault(), 1);
+        assert.equal(Enumerable.from([1]).singleOrDefault(), 1);
     }
 
     @test @shouldPass
     public singleOrDefaultWithPredicate(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).singleOrDefault(x => x == 2), 2);
+        assert.equal(Enumerable.from([1, 2, 3]).singleOrDefault(x => x == 2), 2);
     }
 
     @test @shouldPass
     public singleOrDefaultWithPredicateReturnDefault(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 2, 3]).singleOrDefault(x => x == 2), null);
+        assert.equal(Enumerable.from([1, 2, 2, 3]).singleOrDefault(x => x == 2), null);
     }
 
     @test @shouldPass
     public skip(): void
     {
-        chai.assert.deepEqual(Array.from(Enumerable.from([1, 2, 3]).skip(1)), [2, 3]);
+        assert.deepEqual(Array.from(Enumerable.from([1, 2, 3]).skip(1)), [2, 3]);
     }
 
     @test @shouldPass
     public skipWhile(): void
     {
-        chai.assert.deepEqual(Array.from(Enumerable.from([1, 2, 3, 4, 5]).skipWhile(x => x < 3)), [3, 4, 5]);
+        assert.deepEqual(Array.from(Enumerable.from([1, 2, 3, 4, 5]).skipWhile(x => x < 3)), [3, 4, 5]);
     }
 
     @test @shouldPass
     public sum(): void
     {
-        chai.assert.equal(Enumerable.from([1, 2, 3]).sum(), 6);
+        assert.equal(Enumerable.from([1, 2, 3]).sum(), 6);
     }
 
     @test @shouldPass
     public sumEmpty(): void
     {
-        chai.assert.equal(Enumerable.from([]).sum(), 0);
+        assert.equal(Enumerable.from([]).sum(), 0);
     }
 
     @test @shouldPass
     public take(): void
     {
-        chai.assert.deepEqual(Array.from(Enumerable.from([1, 2, 3]).take(2)), [1, 2]);
+        assert.deepEqual(Array.from(Enumerable.from([1, 2, 3]).take(2)), [1, 2]);
     }
 
     @test @shouldPass
     public takeWhile(): void
     {
-        chai.assert.deepEqual(Array.from(Enumerable.from([1, 2, 3, 4, 5]).takeWhile(x => x < 4)), [1, 2, 3]);
+        assert.deepEqual(Array.from(Enumerable.from([1, 2, 3, 4, 5]).takeWhile(x => x < 4)), [1, 2, 3]);
     }
 
     @test @shouldPass
     public toArray(): void
     {
-        chai.assert.deepEqual(Enumerable.from([1, 2, 3]).toArray(), [1, 2, 3]);
+        assert.deepEqual(Enumerable.from([1, 2, 3]).toArray(), [1, 2, 3]);
     }
 
     @test @shouldPass
@@ -803,7 +803,7 @@ export default class EnumerableSpec
     {
         const lookup = new Lookup([1, 2, 3], x => x, x => x, new Comparer()) as ILookup<number, unknown>;
 
-        chai.assert.deepEqual(Enumerable.from([1, 2, 3]).toLookup(x => x), lookup);
+        assert.deepEqual(Enumerable.from([1, 2, 3]).toLookup(x => x), lookup);
     }
 
     @test @shouldPass
@@ -811,7 +811,7 @@ export default class EnumerableSpec
     {
         const lookup = new Lookup([1, 2, 3], x => x, x => x, new Comparer()) as ILookup<number, unknown>;
 
-        chai.assert.deepEqual(Enumerable.from([1, 2, 3]).toLookup(x => x, x => x), lookup);
+        assert.deepEqual(Enumerable.from([1, 2, 3]).toLookup(x => x, x => x), lookup);
     }
 
     @test @shouldPass
@@ -866,7 +866,7 @@ export default class EnumerableSpec
             .thenBy(x => x.key)
             .thenBy(x => x.value));
 
-        chai.assert.deepEqual(sorted, expected);
+        assert.deepEqual(sorted, expected);
     }
 
     @test @shouldPass
@@ -921,19 +921,19 @@ export default class EnumerableSpec
             .thenByDescending(x => x.key)
             .thenByDescending(x => x.value));
 
-        chai.assert.deepEqual(sorted, expected);
+        assert.deepEqual(sorted, expected);
     }
 
     @test @shouldPass
     public union(): void
     {
-        chai.assert.deepEqual(Array.from(Enumerable.from([1, 2, 3]).union([3, 4, 5])), [1, 2, 3, 4, 5]);
+        assert.deepEqual(Array.from(Enumerable.from([1, 2, 3]).union([3, 4, 5])), [1, 2, 3, 4, 5]);
     }
 
     @test @shouldPass
     public where(): void
     {
-        chai.assert.deepEqual(Array.from(Enumerable.from([1, 2, 3]).where(x => x > 1)), [2, 3]);
+        assert.deepEqual(Array.from(Enumerable.from([1, 2, 3]).where(x => x > 1)), [2, 3]);
     }
 
     @test @shouldPass
@@ -947,72 +947,72 @@ export default class EnumerableSpec
             { left: 3, right: "three" },
         ];
 
-        chai.assert.deepEqual(Array.from(actual), expected);
+        assert.deepEqual(Array.from(actual), expected);
     }
 
     @test @shouldFail
     public averageError(): void
     {
-        chai.assert.throw(() => Enumerable.from(["1", "2", "3"]).average(), Error, "element is not a number");
+        assert.throw(() => Enumerable.from(["1", "2", "3"]).average(), Error, "element is not a number");
     }
 
     @test @shouldFail
     public elementAtError(): void
     {
-        chai.assert.throw(() => Enumerable.from([1, 2, 3]).elementAt(4), Error, "index is less than 0 or greater than the number of elements in source");
+        assert.throw(() => Enumerable.from([1, 2, 3]).elementAt(4), Error, "index is less than 0 or greater than the number of elements in source");
     }
 
     @test @shouldFail
     public firstError(): void
     {
-        chai.assert.throw(() => Enumerable.from([]).first(), Error, "the source sequence is empty");
+        assert.throw(() => Enumerable.from([]).first(), Error, "the source sequence is empty");
     }
 
     @test @shouldFail
     public firstWithPredicateError(): void
     {
-        chai.assert.throw(() => Enumerable.from([1, 2, 3]).first(x => x > 3), Error, "no element satisfies the condition in predicate");
+        assert.throw(() => Enumerable.from([1, 2, 3]).first(x => x > 3), Error, "no element satisfies the condition in predicate");
     }
 
     @test @shouldFail
     public lastError(): void
     {
-        chai.assert.throw(() => Enumerable.from([]).last(), Error, "the source sequence is empty");
+        assert.throw(() => Enumerable.from([]).last(), Error, "the source sequence is empty");
     }
 
     @test @shouldFail
     public lastWithPredicateError(): void
     {
-        chai.assert.throw(() => Enumerable.from([1, 2, 3]).last(x => x > 3), Error, "no element satisfies the condition in predicate");
+        assert.throw(() => Enumerable.from([1, 2, 3]).last(x => x > 3), Error, "no element satisfies the condition in predicate");
     }
 
     @test @shouldFail
     public maxError(): void
     {
-        chai.assert.throw(() => Enumerable.from(["1", "2", "3"]).max(), Error, "element is not a number");
+        assert.throw(() => Enumerable.from(["1", "2", "3"]).max(), Error, "element is not a number");
     }
 
     @test @shouldFail
     public minError(): void
     {
-        chai.assert.throw(() => Enumerable.from(["1", "2", "3"]).min(), Error, "element is not a number");
+        assert.throw(() => Enumerable.from(["1", "2", "3"]).min(), Error, "element is not a number");
     }
 
     @test @shouldFail
     public singleError(): void
     {
-        chai.assert.throw(() => Enumerable.from([]).single(), Error, "the source sequence is empty");
+        assert.throw(() => Enumerable.from([]).single(), Error, "the source sequence is empty");
     }
 
     @test @shouldFail
     public singleWithPredicateError(): void
     {
-        chai.assert.throw(() => Enumerable.from([1, 2, 3]).single(x => x > 3), Error, "no element satisfies the condition in predicate");
+        assert.throw(() => Enumerable.from([1, 2, 3]).single(x => x > 3), Error, "no element satisfies the condition in predicate");
     }
 
     @test @shouldFail
     public sumNotNumber(): void
     {
-        chai.assert.throws(() => Enumerable.from([""]).sum());
+        assert.throws(() => Enumerable.from([""]).sum());
     }
 }

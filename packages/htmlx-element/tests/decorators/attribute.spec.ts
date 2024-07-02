@@ -3,7 +3,7 @@ import "@surface/dom-shim";
 
 import { scheduler }               from "@surface/htmlx";
 import { shouldPass, suite, test } from "@surface/test-suite";
-import chai                        from "chai";
+import { assert }                  from "chai";
 import attribute                   from "../../internal/decorators/attribute.js";
 import element                     from "../../internal/decorators/element.js";
 import HTMLXElement                from "../../internal/htmlx-element.js";
@@ -36,31 +36,31 @@ export default class ElementDecoratorSpec
             }
         }
 
-        chai.assert.deepEqual(Mock.observedAttributes, ["field", "property"]);
+        assert.deepEqual(Mock.observedAttributes, ["field", "property"]);
 
         const mock = new Mock();
 
-        chai.assert.equal(mock.field, "");
-        chai.assert.equal(mock.property, "");
+        assert.equal(mock.field, "");
+        assert.equal(mock.property, "");
 
-        chai.assert.equal(mock.getAttribute("field"), null);
-        chai.assert.equal(mock.getAttribute("property"), null);
+        assert.equal(mock.getAttribute("field"), null);
+        assert.equal(mock.getAttribute("property"), null);
 
         mock.field    = "changed";
         mock.property = "changed";
 
         await scheduler.execution();
 
-        chai.assert.equal(mock.getAttribute("field"), "changed");
-        chai.assert.equal(mock.getAttribute("property"), "changed");
+        assert.equal(mock.getAttribute("field"), "changed");
+        assert.equal(mock.getAttribute("property"), "changed");
 
         mock.setAttribute("field", "changed-again");
         mock.setAttribute("property", "changed-again");
 
         await scheduler.execution();
 
-        chai.assert.equal(mock.field, "changed-again");
-        chai.assert.equal(mock.property, "changed-again");
+        assert.equal(mock.field, "changed-again");
+        assert.equal(mock.property, "changed-again");
     }
 
     @test @shouldPass
@@ -82,26 +82,26 @@ export default class ElementDecoratorSpec
 
         const mock = new Mock();
 
-        chai.assert.equal(mock.field, "");
-        chai.assert.equal(mock.callbackValue, "");
+        assert.equal(mock.field, "");
+        assert.equal(mock.callbackValue, "");
 
-        chai.assert.equal(mock.getAttribute("field"), null);
+        assert.equal(mock.getAttribute("field"), null);
 
         mock.field = "changed";
 
         await scheduler.execution();
 
-        chai.assert.equal(mock.getAttribute("field"), "changed");
-        chai.assert.equal(mock.field, "changed");
-        chai.assert.equal(mock.callbackValue, "field:changed");
+        assert.equal(mock.getAttribute("field"), "changed");
+        assert.equal(mock.field, "changed");
+        assert.equal(mock.callbackValue, "field:changed");
 
         mock.setAttribute("field", "changed-again");
 
         await scheduler.execution();
 
-        chai.assert.equal(mock.getAttribute("field"), "changed-again");
-        chai.assert.equal(mock.field, "changed-again");
-        chai.assert.equal(mock.callbackValue, "field:changed-again");
+        assert.equal(mock.getAttribute("field"), "changed-again");
+        assert.equal(mock.field, "changed-again");
+        assert.equal(mock.callbackValue, "field:changed-again");
     }
 
     @test @shouldPass
@@ -157,43 +157,43 @@ export default class ElementDecoratorSpec
 
         const mock = new Mock();
 
-        chai.assert.equal(mock.property, "");
-        chai.assert.equal(mock.baseProperty, "");
-        chai.assert.equal(mock.callbackValue, "");
-        chai.assert.equal(mock.baseCallbackValue, "");
+        assert.equal(mock.property, "");
+        assert.equal(mock.baseProperty, "");
+        assert.equal(mock.callbackValue, "");
+        assert.equal(mock.baseCallbackValue, "");
 
-        chai.assert.equal(mock.getAttribute("property"), null);
+        assert.equal(mock.getAttribute("property"), null);
 
         mock.property = "changed";
 
         await scheduler.execution();
 
-        chai.assert.equal(mock.callbackValue, "property:changed");
-        chai.assert.equal(mock.getAttribute("property"), "changed");
+        assert.equal(mock.callbackValue, "property:changed");
+        assert.equal(mock.getAttribute("property"), "changed");
 
         mock.baseProperty = "changed";
 
         await scheduler.execution();
 
-        chai.assert.equal(mock.baseCallbackValue, "base-property:changed");
-        chai.assert.equal(mock.getAttribute("base-property"), "changed");
+        assert.equal(mock.baseCallbackValue, "base-property:changed");
+        assert.equal(mock.getAttribute("base-property"), "changed");
 
         mock.setAttribute("property", "changed-again");
 
         await scheduler.execution();
 
-        chai.assert.equal(mock.property, "changed-again");
-        chai.assert.equal(mock.baseProperty, "changed");
-        chai.assert.equal(mock.callbackValue, "property:changed-again");
-        chai.assert.equal(mock.baseCallbackValue, "property:changed-again");
+        assert.equal(mock.property, "changed-again");
+        assert.equal(mock.baseProperty, "changed");
+        assert.equal(mock.callbackValue, "property:changed-again");
+        assert.equal(mock.baseCallbackValue, "property:changed-again");
 
         mock.setAttribute("base-property", "changed-one-more");
 
         await scheduler.execution();
 
-        chai.assert.equal(mock.property, "changed-again");
-        chai.assert.equal(mock.baseProperty, "changed-one-more");
-        chai.assert.equal(mock.callbackValue, "base-property:changed-one-more");
-        chai.assert.equal(mock.baseCallbackValue, "base-property:changed-one-more");
+        assert.equal(mock.property, "changed-again");
+        assert.equal(mock.baseProperty, "changed-one-more");
+        assert.equal(mock.callbackValue, "base-property:changed-one-more");
+        assert.equal(mock.baseCallbackValue, "base-property:changed-one-more");
     }
 }

@@ -2,7 +2,7 @@
 import "@surface/dom-shim";
 
 import { shouldPass, suite, test } from "@surface/test-suite";
-import chai                        from "chai";
+import { assert }                  from "chai";
 import createDirectiveFactory      from "../internal/factories/create-directive-factory.js";
 import createElementFactory        from "../internal/factories/create-element-factory.js";
 import createEventListenerFactory  from "../internal/factories/create-event-listener-factory.js";
@@ -28,8 +28,8 @@ export default class ElementFactorySpec
     {
         const [element] = createElementFactory("div")();
 
-        chai.assert.equal(element.nodeName, "DIV");
-        chai.assert.instanceOf(element, HTMLElement);
+        assert.equal(element.nodeName, "DIV");
+        assert.instanceOf(element, HTMLElement);
     }
 
     @test @shouldPass
@@ -37,8 +37,8 @@ export default class ElementFactorySpec
     {
         const [element] = createElementFactory("div", [["foo", ""], ["bar", "bar"]])() as [Element, Activator];
 
-        chai.assert.isTrue(element.hasAttribute("foo"));
-        chai.assert.equal(element.getAttribute("bar"), "bar");
+        assert.isTrue(element.hasAttribute("foo"));
+        assert.equal(element.getAttribute("bar"), "bar");
     }
 
     @test @shouldPass
@@ -57,13 +57,13 @@ export default class ElementFactorySpec
 
         await scheduler.execution();
 
-        chai.assert.equal(element.getAttribute("value"), scope.host.value);
+        assert.equal(element.getAttribute("value"), scope.host.value);
 
         scope.host.value = "Hello World!!!";
 
         await scheduler.execution();
 
-        chai.assert.equal(element.getAttribute("value"), scope.host.value);
+        assert.equal(element.getAttribute("value"), scope.host.value);
 
         disposable.dispose();
 
@@ -73,7 +73,7 @@ export default class ElementFactorySpec
 
         await scheduler.execution();
 
-        chai.assert.notEqual(element.getAttribute("value"), scope.host.value);
+        assert.notEqual(element.getAttribute("value"), scope.host.value);
     }
 
     @test @shouldPass
@@ -92,13 +92,13 @@ export default class ElementFactorySpec
 
         await scheduler.execution();
 
-        chai.assert.equal(element.className, scope.host.value);
+        assert.equal(element.className, scope.host.value);
 
         scope.host.value = "my-class-changed";
 
         await scheduler.execution();
 
-        chai.assert.equal(element.className, scope.host.value);
+        assert.equal(element.className, scope.host.value);
 
         disposable.dispose();
 
@@ -108,7 +108,7 @@ export default class ElementFactorySpec
 
         await scheduler.execution();
 
-        chai.assert.notEqual(element.className, scope.host.value);
+        assert.notEqual(element.className, scope.host.value);
     }
 
     @test @shouldPass
@@ -127,19 +127,19 @@ export default class ElementFactorySpec
 
         await scheduler.execution();
 
-        chai.assert.equal(element.className, scope.host.value);
+        assert.equal(element.className, scope.host.value);
 
         scope.host.value = "my-class-changed";
 
         await scheduler.execution();
 
-        chai.assert.equal(element.className, scope.host.value);
+        assert.equal(element.className, scope.host.value);
 
         element.className = "my-class-changed-again";
 
         await scheduler.execution();
 
-        chai.assert.equal(element.className, scope.host.value);
+        assert.equal(element.className, scope.host.value);
 
         disposable.dispose();
 
@@ -147,7 +147,7 @@ export default class ElementFactorySpec
 
         await scheduler.execution();
 
-        chai.assert.notEqual(element.className, scope.host.value);
+        assert.notEqual(element.className, scope.host.value);
     }
 
     @test @shouldPass
@@ -170,13 +170,13 @@ export default class ElementFactorySpec
 
         element.dispatchEvent(new Event("click"));
 
-        chai.assert.equal(clicked, 1);
+        assert.equal(clicked, 1);
 
         disposable.dispose();
 
         element.dispatchEvent(new Event("click"));
 
-        chai.assert.equal(clicked, 1);
+        assert.equal(clicked, 1);
     }
 
     @test @shouldPass
@@ -200,8 +200,8 @@ export default class ElementFactorySpec
 
         await scheduler.execution();
 
-        chai.assert.equal(element.childNodes[0]!.textContent, "custom: Hello World!!!");
-        chai.assert.equal(element.childNodes[1]!.textContent, "custom-factory: Hello World!!!");
+        assert.equal(element.childNodes[0]!.textContent, "custom: Hello World!!!");
+        assert.equal(element.childNodes[1]!.textContent, "custom-factory: Hello World!!!");
 
         disposable.dispose();
     }
@@ -230,7 +230,7 @@ export default class ElementFactorySpec
 
         await scheduler.execution();
 
-        chai.assert.equal(element.firstElementChild!.nodeName, "SPAN");
-        chai.assert.equal(element.firstElementChild!.getAttribute("value"), scope.host.value);
+        assert.equal(element.firstElementChild!.nodeName, "SPAN");
+        assert.equal(element.firstElementChild!.getAttribute("value"), scope.host.value);
     }
 }

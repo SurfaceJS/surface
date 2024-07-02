@@ -1,7 +1,7 @@
 /* eslint-disable max-lines */
 // import { writeFileSync }           from "fs";
 import { shouldPass, suite, test } from "@surface/test-suite";
-import chai                        from "chai";
+import { assert }                  from "chai";
 import SourceGenerator             from "../internal/source-generator.js";
 
 @suite
@@ -29,7 +29,7 @@ export default class SourceGeneratorSpec
 
         const actual = SourceGenerator.generate("x-component", "", { }, true);
 
-        chai.assert.equal(actual, expected);
+        assert.equal(actual, expected);
     }
 
     @test @shouldPass
@@ -60,7 +60,7 @@ export default class SourceGeneratorSpec
 
         const actual = SourceGenerator.generate("x-component", "<!-- This is a Comment -->", { }, true);
 
-        chai.assert.equal(actual, expected);
+        assert.equal(actual, expected);
     }
 
     @test @shouldPass
@@ -91,7 +91,7 @@ export default class SourceGeneratorSpec
 
         const actual = SourceGenerator.generate("x-component", "Hello World!!!", { }, true);
 
-        chai.assert.equal(actual, expected);
+        assert.equal(actual, expected);
     }
 
     @test @shouldPass
@@ -125,7 +125,7 @@ export default class SourceGeneratorSpec
 
         const actual = SourceGenerator.generate("x-component", "<span></span>", { }, true);
 
-        chai.assert.equal(actual, expected);
+        assert.equal(actual, expected);
     }
 
     @test @shouldPass
@@ -162,7 +162,7 @@ export default class SourceGeneratorSpec
 
         const actual = SourceGenerator.generate("x-component", "<span foo bar=\"baz\"></span>", { }, true);
 
-        chai.assert.equal(actual, expected);
+        assert.equal(actual, expected);
     }
 
     @test @shouldPass
@@ -198,7 +198,7 @@ export default class SourceGeneratorSpec
 
         const actual = SourceGenerator.generate("x-component", "<img src='./foo.png'></img>", { }, true);
 
-        chai.assert.equal(actual, expected);
+        assert.equal(actual, expected);
     }
 
     @test @shouldPass
@@ -234,7 +234,7 @@ export default class SourceGeneratorSpec
 
         const actual = SourceGenerator.generate("x-component", "<img srcset='./foo.800-600.png 800w 600h 1x, ./foo.1920-1080.png 1920w 1080h 2x'></img>", { }, true);
 
-        chai.assert.equal(actual, expected);
+        assert.equal(actual, expected);
     }
 
     @test @shouldPass
@@ -308,7 +308,7 @@ export default class SourceGeneratorSpec
 
         const actual = SourceGenerator.generate("x-component", source, { }, true);
 
-        chai.assert.equal(actual, expected);
+        assert.equal(actual, expected);
     }
 
     @test @shouldPass
@@ -360,7 +360,7 @@ export default class SourceGeneratorSpec
 
         const actual = SourceGenerator.generate("x-component", source, { }, true);
 
-        chai.assert.equal(actual, expected);
+        assert.equal(actual, expected);
     }
 
     @test @shouldPass
@@ -413,7 +413,7 @@ export default class SourceGeneratorSpec
 
         const actual = SourceGenerator.generate("x-component", source, { }, true);
 
-        chai.assert.equal(actual, expected);
+        assert.equal(actual, expected);
     }
 
     @test @shouldPass
@@ -465,7 +465,7 @@ export default class SourceGeneratorSpec
 
         const actual = SourceGenerator.generate("x-component", source, { }, true);
 
-        chai.assert.equal(actual, expected);
+        assert.equal(actual, expected);
     }
 
     @test @shouldPass
@@ -511,7 +511,7 @@ export default class SourceGeneratorSpec
 
         const actual = SourceGenerator.generate("x-component", "<span value=\"{host.value}\"></span>", { }, true);
 
-        chai.assert.equal(actual, expected);
+        assert.equal(actual, expected);
     }
 
     @test @shouldPass
@@ -555,7 +555,7 @@ export default class SourceGeneratorSpec
 
         const actual = SourceGenerator.generate("x-component", "<span @click=\"host.handler\"></span>", { }, true);
 
-        chai.assert.equal(actual, expected);
+        assert.equal(actual, expected);
     }
 
     @test @shouldPass
@@ -599,7 +599,7 @@ export default class SourceGeneratorSpec
 
         const actual = SourceGenerator.generate("x-component", "<span #show=\"host.show\"></span>", { }, true);
 
-        chai.assert.equal(actual, expected);
+        assert.equal(actual, expected);
     }
 
     @test @shouldPass
@@ -643,7 +643,7 @@ export default class SourceGeneratorSpec
 
         const actual = SourceGenerator.generate("x-component", "<span :value=\"host.value\"></span>", { }, true);
 
-        chai.assert.equal(actual, expected);
+        assert.equal(actual, expected);
     }
 
     @test @shouldPass
@@ -686,7 +686,7 @@ export default class SourceGeneratorSpec
 
         const actual = SourceGenerator.generate("x-component", "<span ::value=\"host.value\"></span>", { }, true);
 
-        chai.assert.equal(actual, expected);
+        assert.equal(actual, expected);
     }
 
     @test @shouldPass
@@ -737,7 +737,7 @@ export default class SourceGeneratorSpec
 
         const actual = SourceGenerator.generate("x-component", "<span ...attributes|properties|listeners=\"host\"></span>", { }, true);
 
-        chai.assert.equal(actual, expected);
+        assert.equal(actual, expected);
     }
 
     @test @shouldPass
@@ -817,7 +817,7 @@ export default class SourceGeneratorSpec
 
         const actual = SourceGenerator.generate("x-component", "<span #if=\"host.value\">Show</span><span #else>Hide</span>", { }, true);
 
-        chai.assert.equal(actual, expected);
+        assert.equal(actual, expected);
     }
 
     @test @shouldPass
@@ -877,7 +877,7 @@ export default class SourceGeneratorSpec
 
         // writeFileSync("test.js", actual);
 
-        chai.assert.equal(actual, expected);
+        assert.equal(actual, expected);
     }
 
     @test @shouldPass
@@ -936,7 +936,7 @@ export default class SourceGeneratorSpec
 
         // writeFileSync("test.js", actual);
 
-        chai.assert.equal(actual, expected);
+        assert.equal(actual, expected);
     }
 
     @test @shouldPass
@@ -995,6 +995,6 @@ export default class SourceGeneratorSpec
 
         // writeFileSync("test.js", actual);
 
-        chai.assert.equal(actual, expected);
+        assert.equal(actual, expected);
     }
 }

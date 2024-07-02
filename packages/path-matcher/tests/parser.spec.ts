@@ -1,5 +1,5 @@
 import { batchTest, shouldPass, suite }       from "@surface/test-suite";
-import chai                                   from "chai";
+import { assert }                             from "chai";
 import PathMatcher                            from "../internal/path-matcher.js";
 import { type Scenario, scenarios }           from "./parser.scn.js";
 import { type SplitScenario, splitScenarios } from "./parser.split.scn.js";
@@ -13,19 +13,19 @@ export default class PatternMatcherSpec
     {
         const regex = PathMatcher.makeRegex(scenario.source, scenario.options);
 
-        chai.assert.deepEqual(regex, scenario.regex, "regex deep equal to expectation.regex");
+        assert.deepEqual(regex, scenario.regex, "regex deep equal to expectation.regex");
 
         for (const path of scenario.matches)
         {
-            chai.assert.isTrue(regex.test(path), `regex.test("${path}") should be true`);
+            assert.isTrue(regex.test(path), `regex.test("${path}") should be true`);
         }
 
         for (const path of scenario.mismatches)
         {
-            chai.assert.isFalse(regex.test(path), `regex.test("${path}") should be false`);
+            assert.isFalse(regex.test(path), `regex.test("${path}") should be false`);
         }
 
-        chai.assert.deepEqual(regex, scenario.regex, "regex deep equal to expectation.regex");
+        assert.deepEqual(regex, scenario.regex, "regex deep equal to expectation.regex");
     }
 
     @shouldPass
@@ -34,6 +34,6 @@ export default class PatternMatcherSpec
     {
         const actual = PathMatcher.split(scenario.source);
 
-        chai.assert.deepEqual(actual, scenario.expected);
+        assert.deepEqual(actual, scenario.expected);
     }
 }

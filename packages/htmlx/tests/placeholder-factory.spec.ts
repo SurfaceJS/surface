@@ -2,7 +2,7 @@
 import "@surface/dom-shim";
 
 import { shouldPass, suite, test }        from "@surface/test-suite";
-import chai                               from "chai";
+import { assert }                         from "chai";
 import createElementFactory               from "../internal/factories/create-element-factory.js";
 import createPlaceholderFactory           from "../internal/factories/create-placeholder-factory.js";
 import createTextNodeInterpolationFactory from "../internal/factories/create-text-node-interpolation-factory.js";
@@ -46,7 +46,7 @@ export default class PlaceholderFactorySpec
 
         const actual = Array.from(element.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual, expected, "#0");
+        assert.deepEqual(actual, expected, "#0");
 
         await scheduler.execution();
 
@@ -59,10 +59,10 @@ export default class PlaceholderFactorySpec
 
         const actual1 = Array.from(element.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual1, expected1, "#1");
+        assert.deepEqual(actual1, expected1, "#1");
 
         disposable.dispose();
 
-        chai.assert.equal(element.firstElementChild, null);
+        assert.equal(element.firstElementChild, null);
     }
 }

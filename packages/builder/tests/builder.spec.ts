@@ -1,7 +1,7 @@
 
 import Mock, { It }                                               from "@surface/mock";
 import { afterEach, beforeEach, suite, test }                     from "@surface/test-suite";
-import chai                                                       from "chai";
+import { assert }                                                 from "chai";
 import type { Configuration, Stats, Compiler as WebpackCompiler } from "webpack";
 import webpack                                                    from "webpack";
 import WebpackDevServer                                           from "webpack-dev-server";
@@ -94,7 +94,7 @@ export default class CompilerSpec
 
         await Builder.analyze({ });
 
-        chai.assert.isOk(true);
+        assert.isOk(true);
     }
 
     @test
@@ -108,7 +108,7 @@ export default class CompilerSpec
         await Builder.run({ logging: "normal" });
         await Builder.run({ logging: "verbose" });
 
-        chai.assert.isOk(true);
+        assert.isOk(true);
     }
 
     @test
@@ -120,7 +120,7 @@ export default class CompilerSpec
 
         await signal.close();
 
-        chai.assert.isOk(true);
+        assert.isOk(true);
     }
 
     @test
@@ -132,7 +132,7 @@ export default class CompilerSpec
 
         await signal.close();
 
-        chai.assert.isOk(true);
+        assert.isOk(true);
     }
 
     @test
@@ -146,7 +146,7 @@ export default class CompilerSpec
         }
         catch (error)
         {
-            chai.assert.isOk(error);
+            assert.isOk(error);
         }
     }
 
@@ -161,7 +161,7 @@ export default class CompilerSpec
         }
         catch (error)
         {
-            chai.assert.isOk(error);
+            assert.isOk(error);
         }
     }
 
@@ -178,7 +178,7 @@ export default class CompilerSpec
         }
         catch (error)
         {
-            chai.assert.isOk(error);
+            assert.isOk(error);
         }
     }
 }

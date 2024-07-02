@@ -4,11 +4,11 @@ import "@surface/dom-shim";
 
 import { CancellationTokenSource }             from "@surface/core";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import chai                                    from "chai";
+import { assert, use }                         from "chai";
 import chaiAsPromised                          from "chai-as-promised";
 import Scheduler                               from "../internal/processors/scheduler.js";
 
-chai.use(chaiAsPromised);
+use(chaiAsPromised);
 
 @suite
 export default class SchedulerSpec
@@ -20,7 +20,7 @@ export default class SchedulerSpec
 
         const actual = await scheduler.enqueue(() => 1, "high");
 
-        chai.assert.equal(actual, 1);
+        assert.equal(actual, 1);
     }
 
     @test @shouldPass
@@ -31,7 +31,7 @@ export default class SchedulerSpec
 
         const promise = scheduler.enqueue(() => 1, "high", cancellationTokenSource.token);
 
-        await chai.assert.isFulfilled(promise);
+        await assert.isFulfilled(promise);
     }
 
     @test @shouldPass
@@ -48,7 +48,7 @@ export default class SchedulerSpec
 
         await scheduler.execution();
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -58,7 +58,7 @@ export default class SchedulerSpec
 
         const actual = await scheduler.enqueue(async () => scheduler.enqueue(async () => scheduler.enqueue(() => true, "high"), "normal"), "low");
 
-        chai.assert.isTrue(actual);
+        assert.isTrue(actual);
     }
 
     @test @shouldFail
@@ -75,7 +75,7 @@ export default class SchedulerSpec
 
         await promise;
 
-        chai.assert.notEqual(value, 1);
+        assert.notEqual(value, 1);
     }
 
     @test @shouldFail
@@ -83,7 +83,7 @@ export default class SchedulerSpec
     {
         const scheduler = new Scheduler(0);
 
-        await chai.assert.isRejected(scheduler.enqueue(() => { throw new Error(); }, "high"));
+        await assert.isRejected(scheduler.enqueue(() => { throw new Error(); }, "high"));
     }
 
     @test @shouldFail
@@ -95,6 +95,6 @@ export default class SchedulerSpec
         void scheduler.enqueue(() => { throw new Error(); }, "high");
         void scheduler.enqueue(() => { throw new Error(); }, "high");
 
-        await chai.assert.isRejected(scheduler.execution());
+        await assert.isRejected(scheduler.execution());
     }
 }

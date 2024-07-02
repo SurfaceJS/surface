@@ -1,5 +1,5 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
-import chai                        from "chai";
+import { assert }                  from "chai";
 import Comparer                    from "../internal/comparer.js";
 import EnumerableSorter            from "../internal/enumerable-sorter.js";
 
@@ -10,14 +10,14 @@ export default class EnumerableSorterSpec
     public sort(): void
     {
         const sorter = new EnumerableSorter<number, number>(x => x, false, new Comparer());
-        chai.assert.deepEqual(sorter.sort([3, 2, 1]), [2, 1, 0]);
+        assert.deepEqual(sorter.sort([3, 2, 1]), [2, 1, 0]);
     }
 
     @test @shouldPass
     public sortDescending(): void
     {
         const sorter = new EnumerableSorter<number, number>(x => x, true, new Comparer());
-        chai.assert.deepEqual(sorter.sort([1, 2, 3]), [2, 1, 0]);
+        assert.deepEqual(sorter.sort([1, 2, 3]), [2, 1, 0]);
     }
 
     @test @shouldPass
@@ -34,6 +34,6 @@ export default class EnumerableSorterSpec
         const next   = new EnumerableSorter<string, { key: string, value: string }>(x => x.value, false, new Comparer());
         const sorter = new EnumerableSorter<string, { key: string, value: string }>(x => x.key, false, new Comparer(), next);
 
-        chai.assert.deepEqual(sorter.sort(list), [2, 0, 1, 3]);
+        assert.deepEqual(sorter.sort(list), [2, 0, 1, 3]);
     }
 }

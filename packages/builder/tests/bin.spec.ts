@@ -1,7 +1,7 @@
 /* eslint-disable array-element-newline */
 import Mock, { It }                           from "@surface/mock";
 import { afterEach, beforeEach, suite, test } from "@surface/test-suite";
-import chai                                   from "chai";
+import { assert }                             from "chai";
 import Commands                               from "../internal/commands.js";
 import type CliAnalyzerOptions                from "../internal/types/cli-analyzer-options.js";
 import type CliBuildOptions                   from "../internal/types/cli-build-options.js";
@@ -107,7 +107,7 @@ export default class BinSpec
             tsconfig:               "tsconfig",
         };
 
-        chai.assert.deepEqual(actual!, expected);
+        assert.deepEqual(actual!, expected);
     }
 
     @test
@@ -176,7 +176,7 @@ export default class BinSpec
             watch:                  true,
         };
 
-        chai.assert.deepEqual(actual!, expected);
+        assert.deepEqual(actual!, expected);
     }
 
     @test
@@ -255,6 +255,6 @@ export default class BinSpec
             tsconfig:                       "tsconfig",
         };
 
-        chai.assert.deepEqual(actual!, expected);
+        assert.deepEqual(actual!, expected);
     }
 }

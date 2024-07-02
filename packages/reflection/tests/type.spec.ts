@@ -1,5 +1,5 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
-import chai                        from "chai";
+import { assert }                  from "chai";
 import semver                      from "semver";
 import FieldInfo                   from "../internal/field-info.js";
 import MethodInfo                  from "../internal/method-info.js";
@@ -16,13 +16,13 @@ export default class TypeSpec
     @test @shouldPass
     public getTypeOf(): void
     {
-        chai.assert.equal(Type.of(Mock).equals(Type.from(new Mock())), true);
+        assert.equal(Type.of(Mock).equals(Type.from(new Mock())), true);
     }
 
     @test @shouldPass
     public getTypeFrom(): void
     {
-        chai.assert.equal(Type.from(new Mock()).equals(Type.of(Mock)), true);
+        assert.equal(Type.from(new Mock()).equals(Type.of(Mock)), true);
     }
 
     @test @shouldPass
@@ -30,33 +30,33 @@ export default class TypeSpec
     {
         const type = Type.from({ bar: "two", foo: 1 });
 
-        chai.assert.equal(Array.from(type.getFields()).length, 2);
-        chai.assert.equal(type.getField("foo")!.descriptor.value, 1);
-        chai.assert.equal(type.getField("bar")!.descriptor.value, "two");
+        assert.equal(Array.from(type.getFields()).length, 2);
+        assert.equal(type.getField("foo")!.descriptor.value, 1);
+        assert.equal(type.getField("bar")!.descriptor.value, "two");
     }
 
     @test @shouldPass
     public getNonBaseType(): void
     {
-        chai.assert.equal(Type.of(Object).baseType, null);
+        assert.equal(Type.of(Object).baseType, null);
     }
 
     @test @shouldPass
     public getBaseType(): void
     {
-        chai.assert.deepEqual(Type.of(Mock).baseType, Type.of(BaseMock));
+        assert.deepEqual(Type.of(Mock).baseType, Type.of(BaseMock));
     }
 
     @test @shouldPass
     public getName(): void
     {
-        chai.assert.equal(Type.of(Mock).name, "Mock");
+        assert.equal(Type.of(Mock).name, "Mock");
     }
 
     @test @shouldPass
     public getConstructor(): void
     {
-        chai.assert.equal(Type.of(Mock).getConstructor(), Mock);
+        assert.equal(Type.of(Mock).getConstructor(), Mock);
     }
 
     @test @shouldPass
@@ -67,7 +67,7 @@ export default class TypeSpec
         const actual   = Type.of(Mock).getField(key);
         const expected = new FieldInfo(key, Object.getOwnPropertyDescriptor(Mock.prototype, key)!, Type.of(Mock), false, false);
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -81,7 +81,7 @@ export default class TypeSpec
         const actual   = Type.from(mock).getField(key);
         const expected = new FieldInfo(key, Object.getOwnPropertyDescriptor(mock, key)!, Type.from(mock), true, false);
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -92,7 +92,7 @@ export default class TypeSpec
         const actual   = Type.of(Mock).getMember(key);
         const expected = new FieldInfo(key, Object.getOwnPropertyDescriptor(Mock.prototype, key)!, Type.of(Mock), false, false);
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -103,7 +103,7 @@ export default class TypeSpec
         const actual   = Type.of(Mock).getStaticField(key);
         const expected = new FieldInfo(key, Object.getOwnPropertyDescriptor(Mock, key)!, Type.of(Mock), true, true);
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -114,7 +114,7 @@ export default class TypeSpec
         const actual   = Type.of(Mock).getStaticMember(key);
         const expected = new FieldInfo(key, Object.getOwnPropertyDescriptor(Mock, key)!, Type.of(Mock), true, true);
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -125,7 +125,7 @@ export default class TypeSpec
         const actual   = Type.of(Mock).getMethod(key);
         const expected = new MethodInfo(key, Object.getOwnPropertyDescriptor(Mock.prototype, key)!, Type.of(Mock), false, false);
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -136,7 +136,7 @@ export default class TypeSpec
         const actual   = Type.of(Mock).getMember(key);
         const expected = new MethodInfo(key, Object.getOwnPropertyDescriptor(Mock.prototype, key)!, Type.of(Mock), false, false);
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -147,7 +147,7 @@ export default class TypeSpec
         const actual   = Type.of(Mock).getStaticMethod(key);
         const expected = new MethodInfo(key, Object.getOwnPropertyDescriptor(Mock, key)!, Type.of(Mock), true, true);
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -158,7 +158,7 @@ export default class TypeSpec
         const actual   = Type.of(Mock).getStaticMember(key);
         const expected = new MethodInfo(key, Object.getOwnPropertyDescriptor(Mock, key)!, Type.of(Mock), true, true);
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -169,7 +169,7 @@ export default class TypeSpec
         const actual   = Type.of(Mock).getProperty(key);
         const expected = new PropertyInfo(key, Object.getOwnPropertyDescriptor(Mock.prototype, key)!, Type.of(Mock), false, false);
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -180,7 +180,7 @@ export default class TypeSpec
         const actual   = Type.of(Mock).getMember(key);
         const expected = new PropertyInfo(key, Object.getOwnPropertyDescriptor(Mock.prototype, key)!, Type.of(Mock), false, false);
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -191,8 +191,8 @@ export default class TypeSpec
         const actual   = Type.of(Mock).getProperty(key);
         const expected = new PropertyInfo(key, Object.getOwnPropertyDescriptor(Mock.prototype, key)!, Type.of(Mock), false, false);
 
-        chai.assert.deepEqual(actual, expected);
-        chai.assert.equal(actual!.readonly, true);
+        assert.deepEqual(actual, expected);
+        assert.equal(actual!.readonly, true);
     }
 
     @test @shouldPass
@@ -203,7 +203,7 @@ export default class TypeSpec
         const actual   = Type.of(Mock).getStaticProperty(key);
         const expected = new PropertyInfo(key, Object.getOwnPropertyDescriptor(Mock, key)!, Type.of(Mock), true, true);
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -214,7 +214,7 @@ export default class TypeSpec
         const actual   = Type.of(Mock).getStaticMember(key);
         const expected = new PropertyInfo(key, Object.getOwnPropertyDescriptor(Mock, key)!, Type.of(Mock), true, true);
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -225,56 +225,56 @@ export default class TypeSpec
         const actual   = Type.of(Mock).getStaticProperty(key);
         const expected = new PropertyInfo(key, Object.getOwnPropertyDescriptor(Mock, key)!, Type.of(Mock), true, true);
 
-        chai.assert.deepEqual(actual, expected);
-        chai.assert.equal(actual!.readonly, true);
+        assert.deepEqual(actual, expected);
+        assert.equal(actual!.readonly, true);
     }
 
     @test @shouldPass
     public getInvalidMember(): void
     {
-        chai.assert.deepEqual(Type.of(Mock).getMember("__invalid__"), null);
+        assert.deepEqual(Type.of(Mock).getMember("__invalid__"), null);
     }
 
     @test @shouldPass
     public getInvalidField(): void
     {
-        chai.assert.deepEqual(Type.of(Mock).getField("__invalid__"), null);
+        assert.deepEqual(Type.of(Mock).getField("__invalid__"), null);
     }
 
     @test @shouldPass
     public getInvalidMethod(): void
     {
-        chai.assert.deepEqual(Type.of(Mock).getMethod("__invalid__"), null);
+        assert.deepEqual(Type.of(Mock).getMethod("__invalid__"), null);
     }
 
     @test @shouldPass
     public getInvalidProperty(): void
     {
-        chai.assert.deepEqual(Type.of(Mock).getProperty("__invalid__"), null);
+        assert.deepEqual(Type.of(Mock).getProperty("__invalid__"), null);
     }
 
     @test @shouldPass
     public getInvalidStaticMember(): void
     {
-        chai.assert.deepEqual(Type.of(Mock).getStaticMember("__invalid__"), null);
+        assert.deepEqual(Type.of(Mock).getStaticMember("__invalid__"), null);
     }
 
     @test @shouldPass
     public getInvalidStaticField(): void
     {
-        chai.assert.deepEqual(Type.of(Mock).getStaticField("__invalid__"), null);
+        assert.deepEqual(Type.of(Mock).getStaticField("__invalid__"), null);
     }
 
     @test @shouldPass
     public getInvalidStaticMethod(): void
     {
-        chai.assert.deepEqual(Type.of(Mock).getStaticMethod("__invalid__"), null);
+        assert.deepEqual(Type.of(Mock).getStaticMethod("__invalid__"), null);
     }
 
     @test @shouldPass
     public getInvalidStaticProperty(): void
     {
-        chai.assert.deepEqual(Type.of(Mock).getStaticProperty("__invalid__"), null);
+        assert.deepEqual(Type.of(Mock).getStaticProperty("__invalid__"), null);
     }
 
     @test @shouldPass
@@ -285,7 +285,7 @@ export default class TypeSpec
         const actual   = Type.of(Mock).getField(key);
         const expected = new FieldInfo(key, Object.getOwnPropertyDescriptor(BaseMock.prototype, key)!, Type.of(BaseMock), false, false);
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -296,7 +296,7 @@ export default class TypeSpec
         const actual   = Type.of(Mock).getStaticField(key);
         const expected = new FieldInfo(key, Object.getOwnPropertyDescriptor(BaseMock, key)!, Type.of(BaseMock), true, true);
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -307,7 +307,7 @@ export default class TypeSpec
         const actual   = Type.of(Mock).getMethod(key);
         const expected = new MethodInfo(key, Object.getOwnPropertyDescriptor(BaseMock.prototype, key)!, Type.of(BaseMock), false, false);
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -318,7 +318,7 @@ export default class TypeSpec
         const actual   = Type.of(Mock).getStaticMethod(key);
         const expected = new MethodInfo(key, Object.getOwnPropertyDescriptor(BaseMock, key)!, Type.of(BaseMock), true, true);
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -329,7 +329,7 @@ export default class TypeSpec
         const actual   = Type.of(Mock).getProperty(key);
         const expected = new PropertyInfo(key, Object.getOwnPropertyDescriptor(BaseMock.prototype, key)!, Type.of(BaseMock), false, false);
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -340,7 +340,7 @@ export default class TypeSpec
         const actual   = Type.of(Mock).getStaticProperty(key);
         const expected = new PropertyInfo(key, Object.getOwnPropertyDescriptor(BaseMock, key)!, Type.of(BaseMock), true, true);
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -357,7 +357,7 @@ export default class TypeSpec
             new FieldInfo(baseKey, Object.getOwnPropertyDescriptor(BaseMock.prototype, baseKey)!, Type.of(BaseMock), false, false),
         ];
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -389,7 +389,7 @@ export default class TypeSpec
                 new FieldInfo(baseStaticField,           Object.getOwnPropertyDescriptor(BaseMock, baseStaticField)!,           Type.of(BaseMock), true, true),
             ];
 
-            chai.assert.deepEqual(actual, expected);
+            assert.deepEqual(actual, expected);
         }
         else
         {
@@ -407,7 +407,7 @@ export default class TypeSpec
                 new FieldInfo(baseStaticField,           Object.getOwnPropertyDescriptor(BaseMock, baseStaticField)!,           Type.of(BaseMock), true, true),
             ];
 
-            chai.assert.deepEqual(actual, expected);
+            assert.deepEqual(actual, expected);
         }
     }
 
@@ -427,7 +427,7 @@ export default class TypeSpec
             new PropertyInfo(baseInstanceProperty,     Object.getOwnPropertyDescriptor(BaseMock.prototype, baseInstanceProperty)!,     Type.of(BaseMock), false, false),
         ];
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -446,7 +446,7 @@ export default class TypeSpec
             new PropertyInfo(baseStaticProperty,     Object.getOwnPropertyDescriptor(BaseMock, baseStaticProperty)!,     Type.of(BaseMock), true, true),
         ];
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -464,7 +464,7 @@ export default class TypeSpec
             new MethodInfo("baseInstanceMethod",                   Object.getOwnPropertyDescriptor(BaseMock.prototype, "baseInstanceMethod")!,               Type.of(BaseMock), false, false),
         ];
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -478,7 +478,7 @@ export default class TypeSpec
             new MethodInfo("baseStaticMethod", Object.getOwnPropertyDescriptor(BaseMock, "baseStaticMethod")!, Type.of(BaseMock), true, false),
         ];
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -512,7 +512,7 @@ export default class TypeSpec
             new FieldInfo(baseInstanceField, Object.getOwnPropertyDescriptor(BaseMock.prototype, baseInstanceField)!, Type.of(BaseMock), false, false),
         ];
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -552,7 +552,7 @@ export default class TypeSpec
                 new FieldInfo(baseStaticField,           Object.getOwnPropertyDescriptor(BaseMock, baseStaticField)!,           Type.of(BaseMock), true, true),
             ];
 
-            chai.assert.deepEqual(actual, expected);
+            assert.deepEqual(actual, expected);
         }
         else
         {
@@ -575,55 +575,55 @@ export default class TypeSpec
                 new FieldInfo(baseStaticField,           Object.getOwnPropertyDescriptor(BaseMock, baseStaticField)!,           Type.of(BaseMock), true, true),
             ];
 
-            chai.assert.deepEqual(actual, expected);
+            assert.deepEqual(actual, expected);
         }
     }
 
     @test @shouldPass
     public checkExtensible(): void
     {
-        chai.assert.equal(Type.of(Mock).extensible, true);
+        assert.equal(Type.of(Mock).extensible, true);
     }
 
     @test @shouldPass
     public checkFrozen(): void
     {
-        chai.assert.equal(Type.of(Mock).frozen, false);
+        assert.equal(Type.of(Mock).frozen, false);
     }
 
     @test @shouldPass
     public checkSealed(): void
     {
-        chai.assert.equal(Type.of(Mock).sealed, false);
+        assert.equal(Type.of(Mock).sealed, false);
     }
 
     @test @shouldPass
     public checkExtendsClass(): void
     {
-        chai.assert.equal(Type.of(Mock).extends(BaseMock), true);
+        assert.equal(Type.of(Mock).extends(BaseMock), true);
     }
 
     @test @shouldPass
     public checkExtendsType(): void
     {
-        chai.assert.equal(Type.of(Mock).extends(Type.of(BaseMock)), true);
+        assert.equal(Type.of(Mock).extends(Type.of(BaseMock)), true);
     }
 
     @test @shouldPass
     public checkExtendsWithoutBaseType(): void
     {
-        chai.assert.equal(Type.of(Object).extends(Mock), false);
+        assert.equal(Type.of(Object).extends(Mock), false);
     }
 
     @test @shouldPass
     public checkEqualsClass(): void
     {
-        chai.assert.equal(Type.of(Mock).equals(Mock), true);
+        assert.equal(Type.of(Mock).equals(Mock), true);
     }
 
     @test @shouldPass
     public checkEqualsType(): void
     {
-        chai.assert.equal(Type.of(Mock).equals(Type.of(Mock)), true);
+        assert.equal(Type.of(Mock).equals(Type.of(Mock)), true);
     }
 }

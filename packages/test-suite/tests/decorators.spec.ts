@@ -1,5 +1,5 @@
 /* eslint-disable import/extensions */
-import chai from "chai";
+import { assert } from "chai";
 import
 {
     after,
@@ -49,7 +49,7 @@ export default class DecoratorsSpec
         class DecorateClassWithSuiteSpec
         { }
 
-        chai.assert.doesNotThrow(() => suite(DecorateClassWithSuiteSpec));
+        assert.doesNotThrow(() => suite(DecorateClassWithSuiteSpec));
     }
 
     @test @shouldPass
@@ -72,14 +72,14 @@ export default class DecoratorsSpec
             }
         }
 
-        chai.assert.isTrue(Metadata.from(DecorateClassWithSuiteAndSkipSpec.prototype.test1).skip);
-        chai.assert.isTrue(Metadata.from(DecorateClassWithSuiteAndSkipSpec.prototype.test2).skip);
+        assert.isTrue(Metadata.from(DecorateClassWithSuiteAndSkipSpec.prototype.test1).skip);
+        assert.isTrue(Metadata.from(DecorateClassWithSuiteAndSkipSpec.prototype.test2).skip);
     }
 
     @test @shouldPass
     public decorateClassWithSuiteAndDescription(): void
     {
-        chai.assert.doesNotThrow(() => suite("mock suite")(class Mock { }));
+        assert.doesNotThrow(() => suite("mock suite")(class Mock { }));
     }
 
     @test @shouldPass
@@ -125,21 +125,21 @@ export default class DecoratorsSpec
             }
         }
 
-        chai.assert.isTrue(Metadata.from(DecorateClassWithSuiteAndTestSpec.prototype.test).test);
-        chai.assert.equal(Metadata.from(DecorateClassWithSuiteAndTestSpec.prototype.test).expectation, "test");
-        chai.assert.isTrue(Metadata.from(DecorateClassWithSuiteAndTestSpec.prototype.testWithDescription).test);
-        chai.assert.equal(Metadata.from(DecorateClassWithSuiteAndTestSpec.prototype.testWithDescription).expectation, "Test with custom description");
-        chai.assert.isTrue(Metadata.from(DecorateClassWithSuiteAndTestSpec.prototype.testShouldPass).test);
-        chai.assert.equal(Metadata.from(DecorateClassWithSuiteAndTestSpec.prototype.testShouldPass).expectation, "test should pass");
-        chai.assert.equal(Metadata.from(DecorateClassWithSuiteAndTestSpec.prototype.testShouldPass).category, "should pass");
-        chai.assert.isTrue(Metadata.from(DecorateClassWithSuiteAndTestSpec.prototype.testShouldFail).test);
-        chai.assert.equal(Metadata.from(DecorateClassWithSuiteAndTestSpec.prototype.testShouldFail).expectation, "test should fail");
-        chai.assert.equal(Metadata.from(DecorateClassWithSuiteAndTestSpec.prototype.testShouldFail).category, "should fail");
-        chai.assert.isTrue(Metadata.from(DecorateClassWithSuiteAndTestSpec.prototype.testWithCategory).test);
-        chai.assert.equal(Metadata.from(DecorateClassWithSuiteAndTestSpec.prototype.testWithCategory).expectation, "test with category");
-        chai.assert.equal(Metadata.from(DecorateClassWithSuiteAndTestSpec.prototype.testWithCategory).category, "Some category");
-        chai.assert.isTrue(Metadata.from(DecorateClassWithSuiteAndTestSpec.prototype.testWithSkip).test);
-        chai.assert.isTrue(Metadata.from(DecorateClassWithSuiteAndTestSpec.prototype.testWithSkip).skip);
+        assert.isTrue(Metadata.from(DecorateClassWithSuiteAndTestSpec.prototype.test).test);
+        assert.equal(Metadata.from(DecorateClassWithSuiteAndTestSpec.prototype.test).expectation, "test");
+        assert.isTrue(Metadata.from(DecorateClassWithSuiteAndTestSpec.prototype.testWithDescription).test);
+        assert.equal(Metadata.from(DecorateClassWithSuiteAndTestSpec.prototype.testWithDescription).expectation, "Test with custom description");
+        assert.isTrue(Metadata.from(DecorateClassWithSuiteAndTestSpec.prototype.testShouldPass).test);
+        assert.equal(Metadata.from(DecorateClassWithSuiteAndTestSpec.prototype.testShouldPass).expectation, "test should pass");
+        assert.equal(Metadata.from(DecorateClassWithSuiteAndTestSpec.prototype.testShouldPass).category, "should pass");
+        assert.isTrue(Metadata.from(DecorateClassWithSuiteAndTestSpec.prototype.testShouldFail).test);
+        assert.equal(Metadata.from(DecorateClassWithSuiteAndTestSpec.prototype.testShouldFail).expectation, "test should fail");
+        assert.equal(Metadata.from(DecorateClassWithSuiteAndTestSpec.prototype.testShouldFail).category, "should fail");
+        assert.isTrue(Metadata.from(DecorateClassWithSuiteAndTestSpec.prototype.testWithCategory).test);
+        assert.equal(Metadata.from(DecorateClassWithSuiteAndTestSpec.prototype.testWithCategory).expectation, "test with category");
+        assert.equal(Metadata.from(DecorateClassWithSuiteAndTestSpec.prototype.testWithCategory).category, "Some category");
+        assert.isTrue(Metadata.from(DecorateClassWithSuiteAndTestSpec.prototype.testWithSkip).test);
+        assert.isTrue(Metadata.from(DecorateClassWithSuiteAndTestSpec.prototype.testWithSkip).skip);
     }
 
     @test @shouldPass
@@ -153,7 +153,7 @@ export default class DecoratorsSpec
             @batchTest([1, 2, 3])
             public batchTest(value: number): void
             {
-                chai.assert.equal(value, current++);
+                assert.equal(value, current++);
             }
 
             @batchTest([1, 2, 3], (x: number) => `expected value is ${x}`)
@@ -181,9 +181,9 @@ export default class DecoratorsSpec
             }
         }
 
-        chai.assert.isNotEmpty(Metadata.from(DecorateClassWithSuiteAndTestWithBatchSpec.prototype.batchTest).batch);
-        chai.assert.deepEqual(Metadata.from(DecorateClassWithSuiteAndTestWithBatchSpec.prototype.batchTest).batch!.source, [1, 2, 3]);
-        chai.assert.deepEqual(Metadata.from(DecorateClassWithSuiteAndTestWithBatchSpec.prototype.batchTestWithMessage).batch!.expectation.toString(), ((x: number) => `expected value is ${x}`).toString());
+        assert.isNotEmpty(Metadata.from(DecorateClassWithSuiteAndTestWithBatchSpec.prototype.batchTest).batch);
+        assert.deepEqual(Metadata.from(DecorateClassWithSuiteAndTestWithBatchSpec.prototype.batchTest).batch!.source, [1, 2, 3]);
+        assert.deepEqual(Metadata.from(DecorateClassWithSuiteAndTestWithBatchSpec.prototype.batchTestWithMessage).batch!.expectation.toString(), ((x: number) => `expected value is ${x}`).toString());
     }
 
     @test @shouldPass
@@ -205,10 +205,10 @@ export default class DecoratorsSpec
             }
         }
 
-        chai.assert.equal(Metadata.from(DecorateClassWithSuiteAndAfterSpec.prototype.afterTests).after, true);
-        chai.assert.equal(Metadata.from(DecorateClassWithSuiteAndAfterSpec.prototype.afterTests).description, "after tests");
-        chai.assert.equal(Metadata.from(DecorateClassWithSuiteAndAfterSpec.prototype.afterTestsWithDescription).after, true);
-        chai.assert.equal(Metadata.from(DecorateClassWithSuiteAndAfterSpec.prototype.afterTestsWithDescription).description, "after tests with custom description");
+        assert.equal(Metadata.from(DecorateClassWithSuiteAndAfterSpec.prototype.afterTests).after, true);
+        assert.equal(Metadata.from(DecorateClassWithSuiteAndAfterSpec.prototype.afterTests).description, "after tests");
+        assert.equal(Metadata.from(DecorateClassWithSuiteAndAfterSpec.prototype.afterTestsWithDescription).after, true);
+        assert.equal(Metadata.from(DecorateClassWithSuiteAndAfterSpec.prototype.afterTestsWithDescription).description, "after tests with custom description");
     }
 
     @test @shouldPass
@@ -230,10 +230,10 @@ export default class DecoratorsSpec
             }
         }
 
-        chai.assert.equal(Metadata.from(DecorateClassWithSuiteAndAfterEachSpec.prototype.afterEachTests).afterEach, true);
-        chai.assert.equal(Metadata.from(DecorateClassWithSuiteAndAfterEachSpec.prototype.afterEachTests).description, "after each tests");
-        chai.assert.equal(Metadata.from(DecorateClassWithSuiteAndAfterEachSpec.prototype.afterEachTestsWithDescription).afterEach, true);
-        chai.assert.equal(Metadata.from(DecorateClassWithSuiteAndAfterEachSpec.prototype.afterEachTestsWithDescription).description, "after each tests with custom description");
+        assert.equal(Metadata.from(DecorateClassWithSuiteAndAfterEachSpec.prototype.afterEachTests).afterEach, true);
+        assert.equal(Metadata.from(DecorateClassWithSuiteAndAfterEachSpec.prototype.afterEachTests).description, "after each tests");
+        assert.equal(Metadata.from(DecorateClassWithSuiteAndAfterEachSpec.prototype.afterEachTestsWithDescription).afterEach, true);
+        assert.equal(Metadata.from(DecorateClassWithSuiteAndAfterEachSpec.prototype.afterEachTestsWithDescription).description, "after each tests with custom description");
     }
 
     @test @shouldPass
@@ -255,10 +255,10 @@ export default class DecoratorsSpec
             }
         }
 
-        chai.assert.equal(Metadata.from(DecorateClassWithSuiteAndBeforeSpec.prototype.beforeTests).before, true);
-        chai.assert.equal(Metadata.from(DecorateClassWithSuiteAndBeforeSpec.prototype.beforeTests).description, "before tests");
-        chai.assert.equal(Metadata.from(DecorateClassWithSuiteAndBeforeSpec.prototype.beforeTestsWithDescription).before, true);
-        chai.assert.equal(Metadata.from(DecorateClassWithSuiteAndBeforeSpec.prototype.beforeTestsWithDescription).description, "before tests with custom description");
+        assert.equal(Metadata.from(DecorateClassWithSuiteAndBeforeSpec.prototype.beforeTests).before, true);
+        assert.equal(Metadata.from(DecorateClassWithSuiteAndBeforeSpec.prototype.beforeTests).description, "before tests");
+        assert.equal(Metadata.from(DecorateClassWithSuiteAndBeforeSpec.prototype.beforeTestsWithDescription).before, true);
+        assert.equal(Metadata.from(DecorateClassWithSuiteAndBeforeSpec.prototype.beforeTestsWithDescription).description, "before tests with custom description");
     }
 
     @test @shouldPass
@@ -280,10 +280,10 @@ export default class DecoratorsSpec
             }
         }
 
-        chai.assert.equal(Metadata.from(DecorateClassWithSuiteAndBeforeEachAndDescriptionSpec.prototype.beforeEach).beforeEach, true);
-        chai.assert.equal(Metadata.from(DecorateClassWithSuiteAndBeforeEachAndDescriptionSpec.prototype.beforeEach).description, "before each");
-        chai.assert.equal(Metadata.from(DecorateClassWithSuiteAndBeforeEachAndDescriptionSpec.prototype.beforeEachWithDescription).beforeEach, true);
-        chai.assert.equal(Metadata.from(DecorateClassWithSuiteAndBeforeEachAndDescriptionSpec.prototype.beforeEachWithDescription).description, "before each tests with custom description");
+        assert.equal(Metadata.from(DecorateClassWithSuiteAndBeforeEachAndDescriptionSpec.prototype.beforeEach).beforeEach, true);
+        assert.equal(Metadata.from(DecorateClassWithSuiteAndBeforeEachAndDescriptionSpec.prototype.beforeEach).description, "before each");
+        assert.equal(Metadata.from(DecorateClassWithSuiteAndBeforeEachAndDescriptionSpec.prototype.beforeEachWithDescription).beforeEach, true);
+        assert.equal(Metadata.from(DecorateClassWithSuiteAndBeforeEachAndDescriptionSpec.prototype.beforeEachWithDescription).description, "before each tests with custom description");
     }
 
     @test
@@ -298,6 +298,6 @@ export default class DecoratorsSpec
         class DecorateClassWithSuiteTestAndInvalidSkipSpec
         { }
 
-        chai.assert.throw(() => skip(suite(DecorateClassWithSuiteTestAndInvalidSkipSpec)));
+        assert.throw(() => skip(suite(DecorateClassWithSuiteTestAndInvalidSkipSpec)));
     }
 }

@@ -2,7 +2,7 @@ import { existsSync }                                     from "fs";
 import path                                               from "path";
 import Mock                                               from "@surface/mock";
 import { afterEach, beforeEach, shouldPass, suite, test } from "@surface/test-suite";
-import chai                                               from "chai";
+import { assert }                                         from "chai";
 import PreferTsResolverPlugin                             from "../../internal/plugins/prefer-ts-resolver-plugin.js";
 
 const CWD = process.cwd();
@@ -98,7 +98,7 @@ export default class PreferTsResolverPluginSpec
             PATH2_FOO_TS,
         ];
 
-        chai.assert.deepEqual(actual, expectedForEmpty, "Empty patterns");
+        assert.deepEqual(actual, expectedForEmpty, "Empty patterns");
 
         actual = [];
 
@@ -118,6 +118,6 @@ export default class PreferTsResolverPluginSpec
             PATH2_FOO_JS,
         ];
 
-        chai.assert.deepEqual(actual, expectedForRelativePattern, "Relative Pattern");
+        assert.deepEqual(actual, expectedForRelativePattern, "Relative Pattern");
     }
 }

@@ -6,7 +6,7 @@ import "@surface/dom-shim";
 import type { Delegate, Indexer }                    from "@surface/core";
 import { isIterable, resolveError }                  from "@surface/core";
 import { shouldFail, shouldPass, suite, test }       from "@surface/test-suite";
-import chai                                          from "chai";
+import { assert }                                    from "chai";
 import DescriptorType                                from "../internal/descriptor-type.js";
 import TemplateParseError                            from "../internal/errors/template-parse-error.js";
 import { parseDestructuredPattern, parseExpression } from "../internal/expression-parsers.js";
@@ -161,7 +161,7 @@ export default class HTMLXElementParserSpec
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
 
-        chai.assert.deepEqual(a, e);
+        assert.deepEqual(a, e);
     }
 
     @shouldPass @test
@@ -284,7 +284,7 @@ export default class HTMLXElementParserSpec
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
 
-        chai.assert.deepEqual(a, e);
+        assert.deepEqual(a, e);
     }
 
     @shouldPass @test
@@ -356,7 +356,7 @@ export default class HTMLXElementParserSpec
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
 
-        chai.assert.deepEqual(a, e);
+        assert.deepEqual(a, e);
     }
 
     @shouldPass @test
@@ -397,7 +397,7 @@ export default class HTMLXElementParserSpec
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
 
-        chai.assert.deepEqual(a, e);
+        assert.deepEqual(a, e);
     }
 
     @shouldPass @test
@@ -440,7 +440,7 @@ export default class HTMLXElementParserSpec
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
 
-        chai.assert.deepEqual(a.children, e.children);
+        assert.deepEqual(a.children, e.children);
     }
 
     @shouldPass @test
@@ -690,7 +690,7 @@ export default class HTMLXElementParserSpec
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
 
-        chai.assert.deepEqual(a.children, e.children);
+        assert.deepEqual(a.children, e.children);
     }
 
     @shouldPass @test
@@ -814,7 +814,7 @@ export default class HTMLXElementParserSpec
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
 
-        chai.assert.deepEqual(a, e);
+        assert.deepEqual(a, e);
     }
 
     @shouldPass @test
@@ -1029,7 +1029,7 @@ export default class HTMLXElementParserSpec
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
 
-        chai.assert.deepEqual(a, e);
+        assert.deepEqual(a, e);
     }
 
     @shouldPass @test
@@ -1227,7 +1227,7 @@ export default class HTMLXElementParserSpec
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
 
-        chai.assert.deepEqual(a, e);
+        assert.deepEqual(a, e);
     }
 
     @shouldPass @test
@@ -1320,7 +1320,7 @@ export default class HTMLXElementParserSpec
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
 
-        chai.assert.deepEqual(a.children, e.children);
+        assert.deepEqual(a.children, e.children);
     }
 
     @shouldPass @test
@@ -1392,7 +1392,7 @@ export default class HTMLXElementParserSpec
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
 
-        chai.assert.deepEqual(a, e);
+        assert.deepEqual(a, e);
     }
 
     @shouldPass @test
@@ -1479,7 +1479,7 @@ export default class HTMLXElementParserSpec
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
 
-        chai.assert.deepEqual(a, e);
+        assert.deepEqual(a, e);
     }
 
     @shouldPass @test
@@ -1556,7 +1556,7 @@ export default class HTMLXElementParserSpec
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
 
-        chai.assert.deepEqual(a, e);
+        assert.deepEqual(a, e);
     }
 
     @shouldPass @test
@@ -1639,7 +1639,7 @@ export default class HTMLXElementParserSpec
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
 
-        chai.assert.deepEqual(a, e);
+        assert.deepEqual(a, e);
     }
 
     @shouldPass @test
@@ -1725,7 +1725,7 @@ export default class HTMLXElementParserSpec
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
 
-        chai.assert.deepEqual(a, e);
+        assert.deepEqual(a, e);
     }
 
     @shouldPass @test
@@ -1808,7 +1808,7 @@ export default class HTMLXElementParserSpec
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
 
-        chai.assert.deepEqual(a, e);
+        assert.deepEqual(a, e);
     }
 
     @shouldPass @test
@@ -1942,7 +1942,7 @@ export default class HTMLXElementParserSpec
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
 
-        chai.assert.deepEqual(a, e);
+        assert.deepEqual(a, e);
     }
 
     @shouldPass @test
@@ -2004,7 +2004,7 @@ export default class HTMLXElementParserSpec
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
 
-        chai.assert.deepEqual(a, e);
+        assert.deepEqual(a, e);
     }
 
     @shouldPass @test
@@ -2086,7 +2086,7 @@ export default class HTMLXElementParserSpec
         const a = stringifyExpressions(actual);
         const e = stringifyExpressions(expected);
 
-        chai.assert.deepEqual(a, e);
+        assert.deepEqual(a, e);
     }
 
     @shouldFail @test
@@ -2100,7 +2100,7 @@ export default class HTMLXElementParserSpec
         const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -2114,7 +2114,7 @@ export default class HTMLXElementParserSpec
         const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -2128,7 +2128,7 @@ export default class HTMLXElementParserSpec
         const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -2142,7 +2142,7 @@ export default class HTMLXElementParserSpec
         const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -2156,7 +2156,7 @@ export default class HTMLXElementParserSpec
         const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -2170,7 +2170,7 @@ export default class HTMLXElementParserSpec
         const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -2184,7 +2184,7 @@ export default class HTMLXElementParserSpec
         const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -2198,7 +2198,7 @@ export default class HTMLXElementParserSpec
         const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -2212,7 +2212,7 @@ export default class HTMLXElementParserSpec
         const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -2226,7 +2226,7 @@ export default class HTMLXElementParserSpec
         const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -2240,7 +2240,7 @@ export default class HTMLXElementParserSpec
         const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -2254,7 +2254,7 @@ export default class HTMLXElementParserSpec
         const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -2268,7 +2268,7 @@ export default class HTMLXElementParserSpec
         const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -2282,7 +2282,7 @@ export default class HTMLXElementParserSpec
         const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -2296,7 +2296,7 @@ export default class HTMLXElementParserSpec
         const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -2310,7 +2310,7 @@ export default class HTMLXElementParserSpec
         const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -2324,7 +2324,7 @@ export default class HTMLXElementParserSpec
         const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -2338,6 +2338,6 @@ export default class HTMLXElementParserSpec
         const actual   = tryAction(() => stringifyExpressions(Parser.parse(window.document, "x-component", template)));
         const expected = toRaw(new TemplateParseError(message, stack));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 }

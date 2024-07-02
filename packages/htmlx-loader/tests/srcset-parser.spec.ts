@@ -1,5 +1,5 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
-import chai                        from "chai";
+import { assert }                  from "chai";
 import type { SrcSet }             from "../internal/srcset-parser.js";
 import SrcSetParser                from "../internal/srcset-parser.js";
 
@@ -27,7 +27,7 @@ export default class SrcSetParserSpec
 
         const actual = SrcSetParser.parse("foo.800-600.png 800w 600h 1x, foo.1920-1080.png 1920w 1080h 2x");
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -52,6 +52,6 @@ export default class SrcSetParserSpec
 
         const actual = SrcSetParser.stringify(sources);
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 }

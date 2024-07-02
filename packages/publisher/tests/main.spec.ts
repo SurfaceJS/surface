@@ -4,12 +4,12 @@ import type { DeepRequired }                                          from "@sur
 import { LogLevel }                                                   from "@surface/logger";
 import Mock, { It }                                                   from "@surface/mock";
 import { afterEach, beforeEach, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import chai                                                           from "chai";
+import { assert, use }                                                from "chai";
 import chaiAsPromised                                                 from "chai-as-promised";
 import Commands                                                       from "../internal/commands.js";
 import main                                                           from "../internal/main.js";
 
-chai.use(chaiAsPromised);
+use(chaiAsPromised);
 
 const CommandsMock = Mock.of(Commands);
 
@@ -107,9 +107,9 @@ export default class MainSpec
             .callback((...args) => actual = args)
             .resolve();
 
-        await chai.assert.isFulfilled(main(args));
+        await assert.isFulfilled(main(args));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -155,9 +155,9 @@ export default class MainSpec
             .callback((...args) => actual = args)
             .resolve();
 
-        await chai.assert.isFulfilled(main(args));
+        await assert.isFulfilled(main(args));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -215,9 +215,9 @@ export default class MainSpec
             .callback((...args) => actual = args)
             .resolve();
 
-        await chai.assert.isFulfilled(main(args));
+        await assert.isFulfilled(main(args));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -260,21 +260,21 @@ export default class MainSpec
             .callback((...args) => actual = args)
             .resolve();
 
-        await chai.assert.isFulfilled(main(args));
+        await assert.isFulfilled(main(args));
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
     public async bumpWithInvalidSemanticVersion(): Promise<void>
     {
-        await chai.assert.isRejected(main(["", "", "bump", "a.b.c"]));
-        await chai.assert.isRejected(main(["", "", "bump", "invalid"]));
+        await assert.isRejected(main(["", "", "bump", "a.b.c"]));
+        await assert.isRejected(main(["", "", "bump", "invalid"]));
     }
 
     @test @shouldFail
     public async publishWitInvalidPrereleaseType(): Promise<void>
     {
-        await chai.assert.isRejected(main(["", "", "publish", "latest", "--prerelease-type=major"]));
+        await assert.isRejected(main(["", "", "publish", "latest", "--prerelease-type=major"]));
     }
 }

@@ -1,10 +1,10 @@
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import chai                                    from "chai";
+import { assert, use }                         from "chai";
 import chaiAsPromised                          from "chai-as-promised";
 import CancellationTokenSource                 from "../../internal/cancellation-token-source.js";
 import { runAsync }                            from "../../internal/common/promises.js";
 
-chai.use(chaiAsPromised);
+use(chaiAsPromised);
 
 @suite
 export default class PromisesSpec
@@ -14,11 +14,11 @@ export default class PromisesSpec
     {
         const promise1 = runAsync(() => void 0, 10);
 
-        await chai.assert.isFulfilled(promise1);
+        await assert.isFulfilled(promise1);
 
         const promise2 = runAsync(async () => Promise.resolve(), 10);
 
-        await chai.assert.isFulfilled(promise2);
+        await assert.isFulfilled(promise2);
     }
 
     @test @shouldFail
@@ -27,7 +27,7 @@ export default class PromisesSpec
         // eslint-disable-next-line max-statements-per-line
         const promise = runAsync(() => { throw new Error("Some error"); }, 10);
 
-        await chai.assert.isRejected(promise, "Some error");
+        await assert.isRejected(promise, "Some error");
     }
 
     @test @shouldFail
@@ -39,6 +39,6 @@ export default class PromisesSpec
 
         cancellationTokenSource.cancel();
 
-        await chai.assert.isRejected(promise, "Task was canceled");
+        await assert.isRejected(promise, "Task was canceled");
     }
 }

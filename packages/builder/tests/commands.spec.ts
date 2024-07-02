@@ -3,7 +3,7 @@ import path                                   from "path";
 import Mock, { It }                           from "@surface/mock";
 import { isDirectory, lookup }                from "@surface/rwx";
 import { afterEach, beforeEach, suite, test } from "@surface/test-suite";
-import chai                                   from "chai";
+import { assert }                             from "chai";
 import Builder                                from "../internal/builder.js";
 import Commands                               from "../internal/commands.js";
 import { loadModule }                         from "../internal/common.js";
@@ -181,7 +181,7 @@ export default class CommandsSpec
 
         await Commands.analyze({ }),
 
-        chai.assert.deepEqual(actual!, expected);
+        assert.deepEqual(actual!, expected);
     }
 
     @test
@@ -199,7 +199,7 @@ export default class CommandsSpec
 
         await Commands.build({ config: "." }),
 
-        chai.assert.deepEqual(actual1!, expected1, "build 1");
+        assert.deepEqual(actual1!, expected1, "build 1");
 
         const expected2: Configuration =
         {
@@ -217,7 +217,7 @@ export default class CommandsSpec
 
         await Commands.build({ config: PROJECT_EMPTY_JSON }),
 
-        chai.assert.deepEqual(actual2!, expected2, "build 2");
+        assert.deepEqual(actual2!, expected2, "build 2");
 
         const expected4 = CONFIGURATION_JS;
 
@@ -231,7 +231,7 @@ export default class CommandsSpec
 
         await Commands.build({ config: PROJECT_SURFACE_BUILDER_JS }),
 
-        chai.assert.deepEqual(actual4!, expected4, "build 4");
+        assert.deepEqual(actual4!, expected4, "build 4");
 
         const expected5: Configuration =
         {
@@ -298,7 +298,7 @@ export default class CommandsSpec
 
         await Commands.build({ config: PROJECT_SURFACE_BUILDER_JSON }),
 
-        chai.assert.deepEqual(actual5!, expected5, "build 5");
+        assert.deepEqual(actual5!, expected5, "build 5");
 
         const expected6: Configuration =
         {
@@ -365,7 +365,7 @@ export default class CommandsSpec
 
         await Commands.build(cliOptions),
 
-        chai.assert.deepEqual(actual6!, expected6, "build 6");
+        assert.deepEqual(actual6!, expected6, "build 6");
     }
 
     @test
@@ -383,7 +383,7 @@ export default class CommandsSpec
 
         await Commands.build({ watch: true }),
 
-        chai.assert.deepEqual(actual!, expected);
+        assert.deepEqual(actual!, expected);
     }
 
     @test
@@ -401,6 +401,6 @@ export default class CommandsSpec
 
         await Commands.serve({ }),
 
-        chai.assert.deepEqual(actual!, expected);
+        assert.deepEqual(actual!, expected);
     }
 }

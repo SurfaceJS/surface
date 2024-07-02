@@ -1,5 +1,5 @@
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import chai                                    from "chai";
+import { assert }                              from "chai";
 import Router                                  from "../internal/router.js";
 import type RouterMatch                        from "../internal/types/router-match.js";
 
@@ -13,7 +13,7 @@ export default class RouterSpec
             .map({ pattern: "/path" })
             .match("/path1");
 
-        chai.assert.deepEqual(actual, { matched: false, reason: "No match found to the path: /path1" });
+        assert.deepEqual(actual, { matched: false, reason: "No match found to the path: /path1" });
     }
 
     @test @shouldPass
@@ -29,7 +29,7 @@ export default class RouterSpec
             .map({ pattern: "/path", selector: x => x })
             .match("/path1");
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -49,7 +49,7 @@ export default class RouterSpec
             .map({ pattern: "/path" })
             .match("/path");
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -65,7 +65,7 @@ export default class RouterSpec
             .map({ name: "default", pattern: "/path", selector: x => x })
             .match("default1", { });
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -85,7 +85,7 @@ export default class RouterSpec
             .map({ name: "default", pattern: "/path" })
             .match("default", { });
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -101,7 +101,7 @@ export default class RouterSpec
             .map({ name: "default", pattern: "/path/{value}" })
             .match("default", { });
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -121,7 +121,7 @@ export default class RouterSpec
             .map({ name: "default", pattern: "/path/{value}" })
             .match("default", { value: "path" });
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -144,7 +144,7 @@ export default class RouterSpec
             .map({ name: "default", pattern: "/path/{boolean:Boolean}" })
             .match("default", { boolean: false });
 
-        chai.assert.deepEqual(actual1, expected1);
+        assert.deepEqual(actual1, expected1);
 
         const expected2: RouterMatch =
         {
@@ -165,7 +165,7 @@ export default class RouterSpec
             .map({ name: "default", pattern: "/path/{boolean:Boolean}/{date:Date}/{number:Number}" })
             .match("default", { boolean: true, date: new Date("2020-01-01"), number: 1 });
 
-        chai.assert.deepEqual(actual2, expected2);
+        assert.deepEqual(actual2, expected2);
     }
 
     @test @shouldPass
@@ -185,7 +185,7 @@ export default class RouterSpec
             .map({ pattern: "/path/{value}" })
             .match("/path/path");
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -212,13 +212,13 @@ export default class RouterSpec
             .map({ pattern: "/path/{alpha:Alpha}/{id:UIID}/{boolean:Boolean}/{date:Date}/{number:Number}" })
             .match("/path/text/e7dcfc52e66d11ebba800242ac130004/true/2020-01-01/1");
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
     public invalidPath(): void
     {
-        chai.assert.throws(() => new Router().match("foo?bar"), Error, "\"foo?bar\" is not a valid url pathname");
-        chai.assert.throws(() => new Router().match("foo#bar"), Error, "\"foo#bar\" is not a valid url pathname");
+        assert.throws(() => new Router().match("foo?bar"), Error, "\"foo?bar\" is not a valid url pathname");
+        assert.throws(() => new Router().match("foo#bar"), Error, "\"foo#bar\" is not a valid url pathname");
     }
 }

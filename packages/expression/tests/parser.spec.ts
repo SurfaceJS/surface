@@ -1,8 +1,7 @@
 /* eslint-disable no-new-func */
 /* eslint-disable @typescript-eslint/no-implied-eval */
-import { assert }                                               from "@surface/core";
 import { batchTest, shouldFail, shouldPass, skip, suite, test } from "@surface/test-suite";
-import chai                                                     from "chai";
+import { assert }                                               from "chai";
 import ParenthesizedExpression                                  from "../internal/expressions/parenthesized-expression.js";
 import Parser                                                   from "../internal/parser.js";
 import SyntaxError                                              from "../internal/syntax-error.js";
@@ -63,7 +62,7 @@ export default class ParserSpec
         const proxyTime  = Date.now() - proxyStart;
         const difference = (proxyTime - nativeTime) / proxyTime * 100;
 
-        chai.assert.isBelow(difference, 20);
+        assert.isBelow(difference, 20);
     }
 
     @shouldPass
@@ -77,19 +76,19 @@ export default class ParserSpec
             expression = expression.argument;
         }
 
-        chai.assert.deepEqual(expression, expression.clone(), "clone");
+        assert.deepEqual(expression, expression.clone(), "clone");
 
         if (parseExpectedSpec.value instanceof Function)
         {
-            chai.assert.equal((expression.evaluate(parseExpectedSpec.scope) as Function).toString(), parseExpectedSpec.value.toString(), "evaluate");
+            assert.equal((expression.evaluate(parseExpectedSpec.scope) as Function).toString(), parseExpectedSpec.value.toString(), "evaluate");
         }
         else
         {
-            chai.assert.deepEqual(expression.evaluate(parseExpectedSpec.scope), parseExpectedSpec.value, "evaluate");
+            assert.deepEqual(expression.evaluate(parseExpectedSpec.scope), parseExpectedSpec.value, "evaluate");
         }
 
-        chai.assert.instanceOf(expression, parseExpectedSpec.type, "instanceof");
-        chai.assert.equal(expression.toString(), parseExpectedSpec.toString, "toString");
+        assert.instanceOf(expression, parseExpectedSpec.type, "instanceof");
+        assert.equal(expression.toString(), parseExpectedSpec.toString, "toString");
     }
 
     @shouldPass
@@ -100,9 +99,9 @@ export default class ParserSpec
 
         const expression = Parser.parse("((a && b) || x && y)");
 
-        chai.assert.equal(expression.evaluate(scope), false, "evaluate");
-        chai.assert.instanceOf(expression, ParenthesizedExpression, "instanceof");
-        chai.assert.equal(expression.toString(), "((a && b) || x && y)", "toString");
+        assert.equal(expression.evaluate(scope), false, "evaluate");
+        assert.instanceOf(expression, ParenthesizedExpression, "instanceof");
+        assert.equal(expression.toString(), "((a && b) || x && y)", "toString");
     }
 
     @shouldFail
@@ -119,7 +118,7 @@ export default class ParserSpec
         {
             assert(error instanceof Error);
 
-            chai.assert.deepEqual(toRaw(error), toRaw(invalidParseExpectedSpec.error));
+            assert.deepEqual(toRaw(error), toRaw(invalidParseExpectedSpec.error));
         }
     }
 }

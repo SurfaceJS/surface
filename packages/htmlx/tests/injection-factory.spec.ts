@@ -2,7 +2,7 @@
 import "@surface/dom-shim";
 
 import { shouldPass, suite, test }        from "@surface/test-suite";
-import chai                               from "chai";
+import { assert }                         from "chai";
 import createFragmentFactory              from "../internal/factories/create-fragment-factory.js";
 import createInjectionFactory             from "../internal/factories/create-injection-factory.js";
 import createPlaceholderFactory           from "../internal/factories/create-placeholder-factory.js";
@@ -49,7 +49,7 @@ export default class InjectionFactorySpec
 
         const actual = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual, expected, "#0");
+        assert.deepEqual(actual, expected, "#0");
 
         await scheduler.execution();
 
@@ -62,7 +62,7 @@ export default class InjectionFactorySpec
 
         const actual1 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual1, expected1, "#1");
+        assert.deepEqual(actual1, expected1, "#1");
 
         const [injectionContent, injectionActivator] = createInjectionFactory
         (
@@ -87,11 +87,11 @@ export default class InjectionFactorySpec
 
         const actual2 = Array.from(host.shadowRoot!.childNodes).map(x => x.textContent);
 
-        chai.assert.deepEqual(actual2, expected2, "#2");
+        assert.deepEqual(actual2, expected2, "#2");
 
         injectionDisposable.dispose();
         disposable.dispose();
 
-        chai.assert.equal(host.shadowRoot!.firstElementChild, null);
+        assert.equal(host.shadowRoot!.firstElementChild, null);
     }
 }

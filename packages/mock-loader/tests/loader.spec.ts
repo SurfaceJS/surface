@@ -1,7 +1,7 @@
 import util                           from "util";
 import Mock                           from "@surface/mock";
 import { shouldPass, suite, test }    from "@surface/test-suite";
-import chai                           from "chai";
+import { assert }                     from "chai";
 import fsProxy                        from "fs?mock";
 import fsTarget                       from "fs?mock=target";
 import fixture                        from "./fixture.js?mock";
@@ -13,12 +13,12 @@ export default class LoaderSpec
     @test @shouldPass
     public mockOf(): void
     {
-        chai.assert.instanceOf(Mock.of(fixture), Mock);
-        chai.assert.instanceOf(Mock.of(fsProxy), Mock);
-        chai.assert.instanceOf(Mock.of(util), Mock);
-        chai.assert.equal(fixture, getFixture().default);
-        chai.assert.equal(fsProxy, getFs());
-        chai.assert.equal(util,    getUtil());
-        chai.assert.throws(() => fsTarget && !Mock.of(fsTarget));
+        assert.instanceOf(Mock.of(fixture), Mock);
+        assert.instanceOf(Mock.of(fsProxy), Mock);
+        assert.instanceOf(Mock.of(util), Mock);
+        assert.equal(fixture, getFixture().default);
+        assert.equal(fsProxy, getFs());
+        assert.equal(util,    getUtil());
+        assert.throws(() => fsTarget && !Mock.of(fsTarget));
     }
 }

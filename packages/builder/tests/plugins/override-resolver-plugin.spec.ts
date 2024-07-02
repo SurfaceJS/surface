@@ -1,6 +1,6 @@
 import path                        from "path";
 import { shouldPass, suite, test } from "@surface/test-suite";
-import chai                        from "chai";
+import { assert }                  from "chai";
 import OverrideResolverPlugin      from "../../internal/plugins/override-resolver-plugin.js";
 
 type Resolver = Parameters<OverrideResolverPlugin["apply"]>[0];
@@ -45,6 +45,6 @@ export default class OverrideResolverPluginSpec
 
         new OverrideResolverPlugin([{ replace: FILE1, with: FILE1_OVERRIDE }]).apply(resolver);
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 }

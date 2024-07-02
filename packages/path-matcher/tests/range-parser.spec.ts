@@ -1,5 +1,5 @@
 import { batchTest, shouldPass, suite }                     from "@surface/test-suite";
-import chai                                                 from "chai";
+import { assert }                                           from "chai";
 import { parseAlphaRange, parseNumericRange }                                from "../internal/range-parser.js";
 import
 {
@@ -20,19 +20,19 @@ export default class PatternMatcherSpec
 
         const regex = new RegExp(`^(?:${parseAlphaRange(match[0]!, match[1]!, Number(match[2] ?? "1"))})\$`);
 
-        // chai.assert.deepEqual(regex, scenario.regex, "regex deep equal to expectation.regex");
+        // assert.deepEqual(regex, scenario.regex, "regex deep equal to expectation.regex");
 
         for (const path of scenario.matches)
         {
-            chai.assert.isTrue(regex.test(String(path)), `regex.test("${path}") should be true`);
+            assert.isTrue(regex.test(String(path)), `regex.test("${path}") should be true`);
         }
 
         for (const path of scenario.mismatches)
         {
-            chai.assert.isFalse(regex.test(String(path)), `regex.test("${path}") should be false`);
+            assert.isFalse(regex.test(String(path)), `regex.test("${path}") should be false`);
         }
 
-        chai.assert.deepEqual(regex, scenario.regex, "regex deep equal to expectation.regex");
+        assert.deepEqual(regex, scenario.regex, "regex deep equal to expectation.regex");
     }
 
     @shouldPass
@@ -43,19 +43,19 @@ export default class PatternMatcherSpec
 
         const regex = new RegExp(`^(?:${parseNumericRange(match[0]!, match[1]!, Number(match[2] ?? "1"))})\$`);
 
-        // chai.assert.deepEqual(regex, scenario.regex, "regex deep equal to expectation.regex");
+        // assert.deepEqual(regex, scenario.regex, "regex deep equal to expectation.regex");
 
         for (const path of scenario.matches)
         {
-            chai.assert.isTrue(regex.test(String(path)), `regex.test("${path}") should be true`);
+            assert.isTrue(regex.test(String(path)), `regex.test("${path}") should be true`);
         }
 
         for (const path of scenario.mismatches)
         {
-            chai.assert.isFalse(regex.test(String(path)), `regex.test("${path}") should be false`);
+            assert.isFalse(regex.test(String(path)), `regex.test("${path}") should be false`);
         }
 
-        chai.assert.deepEqual(regex, scenario.regex, "regex deep equal to expectation.regex");
+        assert.deepEqual(regex, scenario.regex, "regex deep equal to expectation.regex");
 
         // !!! Don't commit this uncommented !!!
         // const [startRange, endRange, interval = "1"] = scenario.pattern.substring(1, scenario.pattern.length - 1).split("..") as [string, string, string?];
@@ -80,7 +80,7 @@ export default class PatternMatcherSpec
         // {
         //     const inRange = value >= min && value <= max;
 
-        //     chai.assert.isTrue(regex.test(String(value).padStart(minLength, "0")) == inRange, `regex.test("${value}") should be ${inRange}`);
+        //     assert.isTrue(regex.test(String(value).padStart(minLength, "0")) == inRange, `regex.test("${value}") should be ${inRange}`);
         // }
     }
 }

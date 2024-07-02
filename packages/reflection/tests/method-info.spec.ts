@@ -1,5 +1,5 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
-import chai                        from "chai";
+import { assert }                  from "chai";
 import MethodInfo                  from "../internal/method-info.js";
 import ParameterInfo               from "../internal/parameter-info.js";
 import Type                        from "../internal/type.js";
@@ -13,43 +13,43 @@ export default class FieldInfoSpec
     @test @shouldPass
     public declaringType(): void
     {
-        chai.assert.deepEqual(methodInfo.declaringType, Type.of(Mock));
+        assert.deepEqual(methodInfo.declaringType, Type.of(Mock));
     }
 
     @test @shouldPass
     public invoke(): void
     {
-        chai.assert.equal(methodInfo.invoke.toString(), Mock.prototype.instanceMethod.toString());
+        assert.equal(methodInfo.invoke.toString(), Mock.prototype.instanceMethod.toString());
     }
 
     @test @shouldPass
     public isStatic(): void
     {
-        chai.assert.equal(methodInfo.isStatic, false);
+        assert.equal(methodInfo.isStatic, false);
     }
 
     @test @shouldPass
     public isOwn(): void
     {
-        chai.assert.equal(methodInfo.isOwn, false);
+        assert.equal(methodInfo.isOwn, false);
     }
 
     @test @shouldPass
     public isConstructor(): void
     {
-        chai.assert.equal(methodInfo.isConstructor, false);
+        assert.equal(methodInfo.isConstructor, false);
     }
 
     @test @shouldPass
     public key(): void
     {
-        chai.assert.equal(methodInfo.key, "instanceMethod");
+        assert.equal(methodInfo.key, "instanceMethod");
     }
 
     @test @shouldPass
     public noParameters(): void
     {
-        chai.assert.deepEqual(Array.from(methodInfo.parameters), []);
+        assert.deepEqual(Array.from(methodInfo.parameters), []);
     }
 
     @test @shouldPass
@@ -64,8 +64,8 @@ export default class FieldInfoSpec
             new ParameterInfo("c", 2, methodInfo),
         ];
 
-        chai.assert.equal(methodInfo.parameters.length, 3);
-        chai.assert.deepEqual(methodInfo.parameters, parameters);
+        assert.equal(methodInfo.parameters.length, 3);
+        assert.deepEqual(methodInfo.parameters, parameters);
     }
 
     @test @shouldPass
@@ -87,7 +87,7 @@ export default class FieldInfoSpec
             new ParameterInfo("c", 2, methodInfo),
         ];
 
-        chai.assert.equal(methodInfo.parameters.length, 3);
-        chai.assert.deepEqual(methodInfo.parameters, parameters);
+        assert.equal(methodInfo.parameters.length, 3);
+        assert.deepEqual(methodInfo.parameters, parameters);
     }
 }

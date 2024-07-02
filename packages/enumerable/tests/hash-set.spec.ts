@@ -1,5 +1,5 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
-import chai                        from "chai";
+import { assert }                  from "chai";
 import Comparer                    from "../internal/comparer.js";
 import HashSet                     from "../internal/hash-set.js";
 
@@ -11,7 +11,7 @@ export default class HashSetSpec
     {
         const set = HashSet.from([1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10], new Comparer());
 
-        chai.assert.equal(set.contains(2), true);
+        assert.equal(set.contains(2), true);
     }
 
     @test @shouldPass
@@ -23,7 +23,7 @@ export default class HashSetSpec
         set.add(1);
         set.add(2);
 
-        chai.assert.equal(set.contains(1), true);
+        assert.equal(set.contains(1), true);
     }
 
     @test @shouldPass
@@ -33,7 +33,7 @@ export default class HashSetSpec
 
         set.remove(1);
 
-        chai.assert.equal(set.contains(1), false);
+        assert.equal(set.contains(1), false);
     }
 
     @test @shouldPass
@@ -45,7 +45,7 @@ export default class HashSetSpec
 
         elements.forEach(set.remove.bind(set));
 
-        chai.assert.equal(Array.from(set).length == 0, true);
+        assert.equal(Array.from(set).length == 0, true);
     }
 
     @test @shouldPass
@@ -55,7 +55,7 @@ export default class HashSetSpec
 
         set.remove(1);
 
-        chai.assert.equal(set.remove(11), false);
+        assert.equal(set.remove(11), false);
     }
 
     @test @shouldPass
@@ -67,7 +67,7 @@ export default class HashSetSpec
         set.remove(1);
         set.add(1);
 
-        chai.assert.equal(set.contains(1), true);
+        assert.equal(set.contains(1), true);
     }
 
     @test @shouldPass
@@ -75,7 +75,7 @@ export default class HashSetSpec
     {
         const data = [1, 1, 1, 2, 2, 3, 3, 4, 5, 6, 7, 8, 8, 9, 10];
 
-        chai.assert.deepEqual(Array.from(HashSet.from(data, new Comparer())), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+        assert.deepEqual(Array.from(HashSet.from(data, new Comparer())), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     }
 
     @test @shouldPass
@@ -83,6 +83,6 @@ export default class HashSetSpec
     {
         const data = [] as number[];
 
-        chai.assert.deepEqual(Array.from(HashSet.from(data, new Comparer())), []);
+        assert.deepEqual(Array.from(HashSet.from(data, new Comparer())), []);
     }
 }

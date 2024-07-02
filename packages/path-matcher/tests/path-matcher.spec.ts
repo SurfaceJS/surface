@@ -1,5 +1,5 @@
 import { batchTest, shouldPass, suite }           from "@surface/test-suite";
-import chai                                       from "chai";
+import { assert }                                 from "chai";
 import PathMatcher                                from "../internal/path-matcher.js";
 import { type ResolveScenario, resolveScenarios } from "./path-matcher.resolve.scn.js";
 
@@ -10,6 +10,6 @@ export default class PatternMatcherSpec
     @batchTest(resolveScenarios, x => `Expects base: "${x.base}" and pattern: "${x.pattern}" resolves to ${x.fullPattern}`, x => x.skip)
     public resolve(scenario: ResolveScenario): void
     {
-        chai.assert.equal(PathMatcher.resolve(scenario.base, scenario.pattern, { unix: scenario.unix }).fullPattern, scenario.fullPattern);
+        assert.equal(PathMatcher.resolve(scenario.base, scenario.pattern, { unix: scenario.unix }).fullPattern, scenario.fullPattern);
     }
 }

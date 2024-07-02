@@ -1,5 +1,5 @@
 import { batchTest, shouldPass, suite } from "@surface/test-suite";
-import chai                             from "chai";
+import { assert }                       from "chai";
 import Parser                           from "../internal/parser.js";
 import { validVisitors }                from "./expression-visitor-expectations.js";
 import FixtureExpressionRewriterVisitor from "./fixtures/fixture-expression-rewriter-visitor.js";
@@ -16,6 +16,6 @@ export default class ExpressionVisitorSpec
 
         visitor.visit(expression);
 
-        chai.assert.equal(visitor.toString(), spec.value);
+        assert.equal(visitor.toString(), spec.value);
     }
 }
