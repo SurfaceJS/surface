@@ -895,7 +895,11 @@ export default class Publisher
                 this.throwAggregateError();
             }
 
-            this.logger.info(`${this.options.dry ? "[DRY RUN] " : ""}Bump done!`);
+            const message = this.updates.length > 0
+                ? "Bump done!"
+                : "Nothing to bump.";
+
+            this.logger.info(`${this.options.dry ? "[DRY RUN] " : ""}${message}`);
         }
     }
 
