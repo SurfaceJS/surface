@@ -722,7 +722,7 @@ export default class Publisher
                     }
                     else
                     {
-                        this.logger.info(`Version ${entry.manifest.name}@${entry.manifest.version} will be written in ${entry.path}...`);
+                        this.logger.debug(`Version ${entry.manifest.name}@${entry.manifest.version} will be written in ${entry.path}...`);
                     }
                 }
             }
