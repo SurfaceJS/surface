@@ -303,63 +303,6 @@ export const validPublishScenarios: PublishScenario[] =
     },
     {
         skip,
-        message:   "Publish workspaces packages and include workspaces root",
-        options:   {  },
-        args:      [{ includeWorkspaceRoot: true }],
-        registry:
-        {
-            "package-b":
-            {
-                hasChanges: true,
-                remote:
-                {
-                    latest:
-                    {
-                        name:    "package-b",
-                        version: "0.1.0",
-                    },
-                },
-            },
-        },
-        directory:
-        {
-            "./package.json": JSON.stringify
-            (
-                {
-                    name:       "package-root",
-                    version:    "1.0.0",
-                    workspaces: ["packages/*"],
-                } as Partial<PackageJson>,
-            ),
-            "./packages":
-            {
-                "./package-a/package.json": JSON.stringify
-                (
-                    {
-                        name:    "package-a",
-                        version: "0.0.1",
-                    } as Partial<PackageJson>,
-                ),
-                "./package-b/package.json": JSON.stringify
-                (
-                    {
-                        name:    "package-b",
-                        version: "0.1.0",
-                    } as Partial<PackageJson>,
-                ),
-            },
-        },
-        expected:
-        {
-            published:
-            [
-                "package-a@0.0.1",
-                "package-root@1.0.0",
-            ],
-        },
-    },
-    {
-        skip,
         message:   "Publish multiples packages with npmrc authentication",
         options:
         {

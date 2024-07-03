@@ -268,7 +268,7 @@ export default class PublisherSpec
             }
         }
 
-        const actual: Required<BumpScenario["expected"]> = { bumps: { }, changelogs: [] };
+        const actual: Required<BumpScenario["expected"]> = { bumps: { }, changelogs: [], tags: [] };
 
         writeFileMock.call(It.any(), It.any())
             .callback
@@ -289,6 +289,9 @@ export default class PublisherSpec
                     }
                 },
             );
+
+        addTagMock.call(It.any(), It.any())
+            .callback((tag, _) => actual.tags.push(tag));
 
         await assert.isFulfilled(new Publisher(scenario.options).bump(...scenario.args));
 

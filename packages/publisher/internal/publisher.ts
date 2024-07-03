@@ -98,9 +98,6 @@ type RestrictionOptions =
 
     /** Includes private packages. */
     includePrivate?: boolean,
-
-    /** Includes workspace root. */
-    includeWorkspaceRoot?: boolean,
 };
 
 export type Options =
@@ -156,7 +153,7 @@ export type BumpOptions =
 
     /** Creates a github or gitlab release with the generated changes. */
     createRelease?: "github" | "gitlab",
-} & Pick<ChangedOptions, "ignoreChanges">;
+} & Pick<ChangedOptions, "ignoreChanges" | "includePrivate">;
 
 export type ChangedOptions =
 {
@@ -225,7 +222,7 @@ export default class Publisher
 
         for (const entry of workspaces.values())
         {
-            if (entry.hasChanges && (options.includePrivate || !entry.manifest.private) && (options.includeWorkspaceRoot || !entry.isWorkspaceRoot))
+            if (entry.hasChanges && this.isPublishable(entry, options))
             {
                 changes.push(entry.manifest.name);
             }
@@ -297,7 +294,7 @@ export default class Publisher
     {
         const changes = new Map<string, string>();
 
-        const getTag = (entry: Entry): string => options.independent
+        const getTag = (entry: Entry): string => options.independent || this.entries.size > 1
             ? `${entry.manifest.name}@${entry.manifest.version}`
             : `v${entry.manifest.version}`;
 
@@ -349,7 +346,15 @@ export default class Publisher
 
         if (options.createRelease || options.commit)
         {
-            const tags = this.updates.map(getTag);
+            const tags: string[] = [];
+
+            for (const entry of this.updates)
+            {
+                if (!options.includePrivate || entry.manifest.private)
+                {
+                    tags.push(getTag(entry));
+                }
+            }
 
             if (!this.options.dry)
             {
@@ -407,6 +412,16 @@ export default class Publisher
         }
 
         return { registry: this.options.registry ?? auth.registry, token: this.options.token ?? auth.token };
+    }
+
+    private isUpdatable(entry: Entry, options: BumpOptions): boolean
+    {
+        return (options.includePrivate || !entry.manifest.private) && (!options.independent || !entry.isWorkspaceRoot);
+    }
+
+    private isPublishable(entry: Entry, options: PublishOptions): boolean
+    {
+        return !entry.isWorkspaceRoot && (options.includePrivate || !entry.manifest.private);
     }
 
     private async loadWorkspaces(options?: Pick<LoadOptions, "tag" | "ignoreChanges">): Promise<boolean>;
@@ -525,7 +540,7 @@ export default class Publisher
             await this.publishWorkspaces(tag, options, entry.workspaces);
         }
 
-        if ((options.includePrivate || !entry.manifest.private) && (options.includeWorkspaceRoot || !entry.isWorkspaceRoot))
+        if (this.isPublishable(entry, options))
         {
             const versionedName = `${entry.manifest.name}@${entry.manifest.version}`;
 
@@ -663,16 +678,19 @@ export default class Publisher
                 chain = this.sync(entry, workspaces, options);
             }
 
-            if (!this.options.dry)
+            if (this.isUpdatable(entry, options))
             {
-                if (options.force || entry.hasChanges)
+                if (!this.options.dry)
                 {
-                    promises.push(chain.then(async () => writeFile(entry.path, JSON.stringify(entry.manifest, null, 4))));
+                    if (options.force || entry.hasChanges)
+                    {
+                        promises.push(chain.then(async () => writeFile(entry.path, JSON.stringify(entry.manifest, null, 4))));
+                    }
                 }
-            }
-            else
-            {
-                this.logger.info(`Version ${entry.manifest.name}@${entry.manifest.version} will be written in ${entry.path}...`);
+                else
+                {
+                    this.logger.info(`Version ${entry.manifest.name}@${entry.manifest.version} will be written in ${entry.path}...`);
+                }
             }
 
             if (entry.workspaces)
@@ -692,57 +710,60 @@ export default class Publisher
         {
             const action = async (): Promise<void> =>
             {
-                const manifest = entry.manifest;
-                const actual   = manifest.version;
-
-                if (options.force || !options.independent || entry.hasChanges)
+                if (this.isUpdatable(entry, options))
                 {
-                    let manifestVersion = version;
+                    const manifest = entry.manifest;
+                    const actual   = manifest.version;
 
-                    if (manifestVersion == "recommended")
+                    if (options.force || !options.independent || entry.hasChanges)
                     {
-                        const result = await recommendedBump(dirname(entry.path), manifest.name);
+                        let manifestVersion = version;
 
-                        if (!result.releaseType)
+                        if (manifestVersion == "recommended")
                         {
-                            return;
+                            const result = await recommendedBump(dirname(entry.path), manifest.name);
+
+                            if (!result.releaseType)
+                            {
+                                return;
+                            }
+
+                            manifestVersion = result.releaseType;
                         }
 
-                        manifestVersion = result.releaseType;
+                        const updated: string | null = isSemanticVersion(manifestVersion)
+                            ? manifestVersion
+                            : isGlobPrerelease(manifestVersion)
+                                ? overridePrerelease(manifest.version, manifestVersion)
+                                : semver.inc(manifest.version, manifestVersion, { loose: true }, preid);
+
+                        if (!updated)
+                        {
+                            const message = `Packaged ${manifest.name} has invalid version ${manifest.version}`;
+
+                            this.logger.error(message);
+
+                            this.errors.push(new Error(message));
+                        }
+                        else
+                        {
+                            manifest.version = updated + (build ? `.${build}` : "");
+
+                            this.logger.debug(`${manifest.name} version updated from ${actual} to ${manifest.version}`);
+
+                            this.updates.push(entry);
+                        }
                     }
-
-                    const updated: string | null = isSemanticVersion(manifestVersion)
-                        ? manifestVersion
-                        : isGlobPrerelease(manifestVersion)
-                            ? overridePrerelease(manifest.version, manifestVersion)
-                            : semver.inc(manifest.version, manifestVersion, { loose: true }, preid);
-
-                    if (!updated)
+                    else if (entry.remote && entry.manifest.version != entry.remote.version)
                     {
-                        const message = `Packaged ${manifest.name} has invalid version ${manifest.version}`;
+                        this.logger.debug(`Package ${manifest.name} has no changes but local version (${manifest.version}) differ from remote version (${entry.remote.version}) using dist-tag ${options.tag ?? "latest"}`);
 
-                        this.logger.error(message);
-
-                        this.errors.push(new Error(message));
+                        manifest.version = entry.remote.version;
                     }
                     else
                     {
-                        manifest.version = updated + (build ? `.${build}` : "");
-
-                        this.logger.debug(`${manifest.name} version updated from ${actual} to ${manifest.version}`);
-
-                        this.updates.push(entry);
+                        this.logger.debug(`Package ${manifest.name} has no changes`);
                     }
-                }
-                else if (entry.remote && entry.manifest.version != entry.remote.version)
-                {
-                    this.logger.debug(`Package ${manifest.name} has no changes but local version (${manifest.version}) differ from remote version (${entry.remote.version}) using dist-tag ${options.tag ?? "latest"}`);
-
-                    manifest.version = entry.remote.version;
-                }
-                else
-                {
-                    this.logger.debug(`Package ${manifest.name} has no changes`);
                 }
 
                 if (entry.workspaces?.size)
@@ -759,7 +780,7 @@ export default class Publisher
 
     private async unpublishPackage(entry: Entry, options: UnpublishOptions): Promise<void>
     {
-        if ((options.includePrivate || !entry.manifest.private) && (options.includeWorkspaceRoot || !entry.isWorkspaceRoot))
+        if (this.isPublishable(entry, options))
         {
             const versionedName = `${entry.manifest.name}@${entry.manifest.version}`;
 
