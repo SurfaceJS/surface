@@ -564,48 +564,55 @@ export default class Publisher
 
         if (this.isPublishable(entry, options))
         {
-            const versionedName = `${entry.manifest.name}@${entry.manifest.version}`;
+            if (options.force || entry.hasChanges)
+            {
+                const versionedName = `${entry.manifest.name}@${entry.manifest.version}`;
 
-            if (entry.manifest.version == entry.remote?.version)
-            {
-                this.logger[options.canary ? "debug" : "warn"](`${versionedName} already in registry, ignoring...`);
-            }
-            else if (!this.options.dry)
-            {
-                try
+                if (entry.manifest.version == entry.remote?.version)
                 {
-                    await this.runScript(entry.manifest, "prepublish", parentPath);
-                    await this.runScript(entry.manifest, "prepublishOnly", parentPath);
-                    await this.runScript(entry.manifest, "prepack", parentPath);
-                    await this.runScript(entry.manifest, "prepare", parentPath);
-
-                    const buffer = await pack(parentPath);
-
-                    await this.runScript(entry.manifest, "postpack", parentPath);
-
-                    this.logger.debug(`Publishing ${versionedName}`);
-
-                    await entry.service.publish(entry.manifest, buffer, tag);
-
-                    await this.runScript(entry.manifest, "postpublish", parentPath);
-
-                    this.logger.info(`${versionedName} was published.`);
+                    this.logger[options.canary ? "debug" : "warn"](`${versionedName} already in registry, ignoring...`);
                 }
-                catch (error)
+                else if (!this.options.dry)
                 {
-                    this.logger.error(`Failed to publish package ${versionedName}.`);
+                    try
+                    {
+                        await this.runScript(entry.manifest, "prepublish", parentPath);
+                        await this.runScript(entry.manifest, "prepublishOnly", parentPath);
+                        await this.runScript(entry.manifest, "prepack", parentPath);
+                        await this.runScript(entry.manifest, "prepare", parentPath);
 
-                    this.errors.push(error as Error);
+                        const buffer = await pack(parentPath);
+
+                        await this.runScript(entry.manifest, "postpack", parentPath);
+
+                        this.logger.debug(`Publishing ${versionedName}`);
+
+                        await entry.service.publish(entry.manifest, buffer, tag);
+
+                        await this.runScript(entry.manifest, "postpublish", parentPath);
+
+                        this.logger.info(`${versionedName} was published.`);
+                    }
+                    catch (error)
+                    {
+                        this.logger.error(`Failed to publish package ${versionedName}.`);
+
+                        this.errors.push(error as Error);
+                    }
+                }
+                else
+                {
+                    this.logger.info(`${versionedName} will be published.`);
                 }
             }
             else
             {
-                this.logger.info(`${versionedName} will be published.`);
+                this.logger.trace(`Package ${entry.manifest.name} has no changes.`);
             }
         }
         else
         {
-            this.logger.debug(`Package ${entry.manifest.name} is ${entry.manifest.private ? "private" : "an workspace"}, publishing ignored...`);
+            this.logger.trace(`Package ${entry.manifest.name} is ${entry.manifest.private ? "private" : "an workspace"}, publishing ignored...`);
         }
 
         if (!this.options.dry && entry.workspaces?.size)

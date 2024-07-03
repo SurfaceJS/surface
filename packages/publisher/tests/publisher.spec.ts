@@ -409,7 +409,6 @@ export default class PublisherSpec
 
         this.setup({ directory, registry: { } });
 
-        // npmServiceMock.setup("publish").call(It.any(), It.any(), It.any()).reject();
         executeMock.call(It.any(), It.any()).reject();
 
         writeFileMock.call(It.any(), It.any()).resolve();
