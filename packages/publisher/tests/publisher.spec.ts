@@ -390,6 +390,33 @@ export default class PublisherSpec
         await assert.isRejected(new Publisher({ packages: ["packages/*"] }).publish());
     }
 
+    @test("[publish]: Publishing script should fail")
+    @shouldFail
+    public async publishingScriptShouldFail(): Promise<void>
+    {
+        const directory: VirtualDirectory =
+        {
+            "./packages/package-a/package.json": JSON.stringify
+            ({
+                name:    "foo",
+                version: "1.0.0",
+                scripts:
+                {
+                    postpack: "fail",
+                },
+            } as PackageJson),
+        };
+
+        this.setup({ directory, registry: { } });
+
+        // npmServiceMock.setup("publish").call(It.any(), It.any(), It.any()).reject();
+        executeMock.call(It.any(), It.any()).reject();
+
+        writeFileMock.call(It.any(), It.any()).resolve();
+
+        await assert.isRejected(new Publisher({ packages: ["packages/*"] }).publish());
+    }
+
     @test("[unpublish]: Unpublishing should fail")
     @shouldFail
     public async unpublishingShouldFail(): Promise<void>

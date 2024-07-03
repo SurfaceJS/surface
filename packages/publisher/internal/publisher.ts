@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { readFile, writeFile }              from "fs/promises";
 import os                                   from "os";
 import { dirname, join, resolve }           from "path";
@@ -399,6 +400,7 @@ export default class Publisher
             return { ...parent, ...config };
         }
 
+        /* c8 ignore next */
         return parent ?? { };
     }
 
@@ -705,16 +707,16 @@ export default class Publisher
 
             if (this.isUpdatable(entry, options))
             {
-                if (!this.options.dry)
+                if (options.force || entry.hasChanges)
                 {
-                    if (options.force || entry.hasChanges)
+                    if (!this.options.dry)
                     {
                         promises.push(chain.then(async () => writeFile(entry.path, JSON.stringify(entry.manifest, null, 4))));
                     }
-                }
-                else
-                {
-                    this.logger.info(`Version ${entry.manifest.name}@${entry.manifest.version} will be written in ${entry.path}...`);
+                    else
+                    {
+                        this.logger.info(`Version ${entry.manifest.name}@${entry.manifest.version} will be written in ${entry.path}...`);
+                    }
                 }
             }
 
