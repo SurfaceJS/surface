@@ -2,6 +2,7 @@ import Mock, { It }                                                             
 import { afterEach, batchTest, beforeEach, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert, use }                                                           from "chai";
 import chaiAsPromised                                                            from "chai-as-promised";
+import pack                                                                      from "libnpmpack";
 import libnpmpublish                                                             from "libnpmpublish";
 import pacote                                                                    from "pacote";
 import { untar }                                                                 from "../internal/common.js";
@@ -13,6 +14,7 @@ use(chaiAsPromised);
 const libnpmpublishMock = Mock.of(libnpmpublish);
 const pacoteMock        = Mock.of(pacote);
 const untarMock         = Mock.of(untar);
+const packMock          = Mock.of(pack);
 
 type Manifest        = Awaited<ReturnType<typeof pacote["manifest"]>>;
 type PublishResponse = Awaited<ReturnType<typeof libnpmpublish["publish"]>>;
@@ -25,6 +27,7 @@ export default class SuiteSpec
     public beforeEach(): void
     {
         libnpmpublishMock.lock();
+        packMock.lock();
         pacoteMock.lock();
         untarMock.lock();
     }
@@ -33,6 +36,7 @@ export default class SuiteSpec
     public afterEach(): void
     {
         libnpmpublishMock.release();
+        packMock.release();
         pacoteMock.release();
         untarMock.release();
     }
@@ -83,9 +87,9 @@ export default class SuiteSpec
         const localBuffer  = Buffer.from([0]) as TarballResponse;
         const remoteBuffer = Buffer.from([1]) as TarballResponse;
 
-        const tarballSetup = pacoteMock.setup("tarball");
+        packMock.call(LOCAL).resolve(localBuffer);
 
-        tarballSetup.call(LOCAL, It.any()).resolve(localBuffer);
+        const tarballSetup = pacoteMock.setup("tarball");
 
         scenario.remote
             ? tarballSetup.call(REMOTE, It.any()).resolve(remoteBuffer)

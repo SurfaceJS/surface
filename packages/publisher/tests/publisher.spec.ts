@@ -196,7 +196,7 @@ export default class PublisherSpec
         getRemoteUrlMock.call(It.any()).resolve("https://host/owner/project");
         isWorkingTreeCleanMock.call().resolve(true);
         LoggerMock.new(It.any()).returns(loggerMock.proxy);
-        NpmServiceMock.new(It.any(), It.any()).returns(npmServiceMock.proxy);
+        NpmServiceMock.new(It.any()).returns(npmServiceMock.proxy);
         packMock.call(It.any()).resolve(Buffer.from([]));
         pushToRemoteMock.call(It.any()).resolve();
         ReleaseClientMock.new(It.any(), It.any()).returns(releaseClientMock.proxy);

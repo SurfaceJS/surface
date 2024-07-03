@@ -157,15 +157,16 @@ export async function execute(command: string, options?: child_process.ExecOptio
 
     console.log(command);
 
-    const handler = (buffer: Buffer | string): void =>
-    {
-        if (!options?.silent)
+    const handler = (type: "error" | "log") =>
+        (buffer: Buffer | string): void =>
         {
-            console.log(String(buffer).trimEnd());
-        }
+            if (!options?.silent)
+            {
+                console[type](String(buffer).trimEnd());
+            }
 
-        output.push(...Buffer.from(buffer));
-    };
+            output.push(...Buffer.from(buffer));
+        };
 
     return new Promise<Buffer>
     (
@@ -173,10 +174,14 @@ export async function execute(command: string, options?: child_process.ExecOptio
         {
             const childProcess = child_process.exec(command, options);
 
-            childProcess.stdout?.on("data", handler);
+            childProcess.stdout?.setEncoding("utf8");
+            childProcess.stdout?.on("data", handler("log"));
+
+            childProcess.stderr?.setEncoding("utf8");
+            childProcess.stderr?.on("data", handler("error"));
 
             childProcess.on("error", reject);
-            childProcess.on("exit", code => code == 1 ? reject("Exit code 1") : resolve(Buffer.from(output)));
+            childProcess.on("exit", code => (code ?? 0) != 0 ? reject(new Error(`Exit code ${code}`)) : resolve(Buffer.from(output)));
         },
     );
 }

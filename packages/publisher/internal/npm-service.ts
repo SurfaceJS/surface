@@ -1,6 +1,7 @@
 import type { PackageJson }     from "@npm/types";
 import { deepEqual, typeGuard } from "@surface/core";
 import PathMatcher              from "@surface/path-matcher";
+import pack                     from "libnpmpack";
 import libnpmpublish            from "libnpmpublish";
 import pacote                   from "pacote";
 import { untar }                from "./common.js";
@@ -11,7 +12,7 @@ type HasChangesOptions = { ignorePackageVersion?: boolean, ignoreFiles?: string[
 
 function stripSourceMap(source: string | undefined): string | undefined
 {
-    return source?.replace(/\/\/#\s+sourceMappingURL=.*$/, "").trim();
+    return source?.replace(/(?:\r)|(?:\/\/#\s+sourceMappingURL=.*$)/g, "").trim();
 }
 
 function stripFileReferences(left: PackageJson, right: PackageJson, dependencyType?: "dependencies" | "devDependencies" | "peerDependencies"): void
@@ -39,14 +40,14 @@ function stripFileReferences(left: PackageJson, right: PackageJson, dependencyTy
 
 export default class NpmService
 {
-    public constructor(private readonly registry?: string, private readonly token?: string)
+    public constructor(private readonly options?: pacote.Options)
     { }
 
     private async getTarball(spec: string): Promise<Buffer | null>
     {
         try
         {
-            return await pacote.tarball(spec, { registry: this.registry, token: this.token });
+            return await pacote.tarball(spec, this.options);
         }
         catch
         {
@@ -58,7 +59,7 @@ export default class NpmService
     {
         try
         {
-            return await pacote.manifest(spec, { registry: this.registry, token: this.token });
+            return await pacote.manifest(spec, this.options);
         }
         catch (error)
         {
@@ -77,7 +78,7 @@ export default class NpmService
 
         const [leftBuffer, rightBuffer] = await Promise.all
         ([
-            this.getTarball(leftSpec),
+            pack(leftSpec),
             this.getTarball(rightSpec),
         ]);
 
@@ -131,7 +132,7 @@ export default class NpmService
 
     public async publish(manifest: PackageJson, buffer: Buffer, tag: string = "latest"): Promise<void>
     {
-        const response = await libnpmpublish.publish(manifest, buffer, { registry: this.registry, forceAuth: { token: this.token }, access: "public", defaultTag: tag });
+        const response = await libnpmpublish.publish(manifest, buffer, { ...this.options, access: "public", defaultTag: tag });
 
         if (!response.ok)
         {
@@ -141,7 +142,7 @@ export default class NpmService
 
     public async unpublish(spec: string): Promise<void>
     {
-        const response = await libnpmpublish.unpublish(spec, { registry: this.registry, forceAuth: { token: this.token }, access: "public" });
+        const response = await libnpmpublish.unpublish(spec, { ...this.options, access: "public" });
 
         if (!response)
         {

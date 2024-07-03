@@ -25,27 +25,31 @@ export default class Commands
 {
     public static async buildRelease(): Promise<void>
     {
-        logger.trace("Cleaning...");
-
-        await execute(`${TSC} --build "${TSCONFIG_PATH}" --clean`);
-
-        logger.info("Cleaning done!");
-
         const content = (await readFile(TSCONFIG_PATH)).toString();
 
-        const tsconfig = JSON5.parse(content) as TsConfig;
+        try
+        {
+            logger.trace("Cleaning...");
 
-        tsconfig.compilerOptions = { ...tsconfig.compilerOptions, sourceMap: false };
+            await execute(`${TSC} --build "${TSCONFIG_PATH}" --clean`);
 
-        await writeFile(TSCONFIG_PATH, JSON.stringify(tsconfig, null, 4));
+            logger.info("Cleaning done!");
 
-        logger.trace("Building...");
+            const tsconfig = JSON5.parse(content) as TsConfig;
 
-        await execute(`${TSC} --build "${TSCONFIG_PATH}"`);
+            tsconfig.compilerOptions = { ...tsconfig.compilerOptions, sourceMap: false };
 
-        await writeFile(TSCONFIG_PATH, content);
+            await writeFile(TSCONFIG_PATH, JSON.stringify(tsconfig, null, 4));
 
-        logger.info("Building modules done!");
+            logger.trace("Building...");
+            await execute(`${TSC} --build "${TSCONFIG_PATH}"`);
+
+            logger.info("Building modules done!");
+        }
+        finally
+        {
+            await writeFile(TSCONFIG_PATH, content);
+        }
     }
 
     public static async cover(filepath: string): Promise<void>

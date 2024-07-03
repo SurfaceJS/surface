@@ -2,6 +2,7 @@
 /* eslint-disable max-len */
 import type { AsyncCallable, Delegate } from "@surface/core/internal/types/index.js";
 import { LogLevel }                     from "@surface/logger";
+import chalk                            from "chalk";
 import { Command }                      from "commander";
 import Commands                         from "./commands.js";
 import { toBoolean, toEnum, toSemver }  from "./common.js";
@@ -16,11 +17,11 @@ function handler(action: AsyncCallable): AsyncCallable
     {
         if (error instanceof AggregateError)
         {
-            console.error(`${error.message}:${error.errors.map(x => (x as Error).message).join("\n  ")}`);
+            console.error(chalk.red(`${error.message}:\n  ${error.errors.map(x => (x as Error).message).join("\n  ")}`));
         }
         else
         {
-            console.error(error.message);
+            console.error(chalk.red(error.message));
         }
 
         process.exit(1);

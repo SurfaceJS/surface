@@ -1,7 +1,7 @@
 import { rm, writeFile } from "fs/promises";
-import os            from "os";
-import { join }      from "path";
-import { execute }   from "@surface/rwx";
+import os                from "os";
+import { join }          from "path";
+import { execute }       from "@surface/rwx";
 
 /* c8 ignore start */
 
@@ -16,6 +16,7 @@ export async function addTag(tag: string, message: string): Promise<void>
 export async function commit(message: string): Promise<void>
 {
     const file = join(os.tmpdir(), `commit-message-${Date.now()}.txt`);
+
     await writeFile(file, message);
     await executeSilent(`git commit --no-verify -F "${file}"`);
     await rm(file);
