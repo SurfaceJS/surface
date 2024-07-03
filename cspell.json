@@ -75,6 +75,7 @@
         "pacote",
         "parens",
         "pathinfo",
+        "postpack",
         "postpublishworkspace",
         "precomposed",
         "prefetch",

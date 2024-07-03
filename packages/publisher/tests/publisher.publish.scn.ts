@@ -163,7 +163,7 @@ export const validPublishScenarios: PublishScenario[] =
     {
         skip,
         message:  "Publish package already in registry",
-        options:  { registry: "https://registry.com", token: "tokem" },
+        options:  { registry: "https://registry.com", token: "token" },
         args:     [],
         registry:
         {
