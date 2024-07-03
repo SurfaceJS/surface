@@ -60,11 +60,10 @@ function globalOptions(program: Command): Command
         .option("--log-level              <n>", "Log level", toEnum(...Object.entries(LogLevel)), LogLevel.Info);
 }
 
-function restrictionOptions(program: Command): Command
+function privateOptions(program: Command): Command
 {
     return program
-        .option("--include-private        <n>", "Includes private packages", toBoolean)
-        .option("--include-workspace-root [n]", "Includes workspaces root", toBoolean);
+        .option("--include-private        <n>", "Includes private packages", toBoolean);
 }
 
 export default async function main(args: string[]): Promise<void>
@@ -92,14 +91,14 @@ export default async function main(args: string[]): Promise<void>
         .option("--remote                 [n]", "Git remote")
         .option("--create-release         <n>", "Creates a github or gitlab release with the generated changes.", toEnum("github", "gitlab"));
 
-    apply(Commands.bump, bump, globalOptions, ignoreChangesOptions);
+    apply(Commands.bump, bump, globalOptions, ignoreChangesOptions, privateOptions);
 
     const changed = program
         .command("changed")
         .description("List local packages that have changed compared to remote tagged package.")
         .option("--tag                    <n>", "Dist tag used to compare local and remote packages");
 
-    apply(Commands.changed, changed, globalOptions, ignoreChangesOptions, restrictionOptions);
+    apply(Commands.changed, changed, globalOptions, ignoreChangesOptions, privateOptions);
 
     const publish = program
         .command("publish")
@@ -112,13 +111,13 @@ export default async function main(args: string[]): Promise<void>
         .option("--build                  <n>", "The build part of a semver. Like the \"2022\" in 1.2.0-rc.8+2022. Used by canary")
         .option("--force                  [n]", "Forces to publish unchanged packages. Used by canary", toBoolean);
 
-    apply(Commands.publish, publish, globalOptions, ignoreChangesOptions, restrictionOptions);
+    apply(Commands.publish, publish, globalOptions, ignoreChangesOptions, privateOptions);
 
     const unpublish = program
         .command("unpublish")
         .description("Unpublish packages or workspaces packages");
 
-    apply(Commands.unpublish, unpublish, globalOptions, restrictionOptions);
+    apply(Commands.unpublish, unpublish, globalOptions, privateOptions);
 
     await program.parseAsync(args);
 }

@@ -28,6 +28,7 @@ export default class Commands
             synchronize:          options.synchronize!,
             tag:                  options.tag!,
             updateFileReferences: options.updateFileReferences!,
+            includePrivate:       options.includePrivate!,
         };
 
         await new Publisher(options).bump(version, preid, build, bumpOptions);
@@ -38,10 +39,9 @@ export default class Commands
         // Enforce test
         const changedOptions: Required<ChangedOptions> =
         {
-            ignoreChanges:        options.ignoreChanges!,
-            includePrivate:       options.includePrivate!,
-            includeWorkspaceRoot: options.includeWorkspaceRoot!,
-            tag:                  options.tag!,
+            ignoreChanges:  options.ignoreChanges!,
+            includePrivate: options.includePrivate!,
+            tag:            options.tag!,
         };
 
         const changes = await new Publisher(options).changed(changedOptions);
@@ -59,7 +59,6 @@ export default class Commands
             force:                options.force!,
             ignoreChanges:        options.ignoreChanges!,
             includePrivate:       options.includePrivate!,
-            includeWorkspaceRoot: options.includeWorkspaceRoot!,
             preid:                options.preid!,
             prereleaseType:       options.prereleaseType!,
             synchronize:          options.synchronize!,
@@ -74,8 +73,7 @@ export default class Commands
         // Enforce test
         const unpublishOptions: Required<UnpublishOptions> =
         {
-            includePrivate:       options.includePrivate!,
-            includeWorkspaceRoot: options.includeWorkspaceRoot!,
+            includePrivate: options.includePrivate!,
         };
 
         await new Publisher(options).unpublish(unpublishOptions);

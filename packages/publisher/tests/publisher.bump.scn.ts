@@ -18,6 +18,7 @@ export type BumpScenario =
     expected:
     {
         bumps:      Record<string, PackageJson>,
+        tags:       string[],
         changelogs: string[],
     },
     env?:         NodeJS.ProcessEnv,
@@ -37,7 +38,7 @@ export const validBumpScenarios: BumpScenario[] =
         options:   { },
         registry:  { },
         directory: { },
-        expected:  { bumps: { }, changelogs: [] },
+        expected:  { bumps: { }, changelogs: [], tags: [] },
         args:      ["major"],
     },
     {
@@ -56,7 +57,7 @@ export const validBumpScenarios: BumpScenario[] =
                 } as PackageJson,
             ),
         },
-        expected: { bumps: { }, changelogs: [] },
+        expected: { bumps: { }, changelogs: [], tags: [] },
         args:     ["major"],
     },
     {
@@ -89,7 +90,7 @@ export const validBumpScenarios: BumpScenario[] =
                 } as PackageJson,
             ),
         },
-        expected: { bumps: { }, changelogs: [] },
+        expected: { bumps: { }, changelogs: [], tags: [] },
         args:     ["major"],
     },
     {
@@ -108,7 +109,7 @@ export const validBumpScenarios: BumpScenario[] =
                 } as PackageJson,
             ),
         },
-        expected: { bumps: { }, changelogs: [] },
+        expected: { bumps: { }, changelogs: [], tags: [] },
         args:     ["major", undefined, undefined, { commit: true }],
     },
     {
@@ -127,7 +128,7 @@ export const validBumpScenarios: BumpScenario[] =
                 } as PackageJson,
             ),
         },
-        expected: { bumps: { }, changelogs: [] },
+        expected: { bumps: { }, changelogs: [], tags: [] },
         args:     ["major", undefined, undefined, { commit: true, pushToRemote: true }],
     },
     {
@@ -146,7 +147,7 @@ export const validBumpScenarios: BumpScenario[] =
                 } as PackageJson,
             ),
         },
-        expected: { bumps: { }, changelogs: [] },
+        expected: { bumps: { }, changelogs: [], tags: [] },
         args:     ["major", undefined, undefined, { changelog: true }],
     },
     {
@@ -165,7 +166,7 @@ export const validBumpScenarios: BumpScenario[] =
                 } as PackageJson,
             ),
         },
-        expected: { bumps: { }, changelogs: [] },
+        expected: { bumps: { }, changelogs: [], tags: [] },
         args:     ["major", undefined, undefined, { createRelease: "gitlab" }],
     },
     {
@@ -194,8 +195,151 @@ export const validBumpScenarios: BumpScenario[] =
                 },
             },
             changelogs: [],
+            tags:       [],
         },
         args:  ["major"],
+    },
+    {
+        skip,
+        message:   "Bump single package and commit",
+        options:   { },
+        registry:  { },
+        directory:
+        {
+            "./package.json": JSON.stringify
+            (
+                {
+                    name:    "package-a",
+                    version: "1.0.0",
+                } as PackageJson,
+            ),
+        },
+        expected:
+        {
+            bumps:
+            {
+                "package-a":
+                {
+                    name:    "package-a",
+                    version: "2.0.0",
+                },
+            },
+            changelogs: [],
+            tags:       ["v2.0.0"],
+        },
+        args:  ["major", undefined, undefined, { commit: true }],
+    },
+    {
+        skip,
+        message:   "Try bump single private package",
+        options:   { },
+        registry:  { },
+        directory:
+        {
+            "./package.json": JSON.stringify
+            (
+                {
+                    private: true,
+                    name:    "package-a",
+                    version: "1.0.0",
+                } as PackageJson,
+            ),
+        },
+        expected:
+        {
+            bumps:      {},
+            changelogs: [],
+            tags:       [],
+        },
+        args:  ["major"],
+    },
+    {
+        skip,
+        message:   "Try bump single private package and commit",
+        options:   { },
+        registry:  { },
+        directory:
+        {
+            "./package.json": JSON.stringify
+            (
+                {
+                    private: true,
+                    name:    "package-a",
+                    version: "1.0.0",
+                } as PackageJson,
+            ),
+        },
+        expected:
+        {
+            bumps:      {},
+            changelogs: [],
+            tags:       [],
+        },
+        args:  ["major", undefined, undefined, { commit: true }],
+    },
+    {
+        skip,
+        message:   "Bump single private package",
+        options:   { },
+        registry:  { },
+        directory:
+        {
+            "./package.json": JSON.stringify
+            (
+                {
+                    private: true,
+                    name:    "package-a",
+                    version: "1.0.0",
+                } as PackageJson,
+            ),
+        },
+        expected:
+        {
+            bumps:
+            {
+                "package-a":
+                {
+                    private: true,
+                    name:    "package-a",
+                    version: "2.0.0",
+                },
+            },
+            changelogs: [],
+            tags:       [],
+        },
+        args:  ["major", undefined, undefined, { includePrivate: true }],
+    },
+    {
+        skip,
+        message:   "Bump single private package and commit",
+        options:   { },
+        registry:  { },
+        directory:
+        {
+            "./package.json": JSON.stringify
+            (
+                {
+                    private: true,
+                    name:    "package-a",
+                    version: "1.0.0",
+                } as PackageJson,
+            ),
+        },
+        expected:
+        {
+            bumps:
+            {
+                "package-a":
+                {
+                    private: true,
+                    name:    "package-a",
+                    version: "2.0.0",
+                },
+            },
+            changelogs: [],
+            tags:       ["v2.0.0"],
+        },
+        args:  ["major", undefined, undefined, { commit: true, includePrivate: true }],
     },
     {
         skip,
@@ -224,6 +368,7 @@ export const validBumpScenarios: BumpScenario[] =
                 },
             },
             changelogs: [],
+            tags:       [],
         },
         args:        ["recommended"],
     },
@@ -254,11 +399,145 @@ export const validBumpScenarios: BumpScenario[] =
                 },
             },
             changelogs: [],
+            tags:       [],
         },
         args:        ["recommended"],
     },
     {
-
+        skip,
+        message:   "Bump multiples packages",
+        options:   { packages: ["packages/*"] },
+        registry:  { },
+        directory:
+        {
+            "./packages/package-a/package.json": JSON.stringify
+            (
+                {
+                    name:    "package-a",
+                    version: "1.0.0",
+                } as PackageJson,
+            ),
+            "./packages/package-b/package.json": JSON.stringify
+            (
+                {
+                    name:    "package-b",
+                    version: "1.0.0",
+                } as PackageJson,
+            ),
+        },
+        expected:
+        {
+            bumps:
+            {
+                "package-a":
+                {
+                    name:    "package-a",
+                    version: "2.0.0",
+                },
+                "package-b":
+                {
+                    name:    "package-b",
+                    version: "2.0.0",
+                },
+            },
+            changelogs: [],
+            tags:       [],
+        },
+        args: ["major", undefined, undefined, { independent: true }],
+    },
+    {
+        skip,
+        message:   "Bump multiples packages and commit",
+        options:   { packages: ["packages/*"] },
+        registry:  { },
+        directory:
+        {
+            "./packages/package-a/package.json": JSON.stringify
+            (
+                {
+                    name:    "package-a",
+                    version: "1.0.0",
+                } as PackageJson,
+            ),
+            "./packages/package-b/package.json": JSON.stringify
+            (
+                {
+                    name:    "package-b",
+                    version: "1.0.0",
+                } as PackageJson,
+            ),
+        },
+        expected:
+        {
+            bumps:
+            {
+                "package-a":
+                {
+                    name:    "package-a",
+                    version: "2.0.0",
+                },
+                "package-b":
+                {
+                    name:    "package-b",
+                    version: "2.0.0",
+                },
+            },
+            changelogs: [],
+            tags:       ["package-a@2.0.0", "package-b@2.0.0"],
+        },
+        args: ["major", undefined, undefined, { commit: true, independent: true }],
+    },
+    {
+        skip,
+        message:   "Try bump workspaces root",
+        options:   { },
+        registry:  { },
+        directory:
+        {
+            "./package.json": JSON.stringify
+            (
+                {
+                    name:       "package-root",
+                    version:    "1.0.0",
+                    workspaces: ["packages/*"],
+                } as PackageJson,
+            ),
+            "./packages/package-a/package.json": JSON.stringify
+            (
+                {
+                    name:    "package-a",
+                    version: "1.0.0",
+                } as PackageJson,
+            ),
+            "./packages/package-b/package.json": JSON.stringify
+            (
+                {
+                    name:    "package-b",
+                    version: "1.0.0",
+                } as PackageJson,
+            ),
+        },
+        expected:
+        {
+            bumps:
+            {
+                "package-a":
+                {
+                    name:    "package-a",
+                    version: "2.0.0",
+                },
+                "package-b":
+                {
+                    name:    "package-b",
+                    version: "2.0.0",
+                },
+            },
+            changelogs: [],
+            tags:       [],
+        },
+        args: ["major", undefined, undefined, { independent: true }],
+    },
+    {
         skip,
         message:   "Bump workspaces",
         options:   { },
@@ -310,6 +589,7 @@ export const validBumpScenarios: BumpScenario[] =
                 },
             },
             changelogs: [],
+            tags:       [],
         },
         args: ["major"],
     },
@@ -366,11 +646,11 @@ export const validBumpScenarios: BumpScenario[] =
                 },
             },
             changelogs: [],
+            tags:       [],
         },
         args: ["major"],
     },
     {
-
         skip,
         message:   "Bump nested workspaces",
         options:   { },
@@ -450,6 +730,7 @@ export const validBumpScenarios: BumpScenario[] =
                 },
             },
             changelogs: [],
+            tags:       [],
         },
         args: ["major"],
     },
@@ -492,12 +773,6 @@ export const validBumpScenarios: BumpScenario[] =
         {
             bumps:
             {
-                "package-root":
-                {
-                    name:       "package-root",
-                    version:    "2.0.0",
-                    workspaces: ["packages/*"],
-                },
                 "package-a":
                 {
                     name:    "package-a",
@@ -514,6 +789,7 @@ export const validBumpScenarios: BumpScenario[] =
                 },
             },
             changelogs: [],
+            tags:       [],
         },
     },
     {
@@ -555,12 +831,6 @@ export const validBumpScenarios: BumpScenario[] =
         {
             bumps:
             {
-                "package-root":
-                {
-                    name:       "package-root",
-                    version:    "2.0.0",
-                    workspaces: ["packages/*"],
-                },
                 "package-a":
                 {
                     name:    "package-a",
@@ -577,6 +847,7 @@ export const validBumpScenarios: BumpScenario[] =
                 },
             },
             changelogs: [],
+            tags:       [],
         },
     },
     {
@@ -658,12 +929,6 @@ export const validBumpScenarios: BumpScenario[] =
         {
             bumps:
             {
-                "package-root":
-                {
-                    name:       "package-root",
-                    version:    "1.1.0",
-                    workspaces: ["packages/*"],
-                },
                 "package-a":
                 {
                     name:    "package-a",
@@ -710,6 +975,7 @@ export const validBumpScenarios: BumpScenario[] =
                 },
             },
             changelogs: [],
+            tags:       [],
         },
     },
     {
@@ -791,12 +1057,6 @@ export const validBumpScenarios: BumpScenario[] =
         {
             bumps:
             {
-                "package-root":
-                {
-                    name:       "package-root",
-                    version:    "1.1.0",
-                    workspaces: ["packages/*"],
-                },
                 "package-a":
                 {
                     name:    "package-a",
@@ -843,6 +1103,7 @@ export const validBumpScenarios: BumpScenario[] =
                 },
             },
             changelogs: [],
+            tags:       [],
         },
     },
     {
@@ -901,12 +1162,6 @@ export const validBumpScenarios: BumpScenario[] =
         {
             bumps:
             {
-                "package-root":
-                {
-                    name:       "package-root",
-                    version:    "1.1.0",
-                    workspaces: ["packages/*"],
-                },
                 "package-a":
                 {
                     name:         "package-a",
@@ -927,6 +1182,7 @@ export const validBumpScenarios: BumpScenario[] =
                 },
             },
             changelogs: [],
+            tags:       [],
         },
     },
     {
@@ -956,6 +1212,7 @@ export const validBumpScenarios: BumpScenario[] =
                 },
             },
             changelogs: [],
+            tags:       [],
         },
     },
     {
@@ -985,6 +1242,7 @@ export const validBumpScenarios: BumpScenario[] =
                 },
             },
             changelogs: [],
+            tags:       [],
         },
     },
     {
@@ -1014,6 +1272,7 @@ export const validBumpScenarios: BumpScenario[] =
                 },
             },
             changelogs: [],
+            tags:       [],
         },
     },
     {
@@ -1044,7 +1303,7 @@ export const validBumpScenarios: BumpScenario[] =
                 } as PackageJson,
             ),
         },
-        expected: { bumps: { }, changelogs: [] },
+        expected: { bumps: { }, changelogs: [], tags: [] },
     },
     {
         skip,
@@ -1119,15 +1378,6 @@ export const validBumpScenarios: BumpScenario[] =
         {
             bumps:
             {
-                "package-root":
-                {
-                    name:       "package-root",
-                    version:    "2.0.0",
-                    workspaces:
-                        [
-                            "packages/*",
-                        ],
-                },
                 "package-b":
                 {
                     name:         "package-b",
@@ -1139,6 +1389,7 @@ export const validBumpScenarios: BumpScenario[] =
                 },
             },
             changelogs: [],
+            tags:       [],
         },
     },
     {
@@ -1168,6 +1419,7 @@ export const validBumpScenarios: BumpScenario[] =
                 },
             },
             changelogs: ["."],
+            tags:       [],
         },
         args:     ["major", undefined, undefined, { changelog: true }],
     },
@@ -1199,6 +1451,7 @@ export const validBumpScenarios: BumpScenario[] =
                 },
             },
             changelogs: [],
+            tags:       ["v1.0.0"],
         },
         args:     ["major", undefined, undefined, { createRelease: "github" }],
     },
@@ -1245,6 +1498,7 @@ export const validBumpScenarios: BumpScenario[] =
                 },
             },
             changelogs: [],
+            tags:       ["package-a@1.0.0", "package-b@1.0.0"],
         },
         args:     ["major", undefined, undefined, { createRelease: "gitlab", independent: true }],
     },
@@ -1278,7 +1532,7 @@ export const invalidBumpScenarios: BumpScenario[] =
                 ),
             },
         },
-        expected: { bumps: { }, changelogs: [] },
+        expected: { bumps: { }, changelogs: [], tags: [] },
     },
     {
 
@@ -1297,7 +1551,7 @@ export const invalidBumpScenarios: BumpScenario[] =
                 } as PackageJson,
             ),
         },
-        expected: { bumps: { }, changelogs: [] },
+        expected: { bumps: { }, changelogs: [], tags: ["package-a@0.0.1"] },
         args:     ["major", undefined, undefined, { createRelease: "github" }],
     },
 ];

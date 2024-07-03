@@ -9,7 +9,7 @@
         "importHelpers":                    true,
         "isolatedModules":                  true,
         "lib":                              ["esnext"],
-        "module":                           "ESNext",
+        "module":                           "NodeNext",
         "moduleResolution":                 "NodeNext",
         "noEmitHelpers":                    true,
         "noEmitOnError":                    true,

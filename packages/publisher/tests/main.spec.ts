@@ -73,6 +73,7 @@ export default class MainSpec
             "--tag=next",
             "--token=123",
             "--update-file-references=true",
+            "--include-private=true",
         ];
 
         let actual: Parameters<typeof Commands["bump"]> | undefined;
@@ -99,6 +100,7 @@ export default class MainSpec
                 tag:                  "next",
                 token:                "123",
                 updateFileReferences: true,
+                includePrivate:       true,
             },
         ];
 
@@ -124,7 +126,6 @@ export default class MainSpec
             "--dry=true",
             "--ignore-changes=*.md",
             "--include-private=true",
-            "--include-workspace-root=true",
             "--log-level=trace",
             "--packages=bar",
             "--packages=foo",
@@ -137,16 +138,15 @@ export default class MainSpec
         const expected: DeepRequired<Parameters<typeof Commands["changed"]>> =
         [
             {
-                cwd:                  ".",
-                dry:                  true,
-                ignoreChanges:        ["*.md"],
-                includePrivate:       true,
-                includeWorkspaceRoot: true,
-                logLevel:             LogLevel.Trace,
-                packages:             ["bar", "foo"],
-                registry:             "https://registry.com",
-                token:                "123",
-                tag:                  "latest",
+                cwd:            ".",
+                dry:            true,
+                ignoreChanges:  ["*.md"],
+                includePrivate: true,
+                logLevel:       LogLevel.Trace,
+                packages:       ["bar", "foo"],
+                registry:       "https://registry.com",
+                token:          "123",
+                tag:            "latest",
             },
         ];
 
@@ -176,7 +176,6 @@ export default class MainSpec
             "--preid=alpha",
             "--ignore-changes=*.md",
             "--include-private=true",
-            "--include-workspace-root=true",
             "--log-level=trace",
             "--packages=bar",
             "--packages=foo",
@@ -191,22 +190,21 @@ export default class MainSpec
         const expected: DeepRequired<Parameters<typeof Commands["publish"]>> =
         [
             {
-                build:                "2022",
-                canary:               true,
-                cwd:                  ".",
-                dry:                  true,
-                force:                true,
-                ignoreChanges:        ["*.md"],
-                includePrivate:       true,
-                includeWorkspaceRoot: true,
-                logLevel:             LogLevel.Trace,
-                packages:             ["bar", "foo"],
-                preid:                "alpha",
-                prereleaseType:       "premajor",
-                registry:             "https://registry.com",
-                synchronize:          true,
-                tag:                  "latest",
-                token:                "token",
+                build:          "2022",
+                canary:         true,
+                cwd:            ".",
+                dry:            true,
+                force:          true,
+                ignoreChanges:  ["*.md"],
+                includePrivate: true,
+                logLevel:       LogLevel.Trace,
+                packages:       ["bar", "foo"],
+                preid:          "alpha",
+                prereleaseType: "premajor",
+                registry:       "https://registry.com",
+                synchronize:    true,
+                tag:            "latest",
+                token:          "token",
             },
         ];
 
@@ -232,7 +230,6 @@ export default class MainSpec
             "--cwd=.",
             "--dry=true",
             "--include-private=true",
-            "--include-workspace-root=true",
             "--log-level=trace",
             "--packages=bar",
             "--packages=foo",
@@ -244,14 +241,13 @@ export default class MainSpec
         const expected: DeepRequired<Parameters<typeof Commands["unpublish"]>> =
         [
             {
-                cwd:                  ".",
-                dry:                  true,
-                includePrivate:       true,
-                includeWorkspaceRoot: true,
-                logLevel:             LogLevel.Trace,
-                packages:             ["bar", "foo"],
-                registry:             "https://registry.com",
-                token:                "token",
+                cwd:            ".",
+                dry:            true,
+                includePrivate: true,
+                logLevel:       LogLevel.Trace,
+                packages:       ["bar", "foo"],
+                registry:       "https://registry.com",
+                token:          "token",
             },
         ];
 
