@@ -40,6 +40,7 @@ export async function getRemoteUrl(remote: string): Promise<string>
 
 export async function pushToRemote(remote: string = "origin"): Promise<void>
 {
+    await executeSilent(`git push ${remote}`);
     await executeSilent(`git push ${remote} --tags`);
 }
 
