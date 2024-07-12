@@ -6,7 +6,7 @@ import { execute }       from "@surface/rwx";
 /* c8 ignore start */
 
 const executeSilent = async (command: string): Promise<Buffer> =>
-    execute(command, { silent: false });
+    execute(command, { silent: true });
 
 export async function addTag(tag: string, message: string): Promise<void>
 {
