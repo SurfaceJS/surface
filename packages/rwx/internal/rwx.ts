@@ -278,7 +278,7 @@ export async function listPaths(pattern: string | string[], options?: Options): 
  */
 export function listPathsSync(pattern: string | string[], options?: Options): string[]
 {
-    return Array.from(enumeratePathsSync(pattern, options));
+    return [...enumeratePathsSync(pattern, options)];
 }
 
 /**
