@@ -127,7 +127,7 @@ export default class IoSpec
         const actual2 = await listPaths(patterns);
 
         assert.deepEqual(actual1, expected1, "#1");
-        assert.deepEqual(actual2, expected2, "#3");
+        assert.deepEqual(actual2, expected2, "#2");
     }
 
     @test @shouldPass

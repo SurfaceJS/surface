@@ -40,7 +40,6 @@ Object.assign
         NodeList:              window.NodeList,
         ShadowRoot:            window.ShadowRoot,
         Window:                window.constructor,
-        crypto,
         customElements:        window.customElements,
         document:              window.document,
         location:              window.location,
@@ -50,6 +49,11 @@ Object.assign
         windows,
     },
 );
+
+if (!global.crypto)
+{
+    Object.assign(global, { crypto });
+}
 
 declare global
 {

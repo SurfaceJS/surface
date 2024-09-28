@@ -506,7 +506,7 @@ export default class Parser
         {
             const pattern = this.options.dot
                 ? "(?!\\.\\.?[\\/\\\\]).*[\\/\\\\]?"
-                : "(?:[^.\\/\\\\][^\\/\\\\]*[\\/\\\\]?)*";
+                : "(?:[\\/\\\\]?[^.\\/\\\\][^\\/\\\\]*)*[\\/\\\\]?";
 
             this.context.type == ContextType.Class
                 ? this.context.push("*", pattern)
