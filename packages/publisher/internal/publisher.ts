@@ -451,7 +451,8 @@ export default class Publisher
                 parentConfig["//registry.npmjs.org/:_authToken"] = this.options.token;
             }
 
-            const config = await this.getConfig(os.homedir(), parentConfig);
+            const globalConfig = await this.getConfig(os.homedir(), parentConfig);
+            const config       = await this.getConfig(process.cwd(), globalConfig);
 
             this.entries = await this.loadWorkspaces({ ...options, config, packages: this.options.packages.map(this.normalizePattern), cwd: this.options.cwd });
 
