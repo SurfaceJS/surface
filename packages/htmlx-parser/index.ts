@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/indent */
+/* eslint-disable indent */
 export type { default as StackTrace }     from "./internal/types/stack-trace.js";
 export type { default as ObservablePath } from "./internal/types/observable-path.js";
 export type

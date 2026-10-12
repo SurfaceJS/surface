@@ -4,12 +4,10 @@ import type { DeepRequired }                                          from "@sur
 import { LogLevel }                                                   from "@surface/logger";
 import Mock, { It }                                                   from "@surface/mock";
 import { afterEach, beforeEach, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert, use }                                                from "chai";
-import chaiAsPromised                                                 from "chai-as-promised";
+import { assert }                                                from "@surface/test-suite";
 import Commands                                                       from "../internal/commands.js";
 import main                                                           from "../internal/main.js";
 
-use(chaiAsPromised);
 
 const CommandsMock = Mock.of(Commands);
 

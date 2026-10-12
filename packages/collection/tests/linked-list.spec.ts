@@ -1,5 +1,5 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                  from "chai";
+import assert                      from "node:assert";
 import LinkedList                  from "../internal/linked-list.js";
 
 @suite

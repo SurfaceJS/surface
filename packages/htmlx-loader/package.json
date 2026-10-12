@@ -5,20 +5,16 @@
     },
     "dependencies": {
         "@surface/core": "file:../core",
-        "@surface/htmlx-parser": "file:../htmlx-parser",
         "@surface/expression": "file:../expression",
-        "@types/jsdom": "~20.0.0",
-        "jsdom": "~20.0.0",
-        "tslib": "~2.4.0"
+        "@surface/htmlx-parser": "file:../htmlx-parser",
+        "jsdom": "^20.0.3",
+        "tslib": "~2.8"
     },
     "description": "Compiles htmlx templates ahead of time .",
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
         "@surface/tsconfig": "file:../tsconfig",
-        "@types/chai": "~4.3.3",
-        "@types/chai-as-promised": "~7.1.5",
-        "chai": "~4.3.6",
-        "chai-as-promised": "~7.1.1"
+        "@types/jsdom": "^20.0.1"
     },
     "homepage": "https://github.com/SurfaceJS/surface#readme",
     "keywords": [

@@ -3,7 +3,7 @@ import path                                   from "path";
 import Mock, { It }                           from "@surface/mock";
 import { isDirectory, lookup }                from "@surface/rwx";
 import { afterEach, beforeEach, suite, test } from "@surface/test-suite";
-import { assert }                             from "chai";
+import { assert }                             from "@surface/test-suite";
 import Builder                                from "../internal/builder.js";
 import Commands                               from "../internal/commands.js";
 import { loadModule }                         from "../internal/common.js";

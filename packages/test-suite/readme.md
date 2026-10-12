@@ -1,1 +1,1 @@
-Provides decorators for testing with mocha using the OOP approach.
+Provides decorators for testing with node:test using the OOP approach.

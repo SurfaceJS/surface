@@ -1,9 +1,11 @@
 import path                        from "path";
 import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                  from "chai";
+import { assert }                  from "@surface/test-suite";
+import type webpack                from "webpack";
+import type { ResolveRequest, ResolveContext } from "enhanced-resolve";
 import OverrideResolverPlugin      from "../../internal/plugins/override-resolver-plugin.js";
 
-type Resolver = Parameters<OverrideResolverPlugin["apply"]>[0];
+type Resolver = webpack.Resolver;
 
 const CWD = process.cwd();
 
@@ -28,13 +30,13 @@ export default class OverrideResolverPluginSpec
             {
                 result:
                 {
-                    tap(_, callback): void
+                    tap(_: string, callback: (request: ResolveRequest, context: ResolveContext) => void): void
                     {
                         const payloads = paths.map(path => ({ request: { path }, resolved: "" }));
 
                         for (const payload of payloads)
                         {
-                            callback(payload.request, { });
+                            callback(payload.request as ResolveRequest, { });
 
                             actual.push(payload.request.path);
                         }

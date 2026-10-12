@@ -1,7 +1,7 @@
 /* eslint-disable no-new-func */
 /* eslint-disable @typescript-eslint/no-implied-eval */
 import { batchTest, shouldFail, shouldPass, skip, suite, test } from "@surface/test-suite";
-import { assert }                                               from "chai";
+import { assert }                                               from "@surface/test-suite";
 import ParenthesizedExpression                                  from "../internal/expressions/parenthesized-expression.js";
 import Parser                                                   from "../internal/parser.js";
 import SyntaxError                                              from "../internal/syntax-error.js";

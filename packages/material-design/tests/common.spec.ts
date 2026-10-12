@@ -1,6 +1,6 @@
 /* eslint-disable sort-keys */
 import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                  from "chai";
+import { assert }                  from "@surface/test-suite";
 import { generateTheme }           from "../internal/common.js";
 
 @suite

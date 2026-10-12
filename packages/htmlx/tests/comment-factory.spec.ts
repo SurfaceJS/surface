@@ -2,7 +2,7 @@
 import "@surface/dom-shim";
 
 import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                  from "chai";
+import { assert }                  from "@surface/test-suite";
 import createCommentFactory        from "../internal/factories/create-comment-factory.js";
 import customDirectiveFactory      from "./fixtures/custom-directive-factory.js";
 import CustomDirective             from "./fixtures/custom-directive.js";

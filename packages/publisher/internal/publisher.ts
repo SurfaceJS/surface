@@ -323,7 +323,7 @@ export default class Publisher
 
                             if (options.changelog)
                             {
-                                await writeFile(changelogPath, content);
+                                await writeFile(changelogPath, new Uint8Array(content));
                             }
 
                             this.logger.debug(`${entry.manifest.name}'s changelog created.`);
@@ -524,9 +524,9 @@ export default class Publisher
             await execute(`npm run ${script} --if-present --color`, { cwd })
                 .catch
                 (
-                    error =>
+                    (error: unknown) =>
                     {
-                        const message = `Script failed: ${script} - ${error.message}`;
+                        const message = `Script failed: ${script} - ${error instanceof Error ? error.message : String(error)}`;
 
                         this.logger.error(message);
                         this.errors.push(new Error(message));

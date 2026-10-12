@@ -5,7 +5,7 @@ import "@surface/dom-shim";
 import type { Constructor, Delegate, IDisposable } from "@surface/core";
 import { resolveError }                            from "@surface/core";
 import { shouldFail, shouldPass, suite, test }     from "@surface/test-suite";
-import { assert }                                  from "chai";
+import { assert }                                  from "@surface/test-suite";
 import semver                                      from "semver";
 import Compiler                                    from "../internal/compiler.js";
 import LoopDirective                               from "../internal/directives/loop-directive.js";

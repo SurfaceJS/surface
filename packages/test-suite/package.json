@@ -4,13 +4,11 @@
         "url": "https://github.com/SurfaceJS/surface/issues"
     },
     "dependencies": {
-        "tslib": "~2.4.0"
+        "tslib": "~2.8"
     },
-    "description": "Provides decorators for testing with mocha using the OOP approach.",
+    "description": "Provides decorators for testing with node:test using the OOP approach.",
     "devDependencies": {
-        "@surface/tsconfig": "file:../tsconfig",
-        "@types/chai": "~4.3.3",
-        "chai": "~4.3.6"
+        "@surface/tsconfig": "file:../tsconfig"
     },
     "homepage": "https://github.com/SurfaceJS/surface#readme",
     "keywords": [
@@ -22,9 +20,6 @@
     "license": "MIT",
     "main": "index.js",
     "name": "@surface/test-suite",
-    "peerDependencies": {
-        "mocha": ">=9"
-    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/surface.git"

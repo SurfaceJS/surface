@@ -1,11 +1,15 @@
 import type webpack from "webpack";
 
-type ResolverPluginInstance = Exclude<Exclude<webpack.ResolveOptions["plugins"], undefined>[number], "...">;
-type Resolver               = Parameters<ResolverPluginInstance["apply"]>[0];
+type Resolver = webpack.Resolver;
 
 export type FileOverride = { replace: string, with: string };
 
-export default class OverrideResolvePlugin implements ResolverPluginInstance
+interface ResolvePlugin
+{
+    apply(resolver: Resolver): void;
+}
+
+export default class OverrideResolvePlugin implements ResolvePlugin
 {
     private readonly overrides: Map<string, string>;
 

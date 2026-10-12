@@ -1,5 +1,5 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                  from "chai";
+import { assert }                  from "@surface/test-suite";
 import PropertyInfo                from "../internal/property-info.js";
 import Type                        from "../internal/type.js";
 import Mock                        from "./fixtures/mock.js";

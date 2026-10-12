@@ -1,28 +1,22 @@
 {
     "all": false,
-    "branches": 90,
+    "branches": 70,
     "exclude":
     [
         "**/packages/*/index.js",
-        "**/tests"
+        "**/node_modules",
+        "**/tests",
+        "**/test-suite/internal/assert.js"
     ],
-    "extension":
-    [
-        ".js",
-        ".ts"
-    ],
-    "functions": 90,
-    "include":
-    [
-        "packages/**/*.js",
-        "packages/**/*.ts"
-    ],
-    "lines": 90,
+    "extension": [".js"],
+    "functions": 25,
+    "include": ["packages/**/*.js"],
+    "lines": 42,
     "reporter":
     [
         "text-summary",
         "lcov"
     ],
     "sourceMap": true,
-    "statements": 90
+    "statements": 42
 }

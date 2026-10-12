@@ -1,5 +1,5 @@
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                              from "chai";
+import { assert }                              from "@surface/test-suite";
 import Router                                  from "../internal/router.js";
 import type RouterMatch                        from "../internal/types/router-match.js";
 

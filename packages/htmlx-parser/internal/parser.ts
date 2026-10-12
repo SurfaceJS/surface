@@ -2,7 +2,7 @@
 /* eslint-disable max-lines-per-function */
 /* eslint-disable max-statements */
 /* eslint-disable @typescript-eslint/prefer-for-of */
-/* eslint-disable @typescript-eslint/indent */
+/* eslint-disable indent */
 import type { Indexer }                                                                          from "@surface/core";
 import { assert, contains, dashedToCamel, typeGuard }                                            from "@surface/core";
 import type { IExpression, IPattern, Identifier }                                                from "@surface/expression";

@@ -27,8 +27,7 @@ import
     suite,
     test,
 } from "@surface/test-suite";
-import { assert, use } from "chai";
-import chaiAsPromised  from "chai-as-promised";
+import { assert } from "@surface/test-suite";
 import
 {
     isDirectory,
@@ -42,7 +41,6 @@ import
     searchAbove,
 } from "../internal/rwx.js";
 
-use(chaiAsPromised);
 
 type ReaddirSync = (path: string) => string[];
 type Readdir     = (path: string) => Promise<string[]>;

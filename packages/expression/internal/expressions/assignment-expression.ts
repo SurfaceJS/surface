@@ -6,7 +6,9 @@ import type { AssignmentOperator } from "../types/operators.js";
 import type Identifier             from "./identifier.js";
 import type MemberExpression       from "./member-expression.js";
 
-const assignmentOperations: Record<AssignmentOperator, Delegate<[Indexer, string | number, unknown], unknown>> =
+type AssignmentOperation = (target: Indexer, key: string | number, value: unknown) => unknown;
+
+const assignmentOperations: Record<AssignmentOperator, AssignmentOperation> =
 {
     "%=":   (target, key, value) => (target[key] as number) %=   value as number,
     "&&=":  (target, key, value) => target[key]             &&=  value,

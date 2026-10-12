@@ -80,9 +80,9 @@
         {
             "args":
             [
-                "-ui=tdd",
-                "--timeout=9999999",
-                "--colors",
+                "--test",
+                "--import=${workspaceFolder}/tasks/loader-register.mjs",
+                "--require=${workspaceFolder}/tasks/polyfill.js",
                 "${fileDirname}/${fileBasenameNoExtension}.js"
             ],
             "cwd":  "${workspaceFolder}",
@@ -94,11 +94,10 @@
                 "${workspaceFolder}/packages/*/internal/**/*.js",
                 "${workspaceFolder}/packages/*/tests/**/*.js"
             ],
-            "program":  "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+            "program":  "node",
             "request":  "launch",
             "runtimeArgs":
             [
-                "--loader=@surface/mock-loader",
                 "--nolazy"
             ],
             "sourceMaps": true,

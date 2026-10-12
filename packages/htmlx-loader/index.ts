@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/indent */
+/* eslint-disable indent */
 import path             from "path";
 import type webpack     from "webpack";
 import { mapHandlers }  from "./internal/attribute-handlers.js";

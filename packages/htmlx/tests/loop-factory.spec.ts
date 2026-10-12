@@ -2,7 +2,7 @@
 import "@surface/dom-shim";
 
 import { shouldPass, suite, test }        from "@surface/test-suite";
-import { assert }                         from "chai";
+import { assert }                         from "@surface/test-suite";
 import createElementFactory               from "../internal/factories/create-element-factory.js";
 import createFragmentFactory              from "../internal/factories/create-fragment-factory.js";
 import createLoopFactory                  from "../internal/factories/create-loop-factory.js";

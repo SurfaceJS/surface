@@ -3,10 +3,14 @@ import path           from "path";
 import PathMatcher    from "@surface/path-matcher";
 import type webpack   from "webpack";
 
-type ResolverPluginInstance = Exclude<Exclude<webpack.ResolveOptions["plugins"], undefined>[number], "...">;
-type Resolver               = Parameters<ResolverPluginInstance["apply"]>[0];
+type Resolver = webpack.Resolver;
 
-export default class PreferTsResolverPlugin implements ResolverPluginInstance
+interface ResolvePlugin
+{
+    apply(resolver: Resolver): void;
+}
+
+export default class PreferTsResolverPlugin implements ResolvePlugin
 {
     private readonly matcher: PathMatcher | null;
 

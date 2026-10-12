@@ -169,7 +169,7 @@ export default class WebRouter
 
                 if (entry == previous?.definition?.stack[index])
                 {
-                    const next = cache[index]!.default ?? cache[index]![keys.values().next().value]!;
+                    const next = cache[index]!.default ?? cache[index]![keys.values().next().value ?? "default"]!;
 
                     if (hasUpdate)
                     {

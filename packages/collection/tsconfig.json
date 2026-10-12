@@ -4,6 +4,7 @@
     {
         "outDir":  ".",
         "rootDir": ".",
+        "types":  ["node"],
     },
     "files":
     [

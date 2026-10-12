@@ -1,7 +1,7 @@
 import util                           from "util";
 import Mock                           from "@surface/mock";
 import { shouldPass, suite, test }    from "@surface/test-suite";
-import { assert }                     from "chai";
+import { assert }                     from "@surface/test-suite";
 import fsProxy                        from "fs?mock";
 import fsTarget                       from "fs?mock=target";
 import fixture                        from "./fixture.js?mock";

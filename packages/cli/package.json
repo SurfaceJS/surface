@@ -9,18 +9,16 @@
     "dependencies": {
         "@surface/core": "file:../core",
         "@surface/rwx": "file:../rwx",
-        "@types/inquirer": "~9.0.1",
-        "@types/node": "~18.7.6",
-        "commander": "~9.4.0",
-        "inquirer": "~9.1.0",
-        "tslib": "~2.4.0"
+        "commander": "^9.4.1",
+        "inquirer": "^9.3.8",
+        "tslib": "~2.8"
     },
     "description": "Provides command line interface for scaffolding surface projects.",
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
         "@surface/tsconfig": "file:../tsconfig",
-        "@types/chai": "~4.3.3",
-        "chai": "~4.3.6"
+        "@types/inquirer": "^9.0.10",
+        "@types/node": "^26.6.5"
     },
     "engines": {
         "node": ">=14.16.1"

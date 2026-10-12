@@ -67,7 +67,7 @@ export default class HTMLXElement extends HTMLElement implements IHTMLXElement
         hookableMetadata.initialize(instance);
     }
 
-    public static [Symbol.hasInstance](instance: object): boolean
+    public static override [Symbol.hasInstance](instance: object): boolean
     {
         return Reflect.get(instance.constructor, HTMLX_ELEMENT);
     }

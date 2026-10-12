@@ -1,8 +1,8 @@
 
 import Mock, { It }                                               from "@surface/mock";
 import { afterEach, beforeEach, suite, test }                     from "@surface/test-suite";
-import { assert }                                                 from "chai";
-import type { Configuration, Stats, Compiler as WebpackCompiler } from "webpack";
+import { assert }                                                 from "@surface/test-suite";
+import type { Configuration, Stats, Watching as WebpackWatching, Compiler as WebpackCompiler } from "webpack";
 import webpack                                                    from "webpack";
 import WebpackDevServer                                           from "webpack-dev-server";
 import Builder                                                    from "../internal/builder.js";
@@ -24,12 +24,12 @@ function setup(type: "ok" | "ko"): void
 
     statsMock.setupGet("toString").returns(() => "");
 
-    const compilerWatchingMock = Mock.instance<ReturnType<WebpackCompiler["watch"]>>();
+    const compilerWatchingMock = Mock.instance<WebpackWatching>();
 
     compilerWatchingMock
         .setup("close")
         .call(It.any())
-        .callback(callback => callback(error));
+        .callback((callback: (err: null | Error, result?: void) => void) => callback(error ?? null));
 
     const compilerMock = Mock.instance<WebpackCompiler>();
 
@@ -41,7 +41,7 @@ function setup(type: "ok" | "ko"): void
     compilerMock
         .setup("watch")
         .call(It.any(), It.any())
-        .callback((_, handler) => handler(undefined, statsMock.proxy))
+        .callback((_, handler) => handler(null, statsMock.proxy))
         .returns(compilerWatchingMock.proxy);
 
     webpackMock

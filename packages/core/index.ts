@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/indent */
+/* eslint-disable indent */
 export type { default as IDisposable } from "./internal/interfaces/disposable.js";
 
 export type

@@ -1,10 +1,8 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert, use }             from "chai";
-import chaiAsPromised              from "chai-as-promised";
+import { assert }             from "@surface/test-suite";
 import createConfigurations        from "../internal/create-configurations.js";
 import type Configuration          from "../internal/types/configuration.js";
 
-use(chaiAsPromised);
 
 @suite
 export default class CreateConfigurationsSpec

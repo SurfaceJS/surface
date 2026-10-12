@@ -1,7 +1,7 @@
 import { ArgumentOutOfRangeError }             from "@surface/core";
 import Enumerable                              from "@surface/enumerable";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                              from "chai";
+import assert                                  from "node:assert";
 import List                                    from "../internal/list.js";
 
 @suite
@@ -165,36 +165,36 @@ export default class ListSpec
     @test @shouldPass
     public listHasIndex(): void
     {
-        assert.isTrue(1 in new List([1, 2, 3]));
+        assert.strictEqual(1 in new List([1, 2, 3]), true);
     }
 
     @test @shouldPass
     public listHasKey(): void
     {
-        assert.isTrue("length" in new List());
+        assert.strictEqual("length" in new List(), true);
     }
 
     @test @shouldFail
     public getIndexLesserThanToLength(): void
     {
-        assert.throw(() => new List()[-1], ArgumentOutOfRangeError, "index is less than 0");
+        assert.throws(() => new List()[-1], ArgumentOutOfRangeError, "index is less than 0");
     }
 
     @test @shouldFail
     public getIndexGreaterOrEqualToLength(): void
     {
-        assert.throw(() => new List()[0], ArgumentOutOfRangeError, "index is equal to or greater than length");
+        assert.throws(() => new List()[0], ArgumentOutOfRangeError, "index is equal to or greater than length");
     }
 
     @test @shouldFail
     public setIndexLesserThanToLength(): void
     {
-        assert.throw(() => new List()[-1] = 1, ArgumentOutOfRangeError, "index is less than 0");
+        assert.throws(() => new List()[-1] = 1, ArgumentOutOfRangeError, "index is less than 0");
     }
 
     @test @shouldFail
     public setIndexGreaterOrEqualToLength(): void
     {
-        assert.throw(() => new List()[0] = 1, ArgumentOutOfRangeError, "index is equal to or greater than length");
+        assert.throws(() => new List()[0] = 1, ArgumentOutOfRangeError, "index is equal to or greater than length");
     }
 }

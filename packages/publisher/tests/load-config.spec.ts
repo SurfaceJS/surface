@@ -2,8 +2,7 @@ import { readFile }                                            from "fs/promises
 import { join }                                                from "path";
 import Mock, { It }                                            from "@surface/mock";
 import { isFile }                                              from "@surface/rwx";
-import { afterEach, batchTest, beforeEach, shouldPass, suite } from "@surface/test-suite";
-import chai                                                    from "chai";
+import { assert, afterEach, batchTest, beforeEach, shouldPass, suite } from "@surface/test-suite";
 import loadConfig                                              from "../internal/load-config.js";
 import { type Scenario, scenarios }                            from "./load-config.scn.js";
 
@@ -46,6 +45,6 @@ export default class LoadConfigSpec
 
         const actual = await loadConfig(scenario.path, scenario.env);
 
-        chai.assert.deepEqual(actual, scenario.expected);
+        assert.deepEqual(actual, scenario.expected);
     }
 }
