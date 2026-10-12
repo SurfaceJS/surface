@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/indent */
+/* eslint-disable indent */
 import { CancellationTokenSource }                               from "@surface/core";
 import type { IDisposable, Subscription }                        from "@surface/core";
 import type { ObservablePath, StackTrace }                       from "@surface/htmlx-parser";

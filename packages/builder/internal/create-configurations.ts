@@ -120,7 +120,6 @@ export default async function createConfigurations(type: "analyze" | "build" | "
                 overrideConfig:     project.eslint?.config,
                 overrideConfigFile: project.eslint?.configFile,
                 threads:            true,
-                useEslintrc:        true,
             };
 
             plugins.push(new EslintWebpackPlugin(eslintWebpackPluginOptions));

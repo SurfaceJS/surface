@@ -6,17 +6,17 @@
     "dependencies": {
         "@surface/collection": "file:../collection",
         "@surface/core": "file:../core",
-        "@surface/htmlx-element": "file:../htmlx-element",
         "@surface/dom-shim": "file:../dom-shim",
+        "@surface/htmlx-element": "file:../htmlx-element",
         "material-design-icons-iconfont": "~6.7.0",
         "resize-observer-polyfill": "~1.5.1",
-        "tslib": "~2.4.0"
+        "tslib": "~2.8"
     },
     "description": "Provides surface implementation of Material Design.",
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
         "@surface/tsconfig": "file:../tsconfig",
-        "@types/jsdom": "~20.0.0"
+        "@types/jsdom": "^20.0.1"
     },
     "exports": {
         ".": "./index.js",

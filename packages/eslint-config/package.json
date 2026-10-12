@@ -18,11 +18,11 @@
     "main": "index.cjs",
     "name": "@surface/eslint-config",
     "peerDependencies": {
-        "@typescript-eslint/eslint-plugin": ">=5",
-        "@typescript-eslint/parser": ">=5",
-        "eslint-plugin-import": ">=2",
-        "eslint-plugin-jsdoc": ">=39",
-        "eslint": ">=8"
+        "@typescript-eslint/eslint-plugin": ">=8",
+        "@typescript-eslint/parser": ">=8",
+        "eslint-plugin-import": ">=2.30",
+        "eslint-plugin-jsdoc": ">=64",
+        "eslint": ">=9"
     },
     "repository": {
         "type": "git",

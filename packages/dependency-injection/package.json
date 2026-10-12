@@ -5,7 +5,7 @@
     },
     "dependencies": {
         "@surface/core": "file:../core",
-        "tslib": "~2.4.0"
+        "tslib": "~2.8"
     },
     "description": "Provides dependency injection capabilities.",
     "devDependencies": {

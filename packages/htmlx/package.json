@@ -8,15 +8,15 @@
         "@surface/expression": "file:../expression",
         "@surface/htmlx-parser": "file:../htmlx-parser",
         "@surface/observer": "file:../observer",
-        "tslib": "~2.4.0"
+        "tslib": "~2.8"
     },
     "description": "Provides support of directives and data binding on templates.",
     "devDependencies": {
         "@surface/dom-shim": "file:../dom-shim",
         "@surface/test-suite": "file:../test-suite",
         "@surface/tsconfig": "file:../tsconfig",
-        "@types/semver": "^7.3.12",
-        "semver": "^7.3.7"
+        "@types/semver": "^7.3.13",
+        "semver": "^7.8.5"
     },
     "homepage": "https://github.com/SurfaceJS/surface#readme",
     "keywords": [

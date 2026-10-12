@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/indent */
+/* eslint-disable indent */
 enum NodeType
 {
     ArrayExpression,

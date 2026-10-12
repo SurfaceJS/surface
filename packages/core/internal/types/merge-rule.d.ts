@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/indent */
+/* eslint-disable indent */
 import type MergeRules from "./merge-rules.js";
 
 type MergeRule<T> = ((a: T, b: T) => T) | "protected" |

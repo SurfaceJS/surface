@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/indent */
+/* eslint-disable indent */
 import type { Delegate }    from "@surface/core";
 import webpack              from "webpack";
 import WebpackDevServer     from "webpack-dev-server";
@@ -25,11 +25,11 @@ export default class Builder
     {
         const compiler = webpack(webpackConfiguration);
 
-        let watching: ReturnType<webpack.MultiCompiler["watch"]>;
+        let watching: ReturnType<webpack.MultiCompiler["watch"]> | undefined;
 
         await new Promise<void>((resolve, reject) => watching = compiler.watch({ }, this.createHandler(resolve, reject, logging)));
 
-        return { close: async () => new Promise<void>((resolve, reject) => watching.close(error => error ? reject(error) : resolve())) };
+        return { close: async () => new Promise<void>((resolve, reject) => watching?.close(error => error ? reject(error) : resolve())) };
     }
 
     public static async analyze(project: Configuration): Promise<void>

@@ -142,7 +142,14 @@ const assert =
     {
         try
         {
-            deepStrictEqual(actual, expected, message);
+            if (message !== undefined)
+            {
+                deepStrictEqual(actual, expected, message);
+            }
+            else
+            {
+                deepStrictEqual(actual, expected);
+            }
         }
         catch (error)
         {
@@ -334,7 +341,14 @@ const assert =
     {
         try
         {
-            match(string, regexp, message);
+            if (message !== undefined)
+            {
+                match(string, regexp, message);
+            }
+            else
+            {
+                match(string, regexp);
+            }
         }
         catch (error)
         {
@@ -346,7 +360,14 @@ const assert =
     {
         try
         {
-            doesNotMatch(string, regexp, message);
+            if (message !== undefined)
+            {
+                doesNotMatch(string, regexp, message);
+            }
+            else
+            {
+                doesNotMatch(string, regexp);
+            }
         }
         catch (error)
         {

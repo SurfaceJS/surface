@@ -3,6 +3,8 @@ import path                                               from "path";
 import Mock                                               from "@surface/mock";
 import { afterEach, beforeEach, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                                         from "@surface/test-suite";
+import type webpack                                       from "webpack";
+import type { ResolveRequest, ResolveContext }            from "enhanced-resolve";
 import PreferTsResolverPlugin                             from "../../internal/plugins/prefer-ts-resolver-plugin.js";
 
 const CWD = process.cwd();
@@ -20,7 +22,7 @@ const PATH2_FOO    = path.join(CWD, "path-2", "foo");
 const PATH2_FOO_JS = path.join(CWD, "path-2", "foo.js");
 const PATH2_FOO_TS = path.join(CWD, "path-2", "foo.ts");
 
-type Resolver = Parameters<PreferTsResolverPlugin["apply"]>[0];
+type Resolver = webpack.Resolver;
 
 const existsSyncMock = Mock.of(existsSync);
 
@@ -67,13 +69,13 @@ export default class PreferTsResolverPluginSpec
             {
                 result:
                 {
-                    tap(_, callback): void
+                    tap(_: string, callback: (request: ResolveRequest, context: ResolveContext) => void): void
                     {
                         const payloads = paths.map(path => ({ request: { path }, resolved: "" }));
 
                         for (const payload of payloads)
                         {
-                            callback(payload.request, { });
+                            callback(payload.request as ResolveRequest, { });
 
                             actual.push(payload.request.path);
                         }

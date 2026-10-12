@@ -4,12 +4,12 @@
         "url": "https://github.com/SurfaceJS/surface/issues"
     },
     "dependencies": {
-        "jsdom": ">=20",
-        "@types/jsdom": ">=20.0.0"
+        "jsdom": "^20.0.3"
     },
     "description": "Creates shim for browser tests running on node.",
     "devDependencies": {
-        "@surface/tsconfig": "file:../tsconfig"
+        "@surface/tsconfig": "file:../tsconfig",
+        "@types/jsdom": "^20.0.1"
     },
     "homepage": "https://github.com/SurfaceJS/surface#readme",
     "keywords": [

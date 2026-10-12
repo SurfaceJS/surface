@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/indent */
+/* eslint-disable indent */
 /* eslint-disable import/exports-last */
 /* eslint-disable max-depth */
 import type

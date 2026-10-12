@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/indent */
+/* eslint-disable indent */
 import WebRouter from "./internal/web-router.js";
 
 export type { default as IRouterInterceptor } from "./internal/interfaces/router-interceptor.js";
