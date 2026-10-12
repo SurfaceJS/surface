@@ -8,13 +8,22 @@ type Configuration = { modules: string[] };
 
 export const IS_WINDOWS = os.platform() == "win32";
 
+const identifierPattern = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
+
 export function getExports(module: object): string[]
 {
     const moduleExports: string[] = [];
 
     for (const key of Object.keys(module))
     {
-        moduleExports.push(key == "default" ? "export default proxy.default;" : `export const ${key} = proxy.${key};`);
+        if (key == "default")
+        {
+            moduleExports.push("export default proxy.default;");
+        }
+        else if (identifierPattern.test(key))
+        {
+            moduleExports.push(`export const ${key} = proxy.${key};`);
+        }
     }
 
     return moduleExports;

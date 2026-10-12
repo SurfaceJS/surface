@@ -22,33 +22,48 @@ window.open = url =>
     return instance.window as object as Window;
 };
 
-Object.assign
-(
-    global,
+const globals: Record<string, unknown> =
+{
+    CSSStyleSheet:         class CSSStyleSheet { public replaceSync(): void { /* */ } },
+    DOMTokenList:          window.DOMTokenList,
+    Event:                 window.Event,
+    HTMLAnchorElement:     window.HTMLAnchorElement,
+    HTMLDivElement:        window.HTMLDivElement,
+    HTMLElement:           window.HTMLElement,
+    HTMLInputElement:      window.HTMLInputElement,
+    MouseEvent:            window.MouseEvent,
+    MutationObserver:      window.MutationObserver,
+    NamedNodeMap:          window.NamedNodeMap,
+    Node:                  window.Node,
+    NodeList:              window.NodeList,
+    ShadowRoot:            window.ShadowRoot,
+    Window:                window.constructor,
+    customElements:        window.customElements,
+    document:              window.document,
+    location:              window.location,
+    navigator:             window.navigator,
+    requestAnimationFrame: window.requestAnimationFrame,
+    window,
+    windows,
+};
+
+for (const [key, value] of Object.entries(globals))
+{
+    const descriptor = Object.getOwnPropertyDescriptor(global, key);
+
+    if (descriptor && !descriptor.writable && typeof descriptor.value == "undefined")
     {
-        CSSStyleSheet:         class CSSStyleSheet { public replaceSync(): void { /* */ } },
-        DOMTokenList:          window.DOMTokenList,
-        Event:                 window.Event,
-        HTMLAnchorElement:     window.HTMLAnchorElement,
-        HTMLDivElement:        window.HTMLDivElement,
-        HTMLElement:           window.HTMLElement,
-        HTMLInputElement:      window.HTMLInputElement,
-        MouseEvent:            window.MouseEvent,
-        MutationObserver:      window.MutationObserver,
-        NamedNodeMap:          window.NamedNodeMap,
-        Node:                  window.Node,
-        NodeList:              window.NodeList,
-        ShadowRoot:            window.ShadowRoot,
-        Window:                window.constructor,
-        customElements:        window.customElements,
-        document:              window.document,
-        location:              window.location,
-        navigator:             window.navigator,
-        requestAnimationFrame: window.requestAnimationFrame,
-        window,
-        windows,
-    },
-);
+        Object.defineProperty(global, key, { configurable: true, enumerable: true, value });
+    }
+    else if (descriptor && descriptor.get)
+    {
+        Object.defineProperty(global, key, { configurable: true, enumerable: true, value, writable: true });
+    }
+    else
+    {
+        Object.assign(global, { [key]: value });
+    }
+}
 
 if (!global.crypto)
 {

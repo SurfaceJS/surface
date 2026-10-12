@@ -5,21 +5,34 @@ import type { UpdateOperator } from "../types/operators.js";
 import type Identifier         from "./identifier.js";
 import type MemberExpression   from "./member-expression.js";
 
-type Operation = (object: Record<string | number, number>, property: string | number) => number;
-type Operators = "++*" | "--*" | "*++" | "*--";
+type Scope = Record<string | number, number>;
 
-const updateFunctions: Record<Operators, Operation> =
+function preIncrement(object: Scope, property: string | number): number
 {
-    "*++": (object, property) => object[property]++,
-    "*--": (object, property) => object[property]--,
-    "++*": (object, property) => ++object[property],
-    "--*": (object, property) => --object[property],
-};
+    return object[property] = object[property]! + 1;
+}
+
+function postIncrement(object: Scope, property: string | number): number
+{
+    const value = object[property]!;
+    object[property] = value + 1;
+    return value;
+}
+
+function preDecrement(object: Scope, property: string | number): number
+{
+    return object[property] = object[property]! - 1;
+}
+
+function postDecrement(object: Scope, property: string | number): number
+{
+    const value = object[property]!;
+    object[property] = value - 1;
+    return value;
+}
 
 export default class UpdateExpression implements IExpression
 {
-    private readonly operation: Operation;
-
     private _argument: Identifier | MemberExpression;
     private _operator: UpdateOperator;
     private _prefix: boolean;
@@ -67,7 +80,6 @@ export default class UpdateExpression implements IExpression
         this._argument = argument;
         this._prefix   = prefix;
         this._operator = operator;
-        this.operation = this.prefix ? updateFunctions[`${this.operator}*` as Operators] : updateFunctions[`*${this.operator}` as Operators];
     }
 
     public clone(): UpdateExpression
@@ -79,13 +91,20 @@ export default class UpdateExpression implements IExpression
     {
         if (TypeGuard.isIdentifier(this.argument))
         {
-            return this.operation(scope as Record<string | number, number>, this.argument.name);
+            const object   = scope as Scope;
+            const property = this.argument.name;
+
+            return this.prefix
+                ? (this.operator === "++" ? preIncrement  : preDecrement)(object, property)
+                : (this.operator === "++" ? postIncrement : postDecrement)(object, property);
         }
 
-        const object   = this.argument.object.evaluate(scope) as Record<string | number, number>;
+        const object   = this.argument.object.evaluate(scope) as Scope;
         const property = TypeGuard.isIdentifier(this.argument.property) && !this.argument.computed ? this.argument.property.name : this.argument.property.evaluate(scope) as string | number;
 
-        return this.operation(object, property);
+        return this.prefix
+            ? (this.operator === "++" ? preIncrement  : preDecrement)(object, property)
+            : (this.operator === "++" ? postIncrement : postDecrement)(object, property);
     }
 
     public toString(): string

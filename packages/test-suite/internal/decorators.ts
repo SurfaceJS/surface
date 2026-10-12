@@ -1,6 +1,6 @@
 /* eslint-disable max-lines-per-function */
 import Metadata        from "./metadata.js";
-import mocha           from "./mocha.js";
+import nodeTest        from "./node-test.js";
 import type TestObject from "./types/test-object.js";
 import type Test       from "./types/test.js";
 
@@ -259,43 +259,41 @@ export function suite(targetOrDescription: Function | string): ClassDecorator | 
             }
         }
 
-        mocha.suite
+        nodeTest.suite
         (
             description,
             () =>
             {
-                const context = new (target as Constructor)();
-
                 if (beforeCallback)
                 {
-                    mocha.before(Metadata.from(beforeCallback).description, beforeCallback.bind(context));
+                    nodeTest.before(Metadata.from(beforeCallback).description, beforeCallback.bind(new (target as Constructor)()));
                 }
 
                 if (beforeEachCallback)
                 {
-                    mocha.beforeEach(Metadata.from(beforeEachCallback).description, beforeEachCallback.bind(context));
+                    nodeTest.beforeEach(Metadata.from(beforeEachCallback).description, beforeEachCallback.bind(new (target as Constructor)()));
                 }
+
+                const registerTest = (test: Test, options?: { timeout?: number }): void =>
+                {
+                    nodeTest.test(test.expectation, () => test.getMethod(new (target as Constructor)()), options);
+                };
 
                 for (const test of tests)
                 {
-                    mocha.test(test.expectation, test.getMethod(context));
+                    registerTest(test, test.timeout !== undefined ? { timeout: test.timeout } : undefined);
                 }
 
                 for (const [name, tests] of Object.entries(categories) as [string, Test[]][])
                 {
-                    mocha.suite
+                    nodeTest.suite
                     (
                         name,
                         () =>
                         {
                             for (const test of tests)
                             {
-                                const runnable = mocha.test(test.expectation, test.getMethod(context));
-
-                                if (test.timeout)
-                                {
-                                    runnable.timeout(test.timeout);
-                                }
+                                registerTest(test, test.timeout !== undefined ? { timeout: test.timeout } : undefined);
                             }
                         },
                     );
@@ -303,12 +301,12 @@ export function suite(targetOrDescription: Function | string): ClassDecorator | 
 
                 if (afterEachCallback)
                 {
-                    mocha.afterEach(Metadata.from(afterEachCallback).description, afterEachCallback.bind(context));
+                    nodeTest.afterEach(Metadata.from(afterEachCallback).description, afterEachCallback.bind(new (target as Constructor)()));
                 }
 
                 if (afterCallback)
                 {
-                    mocha.after(Metadata.from(afterCallback).description, afterCallback.bind(context));
+                    nodeTest.after(Metadata.from(afterCallback).description, afterCallback.bind(new (target as Constructor)()));
                 }
             },
         );

@@ -127,6 +127,7 @@ function mergeArray(left: unknown[], right: unknown[], rule: MergeRule<Value | V
 
 export enum DeepMergeFlags
 {
+    None            = 0x0,
     IgnoreUndefined = 0x1,
     ConcatArrays    = 0x2,
     MergeArrays     = 0x4,
@@ -258,7 +259,7 @@ export function deepEqual<T>(left: T, right: T, compare?: (left: unknown, right:
  * Deeply merges two or more objects.
  * @param sources Objects to merge.
  */
-export function deepMerge<TSources extends object[]>(sources: TSources, flags: DeepMergeFlags = 0): Intersect<TSources>
+export function deepMerge<TSources extends object[]>(sources: TSources, flags: DeepMergeFlags = DeepMergeFlags.None): Intersect<TSources>
 {
     const result: Indexer = { };
 
@@ -281,18 +282,31 @@ export function deepMerge<TSources extends object[]>(sources: TSources, flags: D
                     }
                     else if (hasFlags(flags, DeepMergeFlags.MergeArrays))
                     {
-                        const elements = [...leftValue];
+                        const leftLength  = leftValue.length;
+                        const rightLength = rightValue.length;
+                        const maxIndex    = Math.max(leftLength, rightLength);
+                        const merged: unknown[] = [];
 
-                        for (const [index, rightItem] of Object.entries(rightValue))
+                        for (let index = 0; index < maxIndex; index++)
                         {
-                            const leftItem = elements[index as keyof unknown[]];
+                            const leftItem  = leftValue[index];
+                            const rightItem = rightValue[index];
 
-                            elements[index as keyof unknown[]] = typeof leftItem == "object" && typeof rightValue == "object"
-                                ? deepMerge([leftItem, rightItem], flags)
-                                : rightItem;
+                            if (leftItem instanceof Object && rightItem instanceof Object && !Array.isArray(leftItem) && !Array.isArray(rightItem))
+                            {
+                                merged[index] = deepMerge([leftItem, rightItem], flags);
+                            }
+                            else if (rightItem !== undefined)
+                            {
+                                merged[index] = rightItem;
+                            }
+                            else
+                            {
+                                merged[index] = leftItem;
+                            }
                         }
 
-                        resultDescriptor = { ...descriptor, value: elements };
+                        resultDescriptor = { ...descriptor, value: merged };
                     }
                 }
                 else if (rightValue instanceof Object)

@@ -4,7 +4,6 @@
     {
         "outDir":    ".",
         "rootDir":   ".",
-        "typeRoots": ["./tests"],
     },
     "files":
     [

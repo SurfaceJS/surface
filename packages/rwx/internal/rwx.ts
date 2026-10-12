@@ -17,7 +17,8 @@ function errorHandler(error: ErrorCode): null
     throw error;
 }
 
-function handler<T extends Callable>(action: Callable): ReturnType<T> | null
+/* eslint-disable @typescript-eslint/no-explicit-any */
+function handler<T extends Callable>(action: Callable): any
 {
     try
     {
@@ -165,7 +166,7 @@ export async function execute(command: string, options?: child_process.ExecOptio
                 console[type](String(buffer).trimEnd());
             }
 
-            output.push(...Buffer.from(buffer));
+            output.push(...Buffer.from(String(buffer)));
         };
 
     return new Promise<Buffer>

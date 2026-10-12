@@ -29,7 +29,7 @@ export async function changelog(path: string, lernaPackage: string, preset: stri
             const output: number[] = [];
 
             const handler = (buffer: Buffer | string): void =>
-                void output.push(...Buffer.from(buffer));
+                void output.push(...Buffer.from(String(buffer)));
 
             conventionalChangelog({ lernaPackage, preset, pkg: { path } }, {  }, { path: dirname(path) })
                 .on("data", handler)
@@ -103,7 +103,7 @@ export async function untar(buffer: Buffer): Promise<Map<string, string>>
     const entries: Promise<[string, string]>[] = [];
 
     tar.list({ onentry: (entry) => entries.push((entry as object as ConcatAble).concat().then((x: Buffer) => [String(entry.path), String(x)])) })
-        .end(buffer);
+        .end(new Uint8Array(buffer));
 
     return new Map(await Promise.all(entries));
 }

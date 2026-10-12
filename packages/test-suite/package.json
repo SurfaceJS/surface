@@ -6,7 +6,7 @@
     "dependencies": {
         "tslib": "~2.4.0"
     },
-    "description": "Provides decorators for testing with mocha using the OOP approach.",
+    "description": "Provides decorators for testing with node:test using the OOP approach.",
     "devDependencies": {
         "@surface/tsconfig": "file:../tsconfig",
         "@types/chai": "~4.3.3",
@@ -22,9 +22,6 @@
     "license": "MIT",
     "main": "index.js",
     "name": "@surface/test-suite",
-    "peerDependencies": {
-        "mocha": ">=9"
-    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/surface.git"
