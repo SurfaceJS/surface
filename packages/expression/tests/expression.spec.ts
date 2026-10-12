@@ -1,5 +1,5 @@
 import { batchTest, shouldFail, shouldPass, suite, test }          from "@surface/test-suite";
-import { assert }                                                  from "chai";
+import { assert }                                                  from "@surface/test-suite";
 import ArrowFunctionExpression                                     from "../internal/expressions/arrow-function-expression.js";
 import Identifier                                                  from "../internal/expressions/identifier.js";
 import Literal                                                     from "../internal/expressions/literal.js";

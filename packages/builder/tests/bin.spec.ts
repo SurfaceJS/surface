@@ -1,7 +1,7 @@
 /* eslint-disable array-element-newline */
 import Mock, { It }                           from "@surface/mock";
 import { afterEach, beforeEach, suite, test } from "@surface/test-suite";
-import { assert }                             from "chai";
+import { assert }                             from "@surface/test-suite";
 import Commands                               from "../internal/commands.js";
 import type CliAnalyzerOptions                from "../internal/types/cli-analyzer-options.js";
 import type CliBuildOptions                   from "../internal/types/cli-build-options.js";

@@ -1,7 +1,7 @@
 import { resolveError }                                                     from "@surface/core";
 import { SyntaxError, TypeGuard }                                           from "@surface/expression";
 import { shouldFail, shouldPass, suite, test }                              from "@surface/test-suite";
-import { assert }                                                           from "chai";
+import { assert }                                                           from "@surface/test-suite";
 import { parseDestructuredPattern, parseExpression, parseForLoopStatement } from "../internal/expression-parsers.js";
 
 type RawError = { message: string } | Pick<SyntaxError, "message" | "lineNumber" | "index" | "column">;

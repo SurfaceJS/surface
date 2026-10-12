@@ -2,7 +2,7 @@
 import "@surface/dom-shim";
 
 import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                  from "chai";
+import { assert }                  from "@surface/test-suite";
 import Scheduler                   from "../internal/processors/scheduler.js";
 import AsyncObserver               from "../internal/reactivity/async-observer.js";
 

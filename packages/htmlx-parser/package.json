@@ -12,11 +12,7 @@
     "devDependencies": {
         "@surface/dom-shim": "file:../dom-shim",
         "@surface/test-suite": "file:../test-suite",
-        "@surface/tsconfig": "file:../tsconfig",
-        "@types/chai": "~4.3.3",
-        "@types/chai-as-promised": "~7.1.5",
-        "chai": "~4.3.6",
-        "chai-as-promised": "~7.1.1"
+        "@surface/tsconfig": "file:../tsconfig"
     },
     "homepage": "https://github.com/SurfaceJS/surface#readme",
     "keywords": [

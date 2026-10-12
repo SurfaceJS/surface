@@ -1,5 +1,5 @@
 import { batchTest, suite }                                       from "@surface/test-suite";
-import { assert }                                                 from "chai";
+import { assert }                                                 from "@surface/test-suite";
 import TokenType                                                  from "../internal/enums/token-type.js";
 import Scanner                                                    from "../internal/scanner.js";
 import { type ScannerValidExpectation, scannerValidExpectations } from "./scanner-expectations.js";

@@ -1,5 +1,5 @@
 import { batchTest, shouldPass, suite }       from "@surface/test-suite";
-import { assert }                             from "chai";
+import { assert }                             from "@surface/test-suite";
 import PathMatcher                            from "../internal/path-matcher.js";
 import { type Scenario, scenarios }           from "./parser.scn.js";
 import { type SplitScenario, splitScenarios } from "./parser.split.scn.js";

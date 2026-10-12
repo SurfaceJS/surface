@@ -1,5 +1,5 @@
 import { batchTest, shouldPass, suite }                     from "@surface/test-suite";
-import { assert }                                           from "chai";
+import { assert }                                           from "@surface/test-suite";
 import { parseAlphaRange, parseNumericRange }                                from "../internal/range-parser.js";
 import
 {

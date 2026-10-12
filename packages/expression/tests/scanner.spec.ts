@@ -1,5 +1,5 @@
 import { batchTest, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                                         from "chai";
+import { assert }                                         from "@surface/test-suite";
 import Messages                                           from "../internal/messages.js";
 import Scanner                                            from "../internal/scanner.js";
 import SyntaxError                                        from "../internal/syntax-error.js";

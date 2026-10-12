@@ -2,7 +2,7 @@ import { existsSync }                                     from "fs";
 import path                                               from "path";
 import Mock                                               from "@surface/mock";
 import { afterEach, beforeEach, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                                         from "chai";
+import { assert }                                         from "@surface/test-suite";
 import PreferTsResolverPlugin                             from "../../internal/plugins/prefer-ts-resolver-plugin.js";
 
 const CWD = process.cwd();

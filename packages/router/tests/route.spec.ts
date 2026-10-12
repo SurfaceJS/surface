@@ -1,5 +1,5 @@
 import { batchTest, shouldFail, shouldPass, suite }            from "@surface/test-suite";
-import { assert }                                              from "chai";
+import { assert }                                              from "@surface/test-suite";
 import type IConstraint                                        from "../internal/interfaces/constraint.js";
 import type ITransformer                                       from "../internal/interfaces/transformer.js";
 import Route                                                   from "../internal/route.js";

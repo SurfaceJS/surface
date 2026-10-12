@@ -1,7 +1,7 @@
 
 import { DisposableMetadata, Hookable }        from "@surface/core";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                              from "chai";
+import { assert }                              from "@surface/test-suite";
 import computed                                from "../internal/decorators/computed.js";
 // import listener                                from "../internal/decorators/listener.js";
 import Metadata                                from "../internal/metadata.js";

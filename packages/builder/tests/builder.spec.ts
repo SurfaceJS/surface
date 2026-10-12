@@ -1,7 +1,7 @@
 
 import Mock, { It }                                               from "@surface/mock";
 import { afterEach, beforeEach, suite, test }                     from "@surface/test-suite";
-import { assert }                                                 from "chai";
+import { assert }                                                 from "@surface/test-suite";
 import type { Configuration, Stats, Compiler as WebpackCompiler } from "webpack";
 import webpack                                                    from "webpack";
 import WebpackDevServer                                           from "webpack-dev-server";

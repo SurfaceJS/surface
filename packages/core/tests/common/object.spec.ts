@@ -2,7 +2,7 @@
 /* eslint-disable array-bracket-spacing */
 /* eslint-disable sort-keys */
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                         from "chai";
+import { assert }                         from "@surface/test-suite";
 import
 {
     DeepMergeFlags,

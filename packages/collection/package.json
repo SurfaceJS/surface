@@ -11,9 +11,7 @@
     "description": "Provides many collection types.",
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
-        "@surface/tsconfig": "file:../tsconfig",
-        "@types/chai": "~4.3.3",
-        "chai": "~4.3.6"
+        "@surface/tsconfig": "file:../tsconfig"
     },
     "homepage": "https://github.com/SurfaceJS/surface#readme",
     "keywords": [

@@ -1,6 +1,6 @@
 import path                        from "path";
 import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                  from "chai";
+import { assert }                  from "@surface/test-suite";
 import OverrideResolverPlugin      from "../../internal/plugins/override-resolver-plugin.js";
 
 type Resolver = Parameters<OverrideResolverPlugin["apply"]>[0];

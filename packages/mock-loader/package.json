@@ -10,9 +10,7 @@
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
         "@surface/tsconfig": "file:../tsconfig",
-        "@types/chai": "~4.3.3",
-        "@types/node": "~18.7.6",
-        "chai": "~4.3.6"
+        "@types/node": "~18.7.6"
     },
     "homepage": "https://github.com/SurfaceJS/surface#readme",
     "keywords": [

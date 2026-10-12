@@ -1,7 +1,6 @@
 import Mock, { It }                                                              from "@surface/mock";
 import { afterEach, batchTest, beforeEach, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert, use }                                                           from "chai";
-import chaiAsPromised                                                            from "chai-as-promised";
+import { assert }                                                           from "@surface/test-suite";
 import pack                                                                      from "libnpmpack";
 import libnpmpublish                                                             from "libnpmpublish";
 import pacote                                                                    from "pacote";
@@ -9,7 +8,6 @@ import { untar }                                                                
 import NpmService                                                                from "../internal/npm-service.js";
 import { type HasChangesScenario, scenarios }                                    from "./npm-service.has-changes.scn.js";
 
-use(chaiAsPromised);
 
 const libnpmpublishMock = Mock.of(libnpmpublish);
 const pacoteMock        = Mock.of(pacote);

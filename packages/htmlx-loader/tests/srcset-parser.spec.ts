@@ -1,5 +1,5 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                  from "chai";
+import { assert }                  from "@surface/test-suite";
 import type { SrcSet }             from "../internal/srcset-parser.js";
 import SrcSetParser                from "../internal/srcset-parser.js";
 

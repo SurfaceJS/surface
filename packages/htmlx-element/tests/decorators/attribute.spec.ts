@@ -3,7 +3,7 @@ import "@surface/dom-shim";
 
 import { scheduler }               from "@surface/htmlx";
 import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                  from "chai";
+import { assert }                  from "@surface/test-suite";
 import attribute                   from "../../internal/decorators/attribute.js";
 import element                     from "../../internal/decorators/element.js";
 import HTMLXElement                from "../../internal/htmlx-element.js";

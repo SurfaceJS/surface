@@ -5,7 +5,8 @@
     [
         "**/packages/*/index.js",
         "**/node_modules",
-        "**/tests"
+        "**/tests",
+        "**/test-suite/internal/assert.js"
     ],
     "extension": [".js"],
     "functions": 25,

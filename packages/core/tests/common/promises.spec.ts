@@ -1,10 +1,8 @@
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert, use }                         from "chai";
-import chaiAsPromised                          from "chai-as-promised";
+import { assert }                         from "@surface/test-suite";
 import CancellationTokenSource                 from "../../internal/cancellation-token-source.js";
 import { runAsync }                            from "../../internal/common/promises.js";
 
-use(chaiAsPromised);
 
 @suite
 export default class PromisesSpec

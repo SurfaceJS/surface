@@ -1,5 +1,5 @@
 import { shouldPass, suite, test }              from "@surface/test-suite";
-import { assert }                               from "chai";
+import { assert }                               from "@surface/test-suite";
 import { capture, captureAll, format, queryfy } from "../../internal/common/string.js";
 
 @suite

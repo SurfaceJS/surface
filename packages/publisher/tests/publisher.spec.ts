@@ -6,8 +6,7 @@ import Logger                                                                   
 import Mock, { It }                                                                  from "@surface/mock";
 import { execute }                                                                   from "@surface/rwx";
 import { afterEach, batchTest, beforeEach, shouldFail, shouldPass, suite, test }     from "@surface/test-suite";
-import { assert, use }                                                               from "chai";
-import chaiAsPromised                                                                from "chai-as-promised";
+import { assert }                                                               from "@surface/test-suite";
 import pack                                                                          from "libnpmpack";
 import { changelog, getEnv, recommendedBump, timestamp }                             from "../internal/common.js";
 import { addTag, commit, commitAll, getRemoteUrl, isWorkingTreeClean, pushToRemote } from "../internal/git.js";
@@ -36,7 +35,6 @@ import type VirtualRegistry  from "./types/virtual-registry.js";
 
 type PackageJson = _PackageJson & { workspaces?: string[] };
 
-use(chaiAsPromised);
 
 const addTagMock             = Mock.of(addTag);
 const changelogMock          = Mock.of(changelog);

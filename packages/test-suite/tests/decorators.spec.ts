@@ -1,5 +1,5 @@
 /* eslint-disable import/extensions */
-import { assert } from "chai";
+import { assert } from "@surface/test-suite";
 import
 {
     after,

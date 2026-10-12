@@ -4,11 +4,9 @@ import "@surface/dom-shim";
 
 import { CancellationTokenSource }             from "@surface/core";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert, use }                         from "chai";
-import chaiAsPromised                          from "chai-as-promised";
+import { assert }                         from "@surface/test-suite";
 import Scheduler                               from "../internal/processors/scheduler.js";
 
-use(chaiAsPromised);
 
 @suite
 export default class SchedulerSpec
