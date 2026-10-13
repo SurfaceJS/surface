@@ -4,8 +4,7 @@ import "@surface/dom-shim";
 
 import Container, { inject }                   from "@surface/dependency-injection";
 import HTMLXElement, { define, element }       from "@surface/htmlx-element";
-import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                         from "@surface/test-suite";
+import { assert, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import type IRouteableElement                  from "../internal/interfaces/routeable-element.js";
 import type IRouterInterceptor                 from "../internal/interfaces/router-interceptor.js";
 import RouterLinkDirective                     from "../internal/router-link-directive.js";
@@ -14,7 +13,6 @@ import type RouteConfiguration                 from "../internal/types/route-con
 import type Route                              from "../internal/types/route.js";
 import type WebRouterOptions                   from "../internal/types/web-router-options.js";
 import WebRouter                               from "../internal/web-router.js";
-
 
 @element("home-view", { template: "<router-outlet></router-outlet><router-outlet name='non-default'></router-outlet>" })
 class HomeView extends HTMLXElement

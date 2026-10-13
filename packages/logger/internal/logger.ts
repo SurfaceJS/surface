@@ -1,4 +1,4 @@
-/* eslint-disable sort-keys */
+
 import chalk, { type ChalkInstance } from "chalk";
 import LogLevel                      from "./enums/log-level.js";
 

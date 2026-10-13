@@ -1,5 +1,4 @@
-import type { Constructor, IDisposable } from "@surface/core";
-import { typeGuard }                     from "@surface/core";
+import { type Constructor, type IDisposable, typeGuard } from "@surface/core";
 import type IScopedProvider              from "./interfaces/scoped-provider.js";
 import StaticMetadata                    from "./metadata.js";
 import type { Factory, Key }             from "./types/index.js";

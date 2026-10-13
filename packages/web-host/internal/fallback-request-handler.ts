@@ -38,7 +38,7 @@ export default class FallbackRequestHandler extends RequestHandler
         {
             filepath = Enumerable.from(targets).first(x => this.fs.existsSync(x) && this.fs.lstatSync(x).isFile());
         }
-        catch (error)
+        catch (_error)
         {
             throw new Error("The provided fallback path is invalid.");
         }

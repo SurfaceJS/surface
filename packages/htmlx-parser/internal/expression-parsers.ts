@@ -1,14 +1,5 @@
 import { assert } from "@surface/core";
-import type
-{
-    ArrowFunctionExpression,
-    IExpression,
-    INode,
-    IPattern,
-    Identifier,
-    TemplateLiteral,
-} from "@surface/expression";
-import { Parser, SyntaxError, TypeGuard } from "@surface/expression";
+import { type ArrowFunctionExpression, type IExpression, type INode, type IPattern, type Identifier, Parser, SyntaxError, type TemplateLiteral, TypeGuard } from "@surface/expression";
 import InterpolatedExpression                 from "./interpolated-expression.js";
 import { forExpression }                      from "./patterns.js";
 

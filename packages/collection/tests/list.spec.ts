@@ -1,7 +1,7 @@
+import assert                                  from "node:assert";
 import { ArgumentOutOfRangeError }             from "@surface/core";
 import Enumerable                              from "@surface/enumerable";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import assert                                  from "node:assert";
 import List                                    from "../internal/list.js";
 
 @suite

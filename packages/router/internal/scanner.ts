@@ -30,16 +30,16 @@ export default class Scanner
     {
         switch (value)
         {
-            case "{":
-            case "}":
-            case "=":
-            case ":":
-            case "*":
-            case "?":
-            case "/":
-                return true;
-            default:
-                return false;
+        case "{":
+        case "}":
+        case "=":
+        case ":":
+        case "*":
+        case "?":
+        case "/":
+            return true;
+        default:
+            return false;
         }
     }
 

@@ -1,11 +1,8 @@
-import type { Constructor }                             from "@surface/core";
-import { Event, Lazy, assertGet, joinPaths, typeGuard } from "@surface/core";
-import type { IScopedProvider }                         from "@surface/dependency-injection";
-import Container                                        from "@surface/dependency-injection";
-import { painting }                                     from "@surface/htmlx";
-import { computed }                                     from "@surface/observer";
-import Router                                           from "@surface/router";
-import type { RouteData }                               from "@surface/router";
+import { type Constructor, Event, Lazy, assertGet, joinPaths, typeGuard } from "@surface/core";
+import Container, { type IScopedProvider } from "@surface/dependency-injection";
+import { painting } from "@surface/htmlx";
+import { computed } from "@surface/observer";
+import Router, { type RouteData } from "@surface/router";
 import type IRouteableElement                           from "./interfaces/routeable-element.js";
 import type IRouterMiddleware                           from "./interfaces/router-interceptor.js";
 import Metadata                                         from "./metadata.js";
@@ -14,7 +11,7 @@ import type Component                                   from "./types/component.
 import type Module                                      from "./types/module.js";
 import type NamedRoute                                  from "./types/named-route.js";
 import type RouteDefinition                             from "./types/route-definition.js";
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+
 import type Route                                       from "./types/route.js";
 import type WebRouterOptions                            from "./types/web-router-options.js";
 

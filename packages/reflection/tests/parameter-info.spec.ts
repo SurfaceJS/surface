@@ -1,5 +1,4 @@
-import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                  from "@surface/test-suite";
+import { assert, shouldPass, suite, test } from "@surface/test-suite";
 import MethodInfo                  from "../internal/method-info.js";
 import ParameterInfo               from "../internal/parameter-info.js";
 import Type                        from "../internal/type.js";

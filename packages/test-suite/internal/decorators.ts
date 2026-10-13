@@ -1,4 +1,4 @@
-/* eslint-disable max-lines-per-function */
+
 import Metadata        from "./metadata.js";
 import nodeTest        from "./node-test.js";
 import type TestObject from "./types/test-object.js";

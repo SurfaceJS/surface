@@ -1,5 +1,4 @@
-import { CancellationTokenSource }        from "@surface/core";
-import type { IDisposable, Subscription } from "@surface/core";
+import { CancellationTokenSource, type IDisposable, type Subscription } from "@surface/core";
 import { tryEvaluate, tryObserve }        from "../common.js";
 import { scheduler }                      from "../singletons.js";
 import type ChoiceBranch                  from "../types/choice-branch.js";

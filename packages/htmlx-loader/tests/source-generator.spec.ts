@@ -1,7 +1,6 @@
-/* eslint-disable max-lines */
+
 // import { writeFileSync }           from "fs";
-import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                  from "@surface/test-suite";
+import { assert, shouldPass, suite, test } from "@surface/test-suite";
 import SourceGenerator             from "../internal/source-generator.js";
 
 @suite

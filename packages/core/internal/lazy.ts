@@ -5,10 +5,7 @@ export default class Lazy<T>
 
     public get value(): T
     {
-        if (!this.cache)
-        {
-            this.cache = this.factory();
-        }
+        this.cache ??= this.factory();
 
         return this.cache;
     }

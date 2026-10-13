@@ -1,24 +1,5 @@
-import
-{
-    ArrayPattern,
-    ArrowFunctionExpression,
-    AssignmentPattern,
-    AssignmentProperty,
-    ExpressionRewriterVisitor,
-    Identifier,
-    MemberExpression,
-    ObjectExpression,
-    ObjectPattern,
-    Property,
-    TypeGuard,
-} from "@surface/expression";
-import type
-{
-    IExpression,
-    INode,
-    IPattern,
-    RestElement,
-} from "@surface/expression";
+/* eslint-disable max-len */
+import { ArrayPattern, ArrowFunctionExpression, AssignmentPattern, AssignmentProperty, ExpressionRewriterVisitor, type IExpression, type INode, type IPattern, Identifier, MemberExpression, ObjectExpression, ObjectPattern, Property, type RestElement, TypeGuard } from "@surface/expression";
 
 export default class ScopeRewriterVisitor extends ExpressionRewriterVisitor
 {

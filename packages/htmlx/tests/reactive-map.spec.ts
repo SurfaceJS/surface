@@ -1,5 +1,4 @@
-import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                              from "@surface/test-suite";
+import { assert, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import ReactiveMap                             from "../internal/reactive-map.js";
 
 @suite

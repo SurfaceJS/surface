@@ -1,12 +1,10 @@
-import { batchTest, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                                         from "@surface/test-suite";
+import { assert, batchTest, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import Messages                                           from "../internal/messages.js";
 import Scanner                                            from "../internal/scanner.js";
 import SyntaxError                                        from "../internal/syntax-error.js";
 import TokenType                                          from "../internal/token-type.js";
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
-import type { ExpectedInvalidToken, ExpectedValidToken }  from "./scanner-expectations.js";
-import { invalidTokens, validTokens }                     from "./scanner-expectations.js";
+
+import { type ExpectedInvalidToken, type ExpectedValidToken, invalidTokens, validTokens } from "./scanner-expectations.js";
 
 @suite
 export default class ScannerSpec
@@ -31,7 +29,7 @@ export default class ScannerSpec
     @test
     public templateStringWithInterpolation(): void
     {
-        // eslint-disable-next-line no-template-curly-in-string
+
         const scanner = new Scanner("`start ${identifier} middle ${1} end`");
 
         assert.include(scanner.nextToken(), { type: TokenType.Template,       value: "start " });

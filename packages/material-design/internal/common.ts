@@ -1,6 +1,5 @@
-/* eslint-disable sort-keys */
-import type { Indexer }                       from "@surface/core";
-import { camelToDashed, makePath, typeGuard } from "@surface/core";
+
+import { type Indexer, camelToDashed, makePath, typeGuard } from "@surface/core";
 import { hexToHsva, hsvaToHex }               from "./colors/converters.js";
 import { interpolateSwatches, scaleSwatches } from "./colors/swatches.js";
 import type RawPalette                        from "./types/raw-palette.js";

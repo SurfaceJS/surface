@@ -1,5 +1,4 @@
-import type { Constructor }                     from "@surface/core";
-import { DisposableMetadata, HookableMetadata } from "@surface/core";
+import { type Constructor, DisposableMetadata, HookableMetadata } from "@surface/core";
 import Observer                                 from "../observer.js";
 
 export default function listener(...properties: string[]): MethodDecorator;

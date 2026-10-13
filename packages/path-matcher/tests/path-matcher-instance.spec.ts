@@ -1,5 +1,4 @@
-import { batchTest, shouldPass, shouldFail, suite, test } from "@surface/test-suite";
-import { assert }                                         from "@surface/test-suite";
+import { assert, batchTest, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import PathMatcher                                        from "../internal/path-matcher.js";
 
 interface MatcherScenario
@@ -80,7 +79,7 @@ export default class PathMatcherInstanceSpec
     @test @shouldPass
     @batchTest(
         matcherScenarios,
-        x => `isMatch with patterns [${JSON.stringify(x.patterns)}]`
+        x => `isMatch with patterns [${JSON.stringify(x.patterns)}]`,
     )
     public isMatchMatchesAndMismatches(scenario: MatcherScenario): void
     {
@@ -109,6 +108,7 @@ export default class PathMatcherInstanceSpec
     @test @shouldFail
     public invalidPattern(): void
     {
+        /* eslint-disable-next-line no-new */
         new PathMatcher("{invalid", { base: "/" });
     }
 }

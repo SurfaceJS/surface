@@ -1,4 +1,4 @@
-/* eslint-disable indent */
+
 import type { Delegate }    from "@surface/core";
 import webpack              from "webpack";
 import WebpackDevServer     from "webpack-dev-server";

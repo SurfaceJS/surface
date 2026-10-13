@@ -1,5 +1,4 @@
-import type { Delegate } from "@surface/core";
-import { Hashcode }      from "@surface/core";
+import { type Delegate, Hashcode } from "@surface/core";
 import Group             from "./group.js";
 import type IComparer    from "./interfaces/comparer.js";
 import type ILookup      from "./interfaces/lookup.js";
@@ -33,10 +32,7 @@ export default class Lookup<TSource, TKey, TElement> implements ILookup<TKey, TE
 
             let group = this.getGroup(key, hash);
 
-            if (!group)
-            {
-                group = this.createGroup(key, hash);
-            }
+            group ??= this.createGroup(key, hash);
 
             group.add(elementSelector(element) as Object as TElement);
         }

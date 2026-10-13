@@ -1,5 +1,5 @@
-import { shouldPass, suite, test } from "@surface/test-suite";
 import assert                      from "node:assert";
+import { shouldPass, suite, test } from "@surface/test-suite";
 import Queue                       from "../internal/queue.js";
 
 @suite

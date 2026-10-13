@@ -1,8 +1,7 @@
 /* eslint-disable import/no-unassigned-import */
 import "@surface/dom-shim";
 
-import { shouldPass, suite, test }        from "@surface/test-suite";
-import { assert }                         from "@surface/test-suite";
+import { assert, shouldPass, suite, test }        from "@surface/test-suite";
 import createFragmentFactory              from "../internal/factories/create-fragment-factory.js";
 import createInjectionFactory             from "../internal/factories/create-injection-factory.js";
 import createPlaceholderFactory           from "../internal/factories/create-placeholder-factory.js";

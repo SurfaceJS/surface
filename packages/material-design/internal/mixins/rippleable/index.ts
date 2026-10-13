@@ -1,5 +1,5 @@
-import type { Constructor } from "@surface/core";
-import { typeGuard }        from "@surface/core";
+/* eslint-disable no-duplicate-imports */
+import { type Constructor, typeGuard } from "@surface/core";
 import type HTMLXElement    from "@surface/htmlx-element";
 import { event, styles }    from "@surface/htmlx-element";
 import style                from "./index.scss";
@@ -9,7 +9,6 @@ const ANIMATION_IN    = "animation-in";
 const ANIMATION_OUT   = "animation-out";
 const RIPPLE          = "ripple";
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const rippleable = <T extends Constructor<HTMLXElement & { rippleable?: HTMLElement }>>(superClass: T): Constructor<IRippleable> & T =>
 {
     @styles(style)

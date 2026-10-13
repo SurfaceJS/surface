@@ -24,14 +24,14 @@ function createLeadingZeros(size: number): string
 {
     switch (size)
     {
-        case 0:
-            return "";
-        case 1:
-            return "0";
-        case 2:
-            return "00";
-        default:
-            return `0{${size}}`;
+    case 0:
+        return "";
+    case 1:
+        return "0";
+    case 2:
+        return "00";
+    default:
+        return `0{${size}}`;
     }
 }
 

@@ -1,5 +1,4 @@
-import { batchTest, shouldPass, suite } from "@surface/test-suite";
-import { assert }                       from "@surface/test-suite";
+import { assert, batchTest, shouldPass, suite } from "@surface/test-suite";
 import Parser                           from "../internal/parser.js";
 import { validVisitors }                from "./expression-visitor-expectations.js";
 import FixtureExpressionRewriterVisitor from "./fixtures/fixture-expression-rewriter-visitor.js";

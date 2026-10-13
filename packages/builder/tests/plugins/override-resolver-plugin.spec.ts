@@ -1,8 +1,7 @@
 import path                        from "path";
-import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                  from "@surface/test-suite";
+import { assert, shouldPass, suite, test } from "@surface/test-suite";
+import type { ResolveContext, ResolveRequest } from "enhanced-resolve";
 import type webpack                from "webpack";
-import type { ResolveRequest, ResolveContext } from "enhanced-resolve";
 import OverrideResolverPlugin      from "../../internal/plugins/override-resolver-plugin.js";
 
 type Resolver = webpack.Resolver;

@@ -151,56 +151,56 @@ export default class Parser
         {
             switch (this.lookahead.type)
             {
-                case TokenType.Literal:
-                    nodes.push(new LiteralNode(this.lookahead.value));
+            case TokenType.Literal:
+                nodes.push(new LiteralNode(this.lookahead.value));
 
-                    this.nextToken();
+                this.nextToken();
 
-                    break;
-                case TokenType.Punctuator:
+                break;
+            case TokenType.Punctuator:
+                if (this.match("*"))
+                {
+                    this.expect("*");
+
+                    nodes.push(new WildcardNode());
+                }
+                else if (this.match("{"))
+                {
+                    this.expect("{");
+
                     if (this.match("*"))
                     {
                         this.expect("*");
 
-                        nodes.push(new WildcardNode());
-                    }
-                    else if (this.match("{"))
-                    {
-                        this.expect("{");
+                        const token = this.nextToken();
 
-                        if (this.match("*"))
+                        if (token.type != TokenType.Literal)
                         {
-                            this.expect("*");
-
-                            const token = this.nextToken();
-
-                            if (token.type != TokenType.Literal)
-                            {
-                                this.throwUnexpectedToken(token);
-                            }
-
-                            nodes.push(new RestNode(token.value));
-                        }
-                        else
-                        {
-                            nodes.push(this.parseIdentifierNode());
+                            this.throwUnexpectedToken(token);
                         }
 
-                        this.expect("}");
-
-                        if (this.match("{"))
-                        {
-                            this.throwUnexpectedToken(this.lookahead);
-                        }
+                        nodes.push(new RestNode(token.value));
                     }
                     else
                     {
+                        nodes.push(this.parseIdentifierNode());
+                    }
+
+                    this.expect("}");
+
+                    if (this.match("{"))
+                    {
                         this.throwUnexpectedToken(this.lookahead);
                     }
-                    break;
-                case TokenType.Space:
-                default:
-                    throw new Error(`Unexpected space at ${this.lookahead.index}`);
+                }
+                else
+                {
+                    this.throwUnexpectedToken(this.lookahead);
+                }
+                break;
+            case TokenType.Space:
+            default:
+                throw new Error(`Unexpected space at ${this.lookahead.index}`);
             }
         }
 

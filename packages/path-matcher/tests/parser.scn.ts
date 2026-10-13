@@ -1,4 +1,4 @@
-/* eslint-disable max-lines */
+
 /* eslint-disable no-empty-character-class */
 /* eslint-disable no-control-regex */
 import type { Options } from "../internal/parser.js";

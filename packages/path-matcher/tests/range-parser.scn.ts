@@ -1,4 +1,4 @@
-/* eslint-disable import/prefer-default-export */
+
 // cSpell:ignore AGMSY, ekqw
 
 const skip = false;

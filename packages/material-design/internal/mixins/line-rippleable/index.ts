@@ -1,3 +1,4 @@
+/* eslint-disable no-duplicate-imports */
 import type { Constructor } from "@surface/core";
 import type HTMLXElement   from "@surface/htmlx-element";
 import { event, styles }    from "@surface/htmlx-element";
@@ -8,7 +9,6 @@ const ANIMATION_IN    = "animation-in";
 const ANIMATION_OUT   = "animation-out";
 const RIPPLE          = "ripple";
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 function lineRippleable<T extends Constructor<HTMLXElement & { noRipple: boolean, readonly rippleable: HTMLElement }>>(superClass: T): ILineRippleable & T
 {
     @styles(style)

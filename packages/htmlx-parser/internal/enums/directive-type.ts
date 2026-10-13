@@ -1,4 +1,4 @@
-/* eslint-disable indent */
+
 enum DirectiveType
 {
     Else             = "#else",

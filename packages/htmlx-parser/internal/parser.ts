@@ -1,12 +1,9 @@
-/* eslint-disable complexity */
-/* eslint-disable max-lines-per-function */
+
 /* eslint-disable max-statements */
 /* eslint-disable @typescript-eslint/prefer-for-of */
-/* eslint-disable indent */
-import type { Indexer }                                                                          from "@surface/core";
-import { assert, contains, dashedToCamel, typeGuard }                                            from "@surface/core";
-import type { IExpression, IPattern, Identifier }                                                from "@surface/expression";
-import { ArrowFunctionExpression, Literal, SyntaxError, TypeGuard }                              from "@surface/expression";
+
+import { type Indexer, assert, contains, dashedToCamel, typeGuard } from "@surface/core";
+import { ArrowFunctionExpression, type IExpression, type IPattern, type Identifier, Literal, SyntaxError, TypeGuard } from "@surface/expression";
 import { scapeBrackets, throwTemplateParseError }                                                from "./common.js";
 import DescriptorType                                                                            from "./descriptor-type.js";
 import DirectiveType                                                                             from "./enums/directive-type.js";
@@ -143,7 +140,6 @@ export default class Parser
         const duplications = new Set<string>();
         const resolved     = new Set<string>();
 
-        // eslint-disable-next-line @typescript-eslint/prefer-for-of
         for (let i = 0; i < namedNodeMap.length; i++)
         {
             const attribute = namedNodeMap[i]!;

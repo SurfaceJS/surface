@@ -1,8 +1,9 @@
 // cSpell:ignore stroustrup
-import * as tsParser from "@typescript-eslint/parser";
+/* eslint-disable import/no-namespace */
 import * as tsPlugin from "@typescript-eslint/eslint-plugin";
-import * as jsdocPlugin from "eslint-plugin-jsdoc";
+import * as tsParser from "@typescript-eslint/parser";
 import * as importPlugin from "eslint-plugin-import";
+import * as jsdocPlugin from "eslint-plugin-jsdoc";
 
 const rules =
 {
@@ -40,8 +41,8 @@ const rules =
         },
     ],
     "@typescript-eslint/explicit-member-accessibility": "warn",
-    "indent":                        "warn",
-    "keyword-spacing":               "warn",
+    "indent":                                           "warn",
+    "keyword-spacing":                                  "warn",
     "lines-between-class-members":
     [
         "warn",
@@ -87,13 +88,13 @@ const rules =
     "@typescript-eslint/no-array-constructor":            "warn",
     "@typescript-eslint/no-confusing-non-null-assertion": "warn",
     "@typescript-eslint/no-dupe-class-members":           "warn",
-    "no-duplicate-imports":            "warn",
+    "no-duplicate-imports":                               "warn",
     "@typescript-eslint/no-dynamic-delete":               "warn",
     "@typescript-eslint/no-empty-function":               "warn",
     "@typescript-eslint/no-explicit-any":                 "warn",
     "@typescript-eslint/no-extra-non-null-assertion":     "warn",
-    "no-extra-parens":                 "warn",
-    "no-extra-semi":                   "warn",
+    "no-extra-parens":                                    "warn",
+    "no-extra-semi":                                      "warn",
     "@typescript-eslint/no-floating-promises":            "warn",
     "@typescript-eslint/no-for-in-array":                 "warn",
     "@typescript-eslint/no-implied-eval":                 "warn",
@@ -109,7 +110,7 @@ const rules =
     "@typescript-eslint/no-misused-new":                         "warn",
     "@typescript-eslint/no-namespace":                           "warn",
     "@typescript-eslint/no-require-imports":                     "warn",
-    "no-throw-literal":                       "warn",
+    "no-throw-literal":                                          "warn",
     "@typescript-eslint/no-unnecessary-boolean-literal-compare": "warn",
     "@typescript-eslint/no-unnecessary-qualifier":               "warn",
     "@typescript-eslint/no-unnecessary-type-arguments":          "warn",
@@ -135,9 +136,9 @@ const rules =
     "@typescript-eslint/prefer-regexp-exec":             "warn",
     "@typescript-eslint/prefer-string-starts-ends-with": "warn",
     "@typescript-eslint/promise-function-async":         "warn",
-    "quotes":                         "warn",
+    "quotes":                                            "warn",
     "@typescript-eslint/return-await":                   "warn",
-    "semi":                           "warn",
+    "semi":                                              "warn",
     "@typescript-eslint/switch-exhaustiveness-check":    "warn",
     "@typescript-eslint/triple-slash-reference":         "warn",
     "accessor-pairs":                                    "warn",
@@ -460,7 +461,7 @@ const rules =
     "yoda":                   "warn",
 };
 
-export const config: Array<{ files: string[], languageOptions: { parser: unknown, ecmaVersion: number, sourceType: string }, plugins: Record<string, object>, rules: Record<string, unknown> }> =
+const config: { files: string[], languageOptions: { parser: unknown, ecmaVersion: number, sourceType: string }, plugins: Record<string, object>, rules: Record<string, unknown> }[] =
 [
     {
         files: ["**/*.{ts,tsx,mts,cts}"],
@@ -479,3 +480,6 @@ export const config: Array<{ files: string[], languageOptions: { parser: unknown
         rules,
     },
 ];
+
+export { config };
+export default config;

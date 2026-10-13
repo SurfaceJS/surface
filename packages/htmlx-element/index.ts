@@ -1,4 +1,4 @@
-/* eslint-disable indent */
+
 import HTMLXElement from "./internal/htmlx-element.js";
 
 export type { default as IHTMLXElement } from "./internal/interfaces/htmlx-element.js";

@@ -2,8 +2,7 @@
 import "@surface/dom-shim";
 import { painting } from "@surface/htmlx";
 
-import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                  from "@surface/test-suite";
+import { assert, shouldPass, suite, test } from "@surface/test-suite";
 import element                     from "../internal/decorators/element.js";
 import HTMLXElement                from "../internal/htmlx-element.js";
 

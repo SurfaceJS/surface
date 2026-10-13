@@ -1,14 +1,12 @@
 /* eslint-disable no-new-func */
 /* eslint-disable @typescript-eslint/no-implied-eval */
-import { batchTest, shouldFail, shouldPass, skip, suite, test } from "@surface/test-suite";
-import { assert }                                               from "@surface/test-suite";
+import { assert, batchTest, shouldFail, shouldPass, skip, suite, test } from "@surface/test-suite";
 import ParenthesizedExpression                                  from "../internal/expressions/parenthesized-expression.js";
 import Parser                                                   from "../internal/parser.js";
 import SyntaxError                                              from "../internal/syntax-error.js";
 import TypeGuard                                                from "../internal/type-guard.js";
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
-import type { InvalidParseExpectedSpec, ParseExpectedSpec }     from "./parser-expectations.js";
-import { invalidExpressions, validExpressions }                 from "./parser-expectations.js";
+
+import { type InvalidParseExpectedSpec, type ParseExpectedSpec, invalidExpressions, validExpressions } from "./parser-expectations.js";
 
 type RawSyntaxError = Pick<SyntaxError, "message" | "lineNumber" | "index" | "column"> | Pick<ReferenceError, "message">;
 

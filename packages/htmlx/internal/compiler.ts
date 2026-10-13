@@ -1,6 +1,5 @@
 import { hasFlag }                                  from "@surface/core";
-import { DescriptorType, Parser, SpreadFlags }      from "@surface/htmlx-parser";
-import type { AttributeBindDescriptor, Descriptor } from "@surface/htmlx-parser";
+import { type AttributeBindDescriptor, type Descriptor, DescriptorType, Parser, SpreadFlags } from "@surface/htmlx-parser";
 import createChoiceFactory                          from "./factories/create-choice-factory.js";
 import createCommentFactory                         from "./factories/create-comment-factory.js";
 import createDirectiveFactory                       from "./factories/create-directive-factory.js";
@@ -35,47 +34,47 @@ export default class Compiler
         {
             switch (bind.type)
             {
-                case DescriptorType.Attribute:
-                    attributes.push([bind.name, bind.value]);
-                    break;
-                case DescriptorType.Directive:
-                    factories.push(createDirectiveFactory(bind.key, scope => bind.value.evaluate(scope), bind.observables, bind.source, bind.stackTrace));
-                    break;
-                case DescriptorType.EventListener:
-                    factories.push(createEventListenerFactory(bind.name, scope => bind.listener.evaluate(scope), scope => bind.context?.evaluate(scope), bind.source, bind.stackTrace));
-                    break;
-                case DescriptorType.Interpolation:
-                    factories.push(createInterpolationFactory(bind.key, scope => bind.value.evaluate(scope), bind.observables, bind.source, bind.stackTrace));
-                    break;
-                case DescriptorType.Oneway:
-                    factories.push(createOnewayFactory(bind.key, scope => bind.value.evaluate(scope), bind.observables, bind.source, bind.stackTrace));
-                    break;
-                case DescriptorType.Spread:
+            case DescriptorType.Attribute:
+                attributes.push([bind.name, bind.value]);
+                break;
+            case DescriptorType.Directive:
+                factories.push(createDirectiveFactory(bind.key, scope => bind.value.evaluate(scope), bind.observables, bind.source, bind.stackTrace));
+                break;
+            case DescriptorType.EventListener:
+                factories.push(createEventListenerFactory(bind.name, scope => bind.listener.evaluate(scope), scope => bind.context?.evaluate(scope), bind.source, bind.stackTrace));
+                break;
+            case DescriptorType.Interpolation:
+                factories.push(createInterpolationFactory(bind.key, scope => bind.value.evaluate(scope), bind.observables, bind.source, bind.stackTrace));
+                break;
+            case DescriptorType.Oneway:
+                factories.push(createOnewayFactory(bind.key, scope => bind.value.evaluate(scope), bind.observables, bind.source, bind.stackTrace));
+                break;
+            case DescriptorType.Spread:
+                {
+                    const spreadFactories: SpreadFactory[] = [];
+
+                    if (hasFlag(bind.flags, SpreadFlags.Attributes))
                     {
-                        const spreadFactories: SpreadFactory[] = [];
-
-                        if (hasFlag(bind.flags, SpreadFlags.Attributes))
-                        {
-                            spreadFactories.push(createSpreadAttributesFactory);
-                        }
-
-                        if (hasFlag(bind.flags, SpreadFlags.Properties))
-                        {
-                            spreadFactories.push(createSpreadPropertiesFactory);
-                        }
-
-                        if (hasFlag(bind.flags, SpreadFlags.Listeners))
-                        {
-                            spreadFactories.push(createSpreadListenersFactory);
-                        }
-
-                        factories.push(createSpreadFactory(scope => bind.expression.evaluate(scope), bind.observables, spreadFactories, bind.source, bind.stackTrace));
+                        spreadFactories.push(createSpreadAttributesFactory);
                     }
-                    break;
-                case DescriptorType.TwoWay:
-                default:
-                    factories.push(createTwoWayFactory(bind.left, bind.right, bind.source, bind.stackTrace));
-                    break;
+
+                    if (hasFlag(bind.flags, SpreadFlags.Properties))
+                    {
+                        spreadFactories.push(createSpreadPropertiesFactory);
+                    }
+
+                    if (hasFlag(bind.flags, SpreadFlags.Listeners))
+                    {
+                        spreadFactories.push(createSpreadListenersFactory);
+                    }
+
+                    factories.push(createSpreadFactory(scope => bind.expression.evaluate(scope), bind.observables, spreadFactories, bind.source, bind.stackTrace));
+                }
+                break;
+            case DescriptorType.TwoWay:
+            default:
+                factories.push(createTwoWayFactory(bind.left, bind.right, bind.source, bind.stackTrace));
+                break;
             }
         }
 
@@ -98,67 +97,67 @@ export default class Compiler
     {
         switch (descriptor.type)
         {
-            case DescriptorType.Element:
-                return createElementFactory
-                (
-                    descriptor.tag,
-                    ...Compiler.mapAttributes(descriptor.attributes),
-                    Compiler.mapChildren(descriptor.children),
-                );
-            case DescriptorType.Text:
-                return createTextNodeFactory(descriptor.value);
-            case DescriptorType.TextInterpolation:
-                return createTextNodeInterpolationFactory
-                (
-                    scope => descriptor.value.evaluate(scope),
-                    descriptor.observables,
-                    descriptor.source,
-                    descriptor.stackTrace,
-                );
-            case DescriptorType.Choice:
-                return createChoiceFactory
-                (
-                    descriptor.branches.map(x => [scope => x.expression.evaluate(scope), x.observables, Compiler.compileDescriptor(x.fragment), x.source, x.stackTrace]),
-                );
-            case DescriptorType.Loop:
-                return createLoopFactory
-                (
-                    (scope, value) => descriptor.left.evaluate(scope, value),
-                    descriptor.operator,
-                    scope => descriptor.right.evaluate(scope),
-                    descriptor.observables,
-                    Compiler.compileDescriptor(descriptor.fragment),
-                    descriptor.source,
-                    descriptor.stackTrace,
-                );
-            case DescriptorType.Placeholder:
-                return createPlaceholderFactory
-                (
-                    scope => descriptor.key.evaluate(scope),
-                    scope => descriptor.scope.evaluate(scope),
-                    [descriptor.observables.key, descriptor.observables.scope],
-                    Compiler.compileDescriptor(descriptor.fragment),
-                    descriptor.source,
-                    descriptor.stackTrace,
-                );
-            case DescriptorType.Injection:
-                return createInjectionFactory
-                (
-                    scope => descriptor.key.evaluate(scope),
-                    (scope, value) => descriptor.scope.evaluate(scope, value),
-                    [descriptor.observables.key, descriptor.observables.scope],
-                    Compiler.compileDescriptor(descriptor.fragment),
-                    descriptor.source,
-                    descriptor.stackTrace,
-                );
-            case DescriptorType.Comment:
-                return createCommentFactory(descriptor.value);
-            case DescriptorType.Fragment:
-            default:
-                return createFragmentFactory
-                (
-                    Compiler.mapChildren(descriptor.children),
-                );
+        case DescriptorType.Element:
+            return createElementFactory
+            (
+                descriptor.tag,
+                ...Compiler.mapAttributes(descriptor.attributes),
+                Compiler.mapChildren(descriptor.children),
+            );
+        case DescriptorType.Text:
+            return createTextNodeFactory(descriptor.value);
+        case DescriptorType.TextInterpolation:
+            return createTextNodeInterpolationFactory
+            (
+                scope => descriptor.value.evaluate(scope),
+                descriptor.observables,
+                descriptor.source,
+                descriptor.stackTrace,
+            );
+        case DescriptorType.Choice:
+            return createChoiceFactory
+            (
+                descriptor.branches.map(x => [scope => x.expression.evaluate(scope), x.observables, Compiler.compileDescriptor(x.fragment), x.source, x.stackTrace]),
+            );
+        case DescriptorType.Loop:
+            return createLoopFactory
+            (
+                (scope, value) => descriptor.left.evaluate(scope, value),
+                descriptor.operator,
+                scope => descriptor.right.evaluate(scope),
+                descriptor.observables,
+                Compiler.compileDescriptor(descriptor.fragment),
+                descriptor.source,
+                descriptor.stackTrace,
+            );
+        case DescriptorType.Placeholder:
+            return createPlaceholderFactory
+            (
+                scope => descriptor.key.evaluate(scope),
+                scope => descriptor.scope.evaluate(scope),
+                [descriptor.observables.key, descriptor.observables.scope],
+                Compiler.compileDescriptor(descriptor.fragment),
+                descriptor.source,
+                descriptor.stackTrace,
+            );
+        case DescriptorType.Injection:
+            return createInjectionFactory
+            (
+                scope => descriptor.key.evaluate(scope),
+                (scope, value) => descriptor.scope.evaluate(scope, value),
+                [descriptor.observables.key, descriptor.observables.scope],
+                Compiler.compileDescriptor(descriptor.fragment),
+                descriptor.source,
+                descriptor.stackTrace,
+            );
+        case DescriptorType.Comment:
+            return createCommentFactory(descriptor.value);
+        case DescriptorType.Fragment:
+        default:
+            return createFragmentFactory
+            (
+                Compiler.mapChildren(descriptor.children),
+            );
         }
     }
 

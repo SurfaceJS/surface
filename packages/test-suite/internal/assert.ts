@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { deepStrictEqual, doesNotMatch, fail, match } from "node:assert";
 
 type Constructor = Function;
@@ -20,7 +21,7 @@ function makeError(message: string | undefined, actual: unknown, expected: unkno
 
 function stringify(value: unknown): string
 {
-    if (value == null)
+    if (value == null) // eslint-disable-line no-eq-null
     {
         return String(value);
     }
@@ -62,7 +63,7 @@ function toPredicate(actual: unknown, expected: unknown, message: string | undef
 async function inspectPromise(promise: Promise<unknown>, message: string | undefined, expectFulfilled: boolean): Promise<void>
 {
     let settled: "fulfilled" | "rejected" = "fulfilled";
-    let value:  unknown                  = undefined;
+    let value:  unknown;
 
     try
     {
@@ -379,7 +380,7 @@ const assert =
     {
         const error = runAndCatch(fn);
 
-        if (error == null)
+        if (error == null) // eslint-disable-line no-eq-null
         {
             throw makeError(message, undefined, "throws", "throws");
         }
@@ -393,15 +394,13 @@ const assert =
     },
 
     throw: (fn: () => unknown, expected?: unknown, message?: string): Error =>
-    {
-        return assert.throws(fn, expected, message);
-    },
+        assert.throws(fn, expected, message),
 
     doesNotThrow: (fn: () => unknown, message?: string): void =>
     {
         const error = runAndCatch(fn);
 
-        if (error != null)
+        if (error != null) // eslint-disable-line no-eq-null
         {
             throw makeError(message, error, "doesNotThrow", "doesNotThrow");
         }
@@ -423,9 +422,7 @@ const assert =
     },
 
     rejects: async (promise: Promise<unknown>, expected?: unknown, message?: string): Promise<void> =>
-    {
-        return assert.reject(promise, expected, message);
-    },
+        assert.reject(promise, expected, message),
 
     doesNotReject: async (promise: Promise<unknown>, message?: string): Promise<void> =>
     {
@@ -475,16 +472,9 @@ const callableAssert = ((value: unknown, message?: string): void =>
 
 Object.assign(callableAssert, assert);
 
-export default callableAssert;
-
-export function use(_plugin: unknown): void
-{
-    // chai-as-promised behavior (isFulfilled/isRejected/reject/rejects) is built in.
-}
-
 function isEmptyValue(value: unknown): boolean
 {
-    if (value == null)
+    if (value == null) // eslint-disable-line no-eq-null
     {
         return true;
     }
@@ -519,7 +509,7 @@ function includes(haystack: unknown, needle: unknown): boolean
         return haystack.some(item => isDeepEqual(item, needle));
     }
 
-    if (typeof haystack == "object" && haystack != null)
+    if (typeof haystack == "object" && haystack != null) // eslint-disable-line no-eq-null
     {
         return Object.values(haystack as object).some(item => isDeepEqual(item, needle));
     }
@@ -584,3 +574,5 @@ function normalize(error: unknown, actual: unknown, expected: unknown, operator:
 
     return makeError(error instanceof Error ? error.message : undefined, actual, expected, operator);
 }
+
+export default callableAssert;

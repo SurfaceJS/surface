@@ -1,5 +1,4 @@
-import type { Indexer }                      from "@surface/core";
-import { CancellationTokenSource, hasValue } from "@surface/core";
+import { CancellationTokenSource, type Indexer, hasValue } from "@surface/core";
 import Observer, { Metadata }                from "@surface/observer";
 import type Scheduler                        from "../processors/scheduler.js";
 

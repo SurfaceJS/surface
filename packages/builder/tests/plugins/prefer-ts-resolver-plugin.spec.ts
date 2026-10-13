@@ -1,10 +1,8 @@
-import { existsSync }                                     from "fs";
 import path                                               from "path";
 import Mock                                               from "@surface/mock";
-import { afterEach, beforeEach, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                                         from "@surface/test-suite";
+import { afterEach, assert, beforeEach, shouldPass, suite, test } from "@surface/test-suite";
+import type { ResolveContext, ResolveRequest }            from "enhanced-resolve";
 import type webpack                                       from "webpack";
-import type { ResolveRequest, ResolveContext }            from "enhanced-resolve";
 import PreferTsResolverPlugin                             from "../../internal/plugins/prefer-ts-resolver-plugin.js";
 
 const CWD = process.cwd();
@@ -24,7 +22,9 @@ const PATH2_FOO_TS = path.join(CWD, "path-2", "foo.ts");
 
 type Resolver = webpack.Resolver;
 
-const existsSyncMock = Mock.of(existsSync);
+const existsSyncMock = Mock.callable<(path: string) => boolean>();
+
+Mock.module("fs", { namedExports: { existsSync: existsSyncMock.proxy } });
 
 @suite
 export default class PreferTsResolverPluginSpec

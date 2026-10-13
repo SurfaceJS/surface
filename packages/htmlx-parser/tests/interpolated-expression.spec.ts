@@ -3,8 +3,7 @@ import "@surface/dom-shim";
 
 import { resolveError }                        from "@surface/core";
 import { SyntaxError }                         from "@surface/expression";
-import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                              from "@surface/test-suite";
+import { assert, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import InterpolatedExpression                  from "../internal/interpolated-expression.js";
 
 type RawError = { message: string } | Pick<SyntaxError, "message" | "lineNumber" | "index" | "column">;

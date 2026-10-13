@@ -1,7 +1,6 @@
-/* eslint-disable no-template-curly-in-string */
+
 /* eslint-disable max-lines */
-import type { Constructor, Indexer } from "@surface/core";
-import { format }                    from "@surface/core";
+import { type Constructor, type Indexer, format } from "@surface/core";
 import ArrayExpression               from "../internal/expressions/array-expression.js";
 import ArrowFunctionExpression       from "../internal/expressions/arrow-function-expression.js";
 import AssignmentExpression          from "../internal/expressions/assignment-expression.js";

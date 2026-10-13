@@ -1,8 +1,8 @@
+/* eslint-disable no-duplicate-imports */
 import type { Constructor }    from "@surface/core";
 import type HTMLXElement      from "@surface/htmlx-element";
 import { attribute, computed } from "@surface/htmlx-element";
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const themeable = <T extends Constructor<HTMLXElement>>(superClass: T): Constructor<IThemeable> & T =>
 {
     class Themeable extends superClass

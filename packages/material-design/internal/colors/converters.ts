@@ -1,4 +1,4 @@
-/* eslint-disable sort-keys */
+
 /* eslint-disable no-param-reassign */
 /* eslint-disable max-statements-per-line */
 // Reference: https://www.easyrgb.com/en/math.php
@@ -172,18 +172,18 @@ export function hsvaToRgba(hsva: HSVA): RGBA
 
     switch (i)
     {
-        case 0:
-            return { r: v0, g: v3, b: v1, a };
-        case 1:
-            return { r: v2, g: v0, b: v1, a };
-        case 2:
-            return { r: v1, g: v0, b: v3, a };
-        case 3:
-            return { r: v1, g: v2, b: v0, a };
-        case 4:
-            return { r: v3, g: v1, b: v0, a };
-        default:
-            return { r: v0, g: v1, b: v2, a };
+    case 0:
+        return { r: v0, g: v3, b: v1, a };
+    case 1:
+        return { r: v2, g: v0, b: v1, a };
+    case 2:
+        return { r: v1, g: v0, b: v3, a };
+    case 3:
+        return { r: v1, g: v2, b: v0, a };
+    case 4:
+        return { r: v3, g: v1, b: v0, a };
+    default:
+        return { r: v0, g: v1, b: v2, a };
     }
 
 }

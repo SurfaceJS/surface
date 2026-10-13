@@ -1,8 +1,6 @@
-/* eslint-disable import/named */
-import type { Constructor, Delegate }                  from "@surface/core";
-import { DisposableMetadata, HookableMetadata }        from "@surface/core";
-import type { DirectiveConstructor, DirectiveFactory } from "@surface/htmlx";
-import { Metadata as HTMLXMetadata }                   from "@surface/htmlx";
+
+import { type Constructor, type Delegate, DisposableMetadata, HookableMetadata } from "@surface/core";
+import { type DirectiveConstructor, type DirectiveFactory, Metadata as HTMLXMetadata } from "@surface/htmlx";
 import Observer                                        from "@surface/observer";
 import type IHTMLXElement                              from "./interfaces/htmlx-element.js";
 import Metadata                                        from "./metadata/metadata.js";
@@ -28,7 +26,6 @@ export default class HTMLXElement extends HTMLElement implements IHTMLXElement
 
     public declare shadowRoot: ShadowRoot;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public constructor()
     {
         super();

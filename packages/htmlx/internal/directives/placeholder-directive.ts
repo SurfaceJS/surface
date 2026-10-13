@@ -1,5 +1,4 @@
-import { CancellationTokenSource, DisposableMetadata, assert } from "@surface/core";
-import type { IDisposable, Subscription }                      from "@surface/core";
+import { CancellationTokenSource, DisposableMetadata, type IDisposable, type Subscription, assert } from "@surface/core";
 import type { ObservablePath, StackTrace }                     from "@surface/htmlx-parser";
 import { tryEvaluate, tryEvaluatePattern, tryObserve }         from "../common.js";
 import Metadata                                                from "../metadata.js";

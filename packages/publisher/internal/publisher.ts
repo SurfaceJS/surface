@@ -406,12 +406,12 @@ export default class Publisher
 
     private isUpdatable(entry: Entry, options: BumpOptions): boolean
     {
-        return (options.includePrivate || !entry.manifest.private) && (!options.independent || !entry.isWorkspaceRoot);
+        return (options.includePrivate ?? !entry.manifest.private) && (!options.independent || !entry.isWorkspaceRoot);
     }
 
     private isPublishable(entry: Entry, options: PublishOptions): boolean
     {
-        return !entry.isWorkspaceRoot && (options.includePrivate || !entry.manifest.private);
+        return !entry.isWorkspaceRoot && (options.includePrivate ?? !entry.manifest.private);
     }
 
     private async loadWorkspaces(options?: Pick<LoadOptions, "tag" | "ignoreChanges">): Promise<boolean>;
@@ -877,7 +877,7 @@ export default class Publisher
      * @param preid The 'prerelease identifier' part of a semver. Like the "rc" in 1.2.0-rc.8+2022.
      * @param build The build part of a semver. Like the "2022" in 1.2.0-rc.8+2022.
      */
-    // eslint-disable-next-line max-lines-per-function
+
     public async bump(version: Version, preid?: string, build?: string, options: BumpOptions = { }): Promise<void>
     {
         if (options.commit && !await isWorkingTreeClean())

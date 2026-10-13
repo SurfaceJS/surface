@@ -2,8 +2,7 @@
 
 import path                              from "path";
 import { fileURLToPath }                 from "url";
-import type { ExecutableCommandOptions } from "commander";
-import { Command }                       from "commander";
+import { Command, type ExecutableCommandOptions } from "commander";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 

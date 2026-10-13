@@ -1,7 +1,5 @@
-/* eslint-disable no-template-curly-in-string */
-/* eslint-disable max-len */
-import type { Indexer }         from "@surface/core";
-import { format }               from "@surface/core";
+
+import { type Indexer, format } from "@surface/core";
 import AssignmentProperty       from "../internal/elements/assignment-property.js";
 import Property                 from "../internal/elements/property.js";
 import SpreadElement            from "../internal/elements/spread-element.js";

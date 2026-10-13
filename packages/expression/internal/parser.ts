@@ -1,6 +1,4 @@
 /* eslint-disable max-lines */
-/* eslint-disable complexity */
-/* eslint-disable max-statements */
 
 import { format }               from "@surface/core";
 import AssignmentProperty       from "./elements/assignment-property.js";
@@ -97,7 +95,7 @@ export default class Parser
 
         if (!this.match(")"))
         {
-            // eslint-disable-next-line no-constant-condition
+
             while (true)
             {
                 const expression = this.inheritGrammar(this.match("...") ? this.spreadExpression : this.assignmentExpression);
@@ -279,7 +277,6 @@ export default class Parser
         const stack       = [left, token, right];
         const precedences = [precedence];
 
-        // eslint-disable-next-line no-constant-condition
         while (true)
         {
             if (this.match("="))
@@ -373,51 +370,51 @@ export default class Parser
         {
             switch (operator)
             {
-                case "??":
-                    return 1;
+            case "??":
+                return 1;
 
-                case "||":
-                    return 2;
+            case "||":
+                return 2;
 
-                case "&&":
-                    return 3;
+            case "&&":
+                return 3;
 
-                case "|":
-                    return 4;
+            case "|":
+                return 4;
 
-                case "^":
-                    return 5;
+            case "^":
+                return 5;
 
-                case "&":
-                    return 6;
+            case "&":
+                return 6;
 
-                case "==":
-                case "!=":
-                case "===":
-                case "!==":
-                    return 7;
+            case "==":
+            case "!=":
+            case "===":
+            case "!==":
+                return 7;
 
-                case "<":
-                case ">":
-                case "<=":
-                case ">=":
-                    return  8;
+            case "<":
+            case ">":
+            case "<=":
+            case ">=":
+                return  8;
 
-                case "<<":
-                case ">>":
-                case ">>>":
-                    return 9;
+            case "<<":
+            case ">>":
+            case ">>>":
+                return 9;
 
-                case "+":
-                case "-":
-                    return 10;
+            case "+":
+            case "-":
+                return 10;
 
-                case "*":
-                case "/":
-                case "%":
-                    return 11;
-                default:
-                    return 0;
+            case "*":
+            case "/":
+            case "%":
+                return 11;
+            default:
+                return 0;
             }
         }
         else if (token.type == TokenType.Keyword)
@@ -611,7 +608,7 @@ export default class Parser
 
                 if (this.match(","))
                 {
-                    // eslint-disable-next-line no-constant-condition
+
                     while (true)
                     {
                         if (this.match(","))
@@ -675,7 +672,6 @@ export default class Parser
         let expression        = this.inheritGrammar(this.matchKeyword("new") ? this.newPrimaryExpression : this.primaryExpression);
         let isChainExpression = false;
 
-        // eslint-disable-next-line no-constant-condition
         while (true)
         {
             if (this.lookahead.type == TokenType.Template && this.lookahead.isHead)
@@ -861,33 +857,37 @@ export default class Parser
 
             switch (token.type)
             {
-                case TokenType.BooleanLiteral:
-                case TokenType.Keyword:
-                case TokenType.NullLiteral:
-                    key = new Identifier(this.nextToken().raw);
-                    break;
-                case TokenType.NumericLiteral:
-                case TokenType.StringLiteral:
-                    key = new Literal(this.nextToken().value as LiteralValue);
-                    break;
-                case TokenType.Punctuator:
-                    if (token.raw == "[")
-                    {
-                        this.expect("[");
+            case TokenType.BooleanLiteral:
+            case TokenType.Keyword:
+            case TokenType.NullLiteral:
+                key = new Identifier(this.nextToken().raw);
+                break;
+            case TokenType.NumericLiteral:
+            case TokenType.StringLiteral:
+                key = new Literal(this.nextToken().value as LiteralValue);
+                break;
+            case TokenType.Punctuator:
+                if (token.raw == "[")
+                {
+                    this.expect("[");
 
-                        key = this.inheritGrammar(this.assignmentExpression);
+                    key = this.inheritGrammar(this.assignmentExpression);
 
-                        this.expect("]");
+                    this.expect("]");
 
-                        computed = true;
-                    }
-                    else
-                    {
-                        throw this.unexpectedTokenError(token);
-                    }
-                    break;
-                default:
+                    computed = true;
+                }
+                else
+                {
                     throw this.unexpectedTokenError(token);
+                }
+                break;
+            case TokenType.EOF:
+            case TokenType.Identifier:
+            case TokenType.RegularExpression:
+            case TokenType.Template:
+            default:
+                throw this.unexpectedTokenError(token);
             }
         }
 
@@ -941,18 +941,18 @@ export default class Parser
     {
         switch (this.lookahead.type)
         {
-            case TokenType.StringLiteral:
-            case TokenType.NumericLiteral:
-            case TokenType.BooleanLiteral:
-            case TokenType.NullLiteral:
-            case TokenType.RegularExpression:
-            case TokenType.Template:
-            case TokenType.Identifier:
-                return this.isolateExpression();
-            case TokenType.Punctuator:
-                if
-                (
-                    this.lookahead.raw == "!"
+        case TokenType.StringLiteral:
+        case TokenType.NumericLiteral:
+        case TokenType.BooleanLiteral:
+        case TokenType.NullLiteral:
+        case TokenType.RegularExpression:
+        case TokenType.Template:
+        case TokenType.Identifier:
+            return this.isolateExpression();
+        case TokenType.Punctuator:
+            if
+            (
+                this.lookahead.raw == "!"
                     || this.lookahead.raw == "("
                     || this.lookahead.raw == "+"
                     || this.lookahead.raw == "++"
@@ -963,19 +963,21 @@ export default class Parser
                     || this.lookahead.raw == "^"
                     || this.lookahead.raw == "{"
                     || this.lookahead.raw == "~"
-                )
-                {
-                    return this.isolateExpression();
-                }
-                break;
-            case TokenType.Keyword:
-                if (this.lookahead.raw == "new" || this.lookahead.raw == "this" || this.lookahead.raw == "typeof")
-                {
-                    return this.isolateExpression();
-                }
-                break;
-            default:
-                break;
+            )
+            {
+                return this.isolateExpression();
+            }
+            break;
+        case TokenType.Keyword:
+            if (this.lookahead.raw == "new" || this.lookahead.raw == "this" || this.lookahead.raw == "typeof")
+            {
+                return this.isolateExpression();
+            }
+            break;
+        case TokenType.EOF:
+            break;
+        default:
+            break;
         }
 
         throw this.unexpectedTokenError(this.lookahead);
@@ -985,49 +987,53 @@ export default class Parser
     {
         switch (this.lookahead.type)
         {
-            case TokenType.Keyword:
-                if (this.matchKeyword("this"))
-                {
-                    this.nextToken();
-                    return new ThisExpression();
-                }
-                break;
-            case TokenType.Identifier:
-                if (this.lookahead.raw == "undefined")
-                {
-                    return new Identifier(this.nextToken().raw);
-                }
-
+        case TokenType.Keyword:
+            if (this.matchKeyword("this"))
+            {
+                this.nextToken();
+                return new ThisExpression();
+            }
+            break;
+        case TokenType.Identifier:
+            if (this.lookahead.raw == "undefined")
+            {
                 return new Identifier(this.nextToken().raw);
+            }
 
-            case TokenType.BooleanLiteral:
-                return new Literal(this.nextToken().value as LiteralValue);
-            case TokenType.NumericLiteral:
-            case TokenType.NullLiteral:
-            case TokenType.StringLiteral:
-                return new Literal(this.nextToken().value as LiteralValue);
-            case TokenType.Punctuator:
-                switch (this.lookahead.raw)
-                {
-                    case "(":
-                        return this.inheritGrammar(this.groupExpression);
-                    case "[":
-                        return this.inheritGrammar(this.arrayExpression);
-                    case "{":
-                        return this.inheritGrammar(this.objectExpression);
-                    case "/":
-                        this.scanner.backtrack(1);
-                        return this.inheritGrammar(this.regexExpression);
-                    default:
-                        throw this.unexpectedTokenError(this.lookahead);
-                }
+            return new Identifier(this.nextToken().raw);
 
-            case TokenType.Template:
-                return this.inheritGrammar(this.templateLiteralExpression);
+        case TokenType.BooleanLiteral:
+            return new Literal(this.nextToken().value as LiteralValue);
+        case TokenType.NumericLiteral:
+        case TokenType.NullLiteral:
+        case TokenType.StringLiteral:
+            return new Literal(this.nextToken().value as LiteralValue);
+        case TokenType.Punctuator:
+            switch (this.lookahead.raw)
+            {
+            case "(":
+                return this.inheritGrammar(this.groupExpression);
+            case "[":
+                return this.inheritGrammar(this.arrayExpression);
+            case "{":
+                return this.inheritGrammar(this.objectExpression);
+            case "/":
+                this.scanner.backtrack(1);
+                return this.inheritGrammar(this.regexExpression);
+            default:
+                throw this.unexpectedTokenError(this.lookahead);
+            }
+
+        case TokenType.Template:
+            return this.inheritGrammar(this.templateLiteralExpression);
+
+        case TokenType.EOF:
+        case TokenType.RegularExpression:
+            break;
 
             /* c8 ignore next 2 */
-            default:
-                break;
+        default:
+            break;
         }
 
         throw this.unexpectedTokenError(this.lookahead);
@@ -1044,35 +1050,58 @@ export default class Parser
     {
         switch (node.type)
         {
-            case NodeType.Identifier:
-            {
-                return dupeCheck(node as Identifier, token);
-            }
-            case NodeType.ObjectPattern:
-            case NodeType.RestElement:
-                return node;
-            case NodeType.AssignmentExpression:
-            {
-                return this.reinterpretAssignmentExpression(node as AssignmentExpression, token, dupeCheck);
-            }
-            case NodeType.Property:
-            {
-                return this.reinterpretProperty(node as Property, token, dupeCheck);
-            }
-            case NodeType.ArrayExpression:
-            {
-                return this.reinterpretArrayExpression(node as ArrayExpression, token, dupeCheck);
-            }
-            case NodeType.ObjectExpression:
-            {
-                return this.reinterpretObjectExpression(node as ObjectExpression, token, dupeCheck);
-            }
-            case NodeType.SpreadElement:
-            {
-                return this.reinterpretSpreadElement(node as SpreadElement, token, dupeCheck);
-            } /* c8 ignore next 2 */
-            default:
-                break;
+        case NodeType.Identifier:
+        {
+            return dupeCheck(node as Identifier, token);
+        }
+        case NodeType.ObjectPattern:
+        case NodeType.RestElement:
+            return node;
+        case NodeType.AssignmentExpression:
+        {
+            return this.reinterpretAssignmentExpression(node as AssignmentExpression, token, dupeCheck);
+        }
+        case NodeType.Property:
+        {
+            return this.reinterpretProperty(node as Property, token, dupeCheck);
+        }
+        case NodeType.ArrayExpression:
+        {
+            return this.reinterpretArrayExpression(node as ArrayExpression, token, dupeCheck);
+        }
+        case NodeType.ObjectExpression:
+        {
+            return this.reinterpretObjectExpression(node as ObjectExpression, token, dupeCheck);
+        }
+        case NodeType.SpreadElement:
+        {
+            return this.reinterpretSpreadElement(node as SpreadElement, token, dupeCheck);
+        }
+        case NodeType.ArrayPattern:
+        case NodeType.ArrowFunctionExpression:
+        case NodeType.AssignmentPattern:
+        case NodeType.AssignmentProperty:
+        case NodeType.BinaryExpression:
+        case NodeType.CallExpression:
+        case NodeType.ChainExpression:
+        case NodeType.ConditionalExpression:
+        case NodeType.Literal:
+        case NodeType.LogicalExpression:
+        case NodeType.MemberExpression:
+        case NodeType.NewExpression:
+        case NodeType.ParenthesizedExpression:
+        case NodeType.SequenceExpression:
+        case NodeType.TaggedTemplateExpression:
+        case NodeType.TemplateElement:
+        case NodeType.TemplateLiteral:
+        case NodeType.ThisExpression:
+        case NodeType.UnaryExpression:
+        case NodeType.UpdateExpression:
+            break;
+
+            /* c8 ignore next 2 */
+        default:
+            break;
         } /* c8 ignore next 3 */
 
         throw this.unexpectedTokenError(token);
@@ -1305,21 +1334,27 @@ export default class Parser
 
         switch (token.type)
         {
-            case TokenType.StringLiteral:
-                message = Messages.unexpectedString;
-                break;
-            case TokenType.NumericLiteral:
-                message = Messages.unexpectedNumber;
-                break;
-            case TokenType.EOF:
-                message = Messages.unexpectedEndOfExpression;
-                break;
-            case TokenType.Template:
-                message = format(Messages.unexpectedToken, { token: "" });
-                break;
-            default:
-                message = format(Messages.unexpectedToken, { token: token.raw });
-                break;
+        case TokenType.StringLiteral:
+            message = Messages.unexpectedString;
+            break;
+        case TokenType.NumericLiteral:
+            message = Messages.unexpectedNumber;
+            break;
+        case TokenType.EOF:
+            message = Messages.unexpectedEndOfExpression;
+            break;
+        case TokenType.Template:
+            message = format(Messages.unexpectedToken, { token: "" });
+            break;
+        case TokenType.BooleanLiteral:
+        case TokenType.Identifier:
+        case TokenType.Keyword:
+        case TokenType.NullLiteral:
+        case TokenType.Punctuator:
+        case TokenType.RegularExpression:
+        default:
+            message = format(Messages.unexpectedToken, { token: token.raw });
+            break;
         }
 
         return new SyntaxError(message, token.lineNumber, token.start, token.start - token.lineStart + 1);

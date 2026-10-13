@@ -1,6 +1,5 @@
 /* eslint-disable indent */
-/* eslint-disable import/exports-last */
-/* eslint-disable max-depth */
+
 import type
 {
     ArrayPathOf,
@@ -120,6 +119,8 @@ function mergeArray(left: unknown[], right: unknown[], rule: MergeRule<Value | V
         case "append":
             return left.concat(right);
         case "merge":
+        case "match":
+        case "protected":
         default:
             return Object.values({ ...left, ...right });
     }

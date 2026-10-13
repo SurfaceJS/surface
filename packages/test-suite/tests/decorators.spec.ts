@@ -1,4 +1,4 @@
-/* eslint-disable import/extensions */
+
 import { assert } from "@surface/test-suite";
 import
 {

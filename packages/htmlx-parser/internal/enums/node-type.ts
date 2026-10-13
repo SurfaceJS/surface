@@ -1,4 +1,4 @@
-/* eslint-disable indent */
+
 enum NodeType
 {
     Element = 1,

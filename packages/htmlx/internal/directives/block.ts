@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/prefer-readonly */
+
 import type { IDisposable } from "@surface/core";
 import { enumerateRange }   from "../common.js";
 

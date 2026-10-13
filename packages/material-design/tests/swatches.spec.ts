@@ -1,6 +1,5 @@
-/* eslint-disable sort-keys */
-import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                              from "@surface/test-suite";
+
+import { assert, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { interpolateSwatches, scaleSwatches }  from "../internal/colors/swatches.js";
 import type Swatch                             from "../internal/types/swatch.js";
 

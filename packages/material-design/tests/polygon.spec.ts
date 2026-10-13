@@ -1,5 +1,4 @@
-import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                  from "@surface/test-suite";
+import { assert, shouldPass, suite, test } from "@surface/test-suite";
 import Polygon                     from "../internal/colors/polygon.js";
 import Vector3                     from "../internal/colors/vector-3.js";
 

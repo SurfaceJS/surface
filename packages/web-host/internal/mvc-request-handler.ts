@@ -25,7 +25,7 @@ export default class MvcRequestHandler extends RequestHandler
 
     private async getController(controller: string, filepath: string): Promise<Constructor<Controller>>
     {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
+
         const esModule = await import(pathToFileURL(filepath).href) as Indexer<Constructor<Controller> | null>;
 
         let constructor: Constructor<Controller> | null | undefined;

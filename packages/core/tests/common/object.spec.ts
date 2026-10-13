@@ -1,8 +1,7 @@
 /* eslint-disable max-statements */
 /* eslint-disable array-bracket-spacing */
-/* eslint-disable sort-keys */
-import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                         from "@surface/test-suite";
+
+import { assert, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import
 {
     DeepMergeFlags,
@@ -383,7 +382,6 @@ export default class CommonObjectSpec
 
         const actual = deepMerge([first, second, third], DeepMergeFlags.MergeArrays);
 
-        // eslint-disable-next-line sort-keys
         const expect = { values: [{ zero: 0 }, { one: 1, two: 2, three: 3 }, { four: 4, five: 5, six: 6 }] };
 
         assert.deepEqual(actual, expect);

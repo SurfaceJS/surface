@@ -2,8 +2,6 @@ import type webpack from "webpack";
 
 type Resolver = webpack.Resolver;
 
-export type FileOverride = { replace: string, with: string };
-
 interface ResolvePlugin
 {
     apply(resolver: Resolver): void;
@@ -35,3 +33,5 @@ export default class OverrideResolvePlugin implements ResolvePlugin
         );
     }
 }
+
+export type FileOverride = { replace: string, with: string };

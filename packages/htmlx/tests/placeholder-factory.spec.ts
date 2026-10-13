@@ -1,8 +1,7 @@
 /* eslint-disable import/no-unassigned-import */
 import "@surface/dom-shim";
 
-import { shouldPass, suite, test }        from "@surface/test-suite";
-import { assert }                         from "@surface/test-suite";
+import { assert, shouldPass, suite, test }        from "@surface/test-suite";
 import createElementFactory               from "../internal/factories/create-element-factory.js";
 import createPlaceholderFactory           from "../internal/factories/create-placeholder-factory.js";
 import createTextNodeInterpolationFactory from "../internal/factories/create-text-node-interpolation-factory.js";

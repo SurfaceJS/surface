@@ -1,4 +1,4 @@
-/* eslint-disable sort-keys */
+
 /* eslint-disable no-param-reassign */
 import type HSVA   from "../types/hsva.js";
 import type Swatch from "../types/swatch.js";

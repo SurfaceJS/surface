@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/promise-function-async */
+
 /* eslint-disable object-shorthand */
 /* eslint-disable func-name-matching */
 /* eslint-disable no-extend-native */

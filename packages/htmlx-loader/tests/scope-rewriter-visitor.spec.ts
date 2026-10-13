@@ -1,7 +1,5 @@
-import type { ArrowFunctionExpression }  from "@surface/expression";
-import { Parser }                        from "@surface/expression";
-import { batchTest, shouldPass, suite }  from "@surface/test-suite";
-import { assert }                        from "@surface/test-suite";
+import { type ArrowFunctionExpression, Parser } from "@surface/expression";
+import { assert, batchTest, shouldPass, suite }  from "@surface/test-suite";
 import ScopeRewriterVisitor              from "../internal/scope-rewriter-visitor.js";
 import { expressionsSeed, patternSeeds } from "./scope-rewriter-visitor-seed.spec.js";
 

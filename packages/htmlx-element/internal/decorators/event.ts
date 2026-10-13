@@ -1,5 +1,4 @@
-import type { Indexer }                         from "@surface/core";
-import { DisposableMetadata, HookableMetadata } from "@surface/core";
+import { DisposableMetadata, HookableMetadata, type Indexer } from "@surface/core";
 
 /**
  * Creates an event handler using the decorated method.

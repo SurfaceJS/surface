@@ -2,8 +2,7 @@
 import "@surface/dom-shim";
 
 import type { IConstraint, ITransformer }      from "@surface/router";
-import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                              from "@surface/test-suite";
+import { assert, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import RouteConfigurator                       from "../internal/route-configurator.js";
 import type RouteConfiguration                 from "../internal/types/route-configuration.js";
 import type IRouteDefinition                   from "../internal/types/route-definition.js";

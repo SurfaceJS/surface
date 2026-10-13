@@ -1,12 +1,10 @@
-import { batchTest, shouldFail, shouldPass, suite }            from "@surface/test-suite";
-import { assert }                                              from "@surface/test-suite";
+import { assert, batchTest, shouldFail, shouldPass, suite }            from "@surface/test-suite";
 import type IConstraint                                        from "../internal/interfaces/constraint.js";
 import type ITransformer                                       from "../internal/interfaces/transformer.js";
 import Route                                                   from "../internal/route.js";
 import type RouteMatch                                         from "../internal/types/route-match.js";
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
-import type { RouteInvalidExpectation, RouteValidExpectation } from "./route-expectations.js";
-import { routeInvalidExpectations, routeValidExpectations }    from "./route-expectations.js";
+
+import { type RouteInvalidExpectation, type RouteValidExpectation, routeInvalidExpectations, routeValidExpectations } from "./route-expectations.js";
 
 const numberConstraint:   IConstraint  = { validate: x => !Number.isNaN(Number(x)) };
 const alphaConstraint:    IConstraint  = { validate: x => /[a-z]/i.test(x) };

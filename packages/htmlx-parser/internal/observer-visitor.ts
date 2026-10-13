@@ -1,30 +1,5 @@
-import type
-{
-    ArrayPattern,
-    ArrowFunctionExpression,
-    AssignmentExpression,
-    AssignmentPattern,
-    AssignmentProperty,
-    CallExpression,
-    ConditionalExpression,
-    INode,
-    Identifier,
-    LogicalExpression,
-    MemberExpression,
-    NewExpression,
-    ParenthesizedExpression,
-    Property,
-    RestElement,
-    TaggedTemplateExpression,
-    ThisExpression,
-    UpdateExpression,
-} from "@surface/expression";
-import
-{
-    ExpressionVisitor,
-    NodeType,
-    TypeGuard,
-} from "@surface/expression";
+/* eslint-disable max-len */
+import { type ArrayPattern, type ArrowFunctionExpression, type AssignmentExpression, type AssignmentPattern, type AssignmentProperty, type CallExpression, type ConditionalExpression, ExpressionVisitor, type INode, type Identifier, type LogicalExpression, type MemberExpression, type NewExpression, NodeType, type ParenthesizedExpression, type Property, type RestElement, type TaggedTemplateExpression, type ThisExpression, TypeGuard, type UpdateExpression } from "@surface/expression";
 
 export default class ObserverVisitor extends ExpressionVisitor
 {

@@ -5,7 +5,7 @@ export default class FieldInfo extends MemberInfo
 {
     public get readonly(): boolean
     {
-        return !(this.descriptor.writable == undefined ? true : this.descriptor.writable);
+        return !(this.descriptor.writable ?? true);
     }
 
     public constructor(key: string | symbol, descriptor: PropertyDescriptor, declaringType: Type, isOwn: boolean, isStatic: boolean)

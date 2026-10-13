@@ -3,10 +3,8 @@
 import "@surface/dom-shim";
 
 import { CancellationTokenSource }             from "@surface/core";
-import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                         from "@surface/test-suite";
+import { assert, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import Scheduler                               from "../internal/processors/scheduler.js";
-
 
 @suite
 export default class SchedulerSpec

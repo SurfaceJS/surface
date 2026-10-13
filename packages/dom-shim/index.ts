@@ -55,7 +55,7 @@ for (const [key, value] of Object.entries(globals))
     {
         Object.defineProperty(global, key, { configurable: true, enumerable: true, value });
     }
-    else if (descriptor && descriptor.get)
+    else if (descriptor?.get)
     {
         Object.defineProperty(global, key, { configurable: true, enumerable: true, value, writable: true });
     }

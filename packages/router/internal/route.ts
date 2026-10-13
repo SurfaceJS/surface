@@ -1,5 +1,4 @@
-import type { Indexer }  from "@surface/core";
-import { hasValue }      from "@surface/core";
+import { type Indexer, hasValue } from "@surface/core";
 import type IConstraint  from "./interfaces/constraint.js";
 import type INode        from "./interfaces/node.js";
 import type ITransformer from "./interfaces/transformer.js";
@@ -141,7 +140,7 @@ export default class Route
                 {
                     let fallback: string | undefined;
 
-                    const value = parameters[node.left] = params[node.left] || (fallback = node.right);
+                    const value = parameters[node.left] = params[node.left] ?? (fallback = node.right);
 
                     if (value != fallback)
                     {

@@ -1,5 +1,4 @@
-import type { Delegate, IDisposable, Indexer, Subscription }                   from "@surface/core";
-import { getPropertyDescriptor, getValue, hasValue, isReadonly, privatesFrom } from "@surface/core";
+import { type Delegate, type IDisposable, type Indexer, type Subscription, getPropertyDescriptor, getValue, hasValue, isReadonly, privatesFrom } from "@surface/core";
 import Metadata                                                                from "./metadata.js";
 
 const ARRAY_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"] as const;

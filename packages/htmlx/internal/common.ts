@@ -1,5 +1,4 @@
-import type { Delegate, IDisposable, KeysOfType, Subscription }                            from "@surface/core";
-import { getPropertyDescriptor, getValue, isReadonly, resolveError, setValue } from "@surface/core";
+import { type Delegate, type IDisposable, type KeysOfType, type Subscription, getPropertyDescriptor, getValue, isReadonly, resolveError, setValue } from "@surface/core";
 import type { ObservablePath, StackTrace }                                     from "@surface/htmlx-parser";
 import TemplateEvaluationError                                                 from "./errors/template-evaluation-error.js";
 import TemplateObservationError                                                from "./errors/template-observation-error.js";

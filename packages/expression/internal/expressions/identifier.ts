@@ -1,5 +1,4 @@
-import type { Indexer } from "@surface/core";
-import { format }       from "@surface/core";
+import { type Indexer, format } from "@surface/core";
 import type IExpression from "../interfaces/expression.js";
 import type IPattern    from "../interfaces/pattern.js";
 import Messages         from "../messages.js";

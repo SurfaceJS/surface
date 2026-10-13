@@ -1,5 +1,4 @@
-import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                  from "@surface/test-suite";
+import { assert, shouldPass, suite, test } from "@surface/test-suite";
 import FieldInfo                   from "../internal/field-info.js";
 import Type                        from "../internal/type.js";
 import Mock                        from "./fixtures/mock.js";

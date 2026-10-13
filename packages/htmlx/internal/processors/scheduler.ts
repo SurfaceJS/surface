@@ -1,5 +1,4 @@
-import type { CancellationToken, Delegate } from "@surface/core";
-import { resolveError, runAsync }           from "@surface/core";
+import { type CancellationToken, type Delegate, resolveError, runAsync } from "@surface/core";
 
 type Node<T> = { value: T, next?: Node<T> };
 
@@ -165,12 +164,13 @@ export default class Scheduler
 
         switch (priority)
         {
-            case "high":
-                return new Promise((resolve, reject) => this.highPriorityQueue.enqueue([task, resolve, reject, cancellationToken]));
-            case "low":
-                return new Promise((resolve, reject) => this.lowPriorityQueue.enqueue([task, resolve, reject, cancellationToken]));
-            default:
-                return new Promise((resolve, reject) => this.normalPriorityQueue.enqueue([task, resolve, reject, cancellationToken]));
+        case "high":
+            return new Promise((resolve, reject) => this.highPriorityQueue.enqueue([task, resolve, reject, cancellationToken]));
+        case "low":
+            return new Promise((resolve, reject) => this.lowPriorityQueue.enqueue([task, resolve, reject, cancellationToken]));
+        case "normal":
+        default:
+            return new Promise((resolve, reject) => this.normalPriorityQueue.enqueue([task, resolve, reject, cancellationToken]));
         }
     }
 

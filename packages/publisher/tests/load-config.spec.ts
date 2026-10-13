@@ -1,13 +1,27 @@
-import { readFile }                                            from "fs/promises";
 import { join }                                                from "path";
 import Mock, { It }                                            from "@surface/mock";
-import { isFile }                                              from "@surface/rwx";
-import { assert, afterEach, batchTest, beforeEach, shouldPass, suite } from "@surface/test-suite";
+import { afterEach, assert, batchTest, beforeEach, shouldPass, suite } from "@surface/test-suite";
 import loadConfig                                              from "../internal/load-config.js";
 import { type Scenario, scenarios }                            from "./load-config.scn.js";
 
-const isFileMock   = Mock.of(isFile);
-const readFileMock = Mock.of(readFile);
+const isFileMock   = Mock.callable<(path: string) => Promise<boolean>>();
+const readFileMock = Mock.callable<(path: string) => Promise<Buffer>>();
+
+Mock.module("node:fs/promises",
+    {
+        namedExports:
+    {
+        readFile: readFileMock.proxy,
+    },
+    });
+
+Mock.module("@surface/rwx",
+    {
+        namedExports:
+    {
+        isFile: isFileMock.proxy,
+    },
+    });
 
 @suite
 export default class LoadConfigSpec

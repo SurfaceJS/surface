@@ -1,8 +1,7 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "@surface/dom-shim";
 
-import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                  from "@surface/test-suite";
+import { assert, shouldPass, suite, test } from "@surface/test-suite";
 import createDirectiveFactory      from "../internal/factories/create-directive-factory.js";
 import createElementFactory        from "../internal/factories/create-element-factory.js";
 import createEventListenerFactory  from "../internal/factories/create-event-listener-factory.js";

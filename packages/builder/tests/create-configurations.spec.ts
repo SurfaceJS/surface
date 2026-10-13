@@ -1,8 +1,6 @@
-import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert }             from "@surface/test-suite";
+import { assert, shouldPass, suite, test } from "@surface/test-suite";
 import createConfigurations        from "../internal/create-configurations.js";
 import type Configuration          from "../internal/types/configuration.js";
-
 
 @suite
 export default class CreateConfigurationsSpec

@@ -2,8 +2,7 @@
 import "@surface/dom-shim";
 
 import { Parser }                                             from "@surface/expression";
-import { batchTest, suite }                                   from "@surface/test-suite";
-import { assert }                                             from "@surface/test-suite";
+import { assert, batchTest, suite }                                   from "@surface/test-suite";
 import ObserverVisitor                                        from "../internal/observer-visitor.js";
 import { type Scenarios, scenarios, unobservableExpressions } from "./observer-visitor.scn.js";
 

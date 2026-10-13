@@ -1,5 +1,4 @@
-import type { Indexer } from "@surface/core";
-import { proxyFrom }    from "@surface/core";
+import { type Indexer, proxyFrom } from "@surface/core";
 import type IExpression from "../interfaces/expression.js";
 import type IPattern    from "../interfaces/pattern.js";
 import NodeType         from "../node-type.js";

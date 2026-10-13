@@ -1,9 +1,9 @@
+/* eslint-disable no-duplicate-imports */
 import type { Constructor }  from "@surface/core";
 import type HTMLXElement     from "@surface/htmlx-element";
 import { attribute, styles } from "@surface/htmlx-element";
 import style                 from "./index.scss";
 
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 const disableable = <T extends Constructor<HTMLXElement>>(superClass: T): Constructor<IDisableable> & T =>
 {
     @styles(style)

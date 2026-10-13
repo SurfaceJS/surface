@@ -1,4 +1,4 @@
-/* eslint-disable no-template-curly-in-string */
+
 import AssignmentProperty       from "../internal/elements/assignment-property.js";
 import Property                 from "../internal/elements/property.js";
 import SpreadElement            from "../internal/elements/spread-element.js";

@@ -752,7 +752,7 @@ abstract class OrderedEnumerable<TKey, TSource> extends Enumerable<TSource>
 {
     private _parent: OrderedEnumerable<TKey, TSource> | null = null;
 
-    private enumerableSorter: EnumerableSorter<TKey, TSource>;
+    private readonly enumerableSorter: EnumerableSorter<TKey, TSource>;
 
     public get parent(): OrderedEnumerable<TKey, TSource> | null
     {

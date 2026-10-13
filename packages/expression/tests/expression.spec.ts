@@ -1,5 +1,4 @@
-import { batchTest, shouldFail, shouldPass, suite, test }          from "@surface/test-suite";
-import { assert }                                                  from "@surface/test-suite";
+import { assert, batchTest, shouldFail, shouldPass, suite, test }          from "@surface/test-suite";
 import ArrowFunctionExpression                                     from "../internal/expressions/arrow-function-expression.js";
 import Identifier                                                  from "../internal/expressions/identifier.js";
 import Literal                                                     from "../internal/expressions/literal.js";
@@ -8,9 +7,8 @@ import NodeType                                                    from "../inte
 import Parser                                                      from "../internal/parser.js";
 import ArrayPattern                                                from "../internal/patterns/array-pattern.js";
 import AssignmentPattern                                           from "../internal/patterns/assignment-pattern.js";
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
-import type { EvaluationErrorExpected, ExpressionFactoryExpected } from "./expression-expectations.js";
-import { evaluationsExpected, expressionFactoriesExpected }        from "./expression-expectations.js";
+
+import { type EvaluationErrorExpected, type ExpressionFactoryExpected, evaluationsExpected, expressionFactoriesExpected } from "./expression-expectations.js";
 
 @suite
 export default class ExpressionSpec

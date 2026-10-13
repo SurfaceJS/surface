@@ -1,8 +1,7 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "@surface/dom-shim";
 
-import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                  from "@surface/test-suite";
+import { assert, shouldPass, suite, test } from "@surface/test-suite";
 import { styles }                  from "../../index.js";
 import element                     from "../../internal/decorators/element.js";
 import HTMLXElement                from "../../internal/htmlx-element.js";

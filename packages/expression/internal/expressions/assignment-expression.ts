@@ -25,7 +25,7 @@ const assignmentOperations: Record<AssignmentOperator, AssignmentOperation> =
     "??=":  (target, key, value) => target[key]             ??=  value,
     "^=":   (target, key, value) => (target[key] as number) ^=   value as number,
     "|=":   (target, key, value) => (target[key] as number) |=   value as number,
-    "||=":  (target, key, value) => target[key]             ||=  value,
+    "||=":  (target, key, value) => target[key]             ||=  value, // eslint-disable-line @typescript-eslint/prefer-nullish-coalescing
 };
 
 export default class AssignmentExpression implements IExpression

@@ -32,15 +32,15 @@ export default class SrcSetParser
                         // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
                         switch (postfix)
                         {
-                            case "w":
-                                result.width = value;
-                                break;
-                            case "h":
-                                result.height = value;
-                                break;
-                            case "x":
-                                result.density = value;
-                                break;
+                        case "w":
+                            result.width = value;
+                            break;
+                        case "h":
+                            result.height = value;
+                            break;
+                        case "x":
+                            result.density = value;
+                            break;
 
                             // No default
                         }
@@ -73,15 +73,15 @@ export default class SrcSetParser
 
                     switch (descriptorKey)
                     {
-                        case "width":
-                            postfix = "w";
-                            break;
-                        case "height":
-                            postfix = "h";
-                            break;
-                        case "density":
-                            postfix = "x";
-                            break;
+                    case "width":
+                        postfix = "w";
+                        break;
+                    case "height":
+                        postfix = "h";
+                        break;
+                    case "density":
+                        postfix = "x";
+                        break;
 
                         // No default
                     }

@@ -1,4 +1,4 @@
-/* eslint-disable sort-keys */
+
 import Block             from "../directives/block.js";
 import ChoiceDirective   from "../directives/choice-directive.js";
 import type Activator    from "../types/activator.js";

@@ -1,24 +1,24 @@
-/* eslint-disable max-statements */
+
 /* eslint-disable max-lines-per-function */
-import { URL }                                        from "url";
-import { DeepMergeFlags, deepMerge }                  from "@surface/core";
+/* eslint-disable complexity */
+import { URL } from "url";
+import { DeepMergeFlags, deepMerge } from "@surface/core";
 // eslint-disable-next-line import/default
-import CopyPlugin                                     from "copy-webpack-plugin";
-import EslintWebpackPlugin                            from "eslint-webpack-plugin";
-import type { Options as EslintWebpackPluginOptions } from "eslint-webpack-plugin";
-import ForkTsCheckerWebpackPlugin                     from "fork-ts-checker-webpack-plugin";
-import type { ForkTsCheckerWebpackPluginOptions }     from "fork-ts-checker-webpack-plugin/lib/plugin-options.js";
-import HtmlWebpackPlugin                              from "html-webpack-plugin";
-import TerserWebpackPlugin                            from "terser-webpack-plugin";
-import webpack                                        from "webpack";
-import webpackBundleAnalyzer                          from "webpack-bundle-analyzer";
-import WorkboxPlugin                                  from "workbox-webpack-plugin";
-import loaders                                        from "./loaders.js";
-import OverrideResolvePlugin                          from "./plugins/override-resolver-plugin.js";
-import PreferTsResolverPlugin                         from "./plugins/prefer-ts-resolver-plugin.js";
-import WebManifestPlugin                              from "./plugins/web-manifest-plugin.js";
-import type Configuration                             from "./types/configuration.js";
-import type Project                                   from "./types/project.js";
+import CopyPlugin from "copy-webpack-plugin";
+import EslintWebpackPlugin, { type Options as EslintWebpackPluginOptions } from "eslint-webpack-plugin";
+import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
+import type { ForkTsCheckerWebpackPluginOptions } from "fork-ts-checker-webpack-plugin/lib/plugin-options.js";
+import HtmlWebpackPlugin from "html-webpack-plugin";
+import TerserWebpackPlugin from "terser-webpack-plugin";
+import webpack from "webpack";
+import webpackBundleAnalyzer from "webpack-bundle-analyzer";
+import WorkboxPlugin from "workbox-webpack-plugin";
+import loaders from "./loaders.js";
+import OverrideResolvePlugin from "./plugins/override-resolver-plugin.js";
+import PreferTsResolverPlugin from "./plugins/prefer-ts-resolver-plugin.js";
+import WebManifestPlugin from "./plugins/web-manifest-plugin.js";
+import type Configuration from "./types/configuration.js";
+import type Project from "./types/project.js";
 
 const PROJECT_DEFAULTS: Project =
 {
@@ -194,24 +194,25 @@ export default async function createConfigurations(type: "analyze" | "build" | "
 
         switch (type)
         {
-            case "analyze":
-                plugins.push(new webpackBundleAnalyzer.BundleAnalyzerPlugin({ reportFilename: `${name}.html`, ...project.analyzer }));
-                break;
-            case "serve":
-                if (name == main && isTargetingBrowser)
-                {
-                    const { host = "http://localhost", port = 8080 } = configuration.devServer ?? { };
+        case "analyze":
+            plugins.push(new webpackBundleAnalyzer.BundleAnalyzerPlugin({ reportFilename: `${name}.html`, ...project.analyzer }));
+            break;
+        case "serve":
+            if (name == main && isTargetingBrowser)
+            {
+                const { host = "http://localhost", port = 8080 } = configuration.devServer ?? { };
 
-                    const url = new URL(host);
+                const url = new URL(host);
 
-                    url.port     = port.toString();
-                    url.pathname = project.publicPath!;
+                url.port     = port.toString();
+                url.pathname = project.publicPath!;
 
-                    project.entry = configureDevServerEntry(project.entry, url);
-                }
-                break;
-            default:
-                break;
+                project.entry = configureDevServerEntry(project.entry, url);
+            }
+            break;
+        case "build":
+        default:
+            break;
         }
 
         const isProduction = project.mode == "production";

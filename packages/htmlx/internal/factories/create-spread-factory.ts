@@ -1,6 +1,5 @@
 import type { ObservablePath, StackTrace } from "@surface/htmlx-parser";
-import type { Context }                    from "../directives/spread-directive.js";
-import SpreadDirective                     from "../directives/spread-directive.js";
+import SpreadDirective, { type Context } from "../directives/spread-directive.js";
 import type AttributeFactory               from "../types/attribute-factory.js";
 import type Evaluator                      from "../types/evaluator.js";
 import type SpreadFactory                  from "../types/spread-factory.js";

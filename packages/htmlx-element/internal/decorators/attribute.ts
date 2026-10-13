@@ -1,5 +1,4 @@
-import type { Constructor, Indexer }                           from "@surface/core";
-import { DisposableMetadata, HookableMetadata, camelToDashed } from "@surface/core";
+import { type Constructor, DisposableMetadata, HookableMetadata, type Indexer, camelToDashed } from "@surface/core";
 import { AsyncObserver, scheduler }                            from "@surface/htmlx";
 import type IHTMLXElement                                     from "../interfaces/htmlx-element.js";
 import Metadata                                                from "../metadata/metadata.js";
@@ -32,13 +31,13 @@ function getTypeSerializer(type: AttributeOptions["type"]): Serializer
     {
         switch (type)
         {
-            case Boolean:
-                return { parse: x => x === "" || x == "true" };
-            case Number:
-                return { parse: x => Number(x) || 0 };
-            case String:
-            default:
-                return { parse: x => x };
+        case Boolean:
+            return { parse: x => x === "" || x == "true" };
+        case Number:
+            return { parse: x => Number(x) || 0 };
+        case String:
+        default:
+            return { parse: x => x };
         }
     }
 

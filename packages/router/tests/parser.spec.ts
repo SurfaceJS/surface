@@ -1,9 +1,7 @@
-import { batchTest, shouldFail, shouldPass, suite }              from "@surface/test-suite";
-import { assert }                                                from "@surface/test-suite";
+import { assert, batchTest, shouldFail, shouldPass, suite }              from "@surface/test-suite";
 import Parser                                                    from "../internal/parser.js";
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
-import type { ParserInvalidExpectation, ParserValidExpectation } from "./parser-expectations.js";
-import { invalidExpectations, validExpectations }                from "./parser-expectations.js";
+
+import { type ParserInvalidExpectation, type ParserValidExpectation, invalidExpectations, validExpectations } from "./parser-expectations.js";
 
 @suite
 export default class ParserSpec

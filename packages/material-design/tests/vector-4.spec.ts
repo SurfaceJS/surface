@@ -1,5 +1,4 @@
-import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                  from "@surface/test-suite";
+import { assert, shouldPass, suite, test } from "@surface/test-suite";
 import Vector4                     from "../internal/colors/vector-4.js";
 
 @suite

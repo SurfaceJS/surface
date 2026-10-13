@@ -18,7 +18,7 @@ function errorHandler(error: ErrorCode): null
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-function handler<T extends Callable>(action: Callable): any
+function handler(action: Callable): any
 {
     try
     {
@@ -219,7 +219,7 @@ export async function isFile(path: string): Promise<boolean>
 {
     const stats = await handler(async () => stat(path));
 
-    return !!stats && (stats.isFile() || stats.isFIFO());
+    return !!stats && (stats.isFile() || stats.isFIFO()); // eslint-disable-line @typescript-eslint/prefer-nullish-coalescing
 }
 
 /**
@@ -230,7 +230,7 @@ export function isFileSync(path: string): boolean
 {
     const stats = handler(() => statSync(path));
 
-    return !!stats && (stats.isFile() || stats.isFIFO());
+    return !!stats && (stats.isFile() || stats.isFIFO()); // eslint-disable-line @typescript-eslint/prefer-nullish-coalescing
 }
 
 /**

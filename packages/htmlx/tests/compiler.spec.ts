@@ -2,10 +2,8 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "@surface/dom-shim";
 
-import type { Constructor, Delegate, IDisposable } from "@surface/core";
-import { resolveError }                            from "@surface/core";
-import { shouldFail, shouldPass, suite, test }     from "@surface/test-suite";
-import { assert }                                  from "@surface/test-suite";
+import { type Constructor, type Delegate, type IDisposable, resolveError } from "@surface/core";
+import { assert, shouldFail, shouldPass, suite, test }     from "@surface/test-suite";
 import semver                                      from "semver";
 import Compiler                                    from "../internal/compiler.js";
 import LoopDirective                               from "../internal/directives/loop-directive.js";

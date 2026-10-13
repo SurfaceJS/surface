@@ -1,5 +1,4 @@
-import type { IDisposable }   from "@surface/core";
-import { DisposableMetadata } from "@surface/core";
+import { DisposableMetadata, type IDisposable } from "@surface/core";
 import type Observer          from "./observer.js";
 
 const METADATA = Symbol("observer:metadata");

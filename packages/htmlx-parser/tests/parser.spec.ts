@@ -3,10 +3,8 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "@surface/dom-shim";
 
-import type { Delegate, Indexer }                    from "@surface/core";
-import { isIterable, resolveError }                  from "@surface/core";
-import { shouldFail, shouldPass, suite, test }       from "@surface/test-suite";
-import { assert }                                    from "@surface/test-suite";
+import { type Delegate, type Indexer, isIterable, resolveError } from "@surface/core";
+import { assert, shouldFail, shouldPass, suite, test }       from "@surface/test-suite";
 import DescriptorType                                from "../internal/descriptor-type.js";
 import TemplateParseError                            from "../internal/errors/template-parse-error.js";
 import { parseDestructuredPattern, parseExpression } from "../internal/expression-parsers.js";

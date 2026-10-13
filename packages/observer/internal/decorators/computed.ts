@@ -1,5 +1,4 @@
-import type { Constructor } from "@surface/core";
-import { HookableMetadata } from "@surface/core";
+import { type Constructor, HookableMetadata } from "@surface/core";
 import Metadata             from "../metadata.js";
 
 /**

@@ -1,5 +1,4 @@
-/* eslint-disable capitalized-comments */
-/* eslint-disable line-comment-position */
+
 /* eslint-disable max-len */
 export default class Character
 {

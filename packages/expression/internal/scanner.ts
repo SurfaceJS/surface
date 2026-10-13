@@ -63,30 +63,29 @@ export default class Scanner
         return this.index == this.length;
     }
 
-    // eslint-disable-next-line complexity
     private isKeyword(id: string): boolean
     {
         switch (id.length)
         {
-            case 2:
-                return id == "if"
+        case 2:
+            return id == "if"
                     || id == "in"
                     || id == "do";
-            case 3:
-                return id == "var"
+        case 3:
+            return id == "var"
                     || id == "for"
                     || id == "new"
                     || id == "try"
                     || id == "let";
-            case 4:
-                return id == "this"
+        case 4:
+            return id == "this"
                     || id == "else"
                     || id == "case"
                     || id == "void"
                     || id == "with"
                     || id == "enum";
-            case 5:
-                return id == "while"
+        case 5:
+            return id == "while"
                     || id == "break"
                     || id == "catch"
                     || id == "throw"
@@ -94,25 +93,25 @@ export default class Scanner
                     || id == "yield"
                     || id == "class"
                     || id == "super";
-            case 6:
-                return id == "return"
+        case 6:
+            return id == "return"
                     || id == "typeof"
                     || id == "delete"
                     || id == "switch"
                     || id == "export"
                     || id == "import";
-            case 7:
-                return id == "default"
+        case 7:
+            return id == "default"
                     || id == "finally"
                     || id == "extends";
-            case 8:
-                return id == "function"
+        case 8:
+            return id == "function"
                     || id == "continue"
                     || id == "debugger";
-            case 10:
-                return id == "instanceof";
-            default:
-                return false;
+        case 10:
+            return id == "instanceof";
+        default:
+            return false;
         }
     }
 
@@ -791,82 +790,82 @@ export default class Scanner
                 {
                     switch (char)
                     {
-                        case "u":
-                            if (this.source[this.index] == "{")
-                            {
-                                this.advance();
-
-                                value += this.scanUnicodeCodePointEscape();
-                            }
-                            else
-                            {
-                                const unescapedChar = this.scanHexEscape(char);
-
-                                if (Object.is(unescapedChar, null))
-                                {
-                                    this.throwUnexpectedToken(Messages.invalidUnicodeEscapeSequence);
-                                }
-
-                                value += unescapedChar;
-                            }
-                            break;
-                        case "x":
+                    case "u":
+                        if (this.source[this.index] == "{")
                         {
-                            const unescaped = this.scanHexEscape(char);
+                            this.advance();
 
-                            if (Object.is(unescaped, null))
-                            {
-                                this.throwUnexpectedToken(Messages.invalidHexadecimalEscapeSequence);
-                            }
-
-                            value += unescaped;
-
-                            break;
+                            value += this.scanUnicodeCodePointEscape();
                         }
-                        case "n":
-                            value += "\n";
+                        else
+                        {
+                            const unescapedChar = this.scanHexEscape(char);
 
-                            break;
-
-                        case "r":
-                            value += "\r";
-
-                            break;
-
-                        case "t":
-                            value += "\t";
-
-                            break;
-
-                        case "b":
-                            value += "\b";
-
-                            break;
-
-                        case "f":
-                            value += "\f";
-
-                            break;
-
-                        case "v":
-                            value += "\x0B";
-
-                            break;
-
-                        default:
-                            if (char && Character.isOctalDigit(char.charCodeAt(0)))
+                            if (Object.is(unescapedChar, null))
                             {
-                                const octalToDecimal = this.octalToDecimal(char);
-
-                                isOctal = octalToDecimal.isOctal;
-
-                                value += String.fromCharCode(octalToDecimal.code);
+                                this.throwUnexpectedToken(Messages.invalidUnicodeEscapeSequence);
                             }
-                            else
-                            {
-                                value += char;
-                            }
-                            break;
+
+                            value += unescapedChar;
+                        }
+                        break;
+                    case "x":
+                    {
+                        const unescaped = this.scanHexEscape(char);
+
+                        if (Object.is(unescaped, null))
+                        {
+                            this.throwUnexpectedToken(Messages.invalidHexadecimalEscapeSequence);
+                        }
+
+                        value += unescaped;
+
+                        break;
+                    }
+                    case "n":
+                        value += "\n";
+
+                        break;
+
+                    case "r":
+                        value += "\r";
+
+                        break;
+
+                    case "t":
+                        value += "\t";
+
+                        break;
+
+                    case "b":
+                        value += "\b";
+
+                        break;
+
+                    case "f":
+                        value += "\f";
+
+                        break;
+
+                    case "v":
+                        value += "\x0B";
+
+                        break;
+
+                    default:
+                        if (char && Character.isOctalDigit(char.charCodeAt(0)))
+                        {
+                            const octalToDecimal = this.octalToDecimal(char);
+
+                            isOctal = octalToDecimal.isOctal;
+
+                            value += String.fromCharCode(octalToDecimal.code);
+                        }
+                        else
+                        {
+                            value += char;
+                        }
+                        break;
                     }
                 }
                 else
@@ -904,7 +903,6 @@ export default class Scanner
         return token;
     }
 
-    // eslint-disable-next-line complexity
     private scanPunctuator(): Token
     {
         const start = this.index;
@@ -913,146 +911,150 @@ export default class Scanner
 
         switch (punctuator)
         {
-            case "(":
-            case "{":
-                if (punctuator == "{")
+        case undefined:
+            this.throwUnexpectedToken();
+            break;
+
+        case "(":
+        case "{":
+            if (punctuator == "{")
+            {
+                this.curlyStack.push("{");
+            }
+
+            this.advance();
+
+            break;
+
+        case ".":
+            this.advance();
+
+            if (this.source[this.index] == "." && this.source[this.index + 1] == ".")
+            {
+                this.setCursorAt(this.index + 2);
+
+                punctuator = "...";
+            }
+
+            break;
+
+        case "}":
+            this.advance();
+
+            this.curlyStack.pop();
+
+            break;
+
+        case ")":
+        case ";":
+        case ",":
+        case "[":
+        case "]":
+        case ":":
+        case "~":
+            this.advance();
+
+            break;
+
+        case "?":
+            {
+                punctuator = "?";
+
+                const lookahead = this.source[this.index + 1];
+
+                if (lookahead == ".")
                 {
-                    this.curlyStack.push("{");
-                }
-
-                this.advance();
-
-                break;
-
-            case ".":
-                this.advance();
-
-                if (this.source[this.index] == "." && this.source[this.index + 1] == ".")
-                {
-                    this.setCursorAt(this.index + 2);
-
-                    punctuator = "...";
-                }
-
-                break;
-
-            case "}":
-                this.advance();
-
-                this.curlyStack.pop();
-
-                break;
-
-            case ")":
-            case ";":
-            case ",":
-            case "[":
-            case "]":
-            case ":":
-            case "~":
-                this.advance();
-
-                break;
-
-            case "?":
-                {
-                    punctuator = "?";
-
-                    const lookahead = this.source[this.index + 1];
-
-                    if (lookahead == ".")
+                    if (!Character.isDecimalDigit(this.source.codePointAt(this.index + 2)!))
                     {
-                        if (!Character.isDecimalDigit(this.source.codePointAt(this.index + 2)!))
-                        {
-                            punctuator = "?.";
-
-                            this.advance();
-                        }
-                    }
-                    else if (lookahead == "?")
-                    {
-                        punctuator = "??";
+                        punctuator = "?.";
 
                         this.advance();
-
-                        if (this.source[this.index + 1] == "=")
-                        {
-                            punctuator = "??=";
-
-                            this.advance();
-                        }
                     }
+                }
+                else if (lookahead == "?")
+                {
+                    punctuator = "??";
 
                     this.advance();
+
+                    if (this.source[this.index + 1] == "=")
+                    {
+                        punctuator = "??=";
+
+                        this.advance();
+                    }
                 }
 
-                break;
+                this.advance();
+            }
 
-            default:
-                punctuator = this.source.substr(this.index, 4);
+            break;
 
-                if (punctuator == ">>>=")
+        default:
+            punctuator = this.source.substr(this.index, 4);
+
+            if (punctuator == ">>>=")
+            {
+                this.setCursorAt(this.index + 4);
+            }
+            else
+            {
+                punctuator = punctuator.substr(0, 3);
+
+                switch (punctuator)
                 {
-                    this.setCursorAt(this.index + 4);
-                }
-                else
-                {
-                    punctuator = punctuator.substr(0, 3);
+                case "===":
+                case "!==":
+                case ">>>":
+                case "<<=":
+                case ">>=":
+                case "**=":
+                case "&&=":
+                case "||=":
+                    this.setCursorAt(this.index + 3);
+
+                    break;
+                default:
+                    punctuator = punctuator.substr(0, 2);
 
                     switch (punctuator)
                     {
-                        case "===":
-                        case "!==":
-                        case ">>>":
-                        case "<<=":
-                        case ">>=":
-                        case "**=":
-                        case "&&=":
-                        case "||=":
-                            this.setCursorAt(this.index + 3);
+                    case "!=":
+                    case "%=":
+                    case "&&":
+                    case "&=":
+                    case "**":
+                    case "*=":
+                    case "++":
+                    case "+=":
+                    case "--":
+                    case "-=":
+                    case "/=":
+                    case "<<":
+                    case "<=":
+                    case "==":
+                    case "=>":
+                    case ">=":
+                    case ">>":
+                    case "^=":
+                    case "|=":
+                    case "||":
+                        this.setCursorAt(this.index + 2);
 
-                            break;
-                        default:
-                            punctuator = punctuator.substr(0, 2);
+                        break;
 
-                            switch (punctuator)
-                            {
-                                case "!=":
-                                case "%=":
-                                case "&&":
-                                case "&=":
-                                case "**":
-                                case "*=":
-                                case "++":
-                                case "+=":
-                                case "--":
-                                case "-=":
-                                case "/=":
-                                case "<<":
-                                case "<=":
-                                case "==":
-                                case "=>":
-                                case ">=":
-                                case ">>":
-                                case "^=":
-                                case "|=":
-                                case "||":
-                                    this.setCursorAt(this.index + 2);
+                    default:
+                        punctuator = this.source[this.index]!;
 
-                                    break;
+                        if ("<>=!+-*%&|^/".includes(punctuator))
+                        {
+                            this.advance();
+                        }
 
-                                default:
-                                    punctuator = this.source[this.index]!;
-
-                                    if ("<>=!+-*%&|^/".includes(punctuator))
-                                    {
-                                        this.advance();
-                                    }
-
-                                    break;
-                            }
+                        break;
                     }
                 }
+            }
         }
 
         if (this.index == start)
@@ -1074,7 +1076,6 @@ export default class Scanner
         return token;
     }
 
-    // eslint-disable-next-line max-lines-per-function, max-statements
     private scanTemplate(): Token
     {
         const start  = this.index;
@@ -1126,96 +1127,96 @@ export default class Scanner
                 {
                     switch (char)
                     {
-                        case "n":
-                            cooked += "\n";
+                    case "n":
+                        cooked += "\n";
 
-                            break;
+                        break;
 
-                        case "r":
-                            cooked += "\r";
+                    case "r":
+                        cooked += "\r";
 
-                            break;
+                        break;
 
-                        case "t":
-                            cooked += "\t";
+                    case "t":
+                        cooked += "\t";
 
-                            break;
+                        break;
 
-                        case "u":
-                            if (this.source[this.index] == "{")
+                    case "u":
+                        if (this.source[this.index] == "{")
+                        {
+                            this.advance();
+
+                            cooked += this.scanUnicodeCodePointEscape();
+                        }
+                        else
+                        {
+                            const restore       = this.index;
+                            const unescapedChar = this.scanHexEscape(char);
+
+                            if (unescapedChar !== null)
                             {
-                                this.advance();
-
-                                cooked += this.scanUnicodeCodePointEscape();
+                                cooked += unescapedChar;
                             }
                             else
                             {
-                                const restore       = this.index;
-                                const unescapedChar = this.scanHexEscape(char);
+                                this.setCursorAt(restore);
 
-                                if (unescapedChar !== null)
-                                {
-                                    cooked += unescapedChar;
-                                }
-                                else
-                                {
-                                    this.setCursorAt(restore);
-
-                                    cooked += "\\u";
-                                }
+                                cooked += "\\u";
                             }
+                        }
 
-                            break;
+                        break;
 
-                        case "x":
+                    case "x":
+                        {
+                            const unescaped = this.scanHexEscape(char);
+
+                            if (Object.is(unescaped, null))
                             {
-                                const unescaped = this.scanHexEscape(char);
-
-                                if (Object.is(unescaped, null))
-                                {
-                                    this.throwUnexpectedToken(Messages.invalidHexadecimalEscapeSequence);
-                                }
-
-                                cooked += unescaped;
+                                this.throwUnexpectedToken(Messages.invalidHexadecimalEscapeSequence);
                             }
 
-                            break;
+                            cooked += unescaped;
+                        }
 
-                        case "b":
-                            cooked += "\b";
+                        break;
 
-                            break;
+                    case "b":
+                        cooked += "\b";
 
-                        case "f":
-                            cooked += "\f";
+                        break;
 
-                            break;
+                    case "f":
+                        cooked += "\f";
 
-                        case "v":
-                            cooked += "\v";
+                        break;
 
-                            break;
+                    case "v":
+                        cooked += "\v";
 
-                        default:
-                            if (char == "0")
-                            {
-                                if (Character.isDecimalDigit(this.source.charCodeAt(this.index)))
-                                {
-                                    this.throwUnexpectedToken(Messages.octalLiteralsAreNotAllowedInTemplateStrings);
-                                }
+                        break;
 
-                                cooked += "\0";
-                            }
-                            else if (Character.isOctalDigit(char.charCodeAt(0)))
+                    default:
+                        if (char == "0")
+                        {
+                            if (Character.isDecimalDigit(this.source.charCodeAt(this.index)))
                             {
                                 this.throwUnexpectedToken(Messages.octalLiteralsAreNotAllowedInTemplateStrings);
                             }
-                            else
-                            {
-                                cooked += char;
-                            }
 
-                            break;
+                            cooked += "\0";
+                        }
+                        else if (Character.isOctalDigit(char.charCodeAt(0)))
+                        {
+                            this.throwUnexpectedToken(Messages.octalLiteralsAreNotAllowedInTemplateStrings);
+                        }
+                        else
+                        {
+                            cooked += char;
+                        }
+
+                        break;
                     }
                 }
                 else

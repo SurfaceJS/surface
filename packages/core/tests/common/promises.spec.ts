@@ -1,8 +1,6 @@
-import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                         from "@surface/test-suite";
+import { assert, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import CancellationTokenSource                 from "../../internal/cancellation-token-source.js";
 import { runAsync }                            from "../../internal/common/promises.js";
-
 
 @suite
 export default class PromisesSpec
