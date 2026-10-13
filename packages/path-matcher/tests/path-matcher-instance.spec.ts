@@ -33,6 +33,11 @@ const matcherScenarios: MatcherScenario[] =
         matches:    ["/foo/file.ts"],
         mismatches: ["/foo/file2.ts", "/other/file.ts"],
     },
+    {
+        patterns:   "**x",
+        matches:    ["/ax"],
+        mismatches: ["a".repeat(120)],
+    },
 ];
 
 @suite
