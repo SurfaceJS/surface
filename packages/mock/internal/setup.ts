@@ -43,7 +43,7 @@ export default class Setup<TResult>
 
         if (error)
         {
-            // eslint-disable-next-line no-throw-literal
+
             throw error;
         }
 

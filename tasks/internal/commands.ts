@@ -54,9 +54,8 @@ export default class Commands
 
     public static async cover(filepath: string): Promise<void>
     {
-        const bin     = path.resolve(DIRNAME, "../../node_modules/.bin");
-        const c8      = path.join(bin, "c8");
-        const loader  = path.join(process.cwd(), "tasks/loader-register.mjs");
+        const bin      = path.resolve(DIRNAME, "../../node_modules/.bin");
+        const c8       = path.join(bin, "c8");
         const polyfill = path.join(process.cwd(), "tasks/polyfill.js");
 
         const file    = path.parse(filepath);
@@ -65,7 +64,7 @@ export default class Commands
         const target  = file.name.replace(/((?:\.[-a-zA-Z0-9]+)*\.(?:scn|spec))/, "");
         const include = `**/packages/**/${target}`;
 
-        const command = `${c8} --text-exclude --include=${include}.js --include=${include}.ts --exclude=**/tests --exclude=**/node_modules --extension=.js --extension=.ts --reporter=text node --test --import=${loader} --require=${polyfill} ${spec}`;
+        const command = `${c8} --text-exclude --include=${include}.js --include=${include}.ts --exclude=**/tests --exclude=**/node_modules --extension=.js --extension=.ts --reporter=text node --experimental-test-module-mocks --test --require=${polyfill} ${spec}`;
 
         logger.info(`cover ${chalk.bold.blue(target)} tests`);
 
@@ -74,12 +73,11 @@ export default class Commands
 
     public static async test(filepath: string): Promise<void>
     {
-        const loader   = path.join(process.cwd(), "tasks/loader-register.mjs");
         const polyfill = path.join(process.cwd(), "tasks/polyfill.js");
         const file     = path.parse(filepath);
         const spec     = `${path.relative(process.cwd(), path.join(file.dir, file.name.replace(/((?:\.[-a-zA-Z0-9]+)*\.(?:scn))/, ".spec")))}.js`;
 
-        const command = `node --test --import=${loader} --require=${polyfill} ${spec}`;
+        const command = `node --experimental-test-module-mocks --test --require=${polyfill} ${spec}`;
 
         logger.info(`test ${chalk.bold.blue(filepath)}`);
 

@@ -45,7 +45,7 @@
         "publisher:changed": "publisher changed --log-level=trace --tag=next --ignore-changes=*.md",
         "publisher:changelog": "publisher bump recommended --changelog",
         "publisher:publish-canary": "publisher publish --canary --ignore-changes=*.md",
-        "test": "node --test --import=./tasks/loader-register.mjs --require=./tasks/polyfill.js **/packages/*/tests/**/*.spec.js",
+        "test": "bash -c 'shopt -s globstar; node --experimental-test-module-mocks --test --require=./tasks/polyfill.js **/packages/*/tests/**/*.spec.js'",
         "test-summary": "npm test -- --reporter=progress",
         "ts:build": "tsc --build",
         "ts:clean": "tsc --build --clean",

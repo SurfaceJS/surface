@@ -1,22 +1,44 @@
 import Mock, { It }                                                              from "@surface/mock";
-import { afterEach, batchTest, beforeEach, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                                                           from "@surface/test-suite";
-import pack                                                                      from "libnpmpack";
-import libnpmpublish                                                             from "libnpmpublish";
-import pacote                                                                    from "pacote";
-import { untar }                                                                 from "../internal/common.js";
+import { afterEach, assert, batchTest, beforeEach, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import NpmService                                                                from "../internal/npm-service.js";
 import { type HasChangesScenario, scenarios }                                    from "./npm-service.has-changes.scn.js";
 
+const libnpmpublishMock = Mock.instance<{
+    publish:   (manifest: object, buffer: Buffer, options?: object) => Promise<void>;
+    unpublish: (spec: string, options?: object) => Promise<boolean>;
+}>();
+const pacoteMock        = Mock.instance<{
+    manifest: (spec: string, options?: object) => Promise<object | null>;
+    tarball:  (spec: string, options?: object) => Promise<Buffer>;
+}>();
+const untarMock         = Mock.callable<(buffer: Buffer) => Promise<Map<string, string>>>();
+const packMock          = Mock.callable<(path: string) => Promise<Buffer>>();
 
-const libnpmpublishMock = Mock.of(libnpmpublish);
-const pacoteMock        = Mock.of(pacote);
-const untarMock         = Mock.of(untar);
-const packMock          = Mock.of(pack);
+type Manifest        = Awaited<ReturnType<NpmService["get"]>>;
+type TarballResponse = Buffer;
 
-type Manifest        = Awaited<ReturnType<typeof pacote["manifest"]>>;
-type PublishResponse = Awaited<ReturnType<typeof libnpmpublish["publish"]>>;
-type TarballResponse = Awaited<ReturnType<typeof pacote["tarball"]>>;
+Mock.module("libnpmpack",
+    {
+        defaultExport: packMock.proxy,
+    });
+
+Mock.module("libnpmpublish",
+    {
+        defaultExport: libnpmpublishMock.proxy,
+    });
+
+Mock.module("pacote",
+    {
+        defaultExport: pacoteMock.proxy,
+    });
+
+Mock.module(import.meta.resolve("../internal/common.js"),
+    {
+        namedExports:
+    {
+        untar: untarMock.proxy,
+    },
+    });
 
 @suite
 export default class SuiteSpec
@@ -106,7 +128,7 @@ export default class SuiteSpec
     {
         libnpmpublishMock.setup("publish")
             .call(It.any(), It.any(), It.any())
-            .resolve({ ok: true } as PublishResponse);
+            .resolve({ ok: true } as unknown as void);
 
         const service = new NpmService();
 
@@ -140,7 +162,7 @@ export default class SuiteSpec
     {
         libnpmpublishMock.setup("publish")
             .call(It.any(), It.any(), It.any())
-            .resolve({ ok: false } as PublishResponse);
+            .resolve({ ok: false } as unknown as void);
 
         const service = new NpmService();
 

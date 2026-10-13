@@ -80,8 +80,8 @@
         {
             "args":
             [
+                "--experimental-test-module-mocks",
                 "--test",
-                "--import=${workspaceFolder}/tasks/loader-register.mjs",
                 "--require=${workspaceFolder}/tasks/polyfill.js",
                 "${fileDirname}/${fileBasenameNoExtension}.js"
             ],

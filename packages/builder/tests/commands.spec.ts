@@ -1,14 +1,24 @@
 /* eslint-disable max-lines-per-function */
 import path                                   from "path";
 import Mock, { It }                           from "@surface/mock";
-import { isDirectory, lookup }                from "@surface/rwx";
-import { afterEach, beforeEach, suite, test } from "@surface/test-suite";
-import { assert }                             from "@surface/test-suite";
-import Builder                                from "../internal/builder.js";
+import { afterEach, assert, beforeEach, suite, test } from "@surface/test-suite";
 import Commands                               from "../internal/commands.js";
-import { loadModule }                         from "../internal/common.js";
 import type CliOptions                        from "../internal/types/cli-options.js";
 import type Configuration                     from "../internal/types/configuration.js";
+
+const isDirectoryMock  = Mock.callable<(path: string) => Promise<boolean>>();
+const lookupMock       = Mock.callable<(paths: string[]) => Promise<string | null>>();
+const compilerCtorMock = Mock.instance<{
+    analyze: (config: Configuration) => Promise<void>;
+    run:     (config: Configuration) => Promise<void>;
+    watch:   (config: Configuration) => Promise<{ close: () => Promise<void> }>;
+    serve:   (config: Configuration) => Promise<{ close: () => Promise<void> }>;
+}>();
+const loadModuleMock   = Mock.callable<(path: string) => Promise<object>>();
+
+Mock.module("@surface/rwx", { namedExports: { isDirectory: isDirectoryMock.proxy, lookup: lookupMock.proxy } });
+Mock.module(import.meta.resolve("../internal/builder.js"), { defaultExport: compilerCtorMock.proxy });
+Mock.module(import.meta.resolve("../internal/common.js"), { namedExports: { loadModule: loadModuleMock.proxy } });
 
 const CWD                            = process.cwd();
 const DIST                           = path.join(CWD, "dist");
@@ -31,11 +41,6 @@ const PROJECT_TEMPLATE_HTML          = path.join(CWD, "project", "template.html"
 const PROJECT_TSCONFIG_BASE_JSON     = path.join(CWD, "project", "tsconfig.base.json");
 const TSCONFIG_JSON                  = path.join(CWD, "tsconfig.json");
 const WWW                            = path.join(CWD, "www");
-
-const isDirectoryMock  = Mock.of(isDirectory);
-const lookupMock       = Mock.of(lookup);
-const compilerCtorMock = Mock.of(Builder);
-const loadModuleMock   = Mock.of(loadModule);
 
 const DEFAULT_EXPECTED: Configuration =
 {

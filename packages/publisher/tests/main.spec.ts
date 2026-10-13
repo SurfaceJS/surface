@@ -3,13 +3,25 @@
 import type { DeepRequired }                                          from "@surface/core";
 import { LogLevel }                                                   from "@surface/logger";
 import Mock, { It }                                                   from "@surface/mock";
-import { afterEach, beforeEach, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                                                from "@surface/test-suite";
-import Commands                                                       from "../internal/commands.js";
+import { afterEach, assert, beforeEach, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import main                                                           from "../internal/main.js";
 
+const CommandsMock = Mock.instance<{
+    bump:      (version: string, preid?: string, build?: string, options?: object) => Promise<void>;
+    changed:   (options?: object) => Promise<void>;
+    publish:   (options?: object) => Promise<void>;
+    unpublish: (options?: object) => Promise<void>;
+}>();
 
-const CommandsMock = Mock.of(Commands);
+type BumpArgs      = [string, string?, string?, object?];
+type ChangedArgs   = [object?];
+type PublishArgs   = [object?];
+type UnpublishArgs = [object?];
+
+Mock.module(import.meta.resolve("../internal/commands.js"),
+    {
+        defaultExport: CommandsMock.proxy,
+    });
 
 @suite
 export default class MainSpec
@@ -74,8 +86,8 @@ export default class MainSpec
             "--include-private=true",
         ];
 
-        let actual: Parameters<typeof Commands["bump"]> | undefined;
-        const expected: DeepRequired<Parameters<typeof Commands["bump"]>> =
+        let actual: BumpArgs | undefined;
+        const expected: DeepRequired<BumpArgs> =
         [
             "prerelease",
             "alpha",
@@ -104,7 +116,7 @@ export default class MainSpec
 
         CommandsMock.setup("bump")
             .call(It.any(), It.any(), It.any(), It.any())
-            .callback((...args) => actual = args)
+            .callback((...args) => actual = args as BumpArgs)
             .resolve();
 
         await assert.isFulfilled(main(args));
@@ -132,8 +144,8 @@ export default class MainSpec
             "--token=123",
         ];
 
-        let actual: Parameters<typeof Commands["changed"]> | undefined;
-        const expected: DeepRequired<Parameters<typeof Commands["changed"]>> =
+        let actual: ChangedArgs | undefined;
+        const expected: DeepRequired<ChangedArgs> =
         [
             {
                 cwd:            ".",
@@ -150,7 +162,7 @@ export default class MainSpec
 
         CommandsMock.setup("changed")
             .call(It.any())
-            .callback((...args) => actual = args)
+            .callback((...args) => actual = args as ChangedArgs)
             .resolve();
 
         await assert.isFulfilled(main(args));
@@ -184,8 +196,8 @@ export default class MainSpec
             "--token=token",
         ];
 
-        let actual: Parameters<typeof Commands["publish"]> | undefined;
-        const expected: DeepRequired<Parameters<typeof Commands["publish"]>> =
+        let actual: PublishArgs | undefined;
+        const expected: DeepRequired<PublishArgs> =
         [
             {
                 build:          "2022",
@@ -208,7 +220,7 @@ export default class MainSpec
 
         CommandsMock.setup("publish")
             .call(It.any())
-            .callback((...args) => actual = args)
+            .callback((...args) => actual = args as PublishArgs)
             .resolve();
 
         await assert.isFulfilled(main(args));
@@ -235,8 +247,8 @@ export default class MainSpec
             "--token=token",
         ];
 
-        let actual: Parameters<typeof Commands["unpublish"]> | undefined;
-        const expected: DeepRequired<Parameters<typeof Commands["unpublish"]>> =
+        let actual: UnpublishArgs | undefined;
+        const expected: DeepRequired<UnpublishArgs> =
         [
             {
                 cwd:            ".",
@@ -251,7 +263,7 @@ export default class MainSpec
 
         CommandsMock.setup("unpublish")
             .call(It.any())
-            .callback((...args) => actual = args)
+            .callback((...args) => actual = args as UnpublishArgs)
             .resolve();
 
         await assert.isFulfilled(main(args));

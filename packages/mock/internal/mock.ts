@@ -1,3 +1,4 @@
+import { type MockModuleContext, type MockModuleOptions, mock as nodeTestMock } from "node:test";
 import type
 {
     Callable,
@@ -16,9 +17,8 @@ import type IReturnsInstanceSetup from "./interfaces/returns-instance-setup.js";
 import ReturnSetup                from "./return-setup.js";
 import type ResolveSetup          from "./types/resolve-setup.js";
 
-const CALL          = Symbol("mock:call");
-const MOCK_INSTANCE = Symbol("mock:instance");
-const NEW           = Symbol("mock:new");
+const CALL = Symbol("mock:call");
+const NEW  = Symbol("mock:new");
 
 const INSTANCE_TARGET = { };
 const CALLABLE_TARGET = () => void 0;
@@ -70,19 +70,20 @@ export default class Mock<T extends object | Function>
     }
 
     /**
-     * Gets the mock of the object.
-     * @param target object that holds the mock.
-     * */
-    public static of<T extends object | Function>(target: T): Mock<T>
+     * Mocks a module using node:test's global mock tracker.
+     * Only bare specifiers (e.g. "node:fs", "@surface/rwx") and absolute path
+     * specifiers are allowed; relative specifiers are rejected.
+     * @param specifier Module identifier to mock.
+     * @param options Mock module options (exports, namedExports, cache).
+     */
+    public static module(specifier: string | URL, options?: MockModuleOptions): MockModuleContext
     {
-        const mock = Reflect.get(target, MOCK_INSTANCE);
-
-        if (!mock)
+        if (typeof specifier == "string" && (specifier.startsWith("./") || specifier.startsWith("../")))
         {
-            throw new Error("Target is not a proxy mock");
+            throw new Error(`Mock.module does not support relative specifiers: "${specifier}". Use a bare or absolute path specifier instead.`);
         }
 
-        return mock as object as Mock<T>;
+        return nodeTestMock.module(specifier, options);
     }
 
     private createProxy(target: T): T
@@ -121,11 +122,6 @@ export default class Mock<T extends object | Function>
             },
             get: (target, propertyKey, receiver) =>
             {
-                if (propertyKey == MOCK_INSTANCE)
-                {
-                    return this;
-                }
-
                 const setup = this.setups.get(propertyKey);
 
                 if (setup)

@@ -1,18 +1,12 @@
-import { type Stats, existsSync }                                                    from "fs";
-import { readFile, readdir, stat, writeFile }                                        from "fs/promises";
-import path, { relative, resolve }                                                   from "path";
-import type { PackageJson as _PackageJson }                                          from "@npm/types";
-import Logger                                                                        from "@surface/logger";
-import Mock, { It }                                                                  from "@surface/mock";
-import { execute }                                                                   from "@surface/rwx";
-import { afterEach, batchTest, beforeEach, shouldFail, shouldPass, suite, test }     from "@surface/test-suite";
-import { assert }                                                               from "@surface/test-suite";
-import pack                                                                          from "libnpmpack";
-import { changelog, getEnv, recommendedBump, timestamp }                             from "../internal/common.js";
-import { addTag, commit, commitAll, getRemoteUrl, isWorkingTreeClean, pushToRemote } from "../internal/git.js";
-import NpmService                                                                    from "../internal/npm-service.js";
-import Publisher                                                                     from "../internal/publisher.js";
-import ReleaseClient                                                                 from "../internal/release-client.js";
+import { type Stats }                                                    from "fs";
+import path, { relative, resolve }                                       from "path";
+import type { PackageJson as _PackageJson }                              from "@npm/types";
+import Logger                                                            from "@surface/logger";
+import Mock, { It }                                                      from "@surface/mock";
+import { afterEach, assert, batchTest, beforeEach, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
+import NpmService                                                        from "../internal/npm-service.js";
+import Publisher                                                         from "../internal/publisher.js";
+import ReleaseClient                                                     from "../internal/release-client.js";
 import
 {
     type BumpScenario,
@@ -35,30 +29,29 @@ import type VirtualRegistry  from "./types/virtual-registry.js";
 
 type PackageJson = _PackageJson & { workspaces?: string[] };
 
-
-const addTagMock             = Mock.of(addTag);
-const changelogMock          = Mock.of(changelog);
-const commitAllMock          = Mock.of(commitAll);
-const commitMock             = Mock.of(commit);
-const getEnvMock             = Mock.of(getEnv);
-const executeMock            = Mock.of(execute);
-const existsSyncMock         = Mock.of(existsSync);
-const getRemoteUrlMock       = Mock.of(getRemoteUrl);
-const isWorkingTreeCleanMock = Mock.of(isWorkingTreeClean);
+const addTagMock             = Mock.callable<(tag: string, message: string) => Promise<void>>();
+const changelogMock          = Mock.callable<(path: string, lernaPackage: string, preset?: string) => Promise<Buffer>>();
+const commitAllMock          = Mock.callable<(message: string) => Promise<void>>();
+const commitMock             = Mock.callable<(message: string) => Promise<void>>();
+const getEnvMock             = Mock.callable<() => NodeJS.ProcessEnv>();
+const executeMock            = Mock.callable<(cmd: string, args: string[]) => Promise<Buffer>>();
+const existsSyncMock         = Mock.callable<(path: string) => boolean>();
+const getRemoteUrlMock       = Mock.callable<(remote: string) => Promise<string>>();
+const isWorkingTreeCleanMock = Mock.callable<() => Promise<boolean>>();
 const loggerMock             = Mock.instance<Logger>();
-const LoggerMock             = Mock.of(Logger);
+const LoggerMock             = Mock.newable();
 const npmServiceMock         = Mock.instance<NpmService>();
-const NpmServiceMock         = Mock.of(NpmService);
-const packMock               = Mock.of(pack);
-const pushToRemoteMock       = Mock.of(pushToRemote);
-const readdirMock            = Mock.of(readdir);
-const readFileMock           = Mock.of(readFile);
-const recommendedBumpMock    = Mock.of(recommendedBump);
+const NpmServiceMock         = Mock.newable();
+const packMock               = Mock.callable<(path: string) => Promise<Buffer>>();
+const pushToRemoteMock       = Mock.callable<(remote?: string) => Promise<void>>();
+const readdirMock            = Mock.callable<(path: string) => Promise<string[]>>();
+const readFileMock           = Mock.callable<(path: string) => Promise<Buffer>>();
+const recommendedBumpMock    = Mock.callable<(path: string, lernaPackage: string, preset?: string) => Promise<{ releaseType: string | undefined }>>();
 const releaseClientMock      = Mock.instance<ReleaseClient>();
-const ReleaseClientMock      = Mock.of(ReleaseClient);
-const statMock               = Mock.of(stat);
-const timestampMock          = Mock.of(timestamp);
-const writeFileMock          = Mock.of(writeFile);
+const ReleaseClientMock      = Mock.newable();
+const statMock               = Mock.callable<(path: string) => Promise<Stats>>();
+const timestampMock          = Mock.callable<() => string>();
+const writeFileMock          = Mock.callable<(path: string, data: string | Buffer) => Promise<void>>();
 
 executeMock.call(It.any(), It.any()).resolve(Buffer.from([]));
 
@@ -68,6 +61,72 @@ loggerMock.setup("fatal").call(It.any());
 loggerMock.setup("info").call(It.any());
 loggerMock.setup("trace").call(It.any());
 loggerMock.setup("warn").call(It.any());
+
+Mock.module("node:fs",
+    {
+        namedExports:
+    {
+        existsSync: existsSyncMock.proxy,
+    },
+    });
+
+Mock.module("node:fs/promises",
+    {
+        namedExports:
+    {
+        readFile:  readFileMock.proxy,
+        readdir:   readdirMock.proxy,
+        stat:      statMock.proxy,
+        writeFile: writeFileMock.proxy,
+    },
+    });
+
+Mock.module("@surface/rwx",
+    {
+        namedExports:
+    {
+        execute: executeMock.proxy,
+    },
+    });
+
+Mock.module("libnpmpack",
+    {
+        defaultExport: packMock.proxy,
+    });
+
+Mock.module(import.meta.resolve("../internal/common.js"),
+    {
+        namedExports:
+    {
+        changelog:       changelogMock.proxy,
+        getEnv:          getEnvMock.proxy,
+        recommendedBump: recommendedBumpMock.proxy,
+        timestamp:       timestampMock.proxy,
+    },
+    });
+
+Mock.module(import.meta.resolve("../internal/git.js"),
+    {
+        namedExports:
+    {
+        addTag:              addTagMock.proxy,
+        commit:              commitMock.proxy,
+        commitAll:           commitAllMock.proxy,
+        getRemoteUrl:        getRemoteUrlMock.proxy,
+        isWorkingTreeClean:  isWorkingTreeCleanMock.proxy,
+        pushToRemote:        pushToRemoteMock.proxy,
+    },
+    });
+
+Mock.module(import.meta.resolve("../internal/npm-service.js"),
+    {
+        defaultExport: NpmServiceMock.proxy,
+    });
+
+Mock.module(import.meta.resolve("../internal/release-client.js"),
+    {
+        defaultExport: ReleaseClientMock.proxy,
+    });
 
 const PACKAGE_NAME_PATTERN = /(?:@[a-z0-9-]+\/)?([a-z0-9-]+)(?:@([a-z0-9-]+))?/;
 

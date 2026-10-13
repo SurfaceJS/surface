@@ -1,20 +1,21 @@
 
 import Mock, { It }                                               from "@surface/mock";
-import { afterEach, beforeEach, suite, test }                     from "@surface/test-suite";
-import { assert }                                                 from "@surface/test-suite";
-import type { Configuration, Stats, Watching as WebpackWatching, Compiler as WebpackCompiler } from "webpack";
-import webpack                                                    from "webpack";
-import WebpackDevServer                                           from "webpack-dev-server";
+import { afterEach, assert, beforeEach, suite, test }                     from "@surface/test-suite";
+import type { Configuration, Stats, Compiler as WebpackCompiler, Watching as WebpackWatching } from "webpack";
+import type WebpackDevServer                                       from "webpack-dev-server";
 import Builder                                                    from "../internal/builder.js";
-import { log }                                                    from "../internal/common.js";
-import createConfigurations                                       from "../internal/create-configurations.js";
 
 type WebpackCall = (options: Configuration, callback?: (err?: Error, stats?: Stats) => void) => WebpackCompiler;
 
-const createConfigurationsMock    = Mock.of(createConfigurations);
-const logMock                     = Mock.of(log);
-const webpackDevServerConstructor = Mock.of(WebpackDevServer);
-const webpackMock                 = Mock.of<WebpackCall>(webpack);
+const createConfigurationsMock    = Mock.callable<(config: object, options?: object) => Promise<object>>();
+const logMock                     = Mock.callable<(...args: unknown[]) => void>();
+const webpackDevServerConstructor = Mock.newable();
+const webpackMock                 = Mock.callable<WebpackCall>();
+
+Mock.module(import.meta.resolve("../internal/create-configurations.js"), { defaultExport: createConfigurationsMock.proxy });
+Mock.module(import.meta.resolve("../internal/common.js"), { namedExports: { log: logMock.proxy } });
+Mock.module("webpack", { defaultExport: webpackMock.proxy });
+Mock.module("webpack-dev-server", { defaultExport: webpackDevServerConstructor.proxy });
 
 function setup(type: "ok" | "ko"): void
 {

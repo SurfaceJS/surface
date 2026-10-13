@@ -1,33 +1,16 @@
-import type { Stats } from "fs";
-import
-{
-    existsSync,
-    lstatSync,
-    readdirSync,
-    readlinkSync,
-    statSync,
-    unlinkSync,
-} from "fs";
-import
-{
-    lstat,
-    readdir,
-    readlink,
-    stat,
-    unlink,
-} from "fs/promises";
+import type { Stats } from "node:fs";
 import path         from "path";
 import Mock, { It } from "@surface/mock";
 import
 {
     afterEach,
+    assert,
     beforeEach,
     shouldFail,
     shouldPass,
     suite,
     test,
 } from "@surface/test-suite";
-import { assert } from "@surface/test-suite";
 import
 {
     isDirectory,
@@ -41,21 +24,49 @@ import
     searchAbove,
 } from "../internal/rwx.js";
 
-
 type ReaddirSync = (path: string) => string[];
 type Readdir     = (path: string) => Promise<string[]>;
+type StatFn      = (path: string) => Promise<Stats>;
+type LstatFn     = (path: string) => Promise<Stats>;
+type UnlinkFn    = (path: string) => Promise<void>;
+type ReadlinkFn  = (path: string) => Promise<string>;
 
-const existsSyncMock   = Mock.of(existsSync)!;
-const lstatMock        = Mock.of(lstat)!;
-const lstatSyncMock    = Mock.of(lstatSync)!;
-const readdirMock      = Mock.of<Readdir>(readdir)!;
-const readdirSyncMock  = Mock.of<ReaddirSync>(readdirSync)!;
-const readlinkMock     = Mock.of(readlink)!;
-const readlinkSyncMock = Mock.of(readlinkSync)!;
-const statMock         = Mock.of(stat)!;
-const statSyncMock     = Mock.of(statSync)!;
-const unlinkMock       = Mock.of(unlink)!;
-const unlinkSyncMock   = Mock.of(unlinkSync)!;
+const existsSyncMock   = Mock.callable<(path: string) => boolean>();
+const lstatMock        = Mock.callable<LstatFn>();
+const lstatSyncMock    = Mock.callable<(path: string) => Stats>();
+const readdirMock      = Mock.callable<Readdir>();
+const readdirSyncMock  = Mock.callable<ReaddirSync>();
+const readlinkMock     = Mock.callable<ReadlinkFn>();
+const readlinkSyncMock = Mock.callable<(path: string) => string>();
+const statMock         = Mock.callable<StatFn>();
+const statSyncMock     = Mock.callable<(path: string) => Stats>();
+const unlinkMock       = Mock.callable<UnlinkFn>();
+const unlinkSyncMock   = Mock.callable<(path: string) => void>();
+
+Mock.module("node:fs",
+    {
+        namedExports:
+    {
+        existsSync:   existsSyncMock.proxy,
+        lstatSync:    lstatSyncMock.proxy,
+        readdirSync:  readdirSyncMock.proxy,
+        readlinkSync: readlinkSyncMock.proxy,
+        statSync:     statSyncMock.proxy,
+        unlinkSync:   unlinkSyncMock.proxy,
+    },
+    });
+
+Mock.module("node:fs/promises",
+    {
+        namedExports:
+    {
+        lstat:    lstatMock.proxy,
+        readdir:  readdirMock.proxy,
+        readlink: readlinkMock.proxy,
+        stat:     statMock.proxy,
+        unlink:   unlinkMock.proxy,
+    },
+    });
 
 const CWD = process.cwd();
 

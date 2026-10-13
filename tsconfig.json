@@ -24,7 +24,6 @@
         { "path": "./packages/logger" },
         { "path": "./packages/material-design" },
         { "path": "./packages/mock" },
-        { "path": "./packages/mock-loader" },
         { "path": "./packages/observer" },
         { "path": "./packages/path-matcher" },
         { "path": "./packages/publisher" },
