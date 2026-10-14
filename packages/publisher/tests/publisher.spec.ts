@@ -1,12 +1,18 @@
 import { type Stats }                                                    from "fs";
 import path, { relative, resolve }                                       from "path";
 import type { PackageJson as _PackageJson }                              from "@npm/types";
-import Logger                                                            from "@surface/logger";
+import Logger, { LogLevel }                                              from "@surface/logger";
 import Mock, { It }                                                      from "@surface/mock";
+import PathMatcher                                                       from "@surface/path-matcher";
 import { afterEach, assert, batchTest, beforeEach, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import NpmService                                                        from "../internal/npm-service.js";
-import Publisher                                                         from "../internal/publisher.js";
-import ReleaseClient                                                     from "../internal/release-client.js";
+import
+{
+    isGlobPrerelease,
+    isSemanticVersion,
+    overridePrerelease,
+} from "../internal/common.js";
+import type NpmService                                                   from "../internal/npm-service.js";
+import type ReleaseClient                                                from "../internal/release-client.js";
 import
 {
     type BumpScenario,
@@ -35,6 +41,8 @@ const commitAllMock          = Mock.callable<(message: string) => Promise<void>>
 const commitMock             = Mock.callable<(message: string) => Promise<void>>();
 const getEnvMock             = Mock.callable<() => NodeJS.ProcessEnv>();
 const executeMock            = Mock.callable<(cmd: string, args: string[]) => Promise<Buffer>>();
+const enumeratePathsMock     = Mock.callable<(patterns: string | string[], options?: object) => AsyncIterable<string>>();
+const isFileMock             = Mock.callable<(path: string) => Promise<boolean>>();
 const existsSyncMock         = Mock.callable<(path: string) => boolean>();
 const getRemoteUrlMock       = Mock.callable<(remote: string) => Promise<string>>();
 const isWorkingTreeCleanMock = Mock.callable<() => Promise<boolean>>();
@@ -62,73 +70,113 @@ loggerMock.setup("info").call(It.any());
 loggerMock.setup("trace").call(It.any());
 loggerMock.setup("warn").call(It.any());
 
-Mock.module("node:fs",
+Mock.module(
+    "node:fs",
     {
         namedExports:
-    {
-        existsSync: existsSyncMock.proxy,
+        {
+            existsSync: existsSyncMock.proxy,
+        },
     },
-    });
+);
 
-Mock.module("node:fs/promises",
+Mock.module(
+    "node:fs/promises",
     {
         namedExports:
-    {
-        readFile:  readFileMock.proxy,
-        readdir:   readdirMock.proxy,
-        stat:      statMock.proxy,
-        writeFile: writeFileMock.proxy,
+        {
+            readFile:  readFileMock.proxy,
+            readdir:   readdirMock.proxy,
+            stat:      statMock.proxy,
+            writeFile: writeFileMock.proxy,
+        },
     },
-    });
+);
 
-Mock.module("@surface/rwx",
+Mock.module(
+    "@surface/rwx",
     {
         namedExports:
-    {
-        execute: executeMock.proxy,
+        {
+            enumeratePaths: enumeratePathsMock.proxy,
+            execute:        executeMock.proxy,
+            isFile:         isFileMock.proxy,
+        },
     },
-    });
+);
 
-Mock.module("libnpmpack",
+Mock.module(
+    "libnpmpack",
     {
         defaultExport: packMock.proxy,
-    });
+    },
+);
 
-Mock.module(import.meta.resolve("../internal/common.js"),
+Mock.module(
+    import.meta.resolve("../internal/common.js"),
     {
         namedExports:
-    {
-        changelog:       changelogMock.proxy,
-        getEnv:          getEnvMock.proxy,
-        recommendedBump: recommendedBumpMock.proxy,
-        timestamp:       timestampMock.proxy,
+        {
+            changelog:          changelogMock.proxy,
+            getEnv:             getEnvMock.proxy,
+            isGlobPrerelease,
+            isSemanticVersion,
+            overridePrerelease,
+            recommendedBump:    recommendedBumpMock.proxy,
+            timestamp:          timestampMock.proxy,
+        },
     },
-    });
+);
 
-Mock.module(import.meta.resolve("../internal/git.js"),
+Mock.module(
+    import.meta.resolve("../internal/git.js"),
     {
         namedExports:
-    {
-        addTag:              addTagMock.proxy,
-        commit:              commitMock.proxy,
-        commitAll:           commitAllMock.proxy,
-        getRemoteUrl:        getRemoteUrlMock.proxy,
-        isWorkingTreeClean:  isWorkingTreeCleanMock.proxy,
-        pushToRemote:        pushToRemoteMock.proxy,
+        {
+            addTag:              addTagMock.proxy,
+            commit:              commitMock.proxy,
+            commitAll:           commitAllMock.proxy,
+            getRemoteUrl:        getRemoteUrlMock.proxy,
+            isWorkingTreeClean:  isWorkingTreeCleanMock.proxy,
+            pushToRemote:        pushToRemoteMock.proxy,
+        },
     },
-    });
+);
 
-Mock.module(import.meta.resolve("../internal/npm-service.js"),
+Mock.module(
+    import.meta.resolve("../internal/npm-service.js"),
     {
         defaultExport: NpmServiceMock.proxy,
-    });
+    },
+);
 
-Mock.module(import.meta.resolve("../internal/release-client.js"),
+Mock.module(
+    import.meta.resolve("../internal/release-client.js"),
     {
         defaultExport: ReleaseClientMock.proxy,
-    });
+    },
+);
+
+Mock.module(
+    "@surface/logger",
+    {
+        namedExports:
+        {
+            LogLevel,
+        },
+        defaultExport: LoggerMock.proxy,
+    },
+);
+
+const { default: Publisher } = await import("../internal/publisher.js");
 
 const PACKAGE_NAME_PATTERN = /(?:@[a-z0-9-]+\/)?([a-z0-9-]+)(?:@([a-z0-9-]+))?/;
+
+const enumeratePathsState =
+{
+    directoryTree: new Map<string, Set<string>>(),
+    files:         new Set<string>(),
+};
 
 const getPackageName = (spec: string): [name: string, tag?: string] =>
 {
@@ -137,10 +185,21 @@ const getPackageName = (spec: string): [name: string, tag?: string] =>
     return [name!, tag];
 };
 
+async function *enumerateFiles(files: string[]): AsyncGenerator<string>
+{
+    for (const file of files)
+    {
+        yield file;
+    }
+}
+
 @suite
 export default class PublisherSpec
 {
-    private readonly directoryTree = new Map<string, Set<string>>();
+    private get directoryTree(): Map<string, Set<string>>
+    {
+        return enumeratePathsState.directoryTree;
+    }
 
     private createFile(filepath: string, content: string): void
     {
@@ -150,6 +209,7 @@ export default class PublisherSpec
         const buffer = Buffer.from(content);
 
         readFileMock.call(filepath).resolve(buffer);
+        enumeratePathsState.files.add(filepath);
     }
 
     private resolveFileTree(filepath: string): void
@@ -260,9 +320,66 @@ export default class PublisherSpec
         timestampMock.call().returns("202201010000");
         releaseClientMock.setup("createRelease").call(It.any(), It.any()).resolve();
 
-        LoggerMock.lock();
+        enumeratePathsMock.call(It.any(), It.any()).returnsFactory((patterns, options) =>
+        {
+            const base    = (options as { base?: string })?.base ?? process.cwd();
+            const matcher = new PathMatcher(Array.isArray(patterns) ? patterns : [patterns], { base });
+            const tree    = enumeratePathsState.directoryTree;
+
+            const isDir  = (p: string): boolean => tree.has(p);
+
+            const basePaths: string[] = [];
+            let   prev:        string | null = null;
+
+            for (const entry of Array.from(matcher.paths).sort())
+            {
+                if (prev === null || !entry.startsWith(prev))
+                {
+                    basePaths.push(prev = entry);
+                }
+            }
+
+            const results: string[] = [];
+
+            const collectFiles = (dir: string): void =>
+            {
+                for (const child of tree.get(dir) ?? [])
+                {
+                    const full = path.join(dir, child);
+
+                    if (isDir(full))
+                    {
+                        if (!matcher.negatedPaths.has(full))
+                        {
+                            collectFiles(full);
+                        }
+                    }
+                    else if (matcher.isMatch(full))
+                    {
+                        results.push(full);
+                    }
+                }
+            };
+
+            for (const p of basePaths)
+            {
+                if (isDir(p))
+                {
+                    collectFiles(p);
+                }
+                else if (enumeratePathsState.files.has(p))
+                {
+                    results.push(p);
+                }
+            }
+
+            return enumerateFiles(results);
+        });
+        isFileMock.call(It.any()).resolve(false);
+
         NpmServiceMock.lock();
         ReleaseClientMock.lock();
+        LoggerMock.lock();
 
         addTagMock.lock();
         changelogMock.lock();
@@ -272,6 +389,8 @@ export default class PublisherSpec
         existsSyncMock.lock();
         getRemoteUrlMock.lock();
         isWorkingTreeCleanMock.lock();
+        enumeratePathsMock.lock();
+        isFileMock.lock();
         packMock.lock();
         pushToRemoteMock.lock();
         readdirMock.lock();
@@ -287,11 +406,14 @@ export default class PublisherSpec
     public afterEach(): void
     {
         this.directoryTree.clear();
+        enumeratePathsState.files.clear();
 
-        LoggerMock.release();
         NpmServiceMock.release();
         ReleaseClientMock.unlock();
+        LoggerMock.release();
 
+        enumeratePathsMock.release();
+        isFileMock.release();
         addTagMock.release();
         changelogMock.release();
         commitAllMock.release();

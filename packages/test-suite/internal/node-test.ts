@@ -3,7 +3,7 @@ import { after, afterEach, before, beforeEach, describe, it } from "node:test";
 
 type Delegate = (...args: unknown[]) => unknown;
 
-interface TestOptions
+interface ITestOptions
 {
     timeout?: number,
 }
@@ -11,7 +11,7 @@ interface TestOptions
 type TestHandle = Delegate &
 {
     (title: string, callback: Delegate): void;
-    (title: string, callback: Delegate, options: TestOptions): void;
+    (title: string, callback: Delegate, options: ITestOptions): void;
 };
 
 const nodeTest =
@@ -24,5 +24,7 @@ const nodeTest =
     test:       it as TestHandle,
     it:         it as TestHandle,
 };
+
+export { afterEach, beforeEach, describe, it };
 
 export default nodeTest;

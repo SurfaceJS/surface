@@ -69,6 +69,7 @@ typings/
 *.mjs.map
 *.orig
 .cache
+.cspellcache
 tsconfig.tsbuildinfo
 !**/@types/**/*.d.cts
 !**/@types/**/*.d.mts
@@ -81,5 +82,5 @@ tsconfig.tsbuildinfo
 !**/types/**/*.d.cts
 !**/types/**/*.d.mts
 !**/types/**/*.d.ts
+!eslint.config.mjs
 !shim.d.ts
-.cspellcache

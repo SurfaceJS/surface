@@ -1,7 +1,7 @@
 import { assert, batchTest, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import PathMatcher                                        from "../internal/path-matcher.js";
 
-interface MatcherScenario
+interface IMatcherScenario
 {
     patterns:   string | string[];
     options?:   { base?: string, unix?: boolean };
@@ -10,12 +10,12 @@ interface MatcherScenario
     mismatches: string[];
 }
 
-const matcherScenarios: MatcherScenario[] =
+const matcherScenarios: IMatcherScenario[] =
 [
     {
         patterns:   "foo/**",
-        matches:    ["/foo/bar", "/foo/baz/qux"],
-        mismatches: ["/bar", "/foo2"],
+        matches:    ["foo/bar", "foo/baz/qux"],
+        mismatches: ["bar", "foo2"],
     },
     {
         patterns:   "src/**/*.ts",
@@ -24,14 +24,14 @@ const matcherScenarios: MatcherScenario[] =
         mismatches: ["/home/user/project/src/index.js", "/home/user/project/other/file.ts"],
     },
     {
-        patterns:   "!**/node_modules/**",
+        patterns:   ["**", "!**/node_modules/**"],
         matches:    ["/app/src/index.ts"],
         mismatches: ["/app/node_modules/lodash/index.js"],
     },
     {
         patterns:   "file.ts",
-        matches:    ["/foo/file.ts"],
-        mismatches: ["/foo/file2.ts", "/other/file.ts"],
+        matches:    ["file.ts"],
+        mismatches: ["file2.ts", "other/file.ts"],
     },
     {
         patterns:   "**x",
@@ -50,8 +50,8 @@ export default class PathMatcherInstanceSpec
 
         assert.isTrue(matcher.paths.has("foo"), "paths should contain the include path");
         assert.isFalse(matcher.negatedPaths.has("foo"), "negatedPaths should not contain an included path");
-        assert.isTrue(matcher.isMatch("/foo/bar"), "isMatch('/foo/bar') should be true");
-        assert.isFalse(matcher.isMatch("/bar"), "isMatch('/bar') should be false");
+        assert.isTrue(matcher.isMatch("foo/bar"), "isMatch('foo/bar') should be true");
+        assert.isFalse(matcher.isMatch("bar"), "isMatch('bar') should be false");
     }
 
     @test @shouldPass
@@ -69,7 +69,7 @@ export default class PathMatcherInstanceSpec
         const matcher = new PathMatcher(["a/**/*.js", "!a/**/.gitignore"], { base: "/" });
 
         assert.isTrue(matcher.paths.has("/a"), "paths should contain the include base");
-        assert.isTrue(matcher.negatedPaths.has("/a"), "negatedPaths should contain the negated base");
+        assert.isFalse(matcher.negatedPaths.has("/a"), "/a is included, so it must not also be negated");
     }
 
     @test @shouldPass
@@ -86,7 +86,7 @@ export default class PathMatcherInstanceSpec
         matcherScenarios,
         x => `isMatch with patterns [${JSON.stringify(x.patterns)}]`,
     )
-    public isMatchMatchesAndMismatches(scenario: MatcherScenario): void
+    public isMatchMatchesAndMismatches(scenario: IMatcherScenario): void
     {
         const matcher = new PathMatcher(scenario.patterns, scenario.options ?? {});
 

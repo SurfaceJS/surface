@@ -493,7 +493,9 @@ export default class Parser
     {
         let stars = 0;
 
-        const canUseGlobStar = this.index == 0 || SEPARATORS.has(this.source[this.index - 1]!);
+        const isNegatedStart = this.source.startsWith("!") && this.index == 1;
+
+        const canUseGlobStar = this.index == 0 || SEPARATORS.has(this.source[this.index - 1]!) || isNegatedStart;
 
         while (this.getChar() == "*")
         {
@@ -593,7 +595,7 @@ export default class Parser
 
         return {
             path:    this.source.substring(start, end),
-            pattern: (negated ? "!" : "") + (end == 0 ? this.source : this.source.substring(end + 1, this.source.length)),
+            pattern: (negated ? "!" : "") + (end == start ? this.source.substring(start) : this.source.substring(end + 1, this.source.length)),
         };
     }
 }

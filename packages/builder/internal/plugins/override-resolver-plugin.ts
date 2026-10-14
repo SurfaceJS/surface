@@ -2,12 +2,12 @@ import type webpack from "webpack";
 
 type Resolver = webpack.Resolver;
 
-interface ResolvePlugin
+interface IResolvePlugin
 {
     apply(resolver: Resolver): void;
 }
 
-export default class OverrideResolvePlugin implements ResolvePlugin
+export default class OverrideResolvePlugin implements IResolvePlugin
 {
     private readonly overrides: Map<string, string>;
 

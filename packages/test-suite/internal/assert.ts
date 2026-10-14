@@ -46,8 +46,52 @@ function isDeepEqual(actual: unknown, expected: unknown): boolean
     }
     catch
     {
+        if (typeof actual == "object" && actual != null && typeof expected == "object" && expected != null) // eslint-disable-line no-eq-null
+        {
+            return canonicalize(actual) == canonicalize(expected);
+        }
+
         return false;
     }
+}
+
+function canonicalize(value: unknown): string
+{
+    if (value == null || typeof value != "object") // eslint-disable-line no-eq-null
+    {
+        return JSON.stringify(value);
+    }
+
+    if (Array.isArray(value))
+    {
+        return `[${value.map(item => canonicalize(item)).join(",")}]`;
+    }
+
+    if (value instanceof Map)
+    {
+        const entries = Array.from(value.entries()).map(([k, v]) => `${canonicalize(k)}:${canonicalize(v)}`).sort();
+
+        return `Map{${entries.join(",")}}`;
+    }
+
+    if (value instanceof Set)
+    {
+        return `Set{${Array.from(value).map(item => canonicalize(item)).sort().join(",")}}`;
+    }
+
+    if (value instanceof Date)
+    {
+        return `Date(${value.getTime()})`;
+    }
+
+    if (value instanceof RegExp)
+    {
+        return `RegExp(${value.source},${value.flags})`;
+    }
+
+    const keys = Object.keys(value as object).sort();
+
+    return `{${keys.map(key => `${key}:${canonicalize((value as Record<string, unknown>)[key])}`).join(",")}}`;
 }
 
 function toPredicate(actual: unknown, expected: unknown, message: string | undefined, negate: boolean, operator: string): void
@@ -509,9 +553,20 @@ function includes(haystack: unknown, needle: unknown): boolean
         return haystack.some(item => isDeepEqual(item, needle));
     }
 
-    if (typeof haystack == "object" && haystack != null) // eslint-disable-line no-eq-null
+    if (typeof haystack == "object" && haystack != null && typeof needle == "object" && needle != null) // eslint-disable-line no-eq-null
     {
-        return Object.values(haystack as object).some(item => isDeepEqual(item, needle));
+        const haystackObj = haystack as Record<string, unknown>;
+        const needleObj   = needle as Record<string, unknown>;
+
+        for (const key of Object.keys(needleObj))
+        {
+            if (!(key in haystackObj) || !isDeepEqual(haystackObj[key], needleObj[key]))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     return isDeepEqual(haystack, needle);

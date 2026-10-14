@@ -4,7 +4,6 @@ import type { DeepRequired }                                          from "@sur
 import { LogLevel }                                                   from "@surface/logger";
 import Mock, { It }                                                   from "@surface/mock";
 import { afterEach, assert, beforeEach, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import main                                                           from "../internal/main.js";
 
 const CommandsMock = Mock.instance<{
     bump:      (version: string, preid?: string, build?: string, options?: object) => Promise<void>;
@@ -18,10 +17,14 @@ type ChangedArgs   = [object?];
 type PublishArgs   = [object?];
 type UnpublishArgs = [object?];
 
-Mock.module(import.meta.resolve("../internal/commands.js"),
+Mock.module(
+    import.meta.resolve("../internal/commands.js"),
     {
         defaultExport: CommandsMock.proxy,
-    });
+    },
+);
+
+const { default: main } = await import("../internal/main.js");
 
 @suite
 export default class MainSpec

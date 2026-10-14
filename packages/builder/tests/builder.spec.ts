@@ -3,7 +3,6 @@ import Mock, { It }                                               from "@surface
 import { afterEach, assert, beforeEach, suite, test }                     from "@surface/test-suite";
 import type { Configuration, Stats, Compiler as WebpackCompiler, Watching as WebpackWatching } from "webpack";
 import type WebpackDevServer                                       from "webpack-dev-server";
-import Builder                                                    from "../internal/builder.js";
 
 type WebpackCall = (options: Configuration, callback?: (err?: Error, stats?: Stats) => void) => WebpackCompiler;
 
@@ -17,9 +16,15 @@ Mock.module(import.meta.resolve("../internal/common.js"), { namedExports: { log:
 Mock.module("webpack", { defaultExport: webpackMock.proxy });
 Mock.module("webpack-dev-server", { defaultExport: webpackDevServerConstructor.proxy });
 
+const { default: Builder } = await import("../internal/builder.js");
+
 function setup(type: "ok" | "ko"): void
 {
     const error = type == "ko" ? new Error("Something goes wrong") : undefined;
+
+    createConfigurationsMock
+        .call(It.any(), It.any())
+        .returns(Promise.resolve([{}]));
 
     const statsMock = Mock.instance<Stats>();
 
@@ -73,10 +78,9 @@ export default class CompilerSpec
     public beforeEach(): void
     {
         logMock.lock();
-        logMock.call();
+        logMock.call(It.any());
 
         createConfigurationsMock.lock();
-        createConfigurationsMock.call(It.any(), It.any());
     }
 
     @afterEach

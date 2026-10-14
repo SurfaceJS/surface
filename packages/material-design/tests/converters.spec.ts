@@ -103,7 +103,7 @@ export default class ColorConvertersSpec
         assert.deepEqual(rgbToXyz({ r: 51,  g: 153, b: 204 }), { x: 23.65555682547543,  y: 27.84590629533912,  z: 61.25475835293276  });
         assert.deepEqual(rgbToXyz({ r: 255, g: 51,  b: 82  }), { x: 43.946817070946736, y: 24.236849152498458, z: 10.344567724796295 });
         assert.deepEqual(rgbToXyz({ r: 255, g: 0,   b: 0   }), { x: 41.24,              y: 21.26,              z: 1.9300000000000002 });
-        assert.deepEqual(rgbToXyz({ r: 255, g: 128, b: 0   }), { x: 48.95917148407304,  y: 36.69834296814607,  z: 4.503057161357679  });
+        assert.deepEqual(rgbToXyz({ r: 255, g: 128, b: 0   }), { x: 48.95917148407304,  y: 36.69834296814608,  z: 4.503057161357679  });
         assert.deepEqual(rgbToXyz({ r: 128, g: 255, b: 0   }), { x: 44.6620870246972,   y: 76.10919423242149,  z: 12.336610765219826 });
     }
 

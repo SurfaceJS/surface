@@ -2,7 +2,6 @@
 import path                                   from "path";
 import Mock, { It }                           from "@surface/mock";
 import { afterEach, assert, beforeEach, suite, test } from "@surface/test-suite";
-import Commands                               from "../internal/commands.js";
 import type CliOptions                        from "../internal/types/cli-options.js";
 import type Configuration                     from "../internal/types/configuration.js";
 
@@ -19,6 +18,8 @@ const loadModuleMock   = Mock.callable<(path: string) => Promise<object>>();
 Mock.module("@surface/rwx", { namedExports: { isDirectory: isDirectoryMock.proxy, lookup: lookupMock.proxy } });
 Mock.module(import.meta.resolve("../internal/builder.js"), { defaultExport: compilerCtorMock.proxy });
 Mock.module(import.meta.resolve("../internal/common.js"), { namedExports: { loadModule: loadModuleMock.proxy } });
+
+const { default: Commands } = await import("../internal/commands.js");
 
 const CWD                            = process.cwd();
 const DIST                           = path.join(CWD, "dist");

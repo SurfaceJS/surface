@@ -3,7 +3,6 @@ import Mock                                               from "@surface/mock";
 import { afterEach, assert, beforeEach, shouldPass, suite, test } from "@surface/test-suite";
 import type { ResolveContext, ResolveRequest }            from "enhanced-resolve";
 import type webpack                                       from "webpack";
-import PreferTsResolverPlugin                             from "../../internal/plugins/prefer-ts-resolver-plugin.js";
 
 const CWD = process.cwd();
 
@@ -25,6 +24,8 @@ type Resolver = webpack.Resolver;
 const existsSyncMock = Mock.callable<(path: string) => boolean>();
 
 Mock.module("fs", { namedExports: { existsSync: existsSyncMock.proxy } });
+
+const { default: PreferTsResolverPlugin } = await import("../../internal/plugins/prefer-ts-resolver-plugin.js");
 
 @suite
 export default class PreferTsResolverPluginSpec

@@ -1,27 +1,32 @@
 import { join }                                                from "path";
 import Mock, { It }                                            from "@surface/mock";
 import { afterEach, assert, batchTest, beforeEach, shouldPass, suite } from "@surface/test-suite";
-import loadConfig                                              from "../internal/load-config.js";
 import { type Scenario, scenarios }                            from "./load-config.scn.js";
 
 const isFileMock   = Mock.callable<(path: string) => Promise<boolean>>();
 const readFileMock = Mock.callable<(path: string) => Promise<Buffer>>();
 
-Mock.module("node:fs/promises",
+Mock.module(
+    "node:fs/promises",
     {
         namedExports:
-    {
-        readFile: readFileMock.proxy,
+        {
+            readFile: readFileMock.proxy,
+        },
     },
-    });
+);
 
-Mock.module("@surface/rwx",
+Mock.module(
+    "@surface/rwx",
     {
         namedExports:
-    {
-        isFile: isFileMock.proxy,
+        {
+            isFile: isFileMock.proxy,
+        },
     },
-    });
+);
+
+const { default: loadConfig } = await import("../internal/load-config.js");
 
 @suite
 export default class LoadConfigSpec

@@ -11,18 +11,6 @@ import
     suite,
     test,
 } from "@surface/test-suite";
-import
-{
-    isDirectory,
-    isDirectorySync,
-    isFile,
-    isFileSync,
-    listPaths,
-    listPathsSync,
-    lookup,
-    lookupSync,
-    searchAbove,
-} from "../internal/rwx.js";
 
 type ReaddirSync = (path: string) => string[];
 type Readdir     = (path: string) => Promise<string[]>;
@@ -43,30 +31,36 @@ const statSyncMock     = Mock.callable<(path: string) => Stats>();
 const unlinkMock       = Mock.callable<UnlinkFn>();
 const unlinkSyncMock   = Mock.callable<(path: string) => void>();
 
-Mock.module("node:fs",
+Mock.module(
+    "node:fs",
     {
         namedExports:
-    {
-        existsSync:   existsSyncMock.proxy,
-        lstatSync:    lstatSyncMock.proxy,
-        readdirSync:  readdirSyncMock.proxy,
-        readlinkSync: readlinkSyncMock.proxy,
-        statSync:     statSyncMock.proxy,
-        unlinkSync:   unlinkSyncMock.proxy,
+        {
+            existsSync:   existsSyncMock.proxy,
+            lstatSync:    lstatSyncMock.proxy,
+            readdirSync:  readdirSyncMock.proxy,
+            readlinkSync: readlinkSyncMock.proxy,
+            statSync:     statSyncMock.proxy,
+            unlinkSync:   unlinkSyncMock.proxy,
+        },
     },
-    });
+);
 
-Mock.module("node:fs/promises",
+Mock.module(
+    "node:fs/promises",
     {
         namedExports:
-    {
-        lstat:    lstatMock.proxy,
-        readdir:  readdirMock.proxy,
-        readlink: readlinkMock.proxy,
-        stat:     statMock.proxy,
-        unlink:   unlinkMock.proxy,
+        {
+            lstat:    lstatMock.proxy,
+            readdir:  readdirMock.proxy,
+            readlink: readlinkMock.proxy,
+            stat:     statMock.proxy,
+            unlink:   unlinkMock.proxy,
+        },
     },
-    });
+);
+
+const { isDirectory, isDirectorySync, isFile, isFileSync, listPaths, listPathsSync, lookup, lookupSync, searchAbove } = await import("../internal/rwx.js");
 
 const CWD = process.cwd();
 

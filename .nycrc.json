@@ -1,6 +1,6 @@
 {
     "all": false,
-    "branches": 70,
+    "branches": 90,
     "exclude":
     [
         "**/packages/*/index.js",
@@ -9,14 +9,14 @@
         "**/test-suite/internal/assert.js"
     ],
     "extension": [".js"],
-    "functions": 25,
+    "functions": 90,
     "include": ["packages/**/*.js"],
-    "lines": 42,
+    "lines": 90,
     "reporter":
     [
         "text-summary",
         "lcov"
     ],
     "sourceMap": true,
-    "statements": 42
+    "statements": 90
 }

@@ -1,6 +1,6 @@
 import Mock, { It }                                                              from "@surface/mock";
 import { afterEach, assert, batchTest, beforeEach, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import NpmService                                                                from "../internal/npm-service.js";
+import type NpmServiceType                                                        from "../internal/npm-service.js";
 import { type HasChangesScenario, scenarios }                                    from "./npm-service.has-changes.scn.js";
 
 const libnpmpublishMock = Mock.instance<{
@@ -14,31 +14,41 @@ const pacoteMock        = Mock.instance<{
 const untarMock         = Mock.callable<(buffer: Buffer) => Promise<Map<string, string>>>();
 const packMock          = Mock.callable<(path: string) => Promise<Buffer>>();
 
-type Manifest        = Awaited<ReturnType<NpmService["get"]>>;
+type Manifest        = Awaited<ReturnType<NpmServiceType["get"]>>;
 type TarballResponse = Buffer;
 
-Mock.module("libnpmpack",
+Mock.module(
+    "libnpmpack",
     {
         defaultExport: packMock.proxy,
-    });
+    },
+);
 
-Mock.module("libnpmpublish",
+Mock.module(
+    "libnpmpublish",
     {
         defaultExport: libnpmpublishMock.proxy,
-    });
+    },
+);
 
-Mock.module("pacote",
+Mock.module(
+    "pacote",
     {
         defaultExport: pacoteMock.proxy,
-    });
+    },
+);
 
-Mock.module(import.meta.resolve("../internal/common.js"),
+Mock.module(
+    import.meta.resolve("../internal/common.js"),
     {
         namedExports:
-    {
-        untar: untarMock.proxy,
+        {
+            untar: untarMock.proxy,
+        },
     },
-    });
+);
+
+const { default: NpmService } = await import("../internal/npm-service.js");
 
 @suite
 export default class SuiteSpec

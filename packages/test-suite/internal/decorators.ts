@@ -1,6 +1,6 @@
 
 import Metadata        from "./metadata.js";
-import nodeTest        from "./node-test.js";
+import nodeTest, { afterEach as rawAfterEach, beforeEach as rawBeforeEach } from "./node-test.js";
 import type TestObject from "./types/test-object.js";
 import type Test       from "./types/test.js";
 
@@ -15,6 +15,11 @@ function camelToText(value: string): string
 }
 
 const noop = () => void 0;
+
+function instantiate(target: Function): object
+{
+    return new (target as Constructor)();
+}
 
 export function after(description: string): MethodDecorator;
 export function after(target: object, key: string | symbol): void;
@@ -213,7 +218,7 @@ export function suite(targetOrDescription: Function | string): ClassDecorator | 
                 }
             }
 
-            if (metadata.test)
+            if (metadata.test && !metadata.batch)
             {
                 const categoryName = metadata.category;
                 const getMethod    = metadata.skip ? () => noop : (context: object) => method.bind(context);
@@ -266,17 +271,17 @@ export function suite(targetOrDescription: Function | string): ClassDecorator | 
             {
                 if (beforeCallback)
                 {
-                    nodeTest.before(Metadata.from(beforeCallback).description, beforeCallback.bind(new (target as Constructor)()));
+                    nodeTest.before(Metadata.from(beforeCallback).description, beforeCallback.bind(instantiate(target)));
                 }
 
                 if (beforeEachCallback)
                 {
-                    nodeTest.beforeEach(Metadata.from(beforeEachCallback).description, beforeEachCallback.bind(new (target as Constructor)()));
+                    rawBeforeEach(beforeEachCallback.bind(instantiate(target)));
                 }
 
                 const registerTest = (test: Test, options?: { timeout?: number }): void =>
                 {
-                    nodeTest.test(test.expectation, () => test.getMethod(new (target as Constructor)()), options);
+                    nodeTest.test(test.expectation, () => test.getMethod(instantiate(target))(), options);
                 };
 
                 for (const test of tests)
@@ -301,12 +306,12 @@ export function suite(targetOrDescription: Function | string): ClassDecorator | 
 
                 if (afterEachCallback)
                 {
-                    nodeTest.afterEach(Metadata.from(afterEachCallback).description, afterEachCallback.bind(new (target as Constructor)()));
+                    rawAfterEach(afterEachCallback.bind(instantiate(target)));
                 }
 
                 if (afterCallback)
                 {
-                    nodeTest.after(Metadata.from(afterCallback).description, afterCallback.bind(new (target as Constructor)()));
+                    nodeTest.after(Metadata.from(afterCallback).description, afterCallback.bind(instantiate(target)));
                 }
             },
         );

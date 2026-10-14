@@ -79,7 +79,7 @@ export default class PathMatcherRedosSpec
         const regex = PathMatcher.makeRegex("**x");
 
         const t0      = process.hrtime.bigint();
-        const small   = regex.test("a".repeat(1000));
+        const small   = regex.test(`${"a".repeat(999)}x`);
         const smallMs = Number(process.hrtime.bigint() - t0) / 1e6;
 
         const t1      = process.hrtime.bigint();

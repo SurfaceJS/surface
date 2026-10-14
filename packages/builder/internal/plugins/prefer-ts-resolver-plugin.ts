@@ -5,12 +5,12 @@ import type webpack   from "webpack";
 
 type Resolver = webpack.Resolver;
 
-interface ResolvePlugin
+interface IResolvePlugin
 {
     apply(resolver: Resolver): void;
 }
 
-export default class PreferTsResolverPlugin implements ResolvePlugin
+export default class PreferTsResolverPlugin implements IResolvePlugin
 {
     private readonly matcher: PathMatcher | null;
 
