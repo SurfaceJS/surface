@@ -17,7 +17,7 @@
         "husky": "^8.0.3",
         "rimraf": "^3.0.2",
         "tslib": "^2.8.1",
-        "typescript": "~7.0.2"
+        "typescript": "~6.0.3"
     },
     "keywords": [
         "types",
@@ -64,13 +64,5 @@
     ],
     "allowScripts": {
         "core-js": false
-    },
-    "overrides": {
-        "@typescript-eslint/parser": {
-            "typescript": "~6.0.3"
-        },
-        "@typescript-eslint/eslint-plugin": {
-            "typescript": "~6.0.3"
-        }
     }
 }
