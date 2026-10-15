@@ -141,6 +141,11 @@ export default class Scheduler
         this.running = true;
 
         this.currentExecution = runAsync(async () => (await this.execute(), this.stop()));
+
+        // An update triggered asynchronously (e.g. a DOM mutation) can start an execution that the
+        // caller never awaits. Attach a handler so it is never an unhandled rejection; real errors
+        // are still surfaced to callers through execution().
+        void this.currentExecution.catch(() => undefined);
     }
 
     private stop(): void
@@ -153,29 +158,37 @@ export default class Scheduler
         }
     }
 
-    public async enqueue<T>(task: () => T, priority: "high" | "normal" | "low"): Promise<T>;
-    public async enqueue<T>(task: () => T, priority: "high" | "normal" | "low", cancellationToken: CancellationToken): Promise<T | undefined>;
-    public async enqueue(task: Delegate, priority: "high" | "normal" | "low", cancellationToken?: CancellationToken): Promise<unknown>
+    public enqueue<T>(task: () => T, priority: "high" | "normal" | "low"): Promise<T>;
+    public enqueue<T>(task: () => T, priority: "high" | "normal" | "low", cancellationToken: CancellationToken): Promise<T | undefined>;
+    // Not async on purpose: the returned promise is the very one carrying the no-op rejection
+    // handler below; an async wrapper would create a second, unhandled promise.
+    // eslint-disable-next-line @typescript-eslint/promise-function-async
+    public enqueue(task: Delegate, priority: "high" | "normal" | "low", cancellationToken?: CancellationToken): Promise<unknown>
     {
         if (!this.running)
         {
             this.start();
         }
 
-        switch (priority)
-        {
-        case "high":
-            return new Promise((resolve, reject) => this.highPriorityQueue.enqueue([task, resolve, reject, cancellationToken]));
-        case "low":
-            return new Promise((resolve, reject) => this.lowPriorityQueue.enqueue([task, resolve, reject, cancellationToken]));
-        case "normal":
-        default:
-            return new Promise((resolve, reject) => this.normalPriorityQueue.enqueue([task, resolve, reject, cancellationToken]));
-        }
+        const queue = priority == "high" ? this.highPriorityQueue : priority == "low" ? this.lowPriorityQueue : this.normalPriorityQueue;
+
+        const promise = new Promise((resolve, reject) => queue.enqueue([task, resolve, reject, cancellationToken]));
+
+        // Directives enqueue fire-and-forget tasks and discard the returned promise. When such a
+        // task throws the promise would become an unhandled rejection; attach a handler to avoid it,
+        // since the error is already aggregated and re-surfaced through execution().
+        void promise.catch(() => undefined);
+
+        return promise;
     }
 
     public async execution(): Promise<void>
     {
+        if (!this.running)
+        {
+            return;
+        }
+
         return this.currentExecution;
     }
 }

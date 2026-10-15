@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 
 import Metadata        from "./metadata.js";
 import nodeTest, { afterEach as rawAfterEach, beforeEach as rawBeforeEach } from "./node-test.js";
@@ -269,19 +270,35 @@ export function suite(targetOrDescription: Function | string): ClassDecorator | 
             description,
             () =>
             {
+                const context = instantiate(target);
+
+                nodeTest.before
+                (
+                    async () =>
+                    {
+                        // Mocha instantiated suite contexts during its loading phase, leaving
+                        // event loop turns before the first test ran. Reproduce that gap so work
+                        // scheduled at construction time (e.g. htmlx element activation) settles.
+                        for (let index = 0; index < 10; index++)
+                        {
+                            await new Promise<void>(resolve => setImmediate(resolve));
+                        }
+                    },
+                );
+
                 if (beforeCallback)
                 {
-                    nodeTest.before(Metadata.from(beforeCallback).description, beforeCallback.bind(instantiate(target)));
+                    nodeTest.before(beforeCallback.bind(context));
                 }
 
                 if (beforeEachCallback)
                 {
-                    rawBeforeEach(beforeEachCallback.bind(instantiate(target)));
+                    rawBeforeEach(beforeEachCallback.bind(context));
                 }
 
                 const registerTest = (test: Test, options?: { timeout?: number }): void =>
                 {
-                    nodeTest.test(test.expectation, () => test.getMethod(instantiate(target))(), options);
+                    nodeTest.test(test.expectation, () => test.getMethod(context)(), options);
                 };
 
                 for (const test of tests)
@@ -306,12 +323,12 @@ export function suite(targetOrDescription: Function | string): ClassDecorator | 
 
                 if (afterEachCallback)
                 {
-                    rawAfterEach(afterEachCallback.bind(instantiate(target)));
+                    rawAfterEach(afterEachCallback.bind(context));
                 }
 
                 if (afterCallback)
                 {
-                    nodeTest.after(Metadata.from(afterCallback).description, afterCallback.bind(instantiate(target)));
+                    nodeTest.after(afterCallback.bind(context));
                 }
             },
         );
